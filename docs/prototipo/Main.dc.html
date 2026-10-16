@@ -1,0 +1,1396 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Aurora</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5B8DEF}a:hover{color:#8DB0F5}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: {{t.bg}}; color: {{t.text}}; font-family: 'Manrope', sans-serif; overflow: hidden; box-sizing: border-box; position: relative">
+
+<div style="flex: 1; overflow-y: auto; padding: 20px 20px 28px; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box">
+
+<!-- Cabeçalho comum -->
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="none" stroke="{{t.accent}}" stroke-width="1.5"/><path d="M5 17c3-5 6-7 9-7s6 2 9 7" fill="none" stroke="{{t.teal}}" stroke-width="2" stroke-linecap="round"/><path d="M8 20c2-3 4-4 6-4s4 1 6 4" fill="none" stroke="{{t.accent}}" stroke-width="2" stroke-linecap="round"/></svg>
+<span style="font-family: 'Sora', sans-serif; font-weight: 600; font-size: 18px; letter-spacing: 0.04em">Aurora</span>
+</div>
+<div style="display: flex; gap: 8px">
+<button type="button" aria-label="Abrir assistente" onClick="{{goChat}}" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid {{nav.chat.border}}; background: {{nav.chat.bg}}; color: {{nav.chat.color}}; display: flex; align-items: center; justify-content: center; padding: 0">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
+</button>
+<button type="button" aria-label="Alternar modo claro e escuro" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid {{t.line}}; background: {{t.surf}}; color: {{t.text}}; display: flex; align-items: center; justify-content: center; padding: 0">
+<sc-if value="{{dark}}" hint-placeholder-val="{{ true }}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+</sc-if>
+<sc-if value="{{light}}" hint-placeholder-val="{{ false }}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</sc-if>
+</button>
+</div>
+</div>
+
+<!-- ============ VISÃO ============ -->
+<sc-if value="{{isHome}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: {{t.muted}}">QUINTA-FEIRA · 15 DE OUTUBRO</span>
+<h1 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 28px; line-height: 1.2">Boa noite, Maraath</h1>
+</div>
+
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{t.teal}}">EM FOCO AGORA</span>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 600">{{focus.title}}</span>
+<span style="font-size: 13px; color: {{t.muted}}">{{focus.meta}}</span>
+</div>
+<div style="display: flex; gap: 10px; flex-wrap: wrap">
+<button type="button" onClick="{{startFocus}}" style="min-height: 44px; padding: 0 18px; border-radius: 22px; border: none; background: {{t.accentFill}}; color: #FFFFFF; font-size: 14px; font-weight: 700">{{focusLabel}}</button>
+<button type="button" onClick="{{nextFocus}}" style="min-height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid {{t.line}}; background: transparent; color: {{t.text}}; font-size: 14px; font-weight: 600">Focar em outra</button>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 style="margin: 0; font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 600">Hoje</h2>
+<span style="font-size: 13px; color: {{t.muted}}">{{habitsLeft}} hábitos restantes</span>
+</div>
+<sc-for list="{{habits}}" as="h" hint-placeholder-count="2">
+<button type="button" onClick="{{h.toggle}}" aria-label="Concluir {{h.name}}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 14px; border-radius: 16px; border: 1px solid {{t.line}}; background: {{t.surf}}; color: {{t.text}}; text-align: left">
+<span style="width: 24px; height: 24px; border-radius: 12px; border: 2px solid {{h.ring}}; background: {{h.fill}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-sizing: border-box">
+<sc-if value="{{h.done}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></sc-if>
+</span>
+<span style="flex: 1; display: flex; flex-direction: column">
+<span style="font-size: 15px; font-weight: 600; text-decoration: {{h.deco}}; opacity: {{h.op}}">{{h.name}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">{{h.meta}}</span>
+</span>
+</button>
+</sc-for>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 600">Panorama</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<button type="button" onClick="{{goTasks}}" style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 6px; text-align: left; color: {{t.text}}">
+<span style="font-size: 12px; font-weight: 600; color: {{t.muted}}">Tarefas</span>
+<span style="font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 600; color: {{t.bad}}">{{lateCount}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">atrasadas · {{openCount}} abertas</span>
+</button>
+<button type="button" onClick="{{goHabits}}" style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 6px; text-align: left; color: {{t.text}}">
+<span style="font-size: 12px; font-weight: 600; color: {{t.muted}}">Hábitos</span>
+<span style="font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 600; color: {{t.teal}}">{{habitsDoneCount}}/{{habitsTotal}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">feitos hoje</span>
+</button>
+<button type="button" onClick="{{goMoney}}" style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 6px; text-align: left; color: {{t.text}}">
+<span style="font-size: 12px; font-weight: 600; color: {{t.muted}}">Outubro</span>
+<span style="font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 600">{{toPay}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">a pagar · {{billsLate}} contas</span>
+</button>
+<button type="button" onClick="{{goGoals}}" style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 6px; text-align: left; color: {{t.text}}">
+<span style="font-size: 12px; font-weight: 600; color: {{t.muted}}">Shape 80kg</span>
+<span style="font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 600">74 kg</span>
+<span style="font-size: 12px; color: {{t.muted}}">faltam 6 kg · 31 dez</span>
+</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ TAREFAS ============ -->
+<sc-if value="{{isTasks}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h1 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 26px">Tarefas</h1>
+<button type="button" aria-label="Nova tarefa" onClick="{{openTaskForm}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: {{t.accentFill}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div style="background: {{t.badSoft}}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 600; color: {{t.bad}}">{{lateCount}}</span>
+<span style="font-size: 12px; color: {{t.text}}">atrasadas</span>
+</div>
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 600">{{openCount}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">abertas</span>
+</div>
+<div style="background: {{t.tealSoft}}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 600; color: {{t.teal}}">{{doneCount}}</span>
+<span style="font-size: 12px; color: {{t.text}}">feitas hoje</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{t.muted}}">RESOLVER AGORA</span>
+<sc-for list="{{tasks}}" as="k" hint-placeholder-count="5">
+<button type="button" onClick="{{k.toggle}}" aria-label="Concluir {{k.title}}" style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 14px; border-radius: 16px; border: 1px solid {{t.line}}; background: {{t.surf}}; color: {{t.text}}; text-align: left">
+<span style="width: 24px; height: 24px; border-radius: 12px; border: 2px solid {{k.ring}}; background: {{k.fill}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-sizing: border-box">
+<sc-if value="{{k.done}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></sc-if>
+</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 15px; font-weight: 600; text-decoration: {{k.deco}}; opacity: {{k.op}}">{{k.title}}</span>
+<span style="font-size: 12px; color: {{k.metaColor}}">{{k.meta}}</span>
+</span>
+<span style="font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 8px; color: {{k.prioColor}}; border: 1px solid {{k.prioColor}}">{{k.prio}}</span>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ HÁBITOS + SAÚDE ============ -->
+<sc-if value="{{isHabits}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h1 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 26px">Hábitos e saúde</h1>
+<button type="button" aria-label="Novo hábito" onClick="{{openHabitForm}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: {{t.accentFill}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{week}}" as="d" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; border-radius: 12px; background: {{d.bg}}; border: 1px solid {{d.border}}">
+<span style="font-size: 10px; font-weight: 700; color: {{t.muted}}">{{d.wd}}</span>
+<span style="font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 600">{{d.n}}</span>
+<span style="width: 6px; height: 6px; border-radius: 3px; background: {{d.dot}}"></span>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{t.muted}}">ROTINA DE HOJE</span>
+<sc-for list="{{habits}}" as="h" hint-placeholder-count="2">
+<button type="button" onClick="{{h.toggle}}" aria-label="Concluir {{h.name}}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 14px; border-radius: 16px; border: 1px solid {{t.line}}; background: {{t.surf}}; color: {{t.text}}; text-align: left">
+<span style="width: 24px; height: 24px; border-radius: 12px; border: 2px solid {{h.ring}}; background: {{h.fill}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-sizing: border-box">
+<sc-if value="{{h.done}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></sc-if>
+</span>
+<span style="flex: 1; display: flex; flex-direction: column">
+<span style="font-size: 15px; font-weight: 600; text-decoration: {{h.deco}}; opacity: {{h.op}}">{{h.name}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">{{h.meta}}</span>
+</span>
+</button>
+</sc-for>
+</div>
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{t.accent}}">TREINO DE HOJE</span>
+<span style="font-size: 12px; color: {{t.muted}}">ficha de exemplo</span>
+</div>
+<span style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 600">Treino A · Peito e tríceps</span>
+<sc-for list="{{workout}}" as="w" hint-placeholder-count="3">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid {{t.line}}">
+<span style="display: flex; flex-direction: column">
+<span style="font-size: 14px; font-weight: 600">{{w.name}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">{{w.sets}}</span>
+</span>
+<span style="font-size: 14px; font-weight: 700; color: {{t.teal}}">{{w.load}}</span>
+</div>
+</sc-for>
+<span style="font-size: 12px; color: {{t.muted}}">A carga sugerida vem do seu último treino.</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 600; color: {{t.muted}}">Peso</span>
+<span style="font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 600">74 kg</span>
+</div>
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 600; color: {{t.muted}}">Braço</span>
+<span style="font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 600">37 cm</span>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ FINANÇAS ============ -->
+<sc-if value="{{isMoney}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: {{t.muted}}">OUTUBRO 2026</span>
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h1 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 26px">Finanças</h1>
+<button type="button" aria-label="Novo lançamento" onClick="{{openMoneyForm}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: {{t.accentFill}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+</div>
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; font-weight: 600; color: {{t.muted}}">Saldo em conta</span>
+<span style="font-family: 'Sora', sans-serif; font-size: 30px; font-weight: 600">{{balance}}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="background: {{t.tealSoft}}; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column">
+<span style="font-size: 12px; color: {{t.text}}">Entrou</span>
+<span style="font-size: 16px; font-weight: 700; color: {{t.teal}}">{{income}}</span>
+</div>
+<div style="background: {{t.badSoft}}; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column">
+<span style="font-size: 12px; color: {{t.text}}">Saiu</span>
+<span style="font-size: 16px; font-weight: 700; color: {{t.bad}}">{{spent}}</span>
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{t.muted}}">CONTAS A PAGAR</span>
+<span style="font-size: 13px; font-weight: 700">{{toPay}}</span>
+</div>
+<sc-for list="{{bills}}" as="b" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 14px; border-radius: 16px; border: 1px solid {{t.line}}; background: {{t.surf}}">
+<span style="width: 40px; height: 40px; border-radius: 12px; background: {{t.surf2}}; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0">
+<span style="font-size: 15px; font-weight: 700; line-height: 1">{{b.day}}</span>
+<span style="font-size: 9px; font-weight: 700; color: {{t.muted}}">OUT</span>
+</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 15px; font-weight: 600">{{b.name}}</span>
+<span style="font-size: 12px; color: {{b.statusColor}}">{{b.status}} · {{b.value}}</span>
+</span>
+<button type="button" onClick="{{b.pay}}" style="min-height: 44px; padding: 0 14px; border-radius: 22px; border: {{b.btnBorder}}; background: {{b.btnBg}}; color: {{b.btnColor}}; font-size: 13px; font-weight: 700">{{b.btn}}</button>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{t.muted}}">PARA ONDE FOI</span>
+<sc-for list="{{cats}}" as="c" hint-placeholder-count="1">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; font-size: 14px"><span>{{c.name}}</span><span style="font-weight: 700">{{c.label}}</span></div>
+<div style="height: 8px; border-radius: 4px; background: {{t.surf2}}"><div style="width: {{c.pct}}; height: 8px; border-radius: 4px; background: {{t.accent}}"></div></div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ MAIS ============ -->
+<sc-if value="{{isMore}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<h1 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 26px">Mais</h1>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<button type="button" onClick="{{goGoals}}" style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 16px; border-radius: 16px; border: 1px solid {{t.line}}; background: {{t.surf}}; color: {{t.text}}; text-align: left">
+<span style="width: 40px; height: 40px; border-radius: 12px; background: {{t.accentSoft}}; color: {{t.accent}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/></svg></span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">Metas</span><span style="font-size: 12px; color: {{t.muted}}">{{goalsSummary}}</span></span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+</button>
+<button type="button" onClick="{{goReminders}}" style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 16px; border-radius: 16px; border: 1px solid {{t.line}}; background: {{t.surf}}; color: {{t.text}}; text-align: left">
+<span style="width: 40px; height: 40px; border-radius: 12px; background: {{t.tealSoft}}; color: {{t.teal}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2.2 2.2 0 0 0 4 0"/></svg></span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">Lembretes</span><span style="font-size: 12px; color: {{t.muted}}">{{remindersActive}} ativos · próximo {{nextReminder}}</span></span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+</button>
+<button type="button" onClick="{{goProjects}}" style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 16px; border-radius: 16px; border: 1px solid {{t.line}}; background: {{t.surf}}; color: {{t.text}}; text-align: left">
+<span style="width: 40px; height: 40px; border-radius: 12px; background: {{t.surf2}}; color: {{t.text}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7"/></svg></span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">Projetos</span><span style="font-size: 12px; color: {{t.muted}}">2 em andamento · ambos com etapa atrasada</span></span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{t.muted}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+</button>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ LEMBRETES ============ -->
+<sc-if value="{{isReminders}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+<div style="display: flex; align-items: center; gap: 6px">
+<button type="button" aria-label="Voltar" onClick="{{goMore}}" style="width: 44px; height: 44px; margin-left: -10px; border: none; background: transparent; color: {{t.text}}; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+<h1 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 26px">Lembretes</h1>
+</div>
+<button type="button" aria-label="Novo lembrete" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: {{t.accentFill}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{t.teal}}">A SEGUIR</span>
+<span style="font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 600">{{upNext.title}}</span>
+<span style="font-size: 13px; color: {{t.muted}}">{{upNext.when}}</span>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 600">{{remToday}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">hoje</span>
+</div>
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 600">{{remWeek}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">esta semana</span>
+</div>
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 600">{{remindersActive}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">recorrentes</span>
+</div>
+</div>
+
+<div style="display: flex; gap: 6px; padding: 4px; border-radius: 14px; background: {{t.surf2}}">
+<button type="button" onClick="{{remShowAll}}" style="flex: 1; min-height: 40px; border: none; border-radius: 10px; background: {{remSeg.all.bg}}; color: {{remSeg.all.color}}; font-size: 13px; font-weight: 700">Próximos</button>
+<button type="button" onClick="{{remShowRec}}" style="flex: 1; min-height: 40px; border: none; border-radius: 10px; background: {{remSeg.rec.bg}}; color: {{remSeg.rec.color}}; font-size: 13px; font-weight: 700">Recorrentes</button>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{reminders}}" as="r" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 8px 10px 14px; border-radius: 16px; border: 1px solid {{t.line}}; background: {{t.surf}}; opacity: {{r.op}}">
+<span style="width: 52px; flex-shrink: 0; display: flex; flex-direction: column">
+<span style="font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 600">{{r.time}}</span>
+<span style="font-size: 11px; font-weight: 700; color: {{t.muted}}">{{r.day}}</span>
+</span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 15px; font-weight: 600">{{r.title}}</span>
+<span style="display: flex; gap: 6px; flex-wrap: wrap">
+<span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; background: {{t.accentSoft}}; color: {{t.accent}}">{{r.repeat}}</span>
+<span style="font-size: 11px; font-weight: 600; padding: 2px 0; color: {{t.muted}}">{{r.link}}</span>
+</span>
+</span>
+<button type="button" onClick="{{r.toggle}}" aria-label="{{r.aria}}" style="width: 44px; height: 44px; border: none; border-radius: 22px; background: transparent; color: {{r.bellColor}}; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0">
+<sc-if value="{{r.on}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2.2 2.2 0 0 0 4 0"/></svg></sc-if>
+<sc-if value="{{r.off}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2.2 2.2 0 0 0 4 0"/><path d="M3 3l18 18"/></svg></sc-if>
+</button>
+</div>
+</sc-for>
+</div>
+<span style="font-size: 12px; line-height: 1.5; color: {{t.muted}}">O sino liga ou desliga a notificação no celular e no PC. Lembretes podem ficar ligados a uma tarefa, conta ou meta.</span>
+</div>
+</sc-if>
+
+<!-- ============ ASSISTENTE ============ -->
+<sc-if value="{{isChat}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px">
+<h1 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 26px">Assistente</h1>
+<button type="button" onClick="{{toggleOnline}}" aria-label="Simular conexão: {{conn.label}}" style="min-height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid {{conn.color}}; background: {{conn.bg}}; color: {{conn.color}}; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700">
+<span style="width: 8px; height: 8px; border-radius: 4px; background: {{conn.color}}"></span>{{conn.label}}</button>
+</div>
+<span style="font-size: 12px; line-height: 1.5; color: {{t.muted}}">{{conn.hint}}</span>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{chat}}" as="m" hint-placeholder-count="3">
+<div style="display: flex; justify-content: {{m.justify}}">
+<div style="max-width: 82%; padding: 10px 14px; border-radius: {{m.radius}}; background: {{m.bg}}; color: {{m.color}}; border: {{m.border}}; font-size: {{m.size}}; line-height: 1.45; white-space: pre-line">{{m.text}}</div>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+<button type="button" onClick="{{c.send}}" style="min-height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid {{t.line}}; background: {{t.surf}}; color: {{t.text}}; font-size: 12px; font-weight: 600">{{c.label}}</button>
+</sc-for>
+</div>
+
+<div style="display: flex; gap: 8px; align-items: center; padding: 6px 6px 6px 14px; border-radius: 26px; border: 1px solid {{t.line}}; background: {{t.surf}}">
+<label for="aurora-msg" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Mensagem para o assistente</label>
+<input id="aurora-msg" type="text" value="{{draft}}" onChange="{{onDraft}}" onKeyDown="{{onKey}}" placeholder="Peça algo ao Aurora…" style="flex: 1; min-width: 0; height: 40px; border: none; outline: none; background: transparent; color: {{t.text}}; font-family: inherit; font-size: 15px"/>
+<button type="button" aria-label="Enviar" onClick="{{sendDraft}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: {{t.accentFill}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ PROJETOS ============ -->
+<sc-if value="{{isProjects}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+<div style="display: flex; align-items: center; gap: 6px">
+<button type="button" aria-label="Voltar" onClick="{{goMore}}" style="width: 44px; height: 44px; margin-left: -10px; border: none; background: transparent; color: {{t.text}}; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+<h1 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 26px">Projetos</h1>
+</div>
+<button type="button" aria-label="Novo projeto" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: {{t.accentFill}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{t.muted}}">LINHA DO TEMPO</span>
+<div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); font-size: 11px; font-weight: 700; color: {{t.muted}}">
+<span>SET</span><span>OUT</span><span>NOV</span><span>DEZ</span><span>JAN</span>
+</div>
+<div style="position: relative; display: flex; flex-direction: column; gap: 10px; padding: 4px 0">
+<div style="position: absolute; left: 28.8%; top: -6px; bottom: -6px; width: 2px; background: {{t.accent}}; border-radius: 1px"></div>
+<sc-for list="{{projects}}" as="p" hint-placeholder-count="2">
+<button type="button" onClick="{{p.select}}" aria-label="Abrir {{p.name}}" style="position: relative; height: 30px; border: none; background: transparent; padding: 0">
+<span style="position: absolute; left: {{p.left}}; width: {{p.width}}; top: 0; height: 30px; border-radius: 15px; background: {{p.barBg}}; border: {{p.barBorder}}; box-sizing: border-box; display: flex; align-items: center; padding: 0 10px; overflow: hidden">
+<span style="position: absolute; left: 0; top: 0; bottom: 0; width: {{p.pct}}; background: {{p.color}}; opacity: 0.35"></span>
+<span style="position: relative; font-size: 12px; font-weight: 700; color: {{t.text}}; white-space: nowrap">{{p.name}}</span>
+</span>
+</button>
+</sc-for>
+</div>
+<span style="font-size: 12px; color: {{t.muted}}">A linha azul é hoje. A parte preenchida de cada barra é o quanto já foi feito.</span>
+</div>
+
+<sc-for list="{{projects}}" as="p" hint-placeholder-count="2">
+<div style="background: {{t.surf}}; border: {{p.cardBorder}}; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<button type="button" onClick="{{p.select}}" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; border: none; background: transparent; color: {{t.text}}; padding: 0; text-align: left">
+<span style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 600">{{p.name}}</span>
+<span style="font-size: 12px; color: {{t.muted}}">{{p.dates}} · {{p.left_days}}</span>
+</span>
+<span style="font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 8px; color: {{p.statusColor}}; border: 1px solid {{p.statusColor}}; white-space: nowrap">{{p.status}}</span>
+</button>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; font-size: 12px; color: {{t.muted}}"><span>Etapas</span><span>{{p.doneSteps}} de {{p.totalSteps}}</span></div>
+<div style="height: 8px; border-radius: 4px; background: {{t.surf2}}"><div style="width: {{p.pct}}; height: 8px; border-radius: 4px; background: {{p.color}}"></div></div>
+</div>
+<sc-if value="{{p.open}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{p.steps}}" as="s" hint-placeholder-count="4">
+<button type="button" onClick="{{s.toggle}}" aria-label="Concluir etapa {{s.name}}" style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 4px; border: none; border-top: 1px solid {{t.line}}; background: transparent; color: {{t.text}}; text-align: left">
+<span style="width: 22px; height: 22px; border-radius: 6px; border: 2px solid {{s.ring}}; background: {{s.fill}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-sizing: border-box">
+<sc-if value="{{s.done}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></sc-if>
+</span>
+<span style="flex: 1; display: flex; flex-direction: column">
+<span style="font-size: 14px; font-weight: 600; text-decoration: {{s.deco}}; opacity: {{s.op}}">{{s.name}}</span>
+<span style="font-size: 12px; color: {{s.whenColor}}">{{s.when}}</span>
+</span>
+</button>
+</sc-for>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; padding-top: 6px">
+<span style="font-size: 11px; font-weight: 600; color: {{t.muted}}; padding: 4px 0">Ligado a:</span>
+<sc-for list="{{p.links}}" as="l" hint-placeholder-count="2">
+<span style="font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 8px; background: {{t.accentSoft}}; color: {{t.accent}}">{{l.label}}</span>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<!-- ============ METAS ============ -->
+<sc-if value="{{isGoals}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: center; gap: 6px">
+<button type="button" aria-label="Voltar" onClick="{{goMore}}" style="width: 44px; height: 44px; margin-left: -10px; border: none; background: transparent; color: {{t.text}}; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+<h1 style="margin: 0; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 26px">Metas</h1>
+</div>
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+<span style="font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 600">Shape 80kg</span>
+<span style="font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 8px; color: {{t.warn}}; border: 1px solid {{t.warn}}">Parada</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; font-size: 12px; color: {{t.muted}}"><span>Progresso</span><span>74 de 80 kg</span></div>
+<div style="height: 8px; border-radius: 4px; background: {{t.surf2}}"><div style="width: 2%; height: 8px; border-radius: 4px; background: {{t.teal}}"></div></div>
+<div style="display: flex; justify-content: space-between; font-size: 12px; color: {{t.muted}}"><span>Tempo passado</span><span>9 out → 31 dez</span></div>
+<div style="height: 8px; border-radius: 4px; background: {{t.surf2}}"><div style="width: 8%; height: 8px; border-radius: 4px; background: {{t.accent}}"></div></div>
+</div>
+<span style="font-size: 13px; line-height: 1.5">Para chegar em 31 de dezembro, ganhe cerca de <strong>0,5 kg por semana</strong>. 84 tarefas ligadas a esta meta.</span>
+</div>
+<sc-for list="{{newGoals}}" as="g" hint-placeholder-count="0">
+<div style="background: {{t.surf}}; border: 1px solid {{t.line}}; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+<span style="font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 600">{{g.name}}</span>
+<span style="font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 8px; color: {{t.accent}}; border: 1px solid {{t.accent}}">Nova</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; font-size: 12px; color: {{t.muted}}"><span>Progresso</span><span>{{g.range}}</span></div>
+<div style="height: 8px; border-radius: 4px; background: {{t.surf2}}"><div style="width: 2%; height: 8px; border-radius: 4px; background: {{t.teal}}"></div></div>
+<div style="display: flex; justify-content: space-between; font-size: 12px; color: {{t.muted}}"><span>Tempo passado</span><span>{{g.dates}}</span></div>
+<div style="height: 8px; border-radius: 4px; background: {{t.surf2}}"><div style="width: 1%; height: 8px; border-radius: 4px; background: {{t.accent}}"></div></div>
+</div>
+<span style="font-size: 13px; line-height: 1.5">{{g.pace}}</span>
+</div>
+</sc-for>
+<button type="button" onClick="{{openGoalForm}}" style="background: {{t.surf}}; border: 1px dashed {{t.line}}; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; color: {{t.text}}; text-align: left">
+<span style="font-size: 15px; font-weight: 600; color: {{t.accent}}">+ Nova meta</span>
+<span style="font-size: 13px; color: {{t.muted}}">Defina um alvo e uma data. O Aurora calcula o ritmo e liga suas tarefas e hábitos a ela.</span>
+</button>
+</div>
+</sc-if>
+
+</div>
+
+<!-- Barra inferior -->
+<nav aria-label="Seções" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; padding: 8px 10px 18px; border-top: 1px solid {{t.line}}; background: {{t.surf}}">
+<button type="button" onClick="{{goHome}}" style="min-height: 52px; border: none; border-radius: 14px; background: {{nav.home.bg}}; color: {{nav.home.color}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 700; padding: 0">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Visão</button>
+<button type="button" onClick="{{goTasks}}" style="min-height: 52px; border: none; border-radius: 14px; background: {{nav.tasks.bg}}; color: {{nav.tasks.color}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 700; padding: 0">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>Tarefas</button>
+<button type="button" onClick="{{goHabits}}" style="min-height: 52px; border: none; border-radius: 14px; background: {{nav.habits.bg}}; color: {{nav.habits.color}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 700; padding: 0">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h3l3-7 6 14 3-7h3"/></svg>Hábitos</button>
+<button type="button" onClick="{{goMoney}}" style="min-height: 52px; border: none; border-radius: 14px; background: {{nav.money.bg}}; color: {{nav.money.color}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 700; padding: 0">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg>Finanças</button>
+<button type="button" onClick="{{goMore}}" style="min-height: 52px; border: none; border-radius: 14px; background: {{nav.more.bg}}; color: {{nav.more.color}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 11px; font-weight: 700; padding: 0">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2"/></svg>Mais</button>
+</nav>
+
+<!-- ============ FORMULÁRIO: NOVA META ============ -->
+<sc-if value="{{sheetGoal}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; background: rgba(2, 6, 16, 0.6); display: flex; flex-direction: column; justify-content: flex-end">
+<button type="button" aria-label="Fechar" onClick="{{closeSheet}}" style="flex: 1; border: none; background: transparent; padding: 0"></button>
+<div role="dialog" aria-label="Nova meta" style="background: {{t.surf}}; border-top: 1px solid {{t.line}}; border-radius: 24px 24px 0 0; padding: 10px 20px 24px; display: flex; flex-direction: column; gap: 16px; max-height: 88%; overflow-y: auto; box-sizing: border-box">
+<div style="width: 40px; height: 4px; border-radius: 2px; background: {{t.line}}; align-self: center"></div>
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h2 style="margin: 0; font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 600">Nova meta</h2>
+<button type="button" onClick="{{closeSheet}}" style="min-height: 44px; padding: 0 8px; border: none; background: transparent; color: {{t.muted}}; font-size: 14px; font-weight: 700">Cancelar</button>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="g-name" style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Nome da meta</label>
+<input id="g-name" type="text" value="{{gform.name}}" onChange="{{gform.onName}}" placeholder="Ex.: Reserva de emergência" style="height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 16px; outline: none; box-sizing: border-box"/>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Medida</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{gform.units}}" as="o" hint-placeholder-count="5">
+<button type="button" onClick="{{o.pick}}" style="min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1.5px solid {{o.border}}; background: {{o.bg}}; color: {{o.color}}; font-size: 13px; font-weight: 700">{{o.label}}</button>
+</sc-for>
+</div>
+<sc-if value="{{gform.isCustom}}" hint-placeholder-val="{{ false }}">
+<label for="g-unit" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Unidade</label>
+<input id="g-unit" type="text" value="{{gform.custom}}" onChange="{{gform.onCustom}}" placeholder="Qual unidade? Ex.: horas, cursos" style="height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 15px; box-sizing: border-box"/>
+</sc-if>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="g-cur" style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Hoje estou em</label>
+<input id="g-cur" type="text" inputmode="decimal" value="{{gform.cur}}" onChange="{{gform.onCur}}" placeholder="0" style="height: 48px; padding: 0 12px; border-radius: 14px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 600; box-sizing: border-box; min-width: 0"/>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="g-target" style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Quero chegar em</label>
+<input id="g-target" type="text" inputmode="decimal" value="{{gform.target}}" onChange="{{gform.onTarget}}" placeholder="0" style="height: 48px; padding: 0 12px; border-radius: 14px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.accent}}; font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 600; box-sizing: border-box; min-width: 0"/>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; gap: 10px">
+<label for="g-date" style="font-size: 13px; color: {{t.muted}}">Até quando</label>
+<input id="g-date" type="date" min="2026-10-16" value="{{gform.date}}" onChange="{{gform.onDate}}" style="height: 40px; padding: 0 10px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 15px; color-scheme: {{form.scheme}}"/>
+</div>
+
+<div style="padding: 14px; border-radius: 14px; background: {{t.accentSoft}}; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{t.accent}}">RITMO NECESSÁRIO</span>
+<span style="font-size: 14px; line-height: 1.5">{{gform.preview}}</span>
+</div>
+
+<sc-if value="{{gform.showError}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 600; color: {{t.bad}}">{{gform.error}}</span></sc-if>
+<button type="button" onClick="{{gform.save}}" style="min-height: 52px; border-radius: 26px; border: none; background: {{t.accentFill}}; color: #FFFFFF; font-size: 16px; font-weight: 700">Salvar meta</button>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ FORMULÁRIO: FINANÇAS ============ -->
+<sc-if value="{{sheetMoney}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; background: rgba(2, 6, 16, 0.6); display: flex; flex-direction: column; justify-content: flex-end">
+<button type="button" aria-label="Fechar" onClick="{{closeSheet}}" style="flex: 1; border: none; background: transparent; padding: 0"></button>
+<div role="dialog" aria-label="Novo lançamento" style="background: {{t.surf}}; border-top: 1px solid {{t.line}}; border-radius: 24px 24px 0 0; padding: 10px 20px 24px; display: flex; flex-direction: column; gap: 16px; max-height: 88%; overflow-y: auto; box-sizing: border-box">
+<div style="width: 40px; height: 4px; border-radius: 2px; background: {{t.line}}; align-self: center"></div>
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h2 style="margin: 0; font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 600">Novo lançamento</h2>
+<button type="button" onClick="{{closeSheet}}" style="min-height: 44px; padding: 0 8px; border: none; background: transparent; color: {{t.muted}}; font-size: 14px; font-weight: 700">Cancelar</button>
+</div>
+
+<div style="display: flex; gap: 6px; padding: 4px; border-radius: 14px; background: {{t.bg}}">
+<sc-for list="{{mform.kinds}}" as="o" hint-placeholder-count="2">
+<button type="button" onClick="{{o.pick}}" style="flex: 1; min-height: 44px; border: none; border-radius: 10px; background: {{o.bg}}; color: {{o.color}}; font-size: 14px; font-weight: 700">{{o.label}}</button>
+</sc-for>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="m-desc" style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Descrição</label>
+<input id="m-desc" type="text" value="{{mform.desc}}" onChange="{{mform.onDesc}}" placeholder="{{mform.descHint}}" style="height: 48px; padding: 0 14px; border-radius: 14px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 16px; outline: none; box-sizing: border-box"/>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="m-value" style="font-size: 12px; font-weight: 700; color: {{t.muted}}">{{mform.valueLabel}}</label>
+<div style="display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 14px; border-radius: 14px; border: 1px solid {{t.line}}; background: {{t.bg}}; box-sizing: border-box">
+<span style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 600; color: {{t.muted}}">R$</span>
+<input id="m-value" type="text" inputmode="decimal" value="{{mform.value}}" onChange="{{mform.onValue}}" placeholder="0,00" style="flex: 1; min-width: 0; height: 48px; border: none; outline: none; background: transparent; color: {{mform.valueColor}}; font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 600"/>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Categoria</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{mform.cats}}" as="o" hint-placeholder-count="6">
+<button type="button" onClick="{{o.pick}}" style="min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1.5px solid {{o.border}}; background: {{o.bg}}; color: {{o.color}}; font-size: 13px; font-weight: 700">{{o.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<sc-if value="{{mform.isOut}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Forma</span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{mform.modes}}" as="o" hint-placeholder-count="3">
+<button type="button" onClick="{{o.pick}}" style="min-height: 56px; padding: 6px 4px; border-radius: 14px; border: 1.5px solid {{o.border}}; background: {{o.bg}}; color: {{o.color}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+<span style="font-size: 13px; font-weight: 700">{{o.label}}</span>
+<span style="font-size: 11px; font-weight: 500; color: {{t.muted}}">{{o.hint}}</span>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{mform.isInstallment}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<label for="m-parts" style="font-size: 13px; color: {{t.muted}}">Parcelas</label>
+<input id="m-parts" type="number" min="2" max="48" value="{{mform.parts}}" onChange="{{mform.onParts}}" style="width: 72px; height: 40px; padding: 0 10px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 15px; box-sizing: border-box"/>
+<span style="font-size: 13px; font-weight: 700; color: {{t.accent}}">{{mform.partPreview}}</span>
+</div>
+</sc-if>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 14px; background: {{t.bg}}">
+<span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">Já foi pago?</span><span style="font-size: 12px; color: {{t.muted}}">{{mform.paidHint}}</span></span>
+<button type="button" role="switch" aria-checked="{{mform.paidAria}}" aria-label="Já foi pago" onClick="{{mform.togglePaid}}" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{mform.switchBg}}; padding: 3px; display: flex; justify-content: {{mform.switchJustify}}; flex-shrink: 0"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF"></span></button>
+</div>
+<sc-if value="{{mform.showDue}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 10px">
+<label for="m-day" style="font-size: 13px; color: {{t.muted}}">Vence no dia</label>
+<input id="m-day" type="number" min="1" max="31" value="{{mform.day}}" onChange="{{mform.onDay}}" style="width: 72px; height: 40px; padding: 0 10px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 15px; box-sizing: border-box"/>
+<span style="font-size: 13px; color: {{t.muted}}">de outubro</span>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{mform.showError}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 600; color: {{t.bad}}">{{mform.error}}</span></sc-if>
+<button type="button" onClick="{{mform.save}}" style="min-height: 52px; border-radius: 26px; border: none; background: {{t.accentFill}}; color: #FFFFFF; font-size: 16px; font-weight: 700">{{mform.saveLabel}}</button>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ FORMULÁRIO: NOVO HÁBITO ============ -->
+<sc-if value="{{sheetHabit}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; background: rgba(2, 6, 16, 0.6); display: flex; flex-direction: column; justify-content: flex-end">
+<button type="button" aria-label="Fechar" onClick="{{closeSheet}}" style="flex: 1; border: none; background: transparent; padding: 0"></button>
+<div role="dialog" aria-label="Novo hábito" style="background: {{t.surf}}; border-top: 1px solid {{t.line}}; border-radius: 24px 24px 0 0; padding: 10px 20px 24px; display: flex; flex-direction: column; gap: 16px; max-height: 88%; overflow-y: auto; box-sizing: border-box">
+<div style="width: 40px; height: 4px; border-radius: 2px; background: {{t.line}}; align-self: center"></div>
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h2 style="margin: 0; font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 600">Novo hábito</h2>
+<button type="button" onClick="{{closeSheet}}" style="min-height: 44px; padding: 0 8px; border: none; background: transparent; color: {{t.muted}}; font-size: 14px; font-weight: 700">Cancelar</button>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="h-name" style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Qual hábito?</label>
+<input id="h-name" type="text" value="{{hform.name}}" onChange="{{hform.onName}}" placeholder="Ex.: Beber água, Ler, Alongar" style="height: 48px; padding: 0 14px; border-radius: 14px; border: 1.5px solid {{hform.nameBorder}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 16px; outline: none; box-sizing: border-box"/>
+<sc-if value="{{hform.showError}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 600; color: {{t.bad}}">{{hform.error}}</span></sc-if>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Como medir</span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{hform.kinds}}" as="o" hint-placeholder-count="3">
+<button type="button" onClick="{{o.pick}}" style="min-height: 56px; padding: 6px 4px; border-radius: 14px; border: 1.5px solid {{o.border}}; background: {{o.bg}}; color: {{o.color}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+<span style="font-size: 13px; font-weight: 700">{{o.label}}</span>
+<span style="font-size: 11px; font-weight: 500; color: {{t.muted}}">{{o.hint}}</span>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{hform.isDuration}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 10px">
+<label for="h-min" style="font-size: 13px; color: {{t.muted}}">Alvo por dia</label>
+<input id="h-min" type="number" min="1" value="{{hform.amount}}" onChange="{{hform.onAmount}}" style="width: 80px; height: 40px; padding: 0 10px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 15px; box-sizing: border-box"/>
+<span style="font-size: 13px; color: {{t.muted}}">minutos</span>
+</div>
+</sc-if>
+<sc-if value="{{hform.isCount}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<label for="h-qty" style="font-size: 13px; color: {{t.muted}}">Alvo por dia</label>
+<input id="h-qty" type="number" min="1" value="{{hform.amount}}" onChange="{{hform.onAmount}}" style="width: 80px; height: 40px; padding: 0 10px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 15px; box-sizing: border-box"/>
+<label for="h-unit" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Unidade</label>
+<input id="h-unit" type="text" value="{{hform.unit}}" onChange="{{hform.onUnit}}" placeholder="copos, páginas…" style="flex: 1; min-width: 120px; height: 40px; padding: 0 10px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 15px; box-sizing: border-box"/>
+</div>
+</sc-if>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<span style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Em quais dias</span>
+<span style="display: flex; gap: 4px">
+<button type="button" onClick="{{hform.allDays}}" style="min-height: 32px; padding: 0 10px; border: none; border-radius: 10px; background: transparent; color: {{t.accent}}; font-size: 12px; font-weight: 700">Todo dia</button>
+<button type="button" onClick="{{hform.weekdays}}" style="min-height: 32px; padding: 0 10px; border: none; border-radius: 10px; background: transparent; color: {{t.accent}}; font-size: 12px; font-weight: 700">Dias úteis</button>
+</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{hform.days}}" as="d" hint-placeholder-count="7">
+<button type="button" onClick="{{d.toggle}}" aria-label="{{d.aria}}" aria-pressed="{{d.pressed}}" style="height: 44px; border-radius: 22px; border: 1.5px solid {{d.border}}; background: {{d.bg}}; color: {{d.color}}; font-size: 13px; font-weight: 700; padding: 0">{{d.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; gap: 10px">
+<label for="h-time" style="font-size: 13px; color: {{t.muted}}">Horário (opcional)</label>
+<input id="h-time" type="time" value="{{hform.time}}" onChange="{{hform.onTime}}" style="height: 40px; padding: 0 10px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 15px; color-scheme: {{form.scheme}}"/>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Ligar a uma meta</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{hform.goals}}" as="o" hint-placeholder-count="3">
+<button type="button" onClick="{{o.pick}}" style="min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1.5px solid {{o.border}}; background: {{o.bg}}; color: {{o.color}}; font-size: 13px; font-weight: 700">{{o.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 14px; background: {{t.bg}}">
+<span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">Me avisar</span><span style="font-size: 12px; color: {{t.muted}}">lembrete recorrente nos dias escolhidos</span></span>
+<button type="button" role="switch" aria-checked="{{hform.notify}}" aria-label="Me avisar" onClick="{{hform.toggleNotify}}" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{hform.switchBg}}; padding: 3px; display: flex; justify-content: {{hform.switchJustify}}; flex-shrink: 0"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF"></span></button>
+</div>
+
+<button type="button" onClick="{{hform.save}}" style="min-height: 52px; border-radius: 26px; border: none; background: {{t.accentFill}}; color: #FFFFFF; font-size: 16px; font-weight: 700">Salvar hábito</button>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ FORMULÁRIO: NOVA TAREFA ============ -->
+<sc-if value="{{sheetTask}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; background: rgba(2, 6, 16, 0.6); display: flex; flex-direction: column; justify-content: flex-end">
+<button type="button" aria-label="Fechar" onClick="{{closeSheet}}" style="flex: 1; border: none; background: transparent; padding: 0"></button>
+<div role="dialog" aria-label="Nova tarefa" style="background: {{t.surf}}; border-top: 1px solid {{t.line}}; border-radius: 24px 24px 0 0; padding: 10px 20px 24px; display: flex; flex-direction: column; gap: 16px; max-height: 88%; overflow-y: auto; box-sizing: border-box">
+<div style="width: 40px; height: 4px; border-radius: 2px; background: {{t.line}}; align-self: center"></div>
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h2 style="margin: 0; font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 600">Nova tarefa</h2>
+<button type="button" onClick="{{closeSheet}}" style="min-height: 44px; padding: 0 8px; border: none; background: transparent; color: {{t.muted}}; font-size: 14px; font-weight: 700">Cancelar</button>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="f-title" style="font-size: 12px; font-weight: 700; color: {{t.muted}}">O que precisa ser feito?</label>
+<input id="f-title" type="text" value="{{form.title}}" onChange="{{form.onTitle}}" placeholder="Ex.: Renovar a matrícula" style="height: 48px; padding: 0 14px; border-radius: 14px; border: 1.5px solid {{form.titleBorder}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 16px; outline: none; box-sizing: border-box"/>
+<sc-if value="{{form.showError}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 600; color: {{t.bad}}">Dê um nome para a tarefa.</span></sc-if>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Quando</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{form.dues}}" as="o" hint-placeholder-count="3">
+<button type="button" onClick="{{o.pick}}" style="min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1.5px solid {{o.border}}; background: {{o.bg}}; color: {{o.color}}; font-size: 13px; font-weight: 700">{{o.label}}</button>
+</sc-for>
+</div>
+<sc-if value="{{form.hasDate}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: center; gap: 10px">
+<label for="f-time" style="font-size: 13px; color: {{t.muted}}">Horário (opcional)</label>
+<input id="f-time" type="time" value="{{form.time}}" onChange="{{form.onTime}}" style="height: 40px; padding: 0 10px; border-radius: 12px; border: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.text}}; font-family: inherit; font-size: 15px; color-scheme: {{form.scheme}}"/>
+</div>
+</sc-if>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Prioridade</span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{form.prios}}" as="o" hint-placeholder-count="3">
+<button type="button" onClick="{{o.pick}}" style="min-height: 44px; border-radius: 14px; border: 1.5px solid {{o.border}}; background: {{o.bg}}; color: {{o.color}}; font-size: 13px; font-weight: 700">{{o.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Repetir</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{form.repeats}}" as="o" hint-placeholder-count="5">
+<button type="button" onClick="{{o.pick}}" style="min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1.5px solid {{o.border}}; background: {{o.bg}}; color: {{o.color}}; font-size: 13px; font-weight: 700">{{o.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 700; color: {{t.muted}}">Ligar a uma meta ou projeto</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{form.goals}}" as="o" hint-placeholder-count="3">
+<button type="button" onClick="{{o.pick}}" style="min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1.5px solid {{o.border}}; background: {{o.bg}}; color: {{o.color}}; font-size: 13px; font-weight: 700">{{o.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 14px; background: {{t.bg}}">
+<span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">Me avisar</span><span style="font-size: 12px; color: {{t.muted}}">cria um lembrete no horário</span></span>
+<button type="button" role="switch" aria-checked="{{form.notify}}" aria-label="Me avisar" onClick="{{form.toggleNotify}}" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{form.switchBg}}; padding: 3px; display: flex; justify-content: {{form.switchJustify}}; flex-shrink: 0"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF"></span></button>
+</div>
+
+<button type="button" onClick="{{form.save}}" style="min-height: 52px; border-radius: 26px; border: none; background: {{t.accentFill}}; color: #FFFFFF; font-size: 16px; font-weight: 700">Salvar tarefa</button>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startDark":{"editor":"boolean","default":true},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'home',
+      dark: null,
+      focusIdx: 0,
+      focusing: false,
+      habitsDone: {},
+      tasksDone: {},
+      billsPaid: {},
+      remOff: {},
+      remView: 'all',
+      projSel: 'shape',
+      stepsDone: { e1: true },
+      sheet: null,
+      extraTasks: [],
+      extraHabits: [],
+      hf: null,
+      extraBills: [],
+      incomes: [],
+      mf: null,
+      extraGoals: [],
+      gf: null,
+      f: null,
+      online: true,
+      draft: '',
+      queue: [],
+      extraRem: [],
+      expenses: [],
+      chat: [
+        { from: 'ai', text: 'Oi, Maraath. Posso criar lembretes e tarefas, anotar gastos, marcar hábitos e resumir seu dia ou suas finanças. É só pedir.' }
+      ]
+    };
+  }
+  brl(v) {
+    var s = v.toFixed(2).split('.');
+    return 'R$ ' + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + s[1];
+  }
+  quick(text) {
+    var low = text.toLowerCase();
+    var st = this.state;
+    var mRem = low.match(/^(me\s+)?lembr(ar|e|a)(-me)?\s+(de\s+)?(.+)$/);
+    if (mRem) {
+      var rest = text.slice(text.length - mRem[5].length);
+      var mt = rest.match(/(\d{1,2})(?:[:h](\d{2})?)\s*h?/i);
+      var time = mt ? (('0' + mt[1]).slice(-2) + ':' + (mt[2] || '00')) : '09:00';
+      var day = /hoje/i.test(rest) ? 'HOJE' : 'AMANHÃ';
+      var title = rest.replace(/\s*(amanhã|amanha|hoje)\s*/ig, ' ').replace(/\s*(às|as|a)?\s*\d{1,2}([:h]\d{2})?\s*h?\s*/i, ' ').replace(/\s+/g, ' ').trim();
+      title = title.charAt(0).toUpperCase() + title.slice(1);
+      var r = { id: 'x' + (st.extraRem.length + 1), time: time, day: day, title: title, repeat: 'Uma vez', link: 'pelo assistente', rec: false };
+      return { state: { extraRem: [r].concat(st.extraRem) }, reply: 'Pronto: lembrete “' + title + '” ' + day.toLowerCase() + ' às ' + time + '. Está em Mais › Lembretes.' };
+    }
+    var mGasto = low.match(/gastei\s+(r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(reais)?\s*(com|no|na|em|de)?\s*(.*)$/);
+    if (mGasto) {
+      var val = parseFloat(mGasto[2].replace(',', '.'));
+      var what = (mGasto[5] || 'outros').trim() || 'outros';
+      return { state: { expenses: st.expenses.concat([{ v: val, what: what }]) }, reply: 'Anotei ' + this.brl(val) + ' em “' + what + '”, hoje. O saldo em Finanças já foi atualizado.' };
+    }
+    var habit = /cardio/.test(low) ? 'cardio' : (/estud/.test(low) ? 'estudo' : null);
+    if (habit && /(feito|fiz|concl|marc)/.test(low)) {
+      var m = Object.assign({}, st.habitsDone); m[habit] = true;
+      return { state: { habitsDone: m }, reply: 'Marquei ' + (habit === 'cardio' ? 'Cardio' : 'Estudo') + ' como feito hoje.' };
+    }
+    return null;
+  }
+  smart(text) {
+    var low = text.toLowerCase();
+    var st = this.state;
+    if (/gast|dinheiro|finan|conta/.test(low)) {
+      var extra = st.expenses.reduce(function (a, e) { return a + e.v; }, 0);
+      return 'Em outubro você tem ' + this.brl(222.80) + ' em contas atrasadas, todas de Serviços: faculdade (' + this.brl(190) + '), iCloud e Spotify.' + (extra ? ' Hoje você também anotou ' + this.brl(extra) + ' em gastos.' : '') + ' Seu saldo cobre tudo e sobram cerca de ' + this.brl(703.18 - 222.80 - extra) + '. Quer que eu crie um lembrete para pagar amanhã?';
+    }
+    if (/hoje|dia|resum|briefing/.test(low)) {
+      return 'Seu dia: Cardio e Estudo ainda por fazer, Fórmula Mágica às 21:00 e 3 tarefas atrasadas. Sugiro começar pela faculdade, que vence a multa primeiro, e fazer o Cardio antes das 21h.';
+    }
+    if (/meta|shape|peso|80/.test(low)) {
+      return 'Shape 80kg: você está com 74 kg e faltam 77 dias. Dá cerca de 0,5 kg por semana. A suplementação diária não foi marcada nenhuma vez; quer que eu transforme em hábito em vez de tarefa, para parar de acumular atrasadas?';
+    }
+    return 'Entendi. No app final, aqui a IA responde a qualquer pergunta sobre seus dados e pode criar ou mudar itens. Neste protótipo, experimente: “resumo do meu dia”, “como estão meus gastos?”, “me lembra de ligar pro dentista amanhã às 10h” ou “gastei 35 no mercado”.';
+  }
+  send(text) {
+    text = (text || '').trim();
+    if (!text) { return; }
+    var st = this.state;
+    var chat = st.chat.concat([{ from: 'me', text: text }]);
+    var q = this.quick(text);
+    var patch = {};
+    if (q) {
+      patch = q.state;
+      chat = chat.concat([{ from: 'ai', text: q.reply + (st.online ? '' : '\n(feito sem internet)') }]);
+    } else if (st.online) {
+      chat = chat.concat([{ from: 'ai', text: this.smart(text) }]);
+    } else {
+      patch.queue = st.queue.concat([text]);
+      chat = chat.concat([{ from: 'sys', text: 'Sem internet: guardei este pedido e respondo quando a conexão voltar.' }]);
+    }
+    patch.chat = chat;
+    patch.draft = '';
+    this.setState(patch);
+  }
+  toggleOnline() {
+    var self = this;
+    var st = this.state;
+    if (st.online) { this.setState({ online: false }); return; }
+    var chat = st.chat.concat([{ from: 'sys', text: 'Conexão de volta.' + (st.queue.length ? ' Respondendo ' + st.queue.length + ' pedido(s) da fila.' : '') }]);
+    st.queue.forEach(function (q) { chat = chat.concat([{ from: 'ai', text: 'Sobre “' + q + '”: ' + self.smart(q) }]); });
+    this.setState({ online: true, queue: [], chat: chat });
+  }
+  money(v) {
+    var s = v.toFixed(2).split('.');
+    var int = s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return 'R$ ' + int + ',' + s[1];
+  }
+  renderVals() {
+    var self = this;
+    var st = this.state;
+    var dark = st.dark === null ? (this.props.startDark ?? true) : st.dark;
+    var t = dark ? {
+      bg: '#060B18', surf: '#0D1730', surf2: '#16264D', line: '#1F3160',
+      text: '#E9EFFC', muted: '#9DACCB', accent: '#6B9AF2', accentFill: '#2F63D6',
+      accentSoft: 'rgba(107,154,242,0.16)', teal: '#4FD6C3', tealSoft: 'rgba(79,214,195,0.14)',
+      warn: '#F2B45A', bad: '#F27E8C', badSoft: 'rgba(242,126,140,0.14)'
+    } : {
+      bg: '#F2F5FB', surf: '#FFFFFF', surf2: '#E6ECF8', line: '#D3DBEC',
+      text: '#0A1530', muted: '#4A5878', accent: '#1E56C8', accentFill: '#1E56C8',
+      accentSoft: 'rgba(30,86,200,0.10)', teal: '#0B7A6B', tealSoft: 'rgba(11,122,107,0.10)',
+      warn: '#9A5B06', bad: '#B92F44', badSoft: 'rgba(185,47,68,0.10)'
+    };
+    var go = function (tab) { return function () { self.setState({ tab: tab }); }; };
+    var navItem = function (tab) {
+      var on = st.tab === tab;
+      return { bg: on ? t.accentSoft : 'transparent', color: on ? t.accent : t.muted };
+    };
+
+    var habitsRaw = [
+      { id: 'cardio', name: 'Cardio', meta: '30 min · sem horário' },
+      { id: 'estudo', name: 'Estudo', meta: '1 h · sem horário' }
+    ];
+    habitsRaw = habitsRaw.concat(st.extraHabits.filter(function (h) { return h.today; }));
+    var habits = habitsRaw.map(function (h) {
+      var done = !!st.habitsDone[h.id];
+      return {
+        name: h.name, meta: h.meta, done: done,
+        ring: done ? t.teal : t.muted, fill: done ? t.teal : 'transparent',
+        deco: done ? 'line-through' : 'none', op: done ? 0.6 : 1,
+        toggle: function () { var m = Object.assign({}, st.habitsDone); m[h.id] = !done; self.setState({ habitsDone: m }); }
+      };
+    });
+    var habitsDoneCount = habits.filter(function (h) { return h.done; }).length;
+
+    var tasksRaw = [
+      { id: 't1', title: 'Fórmula Mágica', meta: 'hoje · 21:00', prio: 'Alta', late: false },
+      { id: 't2', title: 'Pagar faculdade', meta: 'atrasada 4 dias · Finanças', prio: 'Alta', late: true },
+      { id: 't3', title: 'Tribulus + creatina', meta: 'atrasada · Shape 80kg', prio: 'Média', late: true },
+      { id: 't4', title: 'Testes Estágios', meta: 'atrasada 38 dias', prio: 'Média', late: true },
+      { id: 't5', title: 'Revisar gastos da semana', meta: 'sexta · 18:00', prio: 'Baixa', late: false }
+    ];
+    tasksRaw = st.extraTasks.concat(tasksRaw);
+    var prioColor = { 'Alta': t.bad, 'Média': t.warn, 'Baixa': t.muted };
+    var tasks = tasksRaw.map(function (k) {
+      var done = !!st.tasksDone[k.id];
+      return {
+        title: k.title, meta: done ? 'concluída agora' : k.meta, prio: k.prio, done: done,
+        metaColor: done ? t.teal : (k.late ? t.bad : t.muted),
+        prioColor: prioColor[k.prio],
+        ring: done ? t.teal : t.muted, fill: done ? t.teal : 'transparent',
+        deco: done ? 'line-through' : 'none', op: done ? 0.6 : 1,
+        toggle: function () { var m = Object.assign({}, st.tasksDone); m[k.id] = !done; self.setState({ tasksDone: m }); }
+      };
+    });
+    var doneCount = tasks.filter(function (k) { return k.done; }).length;
+    var lateCount = tasksRaw.filter(function (k) { return k.late && !st.tasksDone[k.id]; }).length;
+    var openCount = tasksRaw.length - doneCount;
+
+    var billsRaw = [
+      { id: 'b1', day: '10', name: 'iCloud', value: 19.90 },
+      { id: 'b2', day: '10', name: 'Spotify', value: 12.90 },
+      { id: 'b3', day: '11', name: 'Faculdade · 2/27', value: 190.00, tag: 'parcelada' }
+    ].map(function (b) { b.cat = 'Serviços'; return b; }).concat(st.extraBills);
+    var paidTotal = 0, unpaid = 0, lateBills = 0;
+    var bills = billsRaw.map(function (b) {
+      var paid = !!st.billsPaid[b.id];
+      if (paid) { paidTotal += b.value; } else { unpaid += b.value; lateBills += 1; }
+      var dn = parseInt(b.day, 10);
+      var stTxt = paid ? 'paga' : (dn < 15 ? 'atrasada' : (dn === 15 ? 'vence hoje' : 'vence dia ' + dn));
+      return {
+        day: b.day, name: b.name, value: self.money(b.value) + (b.tag ? ' · ' + b.tag : ''),
+        status: stTxt, statusColor: paid ? t.teal : (dn < 15 ? t.bad : (dn === 15 ? t.warn : t.muted)),
+        btn: paid ? 'Desfazer' : 'Pagar',
+        btnBg: paid ? 'transparent' : t.accentFill, btnColor: paid ? t.text : '#FFFFFF',
+        btnBorder: paid ? ('1px solid ' + t.line) : 'none',
+        pay: function () { var m = Object.assign({}, st.billsPaid); m[b.id] = !paid; self.setState({ billsPaid: m }); }
+      };
+    });
+
+    var fDefault = { title: '', due: 'Hoje', time: '', prio: 'Média', repeat: 'Não repete', goal: 'Nenhuma', notify: false, err: false };
+    var f = st.f || fDefault;
+    var setF = function (patch) { self.setState({ f: Object.assign({}, f, patch) }); };
+    var opt = function (key, value, selColor) {
+      var on = f[key] === value;
+      var c = selColor || t.accent;
+      var o = { label: value, border: on ? c : t.line, bg: on ? (selColor ? 'transparent' : t.accentSoft) : 'transparent', color: on ? c : t.text };
+      o.pick = function () { var p = {}; p[key] = value; setF(p); };
+      return o;
+    };
+    var saveTask = function () {
+      var title = f.title.trim();
+      if (!title) { setF({ err: true }); return; }
+      var parts = [];
+      parts.push(f.due === 'Sem data' ? 'sem data' : f.due.toLowerCase() + (f.time ? ' · ' + f.time : ''));
+      if (f.goal !== 'Nenhuma') { parts.push(f.goal); }
+      if (f.repeat !== 'Não repete') { parts.push(f.repeat.toLowerCase()); }
+      var id = 'n' + (st.extraTasks.length + 1);
+      var task = { id: id, title: title, meta: parts.join(' · '), prio: f.prio, late: false };
+      var patch = { extraTasks: [task].concat(st.extraTasks), sheet: null, f: null, tab: 'tasks' };
+      if (f.notify && f.due !== 'Sem data') {
+        var r = { id: 'rn' + id, time: f.time || '09:00', day: f.due === 'Hoje' ? 'HOJE' : 'AMANHÃ', title: title, repeat: f.repeat === 'Não repete' ? 'Uma vez' : f.repeat, link: 'Tarefa', rec: f.repeat !== 'Não repete' };
+        patch.extraRem = [r].concat(st.extraRem);
+      }
+      self.setState(patch);
+    };
+    var form = {
+      title: f.title,
+      onTitle: function (e) { setF({ title: e.target.value, err: false }); },
+      showError: f.err, titleBorder: f.err ? t.bad : t.line,
+      dues: ['Hoje', 'Amanhã', 'Sem data'].map(function (v) { return opt('due', v); }),
+      hasDate: f.due !== 'Sem data',
+      time: f.time, onTime: function (e) { setF({ time: e.target.value }); },
+      scheme: dark ? 'dark' : 'light',
+      prios: [opt('prio', 'Alta', t.bad), opt('prio', 'Média', t.warn), opt('prio', 'Baixa', t.muted)],
+      repeats: ['Não repete', 'Todo dia', 'Dias úteis', 'Toda semana', 'Todo mês'].map(function (v) { return opt('repeat', v); }),
+      goals: ['Nenhuma', 'Shape 80kg', 'Estágio'].map(function (v) { return opt('goal', v); }),
+      notify: f.notify ? 'true' : 'false',
+      switchBg: f.notify ? t.teal : t.line, switchJustify: f.notify ? 'flex-end' : 'flex-start',
+      toggleNotify: function () { setF({ notify: !f.notify }); },
+      save: saveTask
+    };
+
+    var hDefault = { name: '', kind: 'Marcar', amount: '30', unit: '', days: ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'], time: '', goal: 'Nenhuma', notify: false, err: '' };
+    var hf = st.hf || hDefault;
+    var setH = function (patch) { self.setState({ hf: Object.assign({}, hf, patch) }); };
+    var hopt = function (key, value, hint) {
+      var on = hf[key] === value;
+      var o = { label: value, hint: hint || '', border: on ? t.accent : t.line, bg: on ? t.accentSoft : 'transparent', color: on ? t.accent : t.text };
+      o.pick = function () { var p = {}; p[key] = value; setH(p); };
+      return o;
+    };
+    var dayDefs = [['seg', 'S', 'segunda'], ['ter', 'T', 'terça'], ['qua', 'Q', 'quarta'], ['qui', 'Q', 'quinta'], ['sex', 'S', 'sexta'], ['sab', 'S', 'sábado'], ['dom', 'D', 'domingo']];
+    var dayShort = { seg: 'seg', ter: 'ter', qua: 'qua', qui: 'qui', sex: 'sex', sab: 'sáb', dom: 'dom' };
+    var saveHabit = function () {
+      var name = hf.name.trim();
+      if (!name) { setH({ err: 'Dê um nome para o hábito.' }); return; }
+      if (!hf.days.length) { setH({ err: 'Escolha pelo menos um dia.' }); return; }
+      var amt = parseInt(hf.amount, 10) || 1;
+      var measure = hf.kind === 'Duração' ? (amt >= 60 && amt % 60 === 0 ? (amt / 60) + ' h' : amt + ' min') : (hf.kind === 'Quantidade' ? amt + ' ' + (hf.unit.trim() || 'vezes') : 'marcar');
+      var daysTxt = hf.days.length === 7 ? 'todo dia' : (hf.days.length === 5 && hf.days.indexOf('sab') < 0 && hf.days.indexOf('dom') < 0 ? 'dias úteis' : dayDefs.filter(function (d) { return hf.days.indexOf(d[0]) >= 0; }).map(function (d) { return dayShort[d[0]]; }).join(', '));
+      var meta = measure + ' · ' + daysTxt + (hf.time ? ' · ' + hf.time : '') + (hf.goal !== 'Nenhuma' ? ' · ' + hf.goal : '');
+      var id = 'h' + (st.extraHabits.length + 1);
+      var habit = { id: id, name: name, meta: meta, today: hf.days.indexOf('qui') >= 0 };
+      var patch = { extraHabits: st.extraHabits.concat([habit]), sheet: null, hf: null, tab: 'habits' };
+      if (hf.notify) {
+        var rep = daysTxt.charAt(0).toUpperCase() + daysTxt.slice(1);
+        var r = { id: 'rh' + id, time: hf.time || '08:00', day: 'AMANHÃ', title: name, repeat: rep, link: 'Hábito', rec: true };
+        patch.extraRem = [r].concat(st.extraRem);
+      }
+      self.setState(patch);
+    };
+    var hform = {
+      name: hf.name,
+      onName: function (e) { setH({ name: e.target.value, err: '' }); },
+      showError: !!hf.err, error: hf.err, nameBorder: hf.err && !hf.name.trim() ? t.bad : t.line,
+      kinds: [hopt('kind', 'Marcar', 'feito ou não'), hopt('kind', 'Duração', 'minutos'), hopt('kind', 'Quantidade', 'copos, páginas')],
+      isDuration: hf.kind === 'Duração', isCount: hf.kind === 'Quantidade',
+      amount: hf.amount, onAmount: function (e) { setH({ amount: e.target.value }); },
+      unit: hf.unit, onUnit: function (e) { setH({ unit: e.target.value }); },
+      days: dayDefs.map(function (d) {
+        var on = hf.days.indexOf(d[0]) >= 0;
+        return {
+          label: d[1], aria: d[2], pressed: on ? 'true' : 'false',
+          border: on ? t.accent : t.line, bg: on ? t.accentFill : 'transparent', color: on ? '#FFFFFF' : t.text,
+          toggle: function () { setH({ days: on ? hf.days.filter(function (x) { return x !== d[0]; }) : hf.days.concat([d[0]]), err: '' }); }
+        };
+      }),
+      allDays: function () { setH({ days: ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'], err: '' }); },
+      weekdays: function () { setH({ days: ['seg', 'ter', 'qua', 'qui', 'sex'], err: '' }); },
+      time: hf.time, onTime: function (e) { setH({ time: e.target.value }); },
+      goals: ['Nenhuma', 'Shape 80kg', 'Estágio'].map(function (v) { return hopt('goal', v); }),
+      notify: hf.notify ? 'true' : 'false',
+      switchBg: hf.notify ? t.teal : t.line, switchJustify: hf.notify ? 'flex-end' : 'flex-start',
+      toggleNotify: function () { setH({ notify: !hf.notify }); },
+      save: saveHabit
+    };
+
+    var extraSpent = st.expenses.reduce(function (a, e) { return a + e.v; }, 0);
+    var incomeTotal = st.incomes.reduce(function (a, e) { return a + e.v; }, 0);
+    var catMap = {};
+    billsRaw.forEach(function (b) { catMap[b.cat] = (catMap[b.cat] || 0) + b.value; });
+    st.expenses.forEach(function (e) { var c = e.cat || 'Outros'; catMap[c] = (catMap[c] || 0) + e.v; });
+    var catTotal = Object.keys(catMap).reduce(function (a, k) { return a + catMap[k]; }, 0);
+    var cats = Object.keys(catMap).sort(function (a, b) { return catMap[b] - catMap[a]; }).map(function (k) {
+      var p = catTotal ? Math.round(catMap[k] / catTotal * 100) : 0;
+      return { name: k, pct: p + '%', label: self.money(catMap[k]) + ' · ' + p + '%' };
+    });
+
+    var gDefault = { name: '', unit: 'R$', custom: '', cur: '', target: '', date: '2026-12-31', err: '' };
+    var gf = st.gf || gDefault;
+    var setG = function (patch) { self.setState({ gf: Object.assign({}, gf, patch) }); };
+    var num = function (s) { s = String(s).trim(); return parseFloat(s.indexOf(',') >= 0 ? s.replace(/\./g, '').replace(',', '.') : s); };
+    var fmtNum = function (v) { return (Math.round(v * 10) / 10).toString().replace('.', ','); };
+    var monthsPt = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    var fmtDate = function (iso) { var p = iso.split('-'); return parseInt(p[2], 10) + ' ' + monthsPt[parseInt(p[1], 10) - 1] + (p[0] !== '2026' ? ' ' + p[0] : ''); };
+    var gUnit = gf.unit === 'Outra' ? (gf.custom.trim() || 'unidades') : gf.unit;
+    var fmtVal = function (v, u) { return u === 'R$' ? self.money(v) : fmtNum(v) + ' ' + u; };
+    var gCur = num(gf.cur), gTarget = num(gf.target);
+    var gDays = gf.date ? Math.round((Date.parse(gf.date) - Date.parse('2026-10-15')) / 864e5) : 0;
+    var paceText = function (cur, target, days, u, iso) {
+      var weeks = days / 7;
+      var diff = Math.abs(target - cur);
+      var verb = target > cur ? 'aumentar' : 'reduzir';
+      var per = diff / weeks;
+      var perTxt = u === 'R$' ? self.money(per) : fmtNum(per) + ' ' + u;
+      var monthly = u === 'R$' && days >= 45 ? ' (cerca de ' + self.money(diff / (days / 30.4)) + ' por mês)' : '';
+      return 'Para ' + verb + ' ' + fmtVal(diff, u) + ' até ' + fmtDate(iso) + ', são cerca de ' + perTxt + ' por semana' + monthly + '. Faltam ' + days + ' dias.';
+    };
+    var gReady = gf.cur !== '' && gf.target !== '' && !isNaN(gCur) && !isNaN(gTarget) && gCur !== gTarget && gDays > 0;
+    var saveGoal = function () {
+      var name = gf.name.trim();
+      if (!name) { setG({ err: 'Dê um nome para a meta.' }); return; }
+      if (gf.cur === '' || gf.target === '' || isNaN(gCur) || isNaN(gTarget)) { setG({ err: 'Preencha onde você está hoje e aonde quer chegar.' }); return; }
+      if (gCur === gTarget) { setG({ err: 'O alvo precisa ser diferente do valor de hoje.' }); return; }
+      if (!(gDays > 0)) { setG({ err: 'Escolha uma data depois de hoje.' }); return; }
+      var g = { name: name, unit: gUnit, cur: gCur, target: gTarget, date: gf.date, days: gDays };
+      self.setState({ extraGoals: st.extraGoals.concat([g]), sheet: null, gf: null, tab: 'goals' });
+    };
+    var gform = {
+      name: gf.name, onName: function (e) { setG({ name: e.target.value, err: '' }); },
+      units: ['R$', 'kg', 'km', 'livros', 'Outra'].map(function (v) {
+        var on = gf.unit === v;
+        return { label: v, border: on ? t.accent : t.line, bg: on ? t.accentSoft : 'transparent', color: on ? t.accent : t.text, pick: function () { setG({ unit: v, err: '' }); } };
+      }),
+      isCustom: gf.unit === 'Outra',
+      custom: gf.custom, onCustom: function (e) { setG({ custom: e.target.value }); },
+      cur: gf.cur, onCur: function (e) { setG({ cur: e.target.value, err: '' }); },
+      target: gf.target, onTarget: function (e) { setG({ target: e.target.value, err: '' }); },
+      date: gf.date, onDate: function (e) { setG({ date: e.target.value, err: '' }); },
+      preview: gReady ? paceText(gCur, gTarget, gDays, gUnit, gf.date) : 'Preencha os valores e a data para ver quanto você precisa avançar por semana.',
+      showError: !!gf.err, error: gf.err,
+      save: saveGoal
+    };
+    var newGoals = st.extraGoals.map(function (g) {
+      return {
+        name: g.name,
+        range: fmtVal(g.cur, g.unit) + ' → ' + fmtVal(g.target, g.unit),
+        dates: '15 out → ' + fmtDate(g.date),
+        pace: paceText(g.cur, g.target, g.days, g.unit, g.date)
+      };
+    });
+
+    var mDefault = { kind: 'Saída', desc: '', value: '', cat: 'Mercado', mode: 'Única', parts: '3', paid: true, day: '20', err: '' };
+    var mf = st.mf || mDefault;
+    var setM = function (patch) { self.setState({ mf: Object.assign({}, mf, patch) }); };
+    var outCats = ['Mercado', 'Serviços', 'Transporte', 'Lazer', 'Saúde', 'Educação', 'Moradia', 'Outros'];
+    var inCats = ['Salário', 'Freela', 'Outros'];
+    var mopt = function (key, value, hint) {
+      var on = mf[key] === value;
+      var o = { label: value, hint: hint || '', border: on ? t.accent : t.line, bg: on ? t.accentSoft : 'transparent', color: on ? t.accent : t.text };
+      o.pick = function () { var p = {}; p[key] = value; p.err = ''; if (key === 'kind') { p.cat = value === 'Entrada' ? 'Salário' : 'Mercado'; } setM(p); };
+      return o;
+    };
+    var mRaw = String(mf.value).trim();
+    var mVal = parseFloat(mRaw.indexOf(',') >= 0 ? mRaw.replace(/\./g, '').replace(',', '.') : mRaw);
+    var mParts = Math.max(2, Math.min(48, parseInt(mf.parts, 10) || 2));
+    var saveMoney = function () {
+      var desc = mf.desc.trim();
+      if (!desc) { setM({ err: 'Escreva uma descrição.' }); return; }
+      if (!(mVal > 0)) { setM({ err: 'Informe um valor maior que zero.' }); return; }
+      var patch = { sheet: null, mf: null, tab: 'money' };
+      if (mf.kind === 'Entrada') {
+        patch.incomes = st.incomes.concat([{ v: mVal, what: desc, cat: mf.cat }]);
+      } else {
+        var inst = mf.mode === 'Parcelada';
+        var pv = inst ? Math.round(mVal / mParts * 100) / 100 : mVal;
+        var name = inst ? desc + ' · 1/' + mParts : desc;
+        var tag = mf.mode === 'Recorrente' ? 'todo mês' : (inst ? mParts + 'x' : '');
+        if (mf.paid) {
+          patch.expenses = st.expenses.concat([{ v: pv, what: name, cat: mf.cat }]);
+        } else {
+          var d = parseInt(mf.day, 10);
+          if (!(d >= 1 && d <= 31)) { setM({ err: 'Escolha um dia de vencimento entre 1 e 31.' }); return; }
+          patch.extraBills = st.extraBills.concat([{ id: 'nb' + (st.extraBills.length + 1), day: String(d), name: name, value: pv, cat: mf.cat, tag: tag }]);
+        }
+      }
+      self.setState(patch);
+    };
+    var isOut = mf.kind === 'Saída';
+    var mform = {
+      kinds: ['Saída', 'Entrada'].map(function (v) {
+        var on = mf.kind === v;
+        return { label: v === 'Saída' ? 'Gasto ou conta' : 'Entrada', bg: on ? t.surf : 'transparent', color: on ? (v === 'Saída' ? t.bad : t.teal) : t.muted, pick: function () { setM({ kind: v, cat: v === 'Entrada' ? 'Salário' : 'Mercado', err: '' }); } };
+      }),
+      desc: mf.desc, onDesc: function (e) { setM({ desc: e.target.value, err: '' }); },
+      descHint: isOut ? 'Ex.: Mercado do mês, Conta de luz' : 'Ex.: Salário de outubro',
+      valueLabel: isOut && mf.mode === 'Parcelada' ? 'Valor total da compra' : 'Valor',
+      value: mf.value, onValue: function (e) { setM({ value: e.target.value, err: '' }); },
+      valueColor: isOut ? t.text : t.teal,
+      cats: (isOut ? outCats : inCats).map(function (v) { return mopt('cat', v); }),
+      isOut: isOut,
+      modes: [mopt('mode', 'Única', 'uma vez'), mopt('mode', 'Recorrente', 'todo mês'), mopt('mode', 'Parcelada', 'em vezes')],
+      isInstallment: mf.mode === 'Parcelada',
+      parts: mf.parts, onParts: function (e) { setM({ parts: e.target.value }); },
+      partPreview: mVal > 0 ? mParts + 'x de ' + self.money(mVal / mParts) : '',
+      paidAria: mf.paid ? 'true' : 'false',
+      paidHint: mf.paid ? 'sai do saldo agora' : 'vai para Contas a pagar',
+      switchBg: mf.paid ? t.teal : t.line, switchJustify: mf.paid ? 'flex-end' : 'flex-start',
+      togglePaid: function () { setM({ paid: !mf.paid }); },
+      showDue: !mf.paid,
+      day: mf.day, onDay: function (e) { setM({ day: e.target.value, err: '' }); },
+      showError: !!mf.err, error: mf.err,
+      saveLabel: isOut ? (mf.paid ? 'Salvar gasto' : 'Salvar conta a pagar') : 'Salvar entrada',
+      save: saveMoney
+    };
+    var week = [
+      { wd: 'SEG', n: '12', s: 'miss' }, { wd: 'TER', n: '13', s: 'miss' }, { wd: 'QUA', n: '14', s: 'miss' },
+      { wd: 'QUI', n: '15', s: 'today' }, { wd: 'SEX', n: '16', s: 'next' }, { wd: 'SÁB', n: '17', s: 'next' }, { wd: 'DOM', n: '18', s: 'next' }
+    ].map(function (d) {
+      var today = d.s === 'today';
+      var todayDone = habitsDoneCount === habits.length;
+      return {
+        wd: d.wd, n: d.n,
+        bg: today ? t.accentSoft : t.surf,
+        border: today ? t.accent : t.line,
+        dot: d.s === 'miss' ? t.bad : (today ? (todayDone ? t.teal : t.accent) : t.line)
+      };
+    });
+
+    var remRaw = [
+      { id: 'r1', time: '06:00', day: 'AMANHÃ', title: 'Tribulus + creatina', repeat: 'Todo dia', link: 'Shape 80kg', rec: true },
+      { id: 'r2', time: '18:00', day: 'SEX 16', title: 'Revisar gastos da semana', repeat: 'Toda sexta', link: 'Finanças', rec: true },
+      { id: 'r3', time: '19:00', day: 'SEG 19', title: 'Academia', repeat: 'Seg, qua e sex', link: 'Treino A', rec: true },
+      { id: 'r4', time: '09:00', day: 'SEG 9/11', title: 'Pagar iCloud e Spotify', repeat: 'Todo dia 9', link: 'Contas', rec: true },
+      { id: 'r5', time: '14:00', day: 'QUA 21', title: 'Entregar documentos do estágio', repeat: 'Uma vez', link: 'Testes Estágios', rec: false }
+    ];
+    remRaw = st.extraRem.concat(remRaw);
+    var remVisible = st.remView === 'rec' ? remRaw.filter(function (r) { return r.rec; }) : remRaw;
+    var reminders = remVisible.map(function (r) {
+      var on = !st.remOff[r.id];
+      return {
+        time: r.time, day: r.day, title: r.title, repeat: r.repeat, link: r.link,
+        on: on, off: !on, op: on ? 1 : 0.55,
+        bellColor: on ? t.teal : t.muted,
+        aria: (on ? 'Desligar notificação de ' : 'Ligar notificação de ') + r.title,
+        toggle: function () { var m = Object.assign({}, st.remOff); m[r.id] = on; self.setState({ remOff: m }); }
+      };
+    });
+    var remActiveList = remRaw.filter(function (r) { return !st.remOff[r.id]; });
+    var upNextRaw = remActiveList.length ? remActiveList[0] : null;
+    var segItem = function (v) {
+      var on = st.remView === v;
+      return { bg: on ? t.surf : 'transparent', color: on ? t.text : t.muted };
+    };
+
+    var projRaw = [
+      { id: 'shape', name: 'Shape 80kg', left: '24.8%', width: '54.2%', dates: '9 out → 31 dez', leftDays: 'faltam 77 dias',
+        steps: [
+          { id: 's1', name: 'Montar ficha de treino', when: 'sugestão' },
+          { id: 's2', name: 'Plano alimentar com nutricionista', when: 'sugestão' },
+          { id: 's3', name: 'Suplementação diária', when: '84 tarefas · nenhuma feita', late: true },
+          { id: 's4', name: 'Pesar toda segunda', when: 'última: 74 kg' }
+        ],
+        links: [{ label: 'Meta 74 → 80 kg' }, { label: 'Hábito Cardio' }, { label: 'Lembrete 06:00' }] },
+      { id: 'estagio', name: 'Estágio', left: '0%', width: '58.8%', dates: '1 set → 30 nov', leftDays: 'faltam 46 dias',
+        steps: [
+          { id: 'e1', name: 'Pesquisar vagas', when: 'feito em setembro' },
+          { id: 'e2', name: 'Testes Estágios', when: 'atrasada 38 dias', late: true },
+          { id: 'e3', name: 'Entregar documentos', when: 'qua 21 out · 14:00' },
+          { id: 'e4', name: 'Entrevista', when: 'sem data' }
+        ],
+        links: [{ label: 'Tarefa Testes Estágios' }, { label: 'Lembrete 21 out' }] }
+    ];
+    var projects = projRaw.map(function (p) {
+      var steps = p.steps.map(function (s) {
+        var done = !!st.stepsDone[s.id];
+        return {
+          name: s.name, when: done ? 'concluída' : s.when, done: done,
+          whenColor: done ? t.teal : (s.late ? t.bad : t.muted),
+          ring: done ? t.teal : t.muted, fill: done ? t.teal : 'transparent',
+          deco: done ? 'line-through' : 'none', op: done ? 0.6 : 1,
+          toggle: function () { var m = Object.assign({}, st.stepsDone); m[s.id] = !done; self.setState({ stepsDone: m }); }
+        };
+      });
+      var doneSteps = steps.filter(function (s) { return s.done; }).length;
+      var pctNum = Math.round(doneSteps / steps.length * 100);
+      var lateOpen = p.steps.some(function (s) { return s.late && !st.stepsDone[s.id]; });
+      var status = doneSteps === steps.length ? 'Concluído' : (lateOpen ? 'Em risco' : 'Em dia');
+      var statusColor = status === 'Concluído' ? t.teal : (status === 'Em risco' ? t.bad : t.accent);
+      var open = st.projSel === p.id;
+      return {
+        name: p.name, left: p.left, width: p.width, dates: p.dates, left_days: p.leftDays,
+        steps: steps, links: p.links, doneSteps: doneSteps, totalSteps: steps.length,
+        pct: pctNum + '%', status: status, statusColor: statusColor,
+        color: status === 'Em risco' ? t.bad : t.teal,
+        barBg: open ? t.accentSoft : t.surf2,
+        barBorder: open ? ('1.5px solid ' + t.accent) : ('1px solid ' + t.line),
+        cardBorder: open ? ('1.5px solid ' + t.accent) : ('1px solid ' + t.line),
+        open: open,
+        select: function () { self.setState({ projSel: open ? null : p.id }); }
+      };
+    });
+
+    var focusList = [
+      { title: 'Cardio', meta: 'para hoje · Hábitos' },
+      { title: 'Estudo', meta: 'para hoje · Hábitos' },
+      { title: 'Fórmula Mágica', meta: 'hoje às 21:00 · Tarefas' }
+    ];
+    var focus = focusList[st.focusIdx % focusList.length];
+
+    return {
+      t: t, dark: dark, light: !dark,
+      toggleTheme: function () { self.setState({ dark: !dark }); },
+      isHome: st.tab === 'home', isTasks: st.tab === 'tasks', isHabits: st.tab === 'habits',
+      isMoney: st.tab === 'money', isGoals: st.tab === 'goals', isMore: st.tab === 'more', isReminders: st.tab === 'reminders',
+      goHome: go('home'), goTasks: go('tasks'), goHabits: go('habits'), goMoney: go('money'), goGoals: go('goals'),
+      goMore: go('more'), goReminders: go('reminders'), goProjects: go('projects'),
+      isProjects: st.tab === 'projects',
+      projects: projects,
+      nav: {
+        home: navItem('home'), tasks: navItem('tasks'), habits: navItem('habits'), money: navItem('money'),
+        more: (st.tab === 'more' || st.tab === 'goals' || st.tab === 'reminders' || st.tab === 'projects') ? { bg: t.accentSoft, color: t.accent } : { bg: 'transparent', color: t.muted },
+        chat: st.tab === 'chat' ? { bg: t.accentSoft, color: t.accent, border: t.accent } : { bg: t.surf, color: t.text, border: t.line }
+      },
+      reminders: reminders,
+      remindersActive: remActiveList.filter(function (r) { return r.rec; }).length,
+      nextReminder: upNextRaw ? (upNextRaw.time + ' ' + upNextRaw.day.toLowerCase()) : 'nenhum',
+      upNext: upNextRaw ? { title: upNextRaw.title, when: upNextRaw.day.charAt(0) + upNextRaw.day.slice(1).toLowerCase() + ' às ' + upNextRaw.time + ' · ' + upNextRaw.repeat.toLowerCase() } : { title: 'Nada à frente', when: 'Todos os lembretes estão desligados' },
+      remToday: 0,
+      remWeek: remActiveList.filter(function (r) { return r.id === 'r1' || r.id === 'r2'; }).length,
+      remSeg: { all: segItem('all'), rec: segItem('rec') },
+      remShowAll: function () { self.setState({ remView: 'all' }); },
+      remShowRec: function () { self.setState({ remView: 'rec' }); },
+      focus: focus,
+      focusLabel: st.focusing ? 'Focando · 25:00' : 'Começar foco',
+      startFocus: function () { self.setState({ focusing: !st.focusing }); },
+      nextFocus: function () { self.setState({ focusIdx: st.focusIdx + 1, focusing: false }); },
+      habits: habits, habitsDoneCount: habitsDoneCount, habitsTotal: habits.length,
+      habitsLeft: habits.length - habitsDoneCount,
+      tasks: tasks, doneCount: doneCount, lateCount: lateCount, openCount: openCount,
+      bills: bills, billsLate: lateBills,
+      toPay: this.money(unpaid), spent: '−' + this.money(paidTotal + extraSpent),
+      balance: this.money(703.18 - paidTotal - extraSpent + incomeTotal),
+      income: '+' + this.money(incomeTotal),
+      cats: cats,
+      mform: mform,
+      gform: gform,
+      newGoals: newGoals,
+      goalsSummary: (1 + st.extraGoals.length) + (st.extraGoals.length ? ' ativas' : ' ativa · Shape 80kg'),
+      sheetGoal: st.sheet === 'goal',
+      openGoalForm: function () { self.setState({ sheet: 'goal', gf: null }); },
+      sheetMoney: st.sheet === 'money',
+      openMoneyForm: function () { self.setState({ sheet: 'money', mf: null }); },
+      isChat: st.tab === 'chat', goChat: go('chat'),
+      form: form,
+      sheetTask: st.sheet === 'task',
+      openTaskForm: function () { self.setState({ sheet: 'task', f: null }); },
+      closeSheet: function () { self.setState({ sheet: null, f: null, hf: null, mf: null, gf: null }); },
+      hform: hform,
+      sheetHabit: st.sheet === 'habit',
+      openHabitForm: function () { self.setState({ sheet: 'habit', hf: null }); },
+      conn: st.online
+        ? { label: 'Online', color: t.teal, bg: t.tealSoft, hint: 'Com internet, a IA na nuvem responde qualquer pergunta. Toque em “Online” para simular a perda de conexão.' }
+        : { label: 'Offline' + (st.queue.length ? ' · ' + st.queue.length + ' na fila' : ''), color: t.warn, bg: 'transparent', hint: 'Sem internet: lembretes, gastos e hábitos continuam funcionando por comando. Perguntas para a IA vão para a fila. Toque para reconectar.' },
+      toggleOnline: function () { self.toggleOnline(); },
+      chat: st.chat.map(function (m) {
+        if (m.from === 'me') { return { text: m.text, justify: 'flex-end', bg: t.accentFill, color: '#FFFFFF', border: 'none', radius: '18px 18px 4px 18px', size: '14px' }; }
+        if (m.from === 'sys') { return { text: m.text, justify: 'center', bg: 'transparent', color: t.warn, border: '1px dashed ' + t.warn, radius: '12px', size: '12px' }; }
+        return { text: m.text, justify: 'flex-start', bg: t.surf, color: t.text, border: '1px solid ' + t.line, radius: '18px 18px 18px 4px', size: '14px' };
+      }),
+      chips: ['Resumo do meu dia', 'Como estão meus gastos?', 'Me lembra de ligar pro dentista amanhã às 10h', 'Gastei 35 no mercado', 'Fiz o cardio'].map(function (c) {
+        return { label: c, send: function () { self.send(c); } };
+      }),
+      draft: st.draft,
+      onDraft: function (e) { self.setState({ draft: e.target.value }); },
+      onKey: function (e) { if (e.key === 'Enter') { self.send(st.draft); } },
+      sendDraft: function () { self.send(st.draft); },
+      week: week,
+      workout: [
+        { name: 'Supino reto', sets: '4 séries × 10', load: '40 kg' },
+        { name: 'Crucifixo com halteres', sets: '3 séries × 12', load: '14 kg' },
+        { name: 'Tríceps na corda', sets: '3 séries × 12', load: '25 kg' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
