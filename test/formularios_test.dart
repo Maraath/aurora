@@ -4,7 +4,12 @@ import 'package:aurora/core/tema.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/data/habitos_repo.dart';
+import 'package:aurora/data/alimentacao_repo.dart';
+import 'package:aurora/ui/alimentacao/alimentacao_page.dart';
+import 'package:aurora/ui/alimentacao/form_alvos.dart';
+import 'package:aurora/ui/alimentacao/form_registro.dart';
 import 'package:aurora/ui/assistente/assistente_page.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:aurora/ui/financas/financas_page.dart';
 import 'package:aurora/ui/financas/form_conta.dart';
 import 'package:aurora/ui/financas/form_lancamento.dart';
@@ -296,6 +301,50 @@ void main() {
     expect(tester.takeException(), isNull);
     tester.view.reset();
     await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('alimentação: tela, registro e alvos', (tester) async {
+    late List<Alimento> alimentos;
+    await tester.runAsync(() async {
+      await semearExemplo(db);
+      final repo = AlimentacaoRepo(db);
+      await repo.salvarAlimento(AlimentosCompanion.insert(
+          nome: 'Ovo cozido', kcal: 146, porcaoNome: const Value('1 ovo'), porcaoGramas: const Value(50)));
+      await repo.salvarAlvo(TipoDia.treino, const Nutrientes(2600, 160, 300, 70));
+      await repo.salvarAlvo(TipoDia.descanso, const Nutrientes(2200, 150, 220, 70));
+      alimentos = await repo.listarAlimentos();
+      await repo.registrar(dia: hojeSP(), refeicao: Refeicao.cafe, alimento: alimentos.single, gramas: 100);
+    });
+    for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
+      tester.view.physicalSize = tamanho;
+      tester.view.devicePixelRatio = 1;
+      await tester.pumpWidget(AuroraEscopo(
+        db: db,
+        escuro: ValueNotifier(true),
+        child: MaterialApp(
+          theme: temaAurora(Brightness.dark),
+          home: const Scaffold(body: SingleChildScrollView(child: AlimentacaoPage())),
+        ),
+      ));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: '$tamanho');
+      expect(find.text('Ovo cozido'), findsOneWidget);
+    }
+    tester.view.reset();
+    await tester.pumpWidget(const SizedBox());
+
+    await abrir(tester, (c) => abrirFormRegistro(c, dia: hojeSP(), alimentos: alimentos));
+    await tester.tap(find.text('Ovo cozido'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('73 kcal'), findsOneWidget); // 1 ovo = 50 g
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('formulário de alvos', (tester) async {
+    await abrir(tester, (c) => abrirFormAlvos(c));
+    expect(find.text('DIA DE TREINO'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   test('relógio iniciado', () => expect(hojeSP(), isNotNull));

@@ -35,6 +35,8 @@ Quando a pessoa pedir para CRIAR ou REGISTRAR algo, não diga que criou: coloque
   | "me lembra de ir à academia toda segunda e quarta às 19h"
 - "tarefa: revisar currículo" | "adiciona tarefa de mandar e-mail amanhã às 14h"
 - "fiz o cardio" (nome do hábito) | "pesei 74,5" | "braço 37,5 cm"
+- "comi 200 g de frango no almoço" | "comi 2 ovos no café" | "bebi 300 ml de leite no jantar"
+  (use o nome de um dos "Alimentos cadastrados"; refeições: café, almoço, lanche, jantar, ceia)
 Na "resposta", diga em uma frase o que vai ser feito. Sem pedido de ação, "comandos" = [].
 
 Responda SOMENTE com JSON: {"resposta": "...", "comandos": ["..."]}`;

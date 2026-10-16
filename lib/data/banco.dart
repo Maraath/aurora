@@ -242,6 +242,49 @@ class Medidas extends Table with Sincronizavel {
   TextColumn get unidade => text()();
 }
 
+/// Alimento com valores por 100 g. [origem] 'pessoal' (cadastrado pela
+/// pessoa); no futuro, 'catalogo' para uma tabela importada (ex.: TACO).
+class Alimentos extends Table with Sincronizavel {
+  TextColumn get nome => text()();
+  RealColumn get kcal => real()();
+  RealColumn get proteina => real().withDefault(const Constant(0))();
+  RealColumn get carboidrato => real().withDefault(const Constant(0))();
+  RealColumn get gordura => real().withDefault(const Constant(0))();
+
+  /// Porção caseira opcional: "1 ovo" = 50 g.
+  TextColumn get porcaoNome => text().nullable()();
+  RealColumn get porcaoGramas => real().nullable()();
+  TextColumn get origem => text().withDefault(const Constant('pessoal'))();
+}
+
+/// Alvo diário por tipo de dia ('treino' ou 'descanso'). Id natural.
+@DataClassName('AlvoDieta')
+class AlvosDieta extends Table with Sincronizavel {
+  TextColumn get tipoDia => text()();
+  RealColumn get kcal => real()();
+  RealColumn get proteina => real().withDefault(const Constant(0))();
+  RealColumn get carboidrato => real().withDefault(const Constant(0))();
+  RealColumn get gordura => real().withDefault(const Constant(0))();
+}
+
+/// O que foi comido. Os valores ficam gravados (corrigir o alimento depois
+/// não reescreve o passado).
+@DataClassName('RegistroAlimentacao')
+class RegistrosAlimentacao extends Table with Sincronizavel {
+  /// "aaaa-mm-dd" no fuso de São Paulo.
+  TextColumn get dia => text()();
+
+  /// 'cafe', 'almoco', 'lanche', 'jantar' ou 'ceia'.
+  TextColumn get refeicao => text()();
+  TextColumn get alimentoId => text().nullable().references(Alimentos, #id)();
+  TextColumn get nome => text()();
+  RealColumn get gramas => real()();
+  RealColumn get kcal => real()();
+  RealColumn get proteina => real().withDefault(const Constant(0))();
+  RealColumn get carboidrato => real().withDefault(const Constant(0))();
+  RealColumn get gordura => real().withDefault(const Constant(0))();
+}
+
 enum PapelMensagem { eu, aurora, sistema }
 
 /// Conversa com o assistente. Pedidos que só a IA responde ficam com
@@ -285,6 +328,9 @@ class Preferencias extends Table {
   SessoesTreino,
   SeriesFeitas,
   Medidas,
+  Alimentos,
+  AlvosDieta,
+  RegistrosAlimentacao,
   MensagensAssistente,
   Preferencias,
 ])
@@ -292,7 +338,7 @@ class BancoAurora extends _$BancoAurora {
   BancoAurora([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'aurora'));
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -325,6 +371,11 @@ class BancoAurora extends _$BancoAurora {
           if (de < 7) {
             await m.createTable(projetos);
             await m.addColumn(tarefas, tarefas.projetoId);
+          }
+          if (de < 8) {
+            await m.createTable(alimentos);
+            await m.createTable(alvosDieta);
+            await m.createTable(registrosAlimentacao);
           }
         },
         beforeOpen: (detalhes) async {

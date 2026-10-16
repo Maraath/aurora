@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app.dart';
 import '../core/tema.dart';
 import 'componentes.dart';
+import 'alimentacao/alimentacao_page.dart';
 import 'assistente/assistente_page.dart';
 import 'conta/conta_page.dart';
 import 'financas/financas_page.dart';
@@ -28,6 +29,7 @@ enum Secao {
   assistente,
   treino,
   medidas,
+  alimentacao,
   conta,
 }
 
@@ -64,7 +66,7 @@ class _ShellState extends State<Shell> {
   /// Metas, Lembretes e Projetos ficam dentro de "Mais".
   Secao get _secaoDaBarra => switch (_secao) {
         Secao.metas || Secao.lembretes || Secao.projetos || Secao.conta => Secao.mais,
-        Secao.treino || Secao.medidas => Secao.habitos,
+        Secao.treino || Secao.medidas || Secao.alimentacao => Secao.habitos,
         _ => _secao,
       };
 
@@ -75,6 +77,7 @@ class _ShellState extends State<Shell> {
         Secao.habitos => HabitosPage(ir: _ir),
         Secao.treino => FichaPage(voltar: () => _ir(Secao.habitos)),
         Secao.medidas => MedidasPage(voltar: () => _ir(Secao.habitos)),
+        Secao.alimentacao => AlimentacaoPage(voltar: () => _ir(Secao.habitos)),
         Secao.financas => const FinancasPage(),
         Secao.metas => MetasPage(voltar: () => _ir(Secao.mais)),
         Secao.lembretes => LembretesPage(voltar: () => _ir(Secao.mais)),

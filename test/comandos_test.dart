@@ -129,6 +129,25 @@ void main() {
     });
   });
 
+  group('comida', () {
+    test('gramas, porções e refeição', () {
+      final a = ler('Comi 200 g de frango no almoço') as CmdComida;
+      expect((a.nome, a.gramas, a.porcoes, a.refeicao), ('frango', 200.0, null, 'almoco'));
+      final b = ler('comi 2 ovos') as CmdComida;
+      expect((b.nome, b.gramas, b.porcoes, b.refeicao), ('ovos', null, 2.0, null));
+      final c = ler('almocei 150g de arroz branco') as CmdComida;
+      expect((c.nome, c.gramas, c.refeicao), ('arroz branco', 150.0, 'almoco'));
+      final d = ler('comi no café 1,5 pão francês') as CmdComida;
+      expect((d.nome, d.porcoes, d.refeicao), ('pão francês', 1.5, 'cafe'));
+      final e = ler('bebi 300 ml de leite no jantar') as CmdComida;
+      expect((e.nome, e.gramas, e.refeicao), ('leite', 300.0, 'jantar'));
+    });
+
+    test('sem quantidade não é comando de comida', () {
+      expect(ler('comi muito hoje'), isNull);
+    });
+  });
+
   group('resumos e fila', () {
     test('perguntas locais', () {
       expect(ler('Resumo do meu dia'), isA<CmdResumoDia>());

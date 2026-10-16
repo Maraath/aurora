@@ -8,6 +8,7 @@ import '../core/comandos.dart';
 import '../core/formato.dart';
 import '../core/nuvem.dart';
 import '../core/relogio.dart';
+import 'alimentacao_repo.dart';
 import 'banco.dart';
 import 'contexto_ia.dart';
 import 'financas_repo.dart';
@@ -296,12 +297,48 @@ class AssistenteRepo {
           itemId: m.id,
         );
 
+      case CmdComida():
+        return _comida(c, hoje, agora);
+
       case CmdResumoDia():
         return Resposta(await _resumoDia(hoje));
 
       case CmdResumoFinancas():
         return Resposta(await _resumoFinancas(hoje));
     }
+  }
+
+  Future<Resposta> _comida(CmdComida c, DateTime hoje, DateTime agora) async {
+    final repo = AlimentacaoRepo(db);
+    final alimento = await repo.acharAlimento(c.nome);
+    if (alimento == null) {
+      return Resposta('Não achei “${c.nome}” nos seus alimentos. Cadastre em Hábitos › Alimentação '
+          '(valores por 100 g) e peça de novo.');
+    }
+    double? gramas = c.gramas;
+    if (gramas == null && c.porcoes != null) {
+      final porcao = alimento.porcaoGramas;
+      if (porcao != null) {
+        gramas = c.porcoes! * porcao;
+      } else if (c.porcoes! >= 10) {
+        gramas = c.porcoes; // "comi 150 arroz": número grande sem unidade = gramas
+      } else {
+        return Resposta('Quantos gramas de ${alimento.nome}? Esse alimento não tem porção caseira; '
+            'diga por exemplo “comi 150 g de ${alimento.nome.toLowerCase()}”.');
+      }
+    }
+    final refeicao = c.refeicao == null ? Refeicao.pelaHora(agora.hour) : Refeicao.de(c.refeicao!);
+    final id = await repo.registrar(dia: hoje, refeicao: refeicao, alimento: alimento, gramas: gramas!);
+    final n = Nutrientes.de(alimento, gramas);
+    final d = await repo.carregarDia(hoje);
+    final total = d.total.kcal.round();
+    return Resposta(
+      'Anotei ${numero(gramas)} g de ${alimento.nome} no ${refeicao.rotulo.toLowerCase()}: '
+      '${n.kcal.round()} kcal, ${numero((n.proteina * 10).round() / 10)} g de proteína. '
+      'Hoje: $total${d.alvo == null ? '' : ' de ${d.alvo!.kcal.round()}'} kcal.',
+      itemTipo: 'alimentacao',
+      itemId: id,
+    );
   }
 
   Habito? _acharHabito(List<Habito> habitos, String nome) {
@@ -376,6 +413,8 @@ class AssistenteRepo {
         await HabitosRepo(db).alternar(habitoId, DateTime.parse(dia), false);
       case 'medida':
         await SaudeRepo(db).excluirMedida(id);
+      case 'alimentacao':
+        await AlimentacaoRepo(db).excluirRegistro(id);
     }
     await (db.update(db.mensagensAssistente)..where((x) => x.id.equals(m.id)))
         .write(MensagensAssistenteCompanion(desfeita: const Value(true), atualizadoEm: Value(DateTime.now())));

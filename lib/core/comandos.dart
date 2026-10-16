@@ -63,6 +63,17 @@ class CmdMedida extends Comando {
   final String unidade;
 }
 
+/// Algo que foi comido. [gramas] OU [porcoes] (ex.: "2 ovos"); [refeicao] é
+/// o nome da refeição ('cafe', 'almoco', 'lanche', 'jantar', 'ceia') ou nulo
+/// (o app escolhe pelo horário).
+class CmdComida extends Comando {
+  const CmdComida({required this.nome, this.gramas, this.porcoes, this.refeicao});
+  final String nome;
+  final double? gramas;
+  final double? porcoes;
+  final String? refeicao;
+}
+
 class CmdResumoDia extends Comando {
   const CmdResumoDia();
 }
@@ -97,6 +108,7 @@ Comando? interpretar(String texto, {required DateTime hoje, required DateTime ag
       _lembrete(original, n, hoje, agora) ??
       _tarefa(original, n, hoje, agora) ??
       _medida(n) ??
+      _comida(original, n) ??
       _habito(original, n) ??
       _resumo(n);
 }
@@ -239,6 +251,55 @@ Comando? _medida(String n) {
   final (tipo, unidade) = _nomesMedida[outra.group(1)]!;
   final v = lerNumero(outra.group(2)!);
   return v == null ? null : CmdMedida(tipo: tipo, valor: v, unidade: outra.group(3) ?? unidade);
+}
+
+// ------------------------------------------------------------------- comida
+
+const _refeicoes = r'(cafe(?: da manha)?|almoco|lanche|janta|jantar|ceia)';
+
+String _nomeRefeicao(String r) => switch (r) {
+      'almoco' => 'almoco',
+      'lanche' => 'lanche',
+      'janta' || 'jantar' => 'jantar',
+      'ceia' => 'ceia',
+      _ => 'cafe',
+    };
+
+Comando? _comida(String o, String n) {
+  final m = RegExp('^(?:eu )?(comi|almocei|jantei|lanchei|tomei|bebi)'
+          '(?: (?:no|na) $_refeicoes)? '
+          r'(\d+(?:[.,]\d+)?) ?(g|gr|gramas?|kg|quilos?|ml|un|unidades?)?\b ?(?:de )?'
+          '(.+?)'
+          '(?: (?:no|na|pro|pra|de) $_refeicoes)?(?: (?:de )?hoje)?\$')
+      .firstMatch(n);
+  if (m == null) return null;
+  final quantidade = lerNumero(m.group(3)!);
+  if (quantidade == null || quantidade <= 0) return null;
+
+  final grupoNome = m.group(5)!;
+  final posQuantidade = n.indexOf(m.group(3)!, m.group(1)!.length);
+  final ini = n.indexOf(grupoNome, posQuantidade + m.group(3)!.length);
+  final nome = o.substring(ini, ini + grupoNome.length).trim();
+  if (nome.isEmpty) return null;
+
+  final unidade = m.group(4);
+  final refeicao = m.group(2) ?? m.group(6) ??
+      switch (m.group(1)) {
+        'almocei' => 'almoco',
+        'jantei' => 'jantar',
+        'lanchei' => 'lanche',
+        _ => null,
+      };
+  return CmdComida(
+    nome: nome,
+    gramas: switch (unidade) {
+      null || 'un' || 'unidade' || 'unidades' => null,
+      'kg' || 'quilo' || 'quilos' => quantidade * 1000,
+      _ => quantidade,
+    },
+    porcoes: unidade == null || unidade.startsWith('un') ? quantidade : null,
+    refeicao: refeicao == null ? null : _nomeRefeicao(refeicao),
+  );
 }
 
 // ------------------------------------------------------------------- hábito

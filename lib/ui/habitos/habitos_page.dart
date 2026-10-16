@@ -5,11 +5,13 @@ import '../../app.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/banco.dart';
+import '../../data/alimentacao_repo.dart';
 import '../../data/habitos_repo.dart';
 import '../../data/saude_repo.dart';
 import '../calendario.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
+import '../alimentacao/alimentacao_page.dart';
 import '../saude/blocos_saude.dart';
 import '../saude/form_sessao.dart';
 import '../shell.dart';
@@ -28,6 +30,7 @@ class _HabitosPageState extends State<HabitosPage> {
   HabitosRepo? _repo;
   Stream<QuadroHabitos>? _quadro;
   Stream<QuadroSaude>? _saude;
+  Stream<DiaAlimentacao>? _alimentacao;
   late DateTime _mes = hojeSP();
 
   @override
@@ -38,6 +41,7 @@ class _HabitosPageState extends State<HabitosPage> {
       _repo = HabitosRepo(db);
       _quadro = _repo!.observarQuadro();
       _saude = SaudeRepo(db).observarQuadro();
+      _alimentacao = AlimentacaoRepo(db).observarDia(hojeSP());
     }
   }
 
@@ -155,6 +159,15 @@ class _HabitosPageState extends State<HabitosPage> {
                 BlocosMedidas(quadro: s, aoTocar: () => widget.ir(Secao.medidas)),
               ],
             );
+          },
+        ),
+        const SizedBox(height: 10),
+        StreamBuilder<DiaAlimentacao>(
+          stream: _alimentacao,
+          builder: (context, snap) {
+            final d = snap.data;
+            if (d == null) return const SizedBox(height: 80);
+            return CartaoAlimentacao(dia: d, aoTocar: () => widget.ir(Secao.alimentacao));
           },
         ),
       ],

@@ -9475,6 +9475,2024 @@ class MedidasCompanion extends UpdateCompanion<Medida> {
   }
 }
 
+class $AlimentosTable extends Alimentos
+    with TableInfo<$AlimentosTable, Alimento> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AlimentosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kcalMeta = const VerificationMeta('kcal');
+  @override
+  late final GeneratedColumn<double> kcal = GeneratedColumn<double>(
+    'kcal',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _proteinaMeta = const VerificationMeta(
+    'proteina',
+  );
+  @override
+  late final GeneratedColumn<double> proteina = GeneratedColumn<double>(
+    'proteina',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _carboidratoMeta = const VerificationMeta(
+    'carboidrato',
+  );
+  @override
+  late final GeneratedColumn<double> carboidrato = GeneratedColumn<double>(
+    'carboidrato',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _gorduraMeta = const VerificationMeta(
+    'gordura',
+  );
+  @override
+  late final GeneratedColumn<double> gordura = GeneratedColumn<double>(
+    'gordura',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _porcaoNomeMeta = const VerificationMeta(
+    'porcaoNome',
+  );
+  @override
+  late final GeneratedColumn<String> porcaoNome = GeneratedColumn<String>(
+    'porcao_nome',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _porcaoGramasMeta = const VerificationMeta(
+    'porcaoGramas',
+  );
+  @override
+  late final GeneratedColumn<double> porcaoGramas = GeneratedColumn<double>(
+    'porcao_gramas',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _origemMeta = const VerificationMeta('origem');
+  @override
+  late final GeneratedColumn<String> origem = GeneratedColumn<String>(
+    'origem',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pessoal'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    nome,
+    kcal,
+    proteina,
+    carboidrato,
+    gordura,
+    porcaoNome,
+    porcaoGramas,
+    origem,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'alimentos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Alimento> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('kcal')) {
+      context.handle(
+        _kcalMeta,
+        kcal.isAcceptableOrUnknown(data['kcal']!, _kcalMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kcalMeta);
+    }
+    if (data.containsKey('proteina')) {
+      context.handle(
+        _proteinaMeta,
+        proteina.isAcceptableOrUnknown(data['proteina']!, _proteinaMeta),
+      );
+    }
+    if (data.containsKey('carboidrato')) {
+      context.handle(
+        _carboidratoMeta,
+        carboidrato.isAcceptableOrUnknown(
+          data['carboidrato']!,
+          _carboidratoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('gordura')) {
+      context.handle(
+        _gorduraMeta,
+        gordura.isAcceptableOrUnknown(data['gordura']!, _gorduraMeta),
+      );
+    }
+    if (data.containsKey('porcao_nome')) {
+      context.handle(
+        _porcaoNomeMeta,
+        porcaoNome.isAcceptableOrUnknown(data['porcao_nome']!, _porcaoNomeMeta),
+      );
+    }
+    if (data.containsKey('porcao_gramas')) {
+      context.handle(
+        _porcaoGramasMeta,
+        porcaoGramas.isAcceptableOrUnknown(
+          data['porcao_gramas']!,
+          _porcaoGramasMeta,
+        ),
+      );
+    }
+    if (data.containsKey('origem')) {
+      context.handle(
+        _origemMeta,
+        origem.isAcceptableOrUnknown(data['origem']!, _origemMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Alimento map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Alimento(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      kcal: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}kcal'],
+      )!,
+      proteina: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}proteina'],
+      )!,
+      carboidrato: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}carboidrato'],
+      )!,
+      gordura: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}gordura'],
+      )!,
+      porcaoNome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}porcao_nome'],
+      ),
+      porcaoGramas: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}porcao_gramas'],
+      ),
+      origem: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}origem'],
+      )!,
+    );
+  }
+
+  @override
+  $AlimentosTable createAlias(String alias) {
+    return $AlimentosTable(attachedDatabase, alias);
+  }
+}
+
+class Alimento extends DataClass implements Insertable<Alimento> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String nome;
+  final double kcal;
+  final double proteina;
+  final double carboidrato;
+  final double gordura;
+
+  /// Porção caseira opcional: "1 ovo" = 50 g.
+  final String? porcaoNome;
+  final double? porcaoGramas;
+  final String origem;
+  const Alimento({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.nome,
+    required this.kcal,
+    required this.proteina,
+    required this.carboidrato,
+    required this.gordura,
+    this.porcaoNome,
+    this.porcaoGramas,
+    required this.origem,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['nome'] = Variable<String>(nome);
+    map['kcal'] = Variable<double>(kcal);
+    map['proteina'] = Variable<double>(proteina);
+    map['carboidrato'] = Variable<double>(carboidrato);
+    map['gordura'] = Variable<double>(gordura);
+    if (!nullToAbsent || porcaoNome != null) {
+      map['porcao_nome'] = Variable<String>(porcaoNome);
+    }
+    if (!nullToAbsent || porcaoGramas != null) {
+      map['porcao_gramas'] = Variable<double>(porcaoGramas);
+    }
+    map['origem'] = Variable<String>(origem);
+    return map;
+  }
+
+  AlimentosCompanion toCompanion(bool nullToAbsent) {
+    return AlimentosCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      nome: Value(nome),
+      kcal: Value(kcal),
+      proteina: Value(proteina),
+      carboidrato: Value(carboidrato),
+      gordura: Value(gordura),
+      porcaoNome: porcaoNome == null && nullToAbsent
+          ? const Value.absent()
+          : Value(porcaoNome),
+      porcaoGramas: porcaoGramas == null && nullToAbsent
+          ? const Value.absent()
+          : Value(porcaoGramas),
+      origem: Value(origem),
+    );
+  }
+
+  factory Alimento.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Alimento(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      nome: serializer.fromJson<String>(json['nome']),
+      kcal: serializer.fromJson<double>(json['kcal']),
+      proteina: serializer.fromJson<double>(json['proteina']),
+      carboidrato: serializer.fromJson<double>(json['carboidrato']),
+      gordura: serializer.fromJson<double>(json['gordura']),
+      porcaoNome: serializer.fromJson<String?>(json['porcaoNome']),
+      porcaoGramas: serializer.fromJson<double?>(json['porcaoGramas']),
+      origem: serializer.fromJson<String>(json['origem']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'nome': serializer.toJson<String>(nome),
+      'kcal': serializer.toJson<double>(kcal),
+      'proteina': serializer.toJson<double>(proteina),
+      'carboidrato': serializer.toJson<double>(carboidrato),
+      'gordura': serializer.toJson<double>(gordura),
+      'porcaoNome': serializer.toJson<String?>(porcaoNome),
+      'porcaoGramas': serializer.toJson<double?>(porcaoGramas),
+      'origem': serializer.toJson<String>(origem),
+    };
+  }
+
+  Alimento copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? nome,
+    double? kcal,
+    double? proteina,
+    double? carboidrato,
+    double? gordura,
+    Value<String?> porcaoNome = const Value.absent(),
+    Value<double?> porcaoGramas = const Value.absent(),
+    String? origem,
+  }) => Alimento(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    nome: nome ?? this.nome,
+    kcal: kcal ?? this.kcal,
+    proteina: proteina ?? this.proteina,
+    carboidrato: carboidrato ?? this.carboidrato,
+    gordura: gordura ?? this.gordura,
+    porcaoNome: porcaoNome.present ? porcaoNome.value : this.porcaoNome,
+    porcaoGramas: porcaoGramas.present ? porcaoGramas.value : this.porcaoGramas,
+    origem: origem ?? this.origem,
+  );
+  Alimento copyWithCompanion(AlimentosCompanion data) {
+    return Alimento(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      kcal: data.kcal.present ? data.kcal.value : this.kcal,
+      proteina: data.proteina.present ? data.proteina.value : this.proteina,
+      carboidrato: data.carboidrato.present
+          ? data.carboidrato.value
+          : this.carboidrato,
+      gordura: data.gordura.present ? data.gordura.value : this.gordura,
+      porcaoNome: data.porcaoNome.present
+          ? data.porcaoNome.value
+          : this.porcaoNome,
+      porcaoGramas: data.porcaoGramas.present
+          ? data.porcaoGramas.value
+          : this.porcaoGramas,
+      origem: data.origem.present ? data.origem.value : this.origem,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Alimento(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('nome: $nome, ')
+          ..write('kcal: $kcal, ')
+          ..write('proteina: $proteina, ')
+          ..write('carboidrato: $carboidrato, ')
+          ..write('gordura: $gordura, ')
+          ..write('porcaoNome: $porcaoNome, ')
+          ..write('porcaoGramas: $porcaoGramas, ')
+          ..write('origem: $origem')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    nome,
+    kcal,
+    proteina,
+    carboidrato,
+    gordura,
+    porcaoNome,
+    porcaoGramas,
+    origem,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Alimento &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.nome == this.nome &&
+          other.kcal == this.kcal &&
+          other.proteina == this.proteina &&
+          other.carboidrato == this.carboidrato &&
+          other.gordura == this.gordura &&
+          other.porcaoNome == this.porcaoNome &&
+          other.porcaoGramas == this.porcaoGramas &&
+          other.origem == this.origem);
+}
+
+class AlimentosCompanion extends UpdateCompanion<Alimento> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> nome;
+  final Value<double> kcal;
+  final Value<double> proteina;
+  final Value<double> carboidrato;
+  final Value<double> gordura;
+  final Value<String?> porcaoNome;
+  final Value<double?> porcaoGramas;
+  final Value<String> origem;
+  final Value<int> rowid;
+  const AlimentosCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.kcal = const Value.absent(),
+    this.proteina = const Value.absent(),
+    this.carboidrato = const Value.absent(),
+    this.gordura = const Value.absent(),
+    this.porcaoNome = const Value.absent(),
+    this.porcaoGramas = const Value.absent(),
+    this.origem = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AlimentosCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String nome,
+    required double kcal,
+    this.proteina = const Value.absent(),
+    this.carboidrato = const Value.absent(),
+    this.gordura = const Value.absent(),
+    this.porcaoNome = const Value.absent(),
+    this.porcaoGramas = const Value.absent(),
+    this.origem = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : nome = Value(nome),
+       kcal = Value(kcal);
+  static Insertable<Alimento> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? nome,
+    Expression<double>? kcal,
+    Expression<double>? proteina,
+    Expression<double>? carboidrato,
+    Expression<double>? gordura,
+    Expression<String>? porcaoNome,
+    Expression<double>? porcaoGramas,
+    Expression<String>? origem,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (nome != null) 'nome': nome,
+      if (kcal != null) 'kcal': kcal,
+      if (proteina != null) 'proteina': proteina,
+      if (carboidrato != null) 'carboidrato': carboidrato,
+      if (gordura != null) 'gordura': gordura,
+      if (porcaoNome != null) 'porcao_nome': porcaoNome,
+      if (porcaoGramas != null) 'porcao_gramas': porcaoGramas,
+      if (origem != null) 'origem': origem,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AlimentosCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? nome,
+    Value<double>? kcal,
+    Value<double>? proteina,
+    Value<double>? carboidrato,
+    Value<double>? gordura,
+    Value<String?>? porcaoNome,
+    Value<double?>? porcaoGramas,
+    Value<String>? origem,
+    Value<int>? rowid,
+  }) {
+    return AlimentosCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      nome: nome ?? this.nome,
+      kcal: kcal ?? this.kcal,
+      proteina: proteina ?? this.proteina,
+      carboidrato: carboidrato ?? this.carboidrato,
+      gordura: gordura ?? this.gordura,
+      porcaoNome: porcaoNome ?? this.porcaoNome,
+      porcaoGramas: porcaoGramas ?? this.porcaoGramas,
+      origem: origem ?? this.origem,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (kcal.present) {
+      map['kcal'] = Variable<double>(kcal.value);
+    }
+    if (proteina.present) {
+      map['proteina'] = Variable<double>(proteina.value);
+    }
+    if (carboidrato.present) {
+      map['carboidrato'] = Variable<double>(carboidrato.value);
+    }
+    if (gordura.present) {
+      map['gordura'] = Variable<double>(gordura.value);
+    }
+    if (porcaoNome.present) {
+      map['porcao_nome'] = Variable<String>(porcaoNome.value);
+    }
+    if (porcaoGramas.present) {
+      map['porcao_gramas'] = Variable<double>(porcaoGramas.value);
+    }
+    if (origem.present) {
+      map['origem'] = Variable<String>(origem.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AlimentosCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('nome: $nome, ')
+          ..write('kcal: $kcal, ')
+          ..write('proteina: $proteina, ')
+          ..write('carboidrato: $carboidrato, ')
+          ..write('gordura: $gordura, ')
+          ..write('porcaoNome: $porcaoNome, ')
+          ..write('porcaoGramas: $porcaoGramas, ')
+          ..write('origem: $origem, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AlvosDietaTable extends AlvosDieta
+    with TableInfo<$AlvosDietaTable, AlvoDieta> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AlvosDietaTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tipoDiaMeta = const VerificationMeta(
+    'tipoDia',
+  );
+  @override
+  late final GeneratedColumn<String> tipoDia = GeneratedColumn<String>(
+    'tipo_dia',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kcalMeta = const VerificationMeta('kcal');
+  @override
+  late final GeneratedColumn<double> kcal = GeneratedColumn<double>(
+    'kcal',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _proteinaMeta = const VerificationMeta(
+    'proteina',
+  );
+  @override
+  late final GeneratedColumn<double> proteina = GeneratedColumn<double>(
+    'proteina',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _carboidratoMeta = const VerificationMeta(
+    'carboidrato',
+  );
+  @override
+  late final GeneratedColumn<double> carboidrato = GeneratedColumn<double>(
+    'carboidrato',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _gorduraMeta = const VerificationMeta(
+    'gordura',
+  );
+  @override
+  late final GeneratedColumn<double> gordura = GeneratedColumn<double>(
+    'gordura',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    tipoDia,
+    kcal,
+    proteina,
+    carboidrato,
+    gordura,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'alvos_dieta';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AlvoDieta> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('tipo_dia')) {
+      context.handle(
+        _tipoDiaMeta,
+        tipoDia.isAcceptableOrUnknown(data['tipo_dia']!, _tipoDiaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tipoDiaMeta);
+    }
+    if (data.containsKey('kcal')) {
+      context.handle(
+        _kcalMeta,
+        kcal.isAcceptableOrUnknown(data['kcal']!, _kcalMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kcalMeta);
+    }
+    if (data.containsKey('proteina')) {
+      context.handle(
+        _proteinaMeta,
+        proteina.isAcceptableOrUnknown(data['proteina']!, _proteinaMeta),
+      );
+    }
+    if (data.containsKey('carboidrato')) {
+      context.handle(
+        _carboidratoMeta,
+        carboidrato.isAcceptableOrUnknown(
+          data['carboidrato']!,
+          _carboidratoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('gordura')) {
+      context.handle(
+        _gorduraMeta,
+        gordura.isAcceptableOrUnknown(data['gordura']!, _gorduraMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AlvoDieta map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AlvoDieta(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      tipoDia: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo_dia'],
+      )!,
+      kcal: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}kcal'],
+      )!,
+      proteina: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}proteina'],
+      )!,
+      carboidrato: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}carboidrato'],
+      )!,
+      gordura: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}gordura'],
+      )!,
+    );
+  }
+
+  @override
+  $AlvosDietaTable createAlias(String alias) {
+    return $AlvosDietaTable(attachedDatabase, alias);
+  }
+}
+
+class AlvoDieta extends DataClass implements Insertable<AlvoDieta> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String tipoDia;
+  final double kcal;
+  final double proteina;
+  final double carboidrato;
+  final double gordura;
+  const AlvoDieta({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.tipoDia,
+    required this.kcal,
+    required this.proteina,
+    required this.carboidrato,
+    required this.gordura,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['tipo_dia'] = Variable<String>(tipoDia);
+    map['kcal'] = Variable<double>(kcal);
+    map['proteina'] = Variable<double>(proteina);
+    map['carboidrato'] = Variable<double>(carboidrato);
+    map['gordura'] = Variable<double>(gordura);
+    return map;
+  }
+
+  AlvosDietaCompanion toCompanion(bool nullToAbsent) {
+    return AlvosDietaCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      tipoDia: Value(tipoDia),
+      kcal: Value(kcal),
+      proteina: Value(proteina),
+      carboidrato: Value(carboidrato),
+      gordura: Value(gordura),
+    );
+  }
+
+  factory AlvoDieta.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AlvoDieta(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      tipoDia: serializer.fromJson<String>(json['tipoDia']),
+      kcal: serializer.fromJson<double>(json['kcal']),
+      proteina: serializer.fromJson<double>(json['proteina']),
+      carboidrato: serializer.fromJson<double>(json['carboidrato']),
+      gordura: serializer.fromJson<double>(json['gordura']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'tipoDia': serializer.toJson<String>(tipoDia),
+      'kcal': serializer.toJson<double>(kcal),
+      'proteina': serializer.toJson<double>(proteina),
+      'carboidrato': serializer.toJson<double>(carboidrato),
+      'gordura': serializer.toJson<double>(gordura),
+    };
+  }
+
+  AlvoDieta copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? tipoDia,
+    double? kcal,
+    double? proteina,
+    double? carboidrato,
+    double? gordura,
+  }) => AlvoDieta(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    tipoDia: tipoDia ?? this.tipoDia,
+    kcal: kcal ?? this.kcal,
+    proteina: proteina ?? this.proteina,
+    carboidrato: carboidrato ?? this.carboidrato,
+    gordura: gordura ?? this.gordura,
+  );
+  AlvoDieta copyWithCompanion(AlvosDietaCompanion data) {
+    return AlvoDieta(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      tipoDia: data.tipoDia.present ? data.tipoDia.value : this.tipoDia,
+      kcal: data.kcal.present ? data.kcal.value : this.kcal,
+      proteina: data.proteina.present ? data.proteina.value : this.proteina,
+      carboidrato: data.carboidrato.present
+          ? data.carboidrato.value
+          : this.carboidrato,
+      gordura: data.gordura.present ? data.gordura.value : this.gordura,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AlvoDieta(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('tipoDia: $tipoDia, ')
+          ..write('kcal: $kcal, ')
+          ..write('proteina: $proteina, ')
+          ..write('carboidrato: $carboidrato, ')
+          ..write('gordura: $gordura')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    tipoDia,
+    kcal,
+    proteina,
+    carboidrato,
+    gordura,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AlvoDieta &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.tipoDia == this.tipoDia &&
+          other.kcal == this.kcal &&
+          other.proteina == this.proteina &&
+          other.carboidrato == this.carboidrato &&
+          other.gordura == this.gordura);
+}
+
+class AlvosDietaCompanion extends UpdateCompanion<AlvoDieta> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> tipoDia;
+  final Value<double> kcal;
+  final Value<double> proteina;
+  final Value<double> carboidrato;
+  final Value<double> gordura;
+  final Value<int> rowid;
+  const AlvosDietaCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.tipoDia = const Value.absent(),
+    this.kcal = const Value.absent(),
+    this.proteina = const Value.absent(),
+    this.carboidrato = const Value.absent(),
+    this.gordura = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AlvosDietaCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String tipoDia,
+    required double kcal,
+    this.proteina = const Value.absent(),
+    this.carboidrato = const Value.absent(),
+    this.gordura = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : tipoDia = Value(tipoDia),
+       kcal = Value(kcal);
+  static Insertable<AlvoDieta> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? tipoDia,
+    Expression<double>? kcal,
+    Expression<double>? proteina,
+    Expression<double>? carboidrato,
+    Expression<double>? gordura,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (tipoDia != null) 'tipo_dia': tipoDia,
+      if (kcal != null) 'kcal': kcal,
+      if (proteina != null) 'proteina': proteina,
+      if (carboidrato != null) 'carboidrato': carboidrato,
+      if (gordura != null) 'gordura': gordura,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AlvosDietaCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? tipoDia,
+    Value<double>? kcal,
+    Value<double>? proteina,
+    Value<double>? carboidrato,
+    Value<double>? gordura,
+    Value<int>? rowid,
+  }) {
+    return AlvosDietaCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      tipoDia: tipoDia ?? this.tipoDia,
+      kcal: kcal ?? this.kcal,
+      proteina: proteina ?? this.proteina,
+      carboidrato: carboidrato ?? this.carboidrato,
+      gordura: gordura ?? this.gordura,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (tipoDia.present) {
+      map['tipo_dia'] = Variable<String>(tipoDia.value);
+    }
+    if (kcal.present) {
+      map['kcal'] = Variable<double>(kcal.value);
+    }
+    if (proteina.present) {
+      map['proteina'] = Variable<double>(proteina.value);
+    }
+    if (carboidrato.present) {
+      map['carboidrato'] = Variable<double>(carboidrato.value);
+    }
+    if (gordura.present) {
+      map['gordura'] = Variable<double>(gordura.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AlvosDietaCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('tipoDia: $tipoDia, ')
+          ..write('kcal: $kcal, ')
+          ..write('proteina: $proteina, ')
+          ..write('carboidrato: $carboidrato, ')
+          ..write('gordura: $gordura, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RegistrosAlimentacaoTable extends RegistrosAlimentacao
+    with TableInfo<$RegistrosAlimentacaoTable, RegistroAlimentacao> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RegistrosAlimentacaoTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _diaMeta = const VerificationMeta('dia');
+  @override
+  late final GeneratedColumn<String> dia = GeneratedColumn<String>(
+    'dia',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _refeicaoMeta = const VerificationMeta(
+    'refeicao',
+  );
+  @override
+  late final GeneratedColumn<String> refeicao = GeneratedColumn<String>(
+    'refeicao',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _alimentoIdMeta = const VerificationMeta(
+    'alimentoId',
+  );
+  @override
+  late final GeneratedColumn<String> alimentoId = GeneratedColumn<String>(
+    'alimento_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES alimentos (id)',
+    ),
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _gramasMeta = const VerificationMeta('gramas');
+  @override
+  late final GeneratedColumn<double> gramas = GeneratedColumn<double>(
+    'gramas',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kcalMeta = const VerificationMeta('kcal');
+  @override
+  late final GeneratedColumn<double> kcal = GeneratedColumn<double>(
+    'kcal',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _proteinaMeta = const VerificationMeta(
+    'proteina',
+  );
+  @override
+  late final GeneratedColumn<double> proteina = GeneratedColumn<double>(
+    'proteina',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _carboidratoMeta = const VerificationMeta(
+    'carboidrato',
+  );
+  @override
+  late final GeneratedColumn<double> carboidrato = GeneratedColumn<double>(
+    'carboidrato',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _gorduraMeta = const VerificationMeta(
+    'gordura',
+  );
+  @override
+  late final GeneratedColumn<double> gordura = GeneratedColumn<double>(
+    'gordura',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    dia,
+    refeicao,
+    alimentoId,
+    nome,
+    gramas,
+    kcal,
+    proteina,
+    carboidrato,
+    gordura,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'registros_alimentacao';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RegistroAlimentacao> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('dia')) {
+      context.handle(
+        _diaMeta,
+        dia.isAcceptableOrUnknown(data['dia']!, _diaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_diaMeta);
+    }
+    if (data.containsKey('refeicao')) {
+      context.handle(
+        _refeicaoMeta,
+        refeicao.isAcceptableOrUnknown(data['refeicao']!, _refeicaoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_refeicaoMeta);
+    }
+    if (data.containsKey('alimento_id')) {
+      context.handle(
+        _alimentoIdMeta,
+        alimentoId.isAcceptableOrUnknown(data['alimento_id']!, _alimentoIdMeta),
+      );
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('gramas')) {
+      context.handle(
+        _gramasMeta,
+        gramas.isAcceptableOrUnknown(data['gramas']!, _gramasMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_gramasMeta);
+    }
+    if (data.containsKey('kcal')) {
+      context.handle(
+        _kcalMeta,
+        kcal.isAcceptableOrUnknown(data['kcal']!, _kcalMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kcalMeta);
+    }
+    if (data.containsKey('proteina')) {
+      context.handle(
+        _proteinaMeta,
+        proteina.isAcceptableOrUnknown(data['proteina']!, _proteinaMeta),
+      );
+    }
+    if (data.containsKey('carboidrato')) {
+      context.handle(
+        _carboidratoMeta,
+        carboidrato.isAcceptableOrUnknown(
+          data['carboidrato']!,
+          _carboidratoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('gordura')) {
+      context.handle(
+        _gorduraMeta,
+        gordura.isAcceptableOrUnknown(data['gordura']!, _gorduraMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RegistroAlimentacao map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RegistroAlimentacao(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      dia: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dia'],
+      )!,
+      refeicao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}refeicao'],
+      )!,
+      alimentoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}alimento_id'],
+      ),
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      gramas: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}gramas'],
+      )!,
+      kcal: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}kcal'],
+      )!,
+      proteina: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}proteina'],
+      )!,
+      carboidrato: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}carboidrato'],
+      )!,
+      gordura: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}gordura'],
+      )!,
+    );
+  }
+
+  @override
+  $RegistrosAlimentacaoTable createAlias(String alias) {
+    return $RegistrosAlimentacaoTable(attachedDatabase, alias);
+  }
+}
+
+class RegistroAlimentacao extends DataClass
+    implements Insertable<RegistroAlimentacao> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+
+  /// "aaaa-mm-dd" no fuso de São Paulo.
+  final String dia;
+
+  /// 'cafe', 'almoco', 'lanche', 'jantar' ou 'ceia'.
+  final String refeicao;
+  final String? alimentoId;
+  final String nome;
+  final double gramas;
+  final double kcal;
+  final double proteina;
+  final double carboidrato;
+  final double gordura;
+  const RegistroAlimentacao({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.dia,
+    required this.refeicao,
+    this.alimentoId,
+    required this.nome,
+    required this.gramas,
+    required this.kcal,
+    required this.proteina,
+    required this.carboidrato,
+    required this.gordura,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['dia'] = Variable<String>(dia);
+    map['refeicao'] = Variable<String>(refeicao);
+    if (!nullToAbsent || alimentoId != null) {
+      map['alimento_id'] = Variable<String>(alimentoId);
+    }
+    map['nome'] = Variable<String>(nome);
+    map['gramas'] = Variable<double>(gramas);
+    map['kcal'] = Variable<double>(kcal);
+    map['proteina'] = Variable<double>(proteina);
+    map['carboidrato'] = Variable<double>(carboidrato);
+    map['gordura'] = Variable<double>(gordura);
+    return map;
+  }
+
+  RegistrosAlimentacaoCompanion toCompanion(bool nullToAbsent) {
+    return RegistrosAlimentacaoCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      dia: Value(dia),
+      refeicao: Value(refeicao),
+      alimentoId: alimentoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(alimentoId),
+      nome: Value(nome),
+      gramas: Value(gramas),
+      kcal: Value(kcal),
+      proteina: Value(proteina),
+      carboidrato: Value(carboidrato),
+      gordura: Value(gordura),
+    );
+  }
+
+  factory RegistroAlimentacao.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RegistroAlimentacao(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      dia: serializer.fromJson<String>(json['dia']),
+      refeicao: serializer.fromJson<String>(json['refeicao']),
+      alimentoId: serializer.fromJson<String?>(json['alimentoId']),
+      nome: serializer.fromJson<String>(json['nome']),
+      gramas: serializer.fromJson<double>(json['gramas']),
+      kcal: serializer.fromJson<double>(json['kcal']),
+      proteina: serializer.fromJson<double>(json['proteina']),
+      carboidrato: serializer.fromJson<double>(json['carboidrato']),
+      gordura: serializer.fromJson<double>(json['gordura']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'dia': serializer.toJson<String>(dia),
+      'refeicao': serializer.toJson<String>(refeicao),
+      'alimentoId': serializer.toJson<String?>(alimentoId),
+      'nome': serializer.toJson<String>(nome),
+      'gramas': serializer.toJson<double>(gramas),
+      'kcal': serializer.toJson<double>(kcal),
+      'proteina': serializer.toJson<double>(proteina),
+      'carboidrato': serializer.toJson<double>(carboidrato),
+      'gordura': serializer.toJson<double>(gordura),
+    };
+  }
+
+  RegistroAlimentacao copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? dia,
+    String? refeicao,
+    Value<String?> alimentoId = const Value.absent(),
+    String? nome,
+    double? gramas,
+    double? kcal,
+    double? proteina,
+    double? carboidrato,
+    double? gordura,
+  }) => RegistroAlimentacao(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    dia: dia ?? this.dia,
+    refeicao: refeicao ?? this.refeicao,
+    alimentoId: alimentoId.present ? alimentoId.value : this.alimentoId,
+    nome: nome ?? this.nome,
+    gramas: gramas ?? this.gramas,
+    kcal: kcal ?? this.kcal,
+    proteina: proteina ?? this.proteina,
+    carboidrato: carboidrato ?? this.carboidrato,
+    gordura: gordura ?? this.gordura,
+  );
+  RegistroAlimentacao copyWithCompanion(RegistrosAlimentacaoCompanion data) {
+    return RegistroAlimentacao(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      dia: data.dia.present ? data.dia.value : this.dia,
+      refeicao: data.refeicao.present ? data.refeicao.value : this.refeicao,
+      alimentoId: data.alimentoId.present
+          ? data.alimentoId.value
+          : this.alimentoId,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      gramas: data.gramas.present ? data.gramas.value : this.gramas,
+      kcal: data.kcal.present ? data.kcal.value : this.kcal,
+      proteina: data.proteina.present ? data.proteina.value : this.proteina,
+      carboidrato: data.carboidrato.present
+          ? data.carboidrato.value
+          : this.carboidrato,
+      gordura: data.gordura.present ? data.gordura.value : this.gordura,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RegistroAlimentacao(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('dia: $dia, ')
+          ..write('refeicao: $refeicao, ')
+          ..write('alimentoId: $alimentoId, ')
+          ..write('nome: $nome, ')
+          ..write('gramas: $gramas, ')
+          ..write('kcal: $kcal, ')
+          ..write('proteina: $proteina, ')
+          ..write('carboidrato: $carboidrato, ')
+          ..write('gordura: $gordura')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    dia,
+    refeicao,
+    alimentoId,
+    nome,
+    gramas,
+    kcal,
+    proteina,
+    carboidrato,
+    gordura,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RegistroAlimentacao &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.dia == this.dia &&
+          other.refeicao == this.refeicao &&
+          other.alimentoId == this.alimentoId &&
+          other.nome == this.nome &&
+          other.gramas == this.gramas &&
+          other.kcal == this.kcal &&
+          other.proteina == this.proteina &&
+          other.carboidrato == this.carboidrato &&
+          other.gordura == this.gordura);
+}
+
+class RegistrosAlimentacaoCompanion
+    extends UpdateCompanion<RegistroAlimentacao> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> dia;
+  final Value<String> refeicao;
+  final Value<String?> alimentoId;
+  final Value<String> nome;
+  final Value<double> gramas;
+  final Value<double> kcal;
+  final Value<double> proteina;
+  final Value<double> carboidrato;
+  final Value<double> gordura;
+  final Value<int> rowid;
+  const RegistrosAlimentacaoCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.dia = const Value.absent(),
+    this.refeicao = const Value.absent(),
+    this.alimentoId = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.gramas = const Value.absent(),
+    this.kcal = const Value.absent(),
+    this.proteina = const Value.absent(),
+    this.carboidrato = const Value.absent(),
+    this.gordura = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RegistrosAlimentacaoCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String dia,
+    required String refeicao,
+    this.alimentoId = const Value.absent(),
+    required String nome,
+    required double gramas,
+    required double kcal,
+    this.proteina = const Value.absent(),
+    this.carboidrato = const Value.absent(),
+    this.gordura = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : dia = Value(dia),
+       refeicao = Value(refeicao),
+       nome = Value(nome),
+       gramas = Value(gramas),
+       kcal = Value(kcal);
+  static Insertable<RegistroAlimentacao> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? dia,
+    Expression<String>? refeicao,
+    Expression<String>? alimentoId,
+    Expression<String>? nome,
+    Expression<double>? gramas,
+    Expression<double>? kcal,
+    Expression<double>? proteina,
+    Expression<double>? carboidrato,
+    Expression<double>? gordura,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (dia != null) 'dia': dia,
+      if (refeicao != null) 'refeicao': refeicao,
+      if (alimentoId != null) 'alimento_id': alimentoId,
+      if (nome != null) 'nome': nome,
+      if (gramas != null) 'gramas': gramas,
+      if (kcal != null) 'kcal': kcal,
+      if (proteina != null) 'proteina': proteina,
+      if (carboidrato != null) 'carboidrato': carboidrato,
+      if (gordura != null) 'gordura': gordura,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RegistrosAlimentacaoCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? dia,
+    Value<String>? refeicao,
+    Value<String?>? alimentoId,
+    Value<String>? nome,
+    Value<double>? gramas,
+    Value<double>? kcal,
+    Value<double>? proteina,
+    Value<double>? carboidrato,
+    Value<double>? gordura,
+    Value<int>? rowid,
+  }) {
+    return RegistrosAlimentacaoCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      dia: dia ?? this.dia,
+      refeicao: refeicao ?? this.refeicao,
+      alimentoId: alimentoId ?? this.alimentoId,
+      nome: nome ?? this.nome,
+      gramas: gramas ?? this.gramas,
+      kcal: kcal ?? this.kcal,
+      proteina: proteina ?? this.proteina,
+      carboidrato: carboidrato ?? this.carboidrato,
+      gordura: gordura ?? this.gordura,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (dia.present) {
+      map['dia'] = Variable<String>(dia.value);
+    }
+    if (refeicao.present) {
+      map['refeicao'] = Variable<String>(refeicao.value);
+    }
+    if (alimentoId.present) {
+      map['alimento_id'] = Variable<String>(alimentoId.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (gramas.present) {
+      map['gramas'] = Variable<double>(gramas.value);
+    }
+    if (kcal.present) {
+      map['kcal'] = Variable<double>(kcal.value);
+    }
+    if (proteina.present) {
+      map['proteina'] = Variable<double>(proteina.value);
+    }
+    if (carboidrato.present) {
+      map['carboidrato'] = Variable<double>(carboidrato.value);
+    }
+    if (gordura.present) {
+      map['gordura'] = Variable<double>(gordura.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RegistrosAlimentacaoCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('dia: $dia, ')
+          ..write('refeicao: $refeicao, ')
+          ..write('alimentoId: $alimentoId, ')
+          ..write('nome: $nome, ')
+          ..write('gramas: $gramas, ')
+          ..write('kcal: $kcal, ')
+          ..write('proteina: $proteina, ')
+          ..write('carboidrato: $carboidrato, ')
+          ..write('gordura: $gordura, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $MensagensAssistenteTable extends MensagensAssistente
     with TableInfo<$MensagensAssistenteTable, MensagemAssistente> {
   @override
@@ -10323,6 +12341,10 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   late final $SessoesTreinoTable sessoesTreino = $SessoesTreinoTable(this);
   late final $SeriesFeitasTable seriesFeitas = $SeriesFeitasTable(this);
   late final $MedidasTable medidas = $MedidasTable(this);
+  late final $AlimentosTable alimentos = $AlimentosTable(this);
+  late final $AlvosDietaTable alvosDieta = $AlvosDietaTable(this);
+  late final $RegistrosAlimentacaoTable registrosAlimentacao =
+      $RegistrosAlimentacaoTable(this);
   late final $MensagensAssistenteTable mensagensAssistente =
       $MensagensAssistenteTable(this);
   late final $PreferenciasTable preferencias = $PreferenciasTable(this);
@@ -10363,6 +12385,9 @@ abstract class _$BancoAurora extends GeneratedDatabase {
     sessoesTreino,
     seriesFeitas,
     medidas,
+    alimentos,
+    alvosDieta,
+    registrosAlimentacao,
     mensagensAssistente,
     preferencias,
     conclusaoTarefaDia,
@@ -17929,6 +19954,1230 @@ typedef $$MedidasTableProcessedTableManager =
       Medida,
       PrefetchHooks Function()
     >;
+typedef $$AlimentosTableCreateCompanionBuilder = AlimentosCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  required String nome,
+  required double kcal,
+  Value<double> proteina,
+  Value<double> carboidrato,
+  Value<double> gordura,
+  Value<String?> porcaoNome,
+  Value<double?> porcaoGramas,
+  Value<String> origem,
+  Value<int> rowid,
+});
+typedef $$AlimentosTableUpdateCompanionBuilder = AlimentosCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String> nome,
+  Value<double> kcal,
+  Value<double> proteina,
+  Value<double> carboidrato,
+  Value<double> gordura,
+  Value<String?> porcaoNome,
+  Value<double?> porcaoGramas,
+  Value<String> origem,
+  Value<int> rowid,
+});
+
+final class $$AlimentosTableReferences
+    extends BaseReferences<_$BancoAurora, $AlimentosTable, Alimento> {
+  $$AlimentosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<
+    $RegistrosAlimentacaoTable,
+    List<RegistroAlimentacao>
+  >
+  _registrosAlimentacaoRefsTable(_$BancoAurora db) =>
+      MultiTypedResultKey.fromTable(
+        db.registrosAlimentacao,
+        aliasName: 'alimentos__id__registros_alimentacao__alimento_id',
+      );
+
+  $$RegistrosAlimentacaoTableProcessedTableManager
+  get registrosAlimentacaoRefs {
+    final manager = $$RegistrosAlimentacaoTableTableManager(
+      $_db,
+      $_db.registrosAlimentacao,
+    ).filter((f) => f.alimentoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _registrosAlimentacaoRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$AlimentosTableFilterComposer
+    extends Composer<_$BancoAurora, $AlimentosTable> {
+  $$AlimentosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get kcal => $composableBuilder(
+    column: $table.kcal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get proteina => $composableBuilder(
+    column: $table.proteina,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get carboidrato => $composableBuilder(
+    column: $table.carboidrato,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get gordura => $composableBuilder(
+    column: $table.gordura,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get porcaoNome => $composableBuilder(
+    column: $table.porcaoNome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get porcaoGramas => $composableBuilder(
+    column: $table.porcaoGramas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get origem => $composableBuilder(
+    column: $table.origem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> registrosAlimentacaoRefs(
+    Expression<bool> Function($$RegistrosAlimentacaoTableFilterComposer f) f,
+  ) {
+    final $$RegistrosAlimentacaoTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.registrosAlimentacao,
+      getReferencedColumn: (t) => t.alimentoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RegistrosAlimentacaoTableFilterComposer(
+            $db: $db,
+            $table: $db.registrosAlimentacao,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$AlimentosTableOrderingComposer
+    extends Composer<_$BancoAurora, $AlimentosTable> {
+  $$AlimentosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get kcal => $composableBuilder(
+    column: $table.kcal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get proteina => $composableBuilder(
+    column: $table.proteina,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get carboidrato => $composableBuilder(
+    column: $table.carboidrato,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get gordura => $composableBuilder(
+    column: $table.gordura,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get porcaoNome => $composableBuilder(
+    column: $table.porcaoNome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get porcaoGramas => $composableBuilder(
+    column: $table.porcaoGramas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get origem => $composableBuilder(
+    column: $table.origem,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AlimentosTableAnnotationComposer
+    extends Composer<_$BancoAurora, $AlimentosTable> {
+  $$AlimentosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<double> get kcal =>
+      $composableBuilder(column: $table.kcal, builder: (column) => column);
+
+  GeneratedColumn<double> get proteina =>
+      $composableBuilder(column: $table.proteina, builder: (column) => column);
+
+  GeneratedColumn<double> get carboidrato => $composableBuilder(
+    column: $table.carboidrato,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get gordura =>
+      $composableBuilder(column: $table.gordura, builder: (column) => column);
+
+  GeneratedColumn<String> get porcaoNome => $composableBuilder(
+    column: $table.porcaoNome,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get porcaoGramas => $composableBuilder(
+    column: $table.porcaoGramas,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get origem =>
+      $composableBuilder(column: $table.origem, builder: (column) => column);
+
+  Expression<T> registrosAlimentacaoRefs<T extends Object>(
+    Expression<T> Function($$RegistrosAlimentacaoTableAnnotationComposer a) f,
+  ) {
+    final $$RegistrosAlimentacaoTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.registrosAlimentacao,
+          getReferencedColumn: (t) => t.alimentoId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RegistrosAlimentacaoTableAnnotationComposer(
+                $db: $db,
+                $table: $db.registrosAlimentacao,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$AlimentosTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $AlimentosTable,
+          Alimento,
+          $$AlimentosTableFilterComposer,
+          $$AlimentosTableOrderingComposer,
+          $$AlimentosTableAnnotationComposer,
+          $$AlimentosTableCreateCompanionBuilder,
+          $$AlimentosTableUpdateCompanionBuilder,
+          (Alimento, $$AlimentosTableReferences),
+          Alimento,
+          PrefetchHooks Function({bool registrosAlimentacaoRefs})
+        > {
+  $$AlimentosTableTableManager(_$BancoAurora db, $AlimentosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AlimentosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AlimentosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AlimentosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<double> kcal = const Value.absent(),
+                Value<double> proteina = const Value.absent(),
+                Value<double> carboidrato = const Value.absent(),
+                Value<double> gordura = const Value.absent(),
+                Value<String?> porcaoNome = const Value.absent(),
+                Value<double?> porcaoGramas = const Value.absent(),
+                Value<String> origem = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AlimentosCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                nome: nome,
+                kcal: kcal,
+                proteina: proteina,
+                carboidrato: carboidrato,
+                gordura: gordura,
+                porcaoNome: porcaoNome,
+                porcaoGramas: porcaoGramas,
+                origem: origem,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String nome,
+                required double kcal,
+                Value<double> proteina = const Value.absent(),
+                Value<double> carboidrato = const Value.absent(),
+                Value<double> gordura = const Value.absent(),
+                Value<String?> porcaoNome = const Value.absent(),
+                Value<double?> porcaoGramas = const Value.absent(),
+                Value<String> origem = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AlimentosCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                nome: nome,
+                kcal: kcal,
+                proteina: proteina,
+                carboidrato: carboidrato,
+                gordura: gordura,
+                porcaoNome: porcaoNome,
+                porcaoGramas: porcaoGramas,
+                origem: origem,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AlimentosTable, Alimento>(table),
+                  $$AlimentosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({registrosAlimentacaoRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (registrosAlimentacaoRefs) db.registrosAlimentacao,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (registrosAlimentacaoRefs)
+                    await $_getPrefetchedData<
+                      Alimento,
+                      $AlimentosTable,
+                      RegistroAlimentacao
+                    >(
+                      currentTable: table,
+                      referencedTable: $$AlimentosTableReferences
+                          ._registrosAlimentacaoRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$AlimentosTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).registrosAlimentacaoRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.alimentoId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AlimentosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $AlimentosTable,
+      Alimento,
+      $$AlimentosTableFilterComposer,
+      $$AlimentosTableOrderingComposer,
+      $$AlimentosTableAnnotationComposer,
+      $$AlimentosTableCreateCompanionBuilder,
+      $$AlimentosTableUpdateCompanionBuilder,
+      (Alimento, $$AlimentosTableReferences),
+      Alimento,
+      PrefetchHooks Function({bool registrosAlimentacaoRefs})
+    >;
+typedef $$AlvosDietaTableCreateCompanionBuilder = AlvosDietaCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  required String tipoDia,
+  required double kcal,
+  Value<double> proteina,
+  Value<double> carboidrato,
+  Value<double> gordura,
+  Value<int> rowid,
+});
+typedef $$AlvosDietaTableUpdateCompanionBuilder = AlvosDietaCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String> tipoDia,
+  Value<double> kcal,
+  Value<double> proteina,
+  Value<double> carboidrato,
+  Value<double> gordura,
+  Value<int> rowid,
+});
+
+class $$AlvosDietaTableFilterComposer
+    extends Composer<_$BancoAurora, $AlvosDietaTable> {
+  $$AlvosDietaTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipoDia => $composableBuilder(
+    column: $table.tipoDia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get kcal => $composableBuilder(
+    column: $table.kcal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get proteina => $composableBuilder(
+    column: $table.proteina,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get carboidrato => $composableBuilder(
+    column: $table.carboidrato,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get gordura => $composableBuilder(
+    column: $table.gordura,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AlvosDietaTableOrderingComposer
+    extends Composer<_$BancoAurora, $AlvosDietaTable> {
+  $$AlvosDietaTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipoDia => $composableBuilder(
+    column: $table.tipoDia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get kcal => $composableBuilder(
+    column: $table.kcal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get proteina => $composableBuilder(
+    column: $table.proteina,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get carboidrato => $composableBuilder(
+    column: $table.carboidrato,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get gordura => $composableBuilder(
+    column: $table.gordura,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AlvosDietaTableAnnotationComposer
+    extends Composer<_$BancoAurora, $AlvosDietaTable> {
+  $$AlvosDietaTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get tipoDia =>
+      $composableBuilder(column: $table.tipoDia, builder: (column) => column);
+
+  GeneratedColumn<double> get kcal =>
+      $composableBuilder(column: $table.kcal, builder: (column) => column);
+
+  GeneratedColumn<double> get proteina =>
+      $composableBuilder(column: $table.proteina, builder: (column) => column);
+
+  GeneratedColumn<double> get carboidrato => $composableBuilder(
+    column: $table.carboidrato,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get gordura =>
+      $composableBuilder(column: $table.gordura, builder: (column) => column);
+}
+
+class $$AlvosDietaTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $AlvosDietaTable,
+          AlvoDieta,
+          $$AlvosDietaTableFilterComposer,
+          $$AlvosDietaTableOrderingComposer,
+          $$AlvosDietaTableAnnotationComposer,
+          $$AlvosDietaTableCreateCompanionBuilder,
+          $$AlvosDietaTableUpdateCompanionBuilder,
+          (
+            AlvoDieta,
+            BaseReferences<_$BancoAurora, $AlvosDietaTable, AlvoDieta>,
+          ),
+          AlvoDieta,
+          PrefetchHooks Function()
+        > {
+  $$AlvosDietaTableTableManager(_$BancoAurora db, $AlvosDietaTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AlvosDietaTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AlvosDietaTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AlvosDietaTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> tipoDia = const Value.absent(),
+                Value<double> kcal = const Value.absent(),
+                Value<double> proteina = const Value.absent(),
+                Value<double> carboidrato = const Value.absent(),
+                Value<double> gordura = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AlvosDietaCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                tipoDia: tipoDia,
+                kcal: kcal,
+                proteina: proteina,
+                carboidrato: carboidrato,
+                gordura: gordura,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String tipoDia,
+                required double kcal,
+                Value<double> proteina = const Value.absent(),
+                Value<double> carboidrato = const Value.absent(),
+                Value<double> gordura = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AlvosDietaCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                tipoDia: tipoDia,
+                kcal: kcal,
+                proteina: proteina,
+                carboidrato: carboidrato,
+                gordura: gordura,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AlvosDietaTable, AlvoDieta>(table),
+                  BaseReferences<_$BancoAurora, $AlvosDietaTable, AlvoDieta>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AlvosDietaTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $AlvosDietaTable,
+      AlvoDieta,
+      $$AlvosDietaTableFilterComposer,
+      $$AlvosDietaTableOrderingComposer,
+      $$AlvosDietaTableAnnotationComposer,
+      $$AlvosDietaTableCreateCompanionBuilder,
+      $$AlvosDietaTableUpdateCompanionBuilder,
+      (AlvoDieta, BaseReferences<_$BancoAurora, $AlvosDietaTable, AlvoDieta>),
+      AlvoDieta,
+      PrefetchHooks Function()
+    >;
+typedef $$RegistrosAlimentacaoTableCreateCompanionBuilder =
+    RegistrosAlimentacaoCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      required String dia,
+      required String refeicao,
+      Value<String?> alimentoId,
+      required String nome,
+      required double gramas,
+      required double kcal,
+      Value<double> proteina,
+      Value<double> carboidrato,
+      Value<double> gordura,
+      Value<int> rowid,
+    });
+typedef $$RegistrosAlimentacaoTableUpdateCompanionBuilder =
+    RegistrosAlimentacaoCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      Value<String> dia,
+      Value<String> refeicao,
+      Value<String?> alimentoId,
+      Value<String> nome,
+      Value<double> gramas,
+      Value<double> kcal,
+      Value<double> proteina,
+      Value<double> carboidrato,
+      Value<double> gordura,
+      Value<int> rowid,
+    });
+
+final class $$RegistrosAlimentacaoTableReferences
+    extends
+        BaseReferences<
+          _$BancoAurora,
+          $RegistrosAlimentacaoTable,
+          RegistroAlimentacao
+        > {
+  $$RegistrosAlimentacaoTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $AlimentosTable _alimentoIdTable(_$BancoAurora db) => db.alimentos
+      .createAlias('registros_alimentacao__alimento_id__alimentos__id');
+
+  $$AlimentosTableProcessedTableManager? get alimentoId {
+    final $_column = $_itemColumn<String>('alimento_id');
+    if ($_column == null) return null;
+    final manager = $$AlimentosTableTableManager(
+      $_db,
+      $_db.alimentos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_alimentoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$RegistrosAlimentacaoTableFilterComposer
+    extends Composer<_$BancoAurora, $RegistrosAlimentacaoTable> {
+  $$RegistrosAlimentacaoTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get refeicao => $composableBuilder(
+    column: $table.refeicao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get gramas => $composableBuilder(
+    column: $table.gramas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get kcal => $composableBuilder(
+    column: $table.kcal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get proteina => $composableBuilder(
+    column: $table.proteina,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get carboidrato => $composableBuilder(
+    column: $table.carboidrato,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get gordura => $composableBuilder(
+    column: $table.gordura,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$AlimentosTableFilterComposer get alimentoId {
+    final $$AlimentosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.alimentoId,
+      referencedTable: $db.alimentos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AlimentosTableFilterComposer(
+            $db: $db,
+            $table: $db.alimentos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RegistrosAlimentacaoTableOrderingComposer
+    extends Composer<_$BancoAurora, $RegistrosAlimentacaoTable> {
+  $$RegistrosAlimentacaoTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get refeicao => $composableBuilder(
+    column: $table.refeicao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get gramas => $composableBuilder(
+    column: $table.gramas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get kcal => $composableBuilder(
+    column: $table.kcal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get proteina => $composableBuilder(
+    column: $table.proteina,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get carboidrato => $composableBuilder(
+    column: $table.carboidrato,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get gordura => $composableBuilder(
+    column: $table.gordura,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$AlimentosTableOrderingComposer get alimentoId {
+    final $$AlimentosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.alimentoId,
+      referencedTable: $db.alimentos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AlimentosTableOrderingComposer(
+            $db: $db,
+            $table: $db.alimentos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RegistrosAlimentacaoTableAnnotationComposer
+    extends Composer<_$BancoAurora, $RegistrosAlimentacaoTable> {
+  $$RegistrosAlimentacaoTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get dia =>
+      $composableBuilder(column: $table.dia, builder: (column) => column);
+
+  GeneratedColumn<String> get refeicao =>
+      $composableBuilder(column: $table.refeicao, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<double> get gramas =>
+      $composableBuilder(column: $table.gramas, builder: (column) => column);
+
+  GeneratedColumn<double> get kcal =>
+      $composableBuilder(column: $table.kcal, builder: (column) => column);
+
+  GeneratedColumn<double> get proteina =>
+      $composableBuilder(column: $table.proteina, builder: (column) => column);
+
+  GeneratedColumn<double> get carboidrato => $composableBuilder(
+    column: $table.carboidrato,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get gordura =>
+      $composableBuilder(column: $table.gordura, builder: (column) => column);
+
+  $$AlimentosTableAnnotationComposer get alimentoId {
+    final $$AlimentosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.alimentoId,
+      referencedTable: $db.alimentos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AlimentosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.alimentos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RegistrosAlimentacaoTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $RegistrosAlimentacaoTable,
+          RegistroAlimentacao,
+          $$RegistrosAlimentacaoTableFilterComposer,
+          $$RegistrosAlimentacaoTableOrderingComposer,
+          $$RegistrosAlimentacaoTableAnnotationComposer,
+          $$RegistrosAlimentacaoTableCreateCompanionBuilder,
+          $$RegistrosAlimentacaoTableUpdateCompanionBuilder,
+          (RegistroAlimentacao, $$RegistrosAlimentacaoTableReferences),
+          RegistroAlimentacao,
+          PrefetchHooks Function({bool alimentoId})
+        > {
+  $$RegistrosAlimentacaoTableTableManager(
+    _$BancoAurora db,
+    $RegistrosAlimentacaoTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RegistrosAlimentacaoTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RegistrosAlimentacaoTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RegistrosAlimentacaoTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> dia = const Value.absent(),
+                Value<String> refeicao = const Value.absent(),
+                Value<String?> alimentoId = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<double> gramas = const Value.absent(),
+                Value<double> kcal = const Value.absent(),
+                Value<double> proteina = const Value.absent(),
+                Value<double> carboidrato = const Value.absent(),
+                Value<double> gordura = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RegistrosAlimentacaoCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                dia: dia,
+                refeicao: refeicao,
+                alimentoId: alimentoId,
+                nome: nome,
+                gramas: gramas,
+                kcal: kcal,
+                proteina: proteina,
+                carboidrato: carboidrato,
+                gordura: gordura,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String dia,
+                required String refeicao,
+                Value<String?> alimentoId = const Value.absent(),
+                required String nome,
+                required double gramas,
+                required double kcal,
+                Value<double> proteina = const Value.absent(),
+                Value<double> carboidrato = const Value.absent(),
+                Value<double> gordura = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RegistrosAlimentacaoCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                dia: dia,
+                refeicao: refeicao,
+                alimentoId: alimentoId,
+                nome: nome,
+                gramas: gramas,
+                kcal: kcal,
+                proteina: proteina,
+                carboidrato: carboidrato,
+                gordura: gordura,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$RegistrosAlimentacaoTable, RegistroAlimentacao>(
+                    table,
+                  ),
+                  $$RegistrosAlimentacaoTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({alimentoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (alimentoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.alimentoId,
+                        referencedTable: $$RegistrosAlimentacaoTableReferences
+                            ._alimentoIdTable(db),
+                        referencedColumn: $$RegistrosAlimentacaoTableReferences
+                            ._alimentoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$RegistrosAlimentacaoTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $RegistrosAlimentacaoTable,
+      RegistroAlimentacao,
+      $$RegistrosAlimentacaoTableFilterComposer,
+      $$RegistrosAlimentacaoTableOrderingComposer,
+      $$RegistrosAlimentacaoTableAnnotationComposer,
+      $$RegistrosAlimentacaoTableCreateCompanionBuilder,
+      $$RegistrosAlimentacaoTableUpdateCompanionBuilder,
+      (RegistroAlimentacao, $$RegistrosAlimentacaoTableReferences),
+      RegistroAlimentacao,
+      PrefetchHooks Function({bool alimentoId})
+    >;
 typedef $$MensagensAssistenteTableCreateCompanionBuilder =
     MensagensAssistenteCompanion Function({
       Value<String> id,
@@ -18437,6 +21686,12 @@ class $BancoAuroraManager {
       $$SeriesFeitasTableTableManager(_db, _db.seriesFeitas);
   $$MedidasTableTableManager get medidas =>
       $$MedidasTableTableManager(_db, _db.medidas);
+  $$AlimentosTableTableManager get alimentos =>
+      $$AlimentosTableTableManager(_db, _db.alimentos);
+  $$AlvosDietaTableTableManager get alvosDieta =>
+      $$AlvosDietaTableTableManager(_db, _db.alvosDieta);
+  $$RegistrosAlimentacaoTableTableManager get registrosAlimentacao =>
+      $$RegistrosAlimentacaoTableTableManager(_db, _db.registrosAlimentacao);
   $$MensagensAssistenteTableTableManager get mensagensAssistente =>
       $$MensagensAssistenteTableTableManager(_db, _db.mensagensAssistente);
   $$PreferenciasTableTableManager get preferencias =>

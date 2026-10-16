@@ -1,5 +1,6 @@
 import '../core/formato.dart';
 import '../core/relogio.dart';
+import 'alimentacao_repo.dart';
 import 'banco.dart';
 import 'financas_repo.dart';
 import 'habitos_repo.dart';
@@ -70,6 +71,19 @@ Future<String> montarContexto(BancoAurora db) async {
       if (saude.ultima(t) case final m?) '$t ${numero(m.valor)} ${m.unidade} (${diaMesCurto(DateTime.parse(m.dia))})',
   ];
   if (medidas.isNotEmpty) l.add('Medidas mais recentes: ${medidas.join(', ')}.');
+
+  final comida = await AlimentacaoRepo(db).carregarDia(hoje);
+  final t = comida.total;
+  final a = comida.alvo;
+  String g(double v) => numero(v.roundToDouble());
+  if (a != null || comida.registros.isNotEmpty) {
+    l.add('Alimentação hoje (dia de ${comida.tipo == TipoDia.treino ? 'treino' : 'descanso'}): '
+        '${g(t.kcal)} kcal, proteína ${g(t.proteina)} g, carboidrato ${g(t.carboidrato)} g, gordura ${g(t.gordura)} g'
+        '${a == null ? '' : '; alvo ${g(a.kcal)} kcal, P ${g(a.proteina)} g, C ${g(a.carboidrato)} g, G ${g(a.gordura)} g'}.');
+  }
+  if (comida.alimentos.isNotEmpty) {
+    l.add('Alimentos cadastrados: ${comida.alimentos.take(40).map((x) => x.nome).join(', ')}.');
+  }
 
   return l.join('\n');
 }
