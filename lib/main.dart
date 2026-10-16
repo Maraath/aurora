@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import 'app.dart';
 import 'core/notificacoes.dart';
+import 'core/nuvem.dart';
 import 'core/relogio.dart';
 import 'data/banco.dart';
 import 'data/exemplo.dart';
@@ -15,6 +16,7 @@ Future<void> main() async {
   Intl.defaultLocale = 'pt_BR';
   await initializeDateFormatting('pt_BR');
   iniciarRelogio();
+  await iniciarNuvem();
 
   final db = BancoAurora();
   await semearExemplo(db);

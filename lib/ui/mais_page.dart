@@ -43,6 +43,15 @@ class MaisPage extends StatelessWidget {
           detalhe: 'Metas vistas no tempo',
           aoTocar: () => ir(Secao.projetos),
         ),
+        const SizedBox(height: 10),
+        _Linha(
+          icone: Icons.cloud_outlined,
+          fundo: c.surface2,
+          frente: c.text,
+          titulo: 'Conta e sincronização',
+          detalhe: 'Entrar para usar no celular e no PC',
+          aoTocar: () => ir(Secao.conta),
+        ),
       ],
     );
   }

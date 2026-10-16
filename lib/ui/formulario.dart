@@ -138,7 +138,15 @@ class CampoTexto extends StatelessWidget {
     this.numerico = false,
     this.decimal = false,
     this.aoMudar,
+    this.senha = false,
+    this.email = false,
   });
+
+  /// Esconde o texto (campo de senha).
+  final bool senha;
+
+  /// Teclado de e-mail, sem maiúscula automática.
+  final bool email;
 
   final TextEditingController controle;
   final String dica;
@@ -166,8 +174,14 @@ class CampoTexto extends StatelessWidget {
           onChanged: aoMudar,
           keyboardType: decimal
               ? const TextInputType.numberWithOptions(decimal: true)
-              : (numerico ? TextInputType.number : TextInputType.text),
-          textCapitalization: TextCapitalization.sentences,
+              : (numerico
+                  ? TextInputType.number
+                  : (email ? TextInputType.emailAddress : TextInputType.text)),
+          textCapitalization:
+              senha || email ? TextCapitalization.none : TextCapitalization.sentences,
+          obscureText: senha,
+          autocorrect: !(senha || email),
+          enableSuggestions: !(senha || email),
           style: manrope(16, cor: c.text),
           cursorColor: c.accent,
           decoration: InputDecoration(

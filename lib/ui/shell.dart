@@ -4,6 +4,7 @@ import '../app.dart';
 import '../core/tema.dart';
 import 'componentes.dart';
 import 'assistente/assistente_page.dart';
+import 'conta/conta_page.dart';
 import 'em_breve.dart';
 import 'financas/financas_page.dart';
 import 'habitos/habitos_page.dart';
@@ -27,6 +28,7 @@ enum Secao {
   assistente,
   treino,
   medidas,
+  conta,
 }
 
 class _ItemNav {
@@ -61,7 +63,7 @@ class _ShellState extends State<Shell> {
 
   /// Metas, Lembretes e Projetos ficam dentro de "Mais".
   Secao get _secaoDaBarra => switch (_secao) {
-        Secao.metas || Secao.lembretes || Secao.projetos => Secao.mais,
+        Secao.metas || Secao.lembretes || Secao.projetos || Secao.conta => Secao.mais,
         Secao.treino || Secao.medidas => Secao.habitos,
         _ => _secao,
       };
@@ -82,6 +84,7 @@ class _ShellState extends State<Shell> {
             descricao: 'Linha do tempo por mês, etapas e status de cada projeto.',
             voltar: () => _ir(Secao.mais)),
         Secao.assistente => const AssistentePage(),
+        Secao.conta => ContaPage(voltar: () => _ir(Secao.mais)),
       };
 
   @override
