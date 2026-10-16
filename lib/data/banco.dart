@@ -222,6 +222,23 @@ class Medidas extends Table with Sincronizavel {
   TextColumn get unidade => text()();
 }
 
+enum PapelMensagem { eu, aurora, sistema }
+
+/// Conversa com o assistente. Pedidos que só a IA responde ficam com
+/// `naFila` até a IA (na nuvem) estar disponível.
+@DataClassName('MensagemAssistente')
+class MensagensAssistente extends Table with Sincronizavel {
+  TextColumn get papel => textEnum<PapelMensagem>()();
+  TextColumn get texto => text()();
+  BoolColumn get naFila => boolean().withDefault(const Constant(false))();
+
+  /// O que um comando rápido criou ('transacao', 'lembrete', 'tarefa',
+  /// 'habito', 'medida') e o id, para o botão Desfazer.
+  TextColumn get itemTipo => text().nullable()();
+  TextColumn get itemId => text().nullable()();
+  BoolColumn get desfeita => boolean().withDefault(const Constant(false))();
+}
+
 /// Preferências do aparelho (tema etc.). Não sincroniza.
 class Preferencias extends Table {
   TextColumn get chave => text()();
@@ -247,13 +264,14 @@ class Preferencias extends Table {
   SessoesTreino,
   SeriesFeitas,
   Medidas,
+  MensagensAssistente,
   Preferencias,
 ])
 class BancoAurora extends _$BancoAurora {
   BancoAurora([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'aurora'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -278,6 +296,9 @@ class BancoAurora extends _$BancoAurora {
             await m.createTable(seriesFeitas);
             await m.createTable(medidas);
             await m.createIndex(medidaDiaTipo);
+          }
+          if (de < 5) {
+            await m.createTable(mensagensAssistente);
           }
         },
         beforeOpen: (detalhes) async {

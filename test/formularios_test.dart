@@ -4,6 +4,7 @@ import 'package:aurora/core/tema.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/data/habitos_repo.dart';
+import 'package:aurora/ui/assistente/assistente_page.dart';
 import 'package:aurora/ui/financas/financas_page.dart';
 import 'package:aurora/ui/financas/form_conta.dart';
 import 'package:aurora/ui/financas/form_lancamento.dart';
@@ -224,6 +225,34 @@ void main() {
       }
       expect(find.text('74 kg'), findsWidgets);
     }
+    tester.view.reset();
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('assistente responde a um atalho', (tester) async {
+    await tester.runAsync(() => semearExemplo(db));
+    for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
+      tester.view.physicalSize = tamanho;
+      tester.view.devicePixelRatio = 1;
+      await tester.pumpWidget(AuroraEscopo(
+        db: db,
+        escuro: ValueNotifier(true),
+        child: MaterialApp(
+          theme: temaAurora(Brightness.dark),
+          home: const Scaffold(body: SingleChildScrollView(child: AssistentePage())),
+        ),
+      ));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: '$tamanho');
+    }
+    await tester.ensureVisible(find.text('Gastei 35 no mercado'));
+    await tester.tap(find.text('Gastei 35 no mercado'));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Anotei R\$ 35,00'), findsOneWidget);
+    expect(find.text('Desfazer'), findsOneWidget);
+    expect(tester.takeException(), isNull);
     tester.view.reset();
     await tester.pumpWidget(const SizedBox());
   });

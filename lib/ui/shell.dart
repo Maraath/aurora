@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app.dart';
 import '../core/tema.dart';
 import 'componentes.dart';
+import 'assistente/assistente_page.dart';
 import 'em_breve.dart';
 import 'financas/financas_page.dart';
 import 'habitos/habitos_page.dart';
@@ -80,11 +81,7 @@ class _ShellState extends State<Shell> {
             fase: 'Fase 5 (V2)',
             descricao: 'Linha do tempo por mês, etapas e status de cada projeto.',
             voltar: () => _ir(Secao.mais)),
-        Secao.assistente => const EmBreve(
-            titulo: 'Assistente',
-            fase: 'Fase 5 (V2)',
-            descricao: 'Peça em linguagem natural: "me lembra de pagar a faculdade todo dia 11", '
-                '"gastei 35 no mercado". Sem internet, comandos rápidos funcionam e o resto vai para a fila.'),
+        Secao.assistente => const AssistentePage(),
       };
 
   @override

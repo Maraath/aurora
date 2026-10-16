@@ -8868,6 +8868,621 @@ class MedidasCompanion extends UpdateCompanion<Medida> {
   }
 }
 
+class $MensagensAssistenteTable extends MensagensAssistente
+    with TableInfo<$MensagensAssistenteTable, MensagemAssistente> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MensagensAssistenteTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<PapelMensagem, String> papel =
+      GeneratedColumn<String>(
+        'papel',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<PapelMensagem>($MensagensAssistenteTable.$converterpapel);
+  static const VerificationMeta _textoMeta = const VerificationMeta('texto');
+  @override
+  late final GeneratedColumn<String> texto = GeneratedColumn<String>(
+    'texto',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _naFilaMeta = const VerificationMeta('naFila');
+  @override
+  late final GeneratedColumn<bool> naFila = GeneratedColumn<bool>(
+    'na_fila',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("na_fila" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _itemTipoMeta = const VerificationMeta(
+    'itemTipo',
+  );
+  @override
+  late final GeneratedColumn<String> itemTipo = GeneratedColumn<String>(
+    'item_tipo',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
+  @override
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _desfeitaMeta = const VerificationMeta(
+    'desfeita',
+  );
+  @override
+  late final GeneratedColumn<bool> desfeita = GeneratedColumn<bool>(
+    'desfeita',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("desfeita" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    papel,
+    texto,
+    naFila,
+    itemTipo,
+    itemId,
+    desfeita,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'mensagens_assistente';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MensagemAssistente> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('texto')) {
+      context.handle(
+        _textoMeta,
+        texto.isAcceptableOrUnknown(data['texto']!, _textoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_textoMeta);
+    }
+    if (data.containsKey('na_fila')) {
+      context.handle(
+        _naFilaMeta,
+        naFila.isAcceptableOrUnknown(data['na_fila']!, _naFilaMeta),
+      );
+    }
+    if (data.containsKey('item_tipo')) {
+      context.handle(
+        _itemTipoMeta,
+        itemTipo.isAcceptableOrUnknown(data['item_tipo']!, _itemTipoMeta),
+      );
+    }
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    }
+    if (data.containsKey('desfeita')) {
+      context.handle(
+        _desfeitaMeta,
+        desfeita.isAcceptableOrUnknown(data['desfeita']!, _desfeitaMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MensagemAssistente map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MensagemAssistente(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      papel: $MensagensAssistenteTable.$converterpapel.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}papel'],
+        )!,
+      ),
+      texto: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}texto'],
+      )!,
+      naFila: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}na_fila'],
+      )!,
+      itemTipo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_tipo'],
+      ),
+      itemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_id'],
+      ),
+      desfeita: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}desfeita'],
+      )!,
+    );
+  }
+
+  @override
+  $MensagensAssistenteTable createAlias(String alias) {
+    return $MensagensAssistenteTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<PapelMensagem, String, String> $converterpapel =
+      const EnumNameConverter<PapelMensagem>(PapelMensagem.values);
+}
+
+class MensagemAssistente extends DataClass
+    implements Insertable<MensagemAssistente> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final PapelMensagem papel;
+  final String texto;
+  final bool naFila;
+
+  /// O que um comando rápido criou ('transacao', 'lembrete', 'tarefa',
+  /// 'habito', 'medida') e o id, para o botão Desfazer.
+  final String? itemTipo;
+  final String? itemId;
+  final bool desfeita;
+  const MensagemAssistente({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.papel,
+    required this.texto,
+    required this.naFila,
+    this.itemTipo,
+    this.itemId,
+    required this.desfeita,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    {
+      map['papel'] = Variable<String>(
+        $MensagensAssistenteTable.$converterpapel.toSql(papel),
+      );
+    }
+    map['texto'] = Variable<String>(texto);
+    map['na_fila'] = Variable<bool>(naFila);
+    if (!nullToAbsent || itemTipo != null) {
+      map['item_tipo'] = Variable<String>(itemTipo);
+    }
+    if (!nullToAbsent || itemId != null) {
+      map['item_id'] = Variable<String>(itemId);
+    }
+    map['desfeita'] = Variable<bool>(desfeita);
+    return map;
+  }
+
+  MensagensAssistenteCompanion toCompanion(bool nullToAbsent) {
+    return MensagensAssistenteCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      papel: Value(papel),
+      texto: Value(texto),
+      naFila: Value(naFila),
+      itemTipo: itemTipo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemTipo),
+      itemId: itemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemId),
+      desfeita: Value(desfeita),
+    );
+  }
+
+  factory MensagemAssistente.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MensagemAssistente(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      papel: $MensagensAssistenteTable.$converterpapel.fromJson(
+        serializer.fromJson<String>(json['papel']),
+      ),
+      texto: serializer.fromJson<String>(json['texto']),
+      naFila: serializer.fromJson<bool>(json['naFila']),
+      itemTipo: serializer.fromJson<String?>(json['itemTipo']),
+      itemId: serializer.fromJson<String?>(json['itemId']),
+      desfeita: serializer.fromJson<bool>(json['desfeita']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'papel': serializer.toJson<String>(
+        $MensagensAssistenteTable.$converterpapel.toJson(papel),
+      ),
+      'texto': serializer.toJson<String>(texto),
+      'naFila': serializer.toJson<bool>(naFila),
+      'itemTipo': serializer.toJson<String?>(itemTipo),
+      'itemId': serializer.toJson<String?>(itemId),
+      'desfeita': serializer.toJson<bool>(desfeita),
+    };
+  }
+
+  MensagemAssistente copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    PapelMensagem? papel,
+    String? texto,
+    bool? naFila,
+    Value<String?> itemTipo = const Value.absent(),
+    Value<String?> itemId = const Value.absent(),
+    bool? desfeita,
+  }) => MensagemAssistente(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    papel: papel ?? this.papel,
+    texto: texto ?? this.texto,
+    naFila: naFila ?? this.naFila,
+    itemTipo: itemTipo.present ? itemTipo.value : this.itemTipo,
+    itemId: itemId.present ? itemId.value : this.itemId,
+    desfeita: desfeita ?? this.desfeita,
+  );
+  MensagemAssistente copyWithCompanion(MensagensAssistenteCompanion data) {
+    return MensagemAssistente(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      papel: data.papel.present ? data.papel.value : this.papel,
+      texto: data.texto.present ? data.texto.value : this.texto,
+      naFila: data.naFila.present ? data.naFila.value : this.naFila,
+      itemTipo: data.itemTipo.present ? data.itemTipo.value : this.itemTipo,
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      desfeita: data.desfeita.present ? data.desfeita.value : this.desfeita,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MensagemAssistente(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('papel: $papel, ')
+          ..write('texto: $texto, ')
+          ..write('naFila: $naFila, ')
+          ..write('itemTipo: $itemTipo, ')
+          ..write('itemId: $itemId, ')
+          ..write('desfeita: $desfeita')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    papel,
+    texto,
+    naFila,
+    itemTipo,
+    itemId,
+    desfeita,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MensagemAssistente &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.papel == this.papel &&
+          other.texto == this.texto &&
+          other.naFila == this.naFila &&
+          other.itemTipo == this.itemTipo &&
+          other.itemId == this.itemId &&
+          other.desfeita == this.desfeita);
+}
+
+class MensagensAssistenteCompanion extends UpdateCompanion<MensagemAssistente> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<PapelMensagem> papel;
+  final Value<String> texto;
+  final Value<bool> naFila;
+  final Value<String?> itemTipo;
+  final Value<String?> itemId;
+  final Value<bool> desfeita;
+  final Value<int> rowid;
+  const MensagensAssistenteCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.papel = const Value.absent(),
+    this.texto = const Value.absent(),
+    this.naFila = const Value.absent(),
+    this.itemTipo = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.desfeita = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MensagensAssistenteCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required PapelMensagem papel,
+    required String texto,
+    this.naFila = const Value.absent(),
+    this.itemTipo = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.desfeita = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : papel = Value(papel),
+       texto = Value(texto);
+  static Insertable<MensagemAssistente> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? papel,
+    Expression<String>? texto,
+    Expression<bool>? naFila,
+    Expression<String>? itemTipo,
+    Expression<String>? itemId,
+    Expression<bool>? desfeita,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (papel != null) 'papel': papel,
+      if (texto != null) 'texto': texto,
+      if (naFila != null) 'na_fila': naFila,
+      if (itemTipo != null) 'item_tipo': itemTipo,
+      if (itemId != null) 'item_id': itemId,
+      if (desfeita != null) 'desfeita': desfeita,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MensagensAssistenteCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<PapelMensagem>? papel,
+    Value<String>? texto,
+    Value<bool>? naFila,
+    Value<String?>? itemTipo,
+    Value<String?>? itemId,
+    Value<bool>? desfeita,
+    Value<int>? rowid,
+  }) {
+    return MensagensAssistenteCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      papel: papel ?? this.papel,
+      texto: texto ?? this.texto,
+      naFila: naFila ?? this.naFila,
+      itemTipo: itemTipo ?? this.itemTipo,
+      itemId: itemId ?? this.itemId,
+      desfeita: desfeita ?? this.desfeita,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (papel.present) {
+      map['papel'] = Variable<String>(
+        $MensagensAssistenteTable.$converterpapel.toSql(papel.value),
+      );
+    }
+    if (texto.present) {
+      map['texto'] = Variable<String>(texto.value);
+    }
+    if (naFila.present) {
+      map['na_fila'] = Variable<bool>(naFila.value);
+    }
+    if (itemTipo.present) {
+      map['item_tipo'] = Variable<String>(itemTipo.value);
+    }
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
+    }
+    if (desfeita.present) {
+      map['desfeita'] = Variable<bool>(desfeita.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MensagensAssistenteCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('papel: $papel, ')
+          ..write('texto: $texto, ')
+          ..write('naFila: $naFila, ')
+          ..write('itemTipo: $itemTipo, ')
+          ..write('itemId: $itemId, ')
+          ..write('desfeita: $desfeita, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PreferenciasTable extends Preferencias
     with TableInfo<$PreferenciasTable, Preferencia> {
   @override
@@ -9100,6 +9715,8 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   late final $SessoesTreinoTable sessoesTreino = $SessoesTreinoTable(this);
   late final $SeriesFeitasTable seriesFeitas = $SeriesFeitasTable(this);
   late final $MedidasTable medidas = $MedidasTable(this);
+  late final $MensagensAssistenteTable mensagensAssistente =
+      $MensagensAssistenteTable(this);
   late final $PreferenciasTable preferencias = $PreferenciasTable(this);
   late final Index conclusaoTarefaDia = Index(
     'conclusao_tarefa_dia',
@@ -9137,6 +9754,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
     sessoesTreino,
     seriesFeitas,
     medidas,
+    mensagensAssistente,
     preferencias,
     conclusaoTarefaDia,
     registroHabitoDia,
@@ -16012,6 +16630,331 @@ typedef $$MedidasTableProcessedTableManager =
       Medida,
       PrefetchHooks Function()
     >;
+typedef $$MensagensAssistenteTableCreateCompanionBuilder =
+    MensagensAssistenteCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      required PapelMensagem papel,
+      required String texto,
+      Value<bool> naFila,
+      Value<String?> itemTipo,
+      Value<String?> itemId,
+      Value<bool> desfeita,
+      Value<int> rowid,
+    });
+typedef $$MensagensAssistenteTableUpdateCompanionBuilder =
+    MensagensAssistenteCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      Value<PapelMensagem> papel,
+      Value<String> texto,
+      Value<bool> naFila,
+      Value<String?> itemTipo,
+      Value<String?> itemId,
+      Value<bool> desfeita,
+      Value<int> rowid,
+    });
+
+class $$MensagensAssistenteTableFilterComposer
+    extends Composer<_$BancoAurora, $MensagensAssistenteTable> {
+  $$MensagensAssistenteTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<PapelMensagem, PapelMensagem, String>
+  get papel => $composableBuilder(
+    column: $table.papel,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<String> get texto => $composableBuilder(
+    column: $table.texto,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get naFila => $composableBuilder(
+    column: $table.naFila,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemTipo => $composableBuilder(
+    column: $table.itemTipo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get desfeita => $composableBuilder(
+    column: $table.desfeita,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MensagensAssistenteTableOrderingComposer
+    extends Composer<_$BancoAurora, $MensagensAssistenteTable> {
+  $$MensagensAssistenteTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get papel => $composableBuilder(
+    column: $table.papel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get texto => $composableBuilder(
+    column: $table.texto,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get naFila => $composableBuilder(
+    column: $table.naFila,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemTipo => $composableBuilder(
+    column: $table.itemTipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get desfeita => $composableBuilder(
+    column: $table.desfeita,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MensagensAssistenteTableAnnotationComposer
+    extends Composer<_$BancoAurora, $MensagensAssistenteTable> {
+  $$MensagensAssistenteTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<PapelMensagem, String> get papel =>
+      $composableBuilder(column: $table.papel, builder: (column) => column);
+
+  GeneratedColumn<String> get texto =>
+      $composableBuilder(column: $table.texto, builder: (column) => column);
+
+  GeneratedColumn<bool> get naFila =>
+      $composableBuilder(column: $table.naFila, builder: (column) => column);
+
+  GeneratedColumn<String> get itemTipo =>
+      $composableBuilder(column: $table.itemTipo, builder: (column) => column);
+
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
+
+  GeneratedColumn<bool> get desfeita =>
+      $composableBuilder(column: $table.desfeita, builder: (column) => column);
+}
+
+class $$MensagensAssistenteTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $MensagensAssistenteTable,
+          MensagemAssistente,
+          $$MensagensAssistenteTableFilterComposer,
+          $$MensagensAssistenteTableOrderingComposer,
+          $$MensagensAssistenteTableAnnotationComposer,
+          $$MensagensAssistenteTableCreateCompanionBuilder,
+          $$MensagensAssistenteTableUpdateCompanionBuilder,
+          (
+            MensagemAssistente,
+            BaseReferences<
+              _$BancoAurora,
+              $MensagensAssistenteTable,
+              MensagemAssistente
+            >,
+          ),
+          MensagemAssistente,
+          PrefetchHooks Function()
+        > {
+  $$MensagensAssistenteTableTableManager(
+    _$BancoAurora db,
+    $MensagensAssistenteTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MensagensAssistenteTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MensagensAssistenteTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$MensagensAssistenteTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<PapelMensagem> papel = const Value.absent(),
+                Value<String> texto = const Value.absent(),
+                Value<bool> naFila = const Value.absent(),
+                Value<String?> itemTipo = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
+                Value<bool> desfeita = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MensagensAssistenteCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                papel: papel,
+                texto: texto,
+                naFila: naFila,
+                itemTipo: itemTipo,
+                itemId: itemId,
+                desfeita: desfeita,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required PapelMensagem papel,
+                required String texto,
+                Value<bool> naFila = const Value.absent(),
+                Value<String?> itemTipo = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
+                Value<bool> desfeita = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MensagensAssistenteCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                papel: papel,
+                texto: texto,
+                naFila: naFila,
+                itemTipo: itemTipo,
+                itemId: itemId,
+                desfeita: desfeita,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$MensagensAssistenteTable, MensagemAssistente>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$BancoAurora,
+                    $MensagensAssistenteTable,
+                    MensagemAssistente
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MensagensAssistenteTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $MensagensAssistenteTable,
+      MensagemAssistente,
+      $$MensagensAssistenteTableFilterComposer,
+      $$MensagensAssistenteTableOrderingComposer,
+      $$MensagensAssistenteTableAnnotationComposer,
+      $$MensagensAssistenteTableCreateCompanionBuilder,
+      $$MensagensAssistenteTableUpdateCompanionBuilder,
+      (
+        MensagemAssistente,
+        BaseReferences<
+          _$BancoAurora,
+          $MensagensAssistenteTable,
+          MensagemAssistente
+        >,
+      ),
+      MensagemAssistente,
+      PrefetchHooks Function()
+    >;
 typedef $$PreferenciasTableCreateCompanionBuilder =
     PreferenciasCompanion Function({
       required String chave,
@@ -16193,6 +17136,8 @@ class $BancoAuroraManager {
       $$SeriesFeitasTableTableManager(_db, _db.seriesFeitas);
   $$MedidasTableTableManager get medidas =>
       $$MedidasTableTableManager(_db, _db.medidas);
+  $$MensagensAssistenteTableTableManager get mensagensAssistente =>
+      $$MensagensAssistenteTableTableManager(_db, _db.mensagensAssistente);
   $$PreferenciasTableTableManager get preferencias =>
       $$PreferenciasTableTableManager(_db, _db.preferencias);
 }
