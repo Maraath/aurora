@@ -2,12 +2,69 @@ import 'package:drift/drift.dart';
 
 import '../core/relogio.dart';
 import 'banco.dart';
+import 'saude_repo.dart';
 
 /// Preenche o banco com os dados de exemplo do protótipo na primeira abertura.
 /// As datas são relativas a hoje para a tela Visão sempre ter o que mostrar.
 Future<void> semearExemplo(BancoAurora db) async {
   await _etapa1(db);
   await _etapa2(db);
+  await _etapa4(db);
+}
+
+/// Fase 4: ficha com Treino A e B, um treino A já feito (de onde saem as
+/// cargas sugeridas do protótipo: 40, 14 e 25 kg) e medidas de peso e braço.
+Future<void> _etapa4(BancoAurora db) async {
+  if (await db.preferencia('exemplo_v4') != null) return;
+  final saude = SaudeRepo(db);
+  final hoje = hojeSP();
+  DateTime antes(int dias) => hoje.subtract(Duration(days: dias));
+
+  await db.transaction(() async {
+    final a = await saude.salvarTreino(
+      TreinosCompanion.insert(
+          nome: 'Treino A', foco: const Value('Peito e tríceps'), diasSemana: const Value(1 | 8)),
+      [
+        (nome: 'Supino reto', series: 4, repeticoes: 10, cargaInicial: 30),
+        (nome: 'Crucifixo com halteres', series: 3, repeticoes: 12, cargaInicial: 10),
+        (nome: 'Tríceps na corda', series: 3, repeticoes: 12, cargaInicial: 20),
+      ],
+    );
+    await saude.salvarTreino(
+      TreinosCompanion.insert(
+          nome: 'Treino B', foco: const Value('Costas e bíceps'), diasSemana: const Value(2 | 16)),
+      [
+        (nome: 'Puxada frontal', series: 4, repeticoes: 10, cargaInicial: 35),
+        (nome: 'Remada baixa', series: 3, repeticoes: 12, cargaInicial: 30),
+        (nome: 'Rosca direta', series: 3, repeticoes: 12, cargaInicial: 10),
+      ],
+    );
+
+    final supino = await saude.exercicioPorNome('Supino reto');
+    final crucifixo = await saude.exercicioPorNome('Crucifixo com halteres');
+    final triceps = await saude.exercicioPorNome('Tríceps na corda');
+    await saude.registrarSessao(
+      treinoId: a,
+      inicio: instanteSP(antes(3), 19),
+      series: [
+        for (var n = 1; n <= 4; n++) (exercicioId: supino, numero: n, repeticoes: 10, cargaKg: 37.5),
+        for (var n = 1; n <= 3; n++)
+          (exercicioId: crucifixo, numero: n, repeticoes: n == 3 ? 10 : 12, cargaKg: 14.0),
+        for (var n = 1; n <= 3; n++) (exercicioId: triceps, numero: n, repeticoes: 12, cargaKg: 22.5),
+      ],
+    );
+
+    await saude.salvarMedidas(antes(30), [
+      (tipo: 'Peso', valor: 73.5, unidade: 'kg'),
+      (tipo: 'Braço', valor: 36.5, unidade: 'cm'),
+    ]);
+    await saude.salvarMedidas(antes(14), [(tipo: 'Peso', valor: 73.8, unidade: 'kg')]);
+    await saude.salvarMedidas(antes(2), [
+      (tipo: 'Peso', valor: 74, unidade: 'kg'),
+      (tipo: 'Braço', valor: 37, unidade: 'cm'),
+    ]);
+    await db.salvarPreferencia('exemplo_v4', DateTime.now().toIso8601String());
+  });
 }
 
 /// Fase 2: lembretes do protótipo e uma tarefa recorrente.

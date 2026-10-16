@@ -5701,6 +5701,3173 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
   }
 }
 
+class $ExerciciosTable extends Exercicios
+    with TableInfo<$ExerciciosTable, Exercicio> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExerciciosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _grupoMeta = const VerificationMeta('grupo');
+  @override
+  late final GeneratedColumn<String> grupo = GeneratedColumn<String>(
+    'grupo',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _midiaMeta = const VerificationMeta('midia');
+  @override
+  late final GeneratedColumn<String> midia = GeneratedColumn<String>(
+    'midia',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    nome,
+    grupo,
+    midia,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'exercicios';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Exercicio> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('grupo')) {
+      context.handle(
+        _grupoMeta,
+        grupo.isAcceptableOrUnknown(data['grupo']!, _grupoMeta),
+      );
+    }
+    if (data.containsKey('midia')) {
+      context.handle(
+        _midiaMeta,
+        midia.isAcceptableOrUnknown(data['midia']!, _midiaMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Exercicio map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Exercicio(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      grupo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}grupo'],
+      ),
+      midia: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}midia'],
+      ),
+    );
+  }
+
+  @override
+  $ExerciciosTable createAlias(String alias) {
+    return $ExerciciosTable(attachedDatabase, alias);
+  }
+}
+
+class Exercicio extends DataClass implements Insertable<Exercicio> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String nome;
+  final String? grupo;
+  final String? midia;
+  const Exercicio({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.nome,
+    this.grupo,
+    this.midia,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['nome'] = Variable<String>(nome);
+    if (!nullToAbsent || grupo != null) {
+      map['grupo'] = Variable<String>(grupo);
+    }
+    if (!nullToAbsent || midia != null) {
+      map['midia'] = Variable<String>(midia);
+    }
+    return map;
+  }
+
+  ExerciciosCompanion toCompanion(bool nullToAbsent) {
+    return ExerciciosCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      nome: Value(nome),
+      grupo: grupo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(grupo),
+      midia: midia == null && nullToAbsent
+          ? const Value.absent()
+          : Value(midia),
+    );
+  }
+
+  factory Exercicio.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Exercicio(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      nome: serializer.fromJson<String>(json['nome']),
+      grupo: serializer.fromJson<String?>(json['grupo']),
+      midia: serializer.fromJson<String?>(json['midia']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'nome': serializer.toJson<String>(nome),
+      'grupo': serializer.toJson<String?>(grupo),
+      'midia': serializer.toJson<String?>(midia),
+    };
+  }
+
+  Exercicio copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? nome,
+    Value<String?> grupo = const Value.absent(),
+    Value<String?> midia = const Value.absent(),
+  }) => Exercicio(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    nome: nome ?? this.nome,
+    grupo: grupo.present ? grupo.value : this.grupo,
+    midia: midia.present ? midia.value : this.midia,
+  );
+  Exercicio copyWithCompanion(ExerciciosCompanion data) {
+    return Exercicio(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      grupo: data.grupo.present ? data.grupo.value : this.grupo,
+      midia: data.midia.present ? data.midia.value : this.midia,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Exercicio(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('nome: $nome, ')
+          ..write('grupo: $grupo, ')
+          ..write('midia: $midia')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, criadoEm, atualizadoEm, apagadoEm, nome, grupo, midia);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Exercicio &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.nome == this.nome &&
+          other.grupo == this.grupo &&
+          other.midia == this.midia);
+}
+
+class ExerciciosCompanion extends UpdateCompanion<Exercicio> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> nome;
+  final Value<String?> grupo;
+  final Value<String?> midia;
+  final Value<int> rowid;
+  const ExerciciosCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.grupo = const Value.absent(),
+    this.midia = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExerciciosCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String nome,
+    this.grupo = const Value.absent(),
+    this.midia = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : nome = Value(nome);
+  static Insertable<Exercicio> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? nome,
+    Expression<String>? grupo,
+    Expression<String>? midia,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (nome != null) 'nome': nome,
+      if (grupo != null) 'grupo': grupo,
+      if (midia != null) 'midia': midia,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExerciciosCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? nome,
+    Value<String?>? grupo,
+    Value<String?>? midia,
+    Value<int>? rowid,
+  }) {
+    return ExerciciosCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      nome: nome ?? this.nome,
+      grupo: grupo ?? this.grupo,
+      midia: midia ?? this.midia,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (grupo.present) {
+      map['grupo'] = Variable<String>(grupo.value);
+    }
+    if (midia.present) {
+      map['midia'] = Variable<String>(midia.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExerciciosCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('nome: $nome, ')
+          ..write('grupo: $grupo, ')
+          ..write('midia: $midia, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TreinosTable extends Treinos with TableInfo<$TreinosTable, Treino> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TreinosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _focoMeta = const VerificationMeta('foco');
+  @override
+  late final GeneratedColumn<String> foco = GeneratedColumn<String>(
+    'foco',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _diasSemanaMeta = const VerificationMeta(
+    'diasSemana',
+  );
+  @override
+  late final GeneratedColumn<int> diasSemana = GeneratedColumn<int>(
+    'dias_semana',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _ordemMeta = const VerificationMeta('ordem');
+  @override
+  late final GeneratedColumn<int> ordem = GeneratedColumn<int>(
+    'ordem',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    nome,
+    foco,
+    diasSemana,
+    ordem,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'treinos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Treino> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('foco')) {
+      context.handle(
+        _focoMeta,
+        foco.isAcceptableOrUnknown(data['foco']!, _focoMeta),
+      );
+    }
+    if (data.containsKey('dias_semana')) {
+      context.handle(
+        _diasSemanaMeta,
+        diasSemana.isAcceptableOrUnknown(data['dias_semana']!, _diasSemanaMeta),
+      );
+    }
+    if (data.containsKey('ordem')) {
+      context.handle(
+        _ordemMeta,
+        ordem.isAcceptableOrUnknown(data['ordem']!, _ordemMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Treino map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Treino(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      foco: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}foco'],
+      ),
+      diasSemana: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dias_semana'],
+      )!,
+      ordem: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ordem'],
+      )!,
+    );
+  }
+
+  @override
+  $TreinosTable createAlias(String alias) {
+    return $TreinosTable(attachedDatabase, alias);
+  }
+}
+
+class Treino extends DataClass implements Insertable<Treino> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String nome;
+  final String? foco;
+
+  /// Bits de segunda (1) a domingo (64), como em Habitos. 0 = sem dia fixo.
+  final int diasSemana;
+  final int ordem;
+  const Treino({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.nome,
+    this.foco,
+    required this.diasSemana,
+    required this.ordem,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['nome'] = Variable<String>(nome);
+    if (!nullToAbsent || foco != null) {
+      map['foco'] = Variable<String>(foco);
+    }
+    map['dias_semana'] = Variable<int>(diasSemana);
+    map['ordem'] = Variable<int>(ordem);
+    return map;
+  }
+
+  TreinosCompanion toCompanion(bool nullToAbsent) {
+    return TreinosCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      nome: Value(nome),
+      foco: foco == null && nullToAbsent ? const Value.absent() : Value(foco),
+      diasSemana: Value(diasSemana),
+      ordem: Value(ordem),
+    );
+  }
+
+  factory Treino.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Treino(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      nome: serializer.fromJson<String>(json['nome']),
+      foco: serializer.fromJson<String?>(json['foco']),
+      diasSemana: serializer.fromJson<int>(json['diasSemana']),
+      ordem: serializer.fromJson<int>(json['ordem']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'nome': serializer.toJson<String>(nome),
+      'foco': serializer.toJson<String?>(foco),
+      'diasSemana': serializer.toJson<int>(diasSemana),
+      'ordem': serializer.toJson<int>(ordem),
+    };
+  }
+
+  Treino copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? nome,
+    Value<String?> foco = const Value.absent(),
+    int? diasSemana,
+    int? ordem,
+  }) => Treino(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    nome: nome ?? this.nome,
+    foco: foco.present ? foco.value : this.foco,
+    diasSemana: diasSemana ?? this.diasSemana,
+    ordem: ordem ?? this.ordem,
+  );
+  Treino copyWithCompanion(TreinosCompanion data) {
+    return Treino(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      foco: data.foco.present ? data.foco.value : this.foco,
+      diasSemana: data.diasSemana.present
+          ? data.diasSemana.value
+          : this.diasSemana,
+      ordem: data.ordem.present ? data.ordem.value : this.ordem,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Treino(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('nome: $nome, ')
+          ..write('foco: $foco, ')
+          ..write('diasSemana: $diasSemana, ')
+          ..write('ordem: $ordem')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    nome,
+    foco,
+    diasSemana,
+    ordem,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Treino &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.nome == this.nome &&
+          other.foco == this.foco &&
+          other.diasSemana == this.diasSemana &&
+          other.ordem == this.ordem);
+}
+
+class TreinosCompanion extends UpdateCompanion<Treino> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> nome;
+  final Value<String?> foco;
+  final Value<int> diasSemana;
+  final Value<int> ordem;
+  final Value<int> rowid;
+  const TreinosCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.foco = const Value.absent(),
+    this.diasSemana = const Value.absent(),
+    this.ordem = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TreinosCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String nome,
+    this.foco = const Value.absent(),
+    this.diasSemana = const Value.absent(),
+    this.ordem = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : nome = Value(nome);
+  static Insertable<Treino> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? nome,
+    Expression<String>? foco,
+    Expression<int>? diasSemana,
+    Expression<int>? ordem,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (nome != null) 'nome': nome,
+      if (foco != null) 'foco': foco,
+      if (diasSemana != null) 'dias_semana': diasSemana,
+      if (ordem != null) 'ordem': ordem,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TreinosCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? nome,
+    Value<String?>? foco,
+    Value<int>? diasSemana,
+    Value<int>? ordem,
+    Value<int>? rowid,
+  }) {
+    return TreinosCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      nome: nome ?? this.nome,
+      foco: foco ?? this.foco,
+      diasSemana: diasSemana ?? this.diasSemana,
+      ordem: ordem ?? this.ordem,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (foco.present) {
+      map['foco'] = Variable<String>(foco.value);
+    }
+    if (diasSemana.present) {
+      map['dias_semana'] = Variable<int>(diasSemana.value);
+    }
+    if (ordem.present) {
+      map['ordem'] = Variable<int>(ordem.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TreinosCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('nome: $nome, ')
+          ..write('foco: $foco, ')
+          ..write('diasSemana: $diasSemana, ')
+          ..write('ordem: $ordem, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ItensTreinoTable extends ItensTreino
+    with TableInfo<$ItensTreinoTable, ItemTreino> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ItensTreinoTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _treinoIdMeta = const VerificationMeta(
+    'treinoId',
+  );
+  @override
+  late final GeneratedColumn<String> treinoId = GeneratedColumn<String>(
+    'treino_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES treinos (id)',
+    ),
+  );
+  static const VerificationMeta _exercicioIdMeta = const VerificationMeta(
+    'exercicioId',
+  );
+  @override
+  late final GeneratedColumn<String> exercicioId = GeneratedColumn<String>(
+    'exercicio_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES exercicios (id)',
+    ),
+  );
+  static const VerificationMeta _ordemMeta = const VerificationMeta('ordem');
+  @override
+  late final GeneratedColumn<int> ordem = GeneratedColumn<int>(
+    'ordem',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _seriesMeta = const VerificationMeta('series');
+  @override
+  late final GeneratedColumn<int> series = GeneratedColumn<int>(
+    'series',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3),
+  );
+  static const VerificationMeta _repeticoesMeta = const VerificationMeta(
+    'repeticoes',
+  );
+  @override
+  late final GeneratedColumn<int> repeticoes = GeneratedColumn<int>(
+    'repeticoes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(10),
+  );
+  static const VerificationMeta _cargaInicialMeta = const VerificationMeta(
+    'cargaInicial',
+  );
+  @override
+  late final GeneratedColumn<double> cargaInicial = GeneratedColumn<double>(
+    'carga_inicial',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    treinoId,
+    exercicioId,
+    ordem,
+    series,
+    repeticoes,
+    cargaInicial,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'itens_treino';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ItemTreino> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('treino_id')) {
+      context.handle(
+        _treinoIdMeta,
+        treinoId.isAcceptableOrUnknown(data['treino_id']!, _treinoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_treinoIdMeta);
+    }
+    if (data.containsKey('exercicio_id')) {
+      context.handle(
+        _exercicioIdMeta,
+        exercicioId.isAcceptableOrUnknown(
+          data['exercicio_id']!,
+          _exercicioIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_exercicioIdMeta);
+    }
+    if (data.containsKey('ordem')) {
+      context.handle(
+        _ordemMeta,
+        ordem.isAcceptableOrUnknown(data['ordem']!, _ordemMeta),
+      );
+    }
+    if (data.containsKey('series')) {
+      context.handle(
+        _seriesMeta,
+        series.isAcceptableOrUnknown(data['series']!, _seriesMeta),
+      );
+    }
+    if (data.containsKey('repeticoes')) {
+      context.handle(
+        _repeticoesMeta,
+        repeticoes.isAcceptableOrUnknown(data['repeticoes']!, _repeticoesMeta),
+      );
+    }
+    if (data.containsKey('carga_inicial')) {
+      context.handle(
+        _cargaInicialMeta,
+        cargaInicial.isAcceptableOrUnknown(
+          data['carga_inicial']!,
+          _cargaInicialMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ItemTreino map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ItemTreino(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      treinoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}treino_id'],
+      )!,
+      exercicioId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exercicio_id'],
+      )!,
+      ordem: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ordem'],
+      )!,
+      series: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}series'],
+      )!,
+      repeticoes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}repeticoes'],
+      )!,
+      cargaInicial: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}carga_inicial'],
+      ),
+    );
+  }
+
+  @override
+  $ItensTreinoTable createAlias(String alias) {
+    return $ItensTreinoTable(attachedDatabase, alias);
+  }
+}
+
+class ItemTreino extends DataClass implements Insertable<ItemTreino> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String treinoId;
+  final String exercicioId;
+  final int ordem;
+  final int series;
+
+  /// Repetições alvo por série (a carga sobe quando todas chegam nelas).
+  final int repeticoes;
+
+  /// Carga para começar quando ainda não há histórico (kg).
+  final double? cargaInicial;
+  const ItemTreino({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.treinoId,
+    required this.exercicioId,
+    required this.ordem,
+    required this.series,
+    required this.repeticoes,
+    this.cargaInicial,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['treino_id'] = Variable<String>(treinoId);
+    map['exercicio_id'] = Variable<String>(exercicioId);
+    map['ordem'] = Variable<int>(ordem);
+    map['series'] = Variable<int>(series);
+    map['repeticoes'] = Variable<int>(repeticoes);
+    if (!nullToAbsent || cargaInicial != null) {
+      map['carga_inicial'] = Variable<double>(cargaInicial);
+    }
+    return map;
+  }
+
+  ItensTreinoCompanion toCompanion(bool nullToAbsent) {
+    return ItensTreinoCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      treinoId: Value(treinoId),
+      exercicioId: Value(exercicioId),
+      ordem: Value(ordem),
+      series: Value(series),
+      repeticoes: Value(repeticoes),
+      cargaInicial: cargaInicial == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cargaInicial),
+    );
+  }
+
+  factory ItemTreino.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ItemTreino(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      treinoId: serializer.fromJson<String>(json['treinoId']),
+      exercicioId: serializer.fromJson<String>(json['exercicioId']),
+      ordem: serializer.fromJson<int>(json['ordem']),
+      series: serializer.fromJson<int>(json['series']),
+      repeticoes: serializer.fromJson<int>(json['repeticoes']),
+      cargaInicial: serializer.fromJson<double?>(json['cargaInicial']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'treinoId': serializer.toJson<String>(treinoId),
+      'exercicioId': serializer.toJson<String>(exercicioId),
+      'ordem': serializer.toJson<int>(ordem),
+      'series': serializer.toJson<int>(series),
+      'repeticoes': serializer.toJson<int>(repeticoes),
+      'cargaInicial': serializer.toJson<double?>(cargaInicial),
+    };
+  }
+
+  ItemTreino copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? treinoId,
+    String? exercicioId,
+    int? ordem,
+    int? series,
+    int? repeticoes,
+    Value<double?> cargaInicial = const Value.absent(),
+  }) => ItemTreino(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    treinoId: treinoId ?? this.treinoId,
+    exercicioId: exercicioId ?? this.exercicioId,
+    ordem: ordem ?? this.ordem,
+    series: series ?? this.series,
+    repeticoes: repeticoes ?? this.repeticoes,
+    cargaInicial: cargaInicial.present ? cargaInicial.value : this.cargaInicial,
+  );
+  ItemTreino copyWithCompanion(ItensTreinoCompanion data) {
+    return ItemTreino(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      treinoId: data.treinoId.present ? data.treinoId.value : this.treinoId,
+      exercicioId: data.exercicioId.present
+          ? data.exercicioId.value
+          : this.exercicioId,
+      ordem: data.ordem.present ? data.ordem.value : this.ordem,
+      series: data.series.present ? data.series.value : this.series,
+      repeticoes: data.repeticoes.present
+          ? data.repeticoes.value
+          : this.repeticoes,
+      cargaInicial: data.cargaInicial.present
+          ? data.cargaInicial.value
+          : this.cargaInicial,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ItemTreino(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('treinoId: $treinoId, ')
+          ..write('exercicioId: $exercicioId, ')
+          ..write('ordem: $ordem, ')
+          ..write('series: $series, ')
+          ..write('repeticoes: $repeticoes, ')
+          ..write('cargaInicial: $cargaInicial')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    treinoId,
+    exercicioId,
+    ordem,
+    series,
+    repeticoes,
+    cargaInicial,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ItemTreino &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.treinoId == this.treinoId &&
+          other.exercicioId == this.exercicioId &&
+          other.ordem == this.ordem &&
+          other.series == this.series &&
+          other.repeticoes == this.repeticoes &&
+          other.cargaInicial == this.cargaInicial);
+}
+
+class ItensTreinoCompanion extends UpdateCompanion<ItemTreino> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> treinoId;
+  final Value<String> exercicioId;
+  final Value<int> ordem;
+  final Value<int> series;
+  final Value<int> repeticoes;
+  final Value<double?> cargaInicial;
+  final Value<int> rowid;
+  const ItensTreinoCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.treinoId = const Value.absent(),
+    this.exercicioId = const Value.absent(),
+    this.ordem = const Value.absent(),
+    this.series = const Value.absent(),
+    this.repeticoes = const Value.absent(),
+    this.cargaInicial = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ItensTreinoCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String treinoId,
+    required String exercicioId,
+    this.ordem = const Value.absent(),
+    this.series = const Value.absent(),
+    this.repeticoes = const Value.absent(),
+    this.cargaInicial = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : treinoId = Value(treinoId),
+       exercicioId = Value(exercicioId);
+  static Insertable<ItemTreino> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? treinoId,
+    Expression<String>? exercicioId,
+    Expression<int>? ordem,
+    Expression<int>? series,
+    Expression<int>? repeticoes,
+    Expression<double>? cargaInicial,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (treinoId != null) 'treino_id': treinoId,
+      if (exercicioId != null) 'exercicio_id': exercicioId,
+      if (ordem != null) 'ordem': ordem,
+      if (series != null) 'series': series,
+      if (repeticoes != null) 'repeticoes': repeticoes,
+      if (cargaInicial != null) 'carga_inicial': cargaInicial,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ItensTreinoCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? treinoId,
+    Value<String>? exercicioId,
+    Value<int>? ordem,
+    Value<int>? series,
+    Value<int>? repeticoes,
+    Value<double?>? cargaInicial,
+    Value<int>? rowid,
+  }) {
+    return ItensTreinoCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      treinoId: treinoId ?? this.treinoId,
+      exercicioId: exercicioId ?? this.exercicioId,
+      ordem: ordem ?? this.ordem,
+      series: series ?? this.series,
+      repeticoes: repeticoes ?? this.repeticoes,
+      cargaInicial: cargaInicial ?? this.cargaInicial,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (treinoId.present) {
+      map['treino_id'] = Variable<String>(treinoId.value);
+    }
+    if (exercicioId.present) {
+      map['exercicio_id'] = Variable<String>(exercicioId.value);
+    }
+    if (ordem.present) {
+      map['ordem'] = Variable<int>(ordem.value);
+    }
+    if (series.present) {
+      map['series'] = Variable<int>(series.value);
+    }
+    if (repeticoes.present) {
+      map['repeticoes'] = Variable<int>(repeticoes.value);
+    }
+    if (cargaInicial.present) {
+      map['carga_inicial'] = Variable<double>(cargaInicial.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ItensTreinoCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('treinoId: $treinoId, ')
+          ..write('exercicioId: $exercicioId, ')
+          ..write('ordem: $ordem, ')
+          ..write('series: $series, ')
+          ..write('repeticoes: $repeticoes, ')
+          ..write('cargaInicial: $cargaInicial, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SessoesTreinoTable extends SessoesTreino
+    with TableInfo<$SessoesTreinoTable, SessaoTreino> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SessoesTreinoTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _treinoIdMeta = const VerificationMeta(
+    'treinoId',
+  );
+  @override
+  late final GeneratedColumn<String> treinoId = GeneratedColumn<String>(
+    'treino_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES treinos (id)',
+    ),
+  );
+  static const VerificationMeta _diaMeta = const VerificationMeta('dia');
+  @override
+  late final GeneratedColumn<String> dia = GeneratedColumn<String>(
+    'dia',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _inicioMeta = const VerificationMeta('inicio');
+  @override
+  late final GeneratedColumn<DateTime> inicio = GeneratedColumn<DateTime>(
+    'inicio',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fimMeta = const VerificationMeta('fim');
+  @override
+  late final GeneratedColumn<DateTime> fim = GeneratedColumn<DateTime>(
+    'fim',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    treinoId,
+    dia,
+    inicio,
+    fim,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sessoes_treino';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SessaoTreino> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('treino_id')) {
+      context.handle(
+        _treinoIdMeta,
+        treinoId.isAcceptableOrUnknown(data['treino_id']!, _treinoIdMeta),
+      );
+    }
+    if (data.containsKey('dia')) {
+      context.handle(
+        _diaMeta,
+        dia.isAcceptableOrUnknown(data['dia']!, _diaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_diaMeta);
+    }
+    if (data.containsKey('inicio')) {
+      context.handle(
+        _inicioMeta,
+        inicio.isAcceptableOrUnknown(data['inicio']!, _inicioMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_inicioMeta);
+    }
+    if (data.containsKey('fim')) {
+      context.handle(
+        _fimMeta,
+        fim.isAcceptableOrUnknown(data['fim']!, _fimMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SessaoTreino map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SessaoTreino(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      treinoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}treino_id'],
+      ),
+      dia: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dia'],
+      )!,
+      inicio: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}inicio'],
+      )!,
+      fim: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fim'],
+      ),
+    );
+  }
+
+  @override
+  $SessoesTreinoTable createAlias(String alias) {
+    return $SessoesTreinoTable(attachedDatabase, alias);
+  }
+}
+
+class SessaoTreino extends DataClass implements Insertable<SessaoTreino> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String? treinoId;
+
+  /// "aaaa-mm-dd" no fuso de São Paulo.
+  final String dia;
+  final DateTime inicio;
+  final DateTime? fim;
+  const SessaoTreino({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    this.treinoId,
+    required this.dia,
+    required this.inicio,
+    this.fim,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    if (!nullToAbsent || treinoId != null) {
+      map['treino_id'] = Variable<String>(treinoId);
+    }
+    map['dia'] = Variable<String>(dia);
+    map['inicio'] = Variable<DateTime>(inicio);
+    if (!nullToAbsent || fim != null) {
+      map['fim'] = Variable<DateTime>(fim);
+    }
+    return map;
+  }
+
+  SessoesTreinoCompanion toCompanion(bool nullToAbsent) {
+    return SessoesTreinoCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      treinoId: treinoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(treinoId),
+      dia: Value(dia),
+      inicio: Value(inicio),
+      fim: fim == null && nullToAbsent ? const Value.absent() : Value(fim),
+    );
+  }
+
+  factory SessaoTreino.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SessaoTreino(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      treinoId: serializer.fromJson<String?>(json['treinoId']),
+      dia: serializer.fromJson<String>(json['dia']),
+      inicio: serializer.fromJson<DateTime>(json['inicio']),
+      fim: serializer.fromJson<DateTime?>(json['fim']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'treinoId': serializer.toJson<String?>(treinoId),
+      'dia': serializer.toJson<String>(dia),
+      'inicio': serializer.toJson<DateTime>(inicio),
+      'fim': serializer.toJson<DateTime?>(fim),
+    };
+  }
+
+  SessaoTreino copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    Value<String?> treinoId = const Value.absent(),
+    String? dia,
+    DateTime? inicio,
+    Value<DateTime?> fim = const Value.absent(),
+  }) => SessaoTreino(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    treinoId: treinoId.present ? treinoId.value : this.treinoId,
+    dia: dia ?? this.dia,
+    inicio: inicio ?? this.inicio,
+    fim: fim.present ? fim.value : this.fim,
+  );
+  SessaoTreino copyWithCompanion(SessoesTreinoCompanion data) {
+    return SessaoTreino(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      treinoId: data.treinoId.present ? data.treinoId.value : this.treinoId,
+      dia: data.dia.present ? data.dia.value : this.dia,
+      inicio: data.inicio.present ? data.inicio.value : this.inicio,
+      fim: data.fim.present ? data.fim.value : this.fim,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SessaoTreino(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('treinoId: $treinoId, ')
+          ..write('dia: $dia, ')
+          ..write('inicio: $inicio, ')
+          ..write('fim: $fim')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    treinoId,
+    dia,
+    inicio,
+    fim,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SessaoTreino &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.treinoId == this.treinoId &&
+          other.dia == this.dia &&
+          other.inicio == this.inicio &&
+          other.fim == this.fim);
+}
+
+class SessoesTreinoCompanion extends UpdateCompanion<SessaoTreino> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String?> treinoId;
+  final Value<String> dia;
+  final Value<DateTime> inicio;
+  final Value<DateTime?> fim;
+  final Value<int> rowid;
+  const SessoesTreinoCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.treinoId = const Value.absent(),
+    this.dia = const Value.absent(),
+    this.inicio = const Value.absent(),
+    this.fim = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SessoesTreinoCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.treinoId = const Value.absent(),
+    required String dia,
+    required DateTime inicio,
+    this.fim = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : dia = Value(dia),
+       inicio = Value(inicio);
+  static Insertable<SessaoTreino> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? treinoId,
+    Expression<String>? dia,
+    Expression<DateTime>? inicio,
+    Expression<DateTime>? fim,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (treinoId != null) 'treino_id': treinoId,
+      if (dia != null) 'dia': dia,
+      if (inicio != null) 'inicio': inicio,
+      if (fim != null) 'fim': fim,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SessoesTreinoCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String?>? treinoId,
+    Value<String>? dia,
+    Value<DateTime>? inicio,
+    Value<DateTime?>? fim,
+    Value<int>? rowid,
+  }) {
+    return SessoesTreinoCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      treinoId: treinoId ?? this.treinoId,
+      dia: dia ?? this.dia,
+      inicio: inicio ?? this.inicio,
+      fim: fim ?? this.fim,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (treinoId.present) {
+      map['treino_id'] = Variable<String>(treinoId.value);
+    }
+    if (dia.present) {
+      map['dia'] = Variable<String>(dia.value);
+    }
+    if (inicio.present) {
+      map['inicio'] = Variable<DateTime>(inicio.value);
+    }
+    if (fim.present) {
+      map['fim'] = Variable<DateTime>(fim.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SessoesTreinoCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('treinoId: $treinoId, ')
+          ..write('dia: $dia, ')
+          ..write('inicio: $inicio, ')
+          ..write('fim: $fim, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SeriesFeitasTable extends SeriesFeitas
+    with TableInfo<$SeriesFeitasTable, SerieFeita> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SeriesFeitasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sessaoIdMeta = const VerificationMeta(
+    'sessaoId',
+  );
+  @override
+  late final GeneratedColumn<String> sessaoId = GeneratedColumn<String>(
+    'sessao_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES sessoes_treino (id)',
+    ),
+  );
+  static const VerificationMeta _exercicioIdMeta = const VerificationMeta(
+    'exercicioId',
+  );
+  @override
+  late final GeneratedColumn<String> exercicioId = GeneratedColumn<String>(
+    'exercicio_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES exercicios (id)',
+    ),
+  );
+  static const VerificationMeta _numeroMeta = const VerificationMeta('numero');
+  @override
+  late final GeneratedColumn<int> numero = GeneratedColumn<int>(
+    'numero',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _repeticoesMeta = const VerificationMeta(
+    'repeticoes',
+  );
+  @override
+  late final GeneratedColumn<int> repeticoes = GeneratedColumn<int>(
+    'repeticoes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cargaKgMeta = const VerificationMeta(
+    'cargaKg',
+  );
+  @override
+  late final GeneratedColumn<double> cargaKg = GeneratedColumn<double>(
+    'carga_kg',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    sessaoId,
+    exercicioId,
+    numero,
+    repeticoes,
+    cargaKg,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'series_feitas';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SerieFeita> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('sessao_id')) {
+      context.handle(
+        _sessaoIdMeta,
+        sessaoId.isAcceptableOrUnknown(data['sessao_id']!, _sessaoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sessaoIdMeta);
+    }
+    if (data.containsKey('exercicio_id')) {
+      context.handle(
+        _exercicioIdMeta,
+        exercicioId.isAcceptableOrUnknown(
+          data['exercicio_id']!,
+          _exercicioIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_exercicioIdMeta);
+    }
+    if (data.containsKey('numero')) {
+      context.handle(
+        _numeroMeta,
+        numero.isAcceptableOrUnknown(data['numero']!, _numeroMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_numeroMeta);
+    }
+    if (data.containsKey('repeticoes')) {
+      context.handle(
+        _repeticoesMeta,
+        repeticoes.isAcceptableOrUnknown(data['repeticoes']!, _repeticoesMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_repeticoesMeta);
+    }
+    if (data.containsKey('carga_kg')) {
+      context.handle(
+        _cargaKgMeta,
+        cargaKg.isAcceptableOrUnknown(data['carga_kg']!, _cargaKgMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cargaKgMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SerieFeita map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SerieFeita(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      sessaoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sessao_id'],
+      )!,
+      exercicioId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exercicio_id'],
+      )!,
+      numero: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}numero'],
+      )!,
+      repeticoes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}repeticoes'],
+      )!,
+      cargaKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}carga_kg'],
+      )!,
+    );
+  }
+
+  @override
+  $SeriesFeitasTable createAlias(String alias) {
+    return $SeriesFeitasTable(attachedDatabase, alias);
+  }
+}
+
+class SerieFeita extends DataClass implements Insertable<SerieFeita> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String sessaoId;
+  final String exercicioId;
+  final int numero;
+  final int repeticoes;
+  final double cargaKg;
+  const SerieFeita({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.sessaoId,
+    required this.exercicioId,
+    required this.numero,
+    required this.repeticoes,
+    required this.cargaKg,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['sessao_id'] = Variable<String>(sessaoId);
+    map['exercicio_id'] = Variable<String>(exercicioId);
+    map['numero'] = Variable<int>(numero);
+    map['repeticoes'] = Variable<int>(repeticoes);
+    map['carga_kg'] = Variable<double>(cargaKg);
+    return map;
+  }
+
+  SeriesFeitasCompanion toCompanion(bool nullToAbsent) {
+    return SeriesFeitasCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      sessaoId: Value(sessaoId),
+      exercicioId: Value(exercicioId),
+      numero: Value(numero),
+      repeticoes: Value(repeticoes),
+      cargaKg: Value(cargaKg),
+    );
+  }
+
+  factory SerieFeita.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SerieFeita(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      sessaoId: serializer.fromJson<String>(json['sessaoId']),
+      exercicioId: serializer.fromJson<String>(json['exercicioId']),
+      numero: serializer.fromJson<int>(json['numero']),
+      repeticoes: serializer.fromJson<int>(json['repeticoes']),
+      cargaKg: serializer.fromJson<double>(json['cargaKg']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'sessaoId': serializer.toJson<String>(sessaoId),
+      'exercicioId': serializer.toJson<String>(exercicioId),
+      'numero': serializer.toJson<int>(numero),
+      'repeticoes': serializer.toJson<int>(repeticoes),
+      'cargaKg': serializer.toJson<double>(cargaKg),
+    };
+  }
+
+  SerieFeita copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? sessaoId,
+    String? exercicioId,
+    int? numero,
+    int? repeticoes,
+    double? cargaKg,
+  }) => SerieFeita(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    sessaoId: sessaoId ?? this.sessaoId,
+    exercicioId: exercicioId ?? this.exercicioId,
+    numero: numero ?? this.numero,
+    repeticoes: repeticoes ?? this.repeticoes,
+    cargaKg: cargaKg ?? this.cargaKg,
+  );
+  SerieFeita copyWithCompanion(SeriesFeitasCompanion data) {
+    return SerieFeita(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      sessaoId: data.sessaoId.present ? data.sessaoId.value : this.sessaoId,
+      exercicioId: data.exercicioId.present
+          ? data.exercicioId.value
+          : this.exercicioId,
+      numero: data.numero.present ? data.numero.value : this.numero,
+      repeticoes: data.repeticoes.present
+          ? data.repeticoes.value
+          : this.repeticoes,
+      cargaKg: data.cargaKg.present ? data.cargaKg.value : this.cargaKg,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SerieFeita(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('sessaoId: $sessaoId, ')
+          ..write('exercicioId: $exercicioId, ')
+          ..write('numero: $numero, ')
+          ..write('repeticoes: $repeticoes, ')
+          ..write('cargaKg: $cargaKg')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    sessaoId,
+    exercicioId,
+    numero,
+    repeticoes,
+    cargaKg,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SerieFeita &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.sessaoId == this.sessaoId &&
+          other.exercicioId == this.exercicioId &&
+          other.numero == this.numero &&
+          other.repeticoes == this.repeticoes &&
+          other.cargaKg == this.cargaKg);
+}
+
+class SeriesFeitasCompanion extends UpdateCompanion<SerieFeita> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> sessaoId;
+  final Value<String> exercicioId;
+  final Value<int> numero;
+  final Value<int> repeticoes;
+  final Value<double> cargaKg;
+  final Value<int> rowid;
+  const SeriesFeitasCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.sessaoId = const Value.absent(),
+    this.exercicioId = const Value.absent(),
+    this.numero = const Value.absent(),
+    this.repeticoes = const Value.absent(),
+    this.cargaKg = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SeriesFeitasCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String sessaoId,
+    required String exercicioId,
+    required int numero,
+    required int repeticoes,
+    required double cargaKg,
+    this.rowid = const Value.absent(),
+  }) : sessaoId = Value(sessaoId),
+       exercicioId = Value(exercicioId),
+       numero = Value(numero),
+       repeticoes = Value(repeticoes),
+       cargaKg = Value(cargaKg);
+  static Insertable<SerieFeita> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? sessaoId,
+    Expression<String>? exercicioId,
+    Expression<int>? numero,
+    Expression<int>? repeticoes,
+    Expression<double>? cargaKg,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (sessaoId != null) 'sessao_id': sessaoId,
+      if (exercicioId != null) 'exercicio_id': exercicioId,
+      if (numero != null) 'numero': numero,
+      if (repeticoes != null) 'repeticoes': repeticoes,
+      if (cargaKg != null) 'carga_kg': cargaKg,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SeriesFeitasCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? sessaoId,
+    Value<String>? exercicioId,
+    Value<int>? numero,
+    Value<int>? repeticoes,
+    Value<double>? cargaKg,
+    Value<int>? rowid,
+  }) {
+    return SeriesFeitasCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      sessaoId: sessaoId ?? this.sessaoId,
+      exercicioId: exercicioId ?? this.exercicioId,
+      numero: numero ?? this.numero,
+      repeticoes: repeticoes ?? this.repeticoes,
+      cargaKg: cargaKg ?? this.cargaKg,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (sessaoId.present) {
+      map['sessao_id'] = Variable<String>(sessaoId.value);
+    }
+    if (exercicioId.present) {
+      map['exercicio_id'] = Variable<String>(exercicioId.value);
+    }
+    if (numero.present) {
+      map['numero'] = Variable<int>(numero.value);
+    }
+    if (repeticoes.present) {
+      map['repeticoes'] = Variable<int>(repeticoes.value);
+    }
+    if (cargaKg.present) {
+      map['carga_kg'] = Variable<double>(cargaKg.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SeriesFeitasCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('sessaoId: $sessaoId, ')
+          ..write('exercicioId: $exercicioId, ')
+          ..write('numero: $numero, ')
+          ..write('repeticoes: $repeticoes, ')
+          ..write('cargaKg: $cargaKg, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MedidasTable extends Medidas with TableInfo<$MedidasTable, Medida> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MedidasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _diaMeta = const VerificationMeta('dia');
+  @override
+  late final GeneratedColumn<String> dia = GeneratedColumn<String>(
+    'dia',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tipoMeta = const VerificationMeta('tipo');
+  @override
+  late final GeneratedColumn<String> tipo = GeneratedColumn<String>(
+    'tipo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valorMeta = const VerificationMeta('valor');
+  @override
+  late final GeneratedColumn<double> valor = GeneratedColumn<double>(
+    'valor',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unidadeMeta = const VerificationMeta(
+    'unidade',
+  );
+  @override
+  late final GeneratedColumn<String> unidade = GeneratedColumn<String>(
+    'unidade',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    dia,
+    tipo,
+    valor,
+    unidade,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'medidas';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Medida> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('dia')) {
+      context.handle(
+        _diaMeta,
+        dia.isAcceptableOrUnknown(data['dia']!, _diaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_diaMeta);
+    }
+    if (data.containsKey('tipo')) {
+      context.handle(
+        _tipoMeta,
+        tipo.isAcceptableOrUnknown(data['tipo']!, _tipoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tipoMeta);
+    }
+    if (data.containsKey('valor')) {
+      context.handle(
+        _valorMeta,
+        valor.isAcceptableOrUnknown(data['valor']!, _valorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valorMeta);
+    }
+    if (data.containsKey('unidade')) {
+      context.handle(
+        _unidadeMeta,
+        unidade.isAcceptableOrUnknown(data['unidade']!, _unidadeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_unidadeMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Medida map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Medida(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      dia: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dia'],
+      )!,
+      tipo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo'],
+      )!,
+      valor: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}valor'],
+      )!,
+      unidade: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unidade'],
+      )!,
+    );
+  }
+
+  @override
+  $MedidasTable createAlias(String alias) {
+    return $MedidasTable(attachedDatabase, alias);
+  }
+}
+
+class Medida extends DataClass implements Insertable<Medida> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+
+  /// "aaaa-mm-dd" no fuso de São Paulo.
+  final String dia;
+  final String tipo;
+  final double valor;
+  final String unidade;
+  const Medida({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.dia,
+    required this.tipo,
+    required this.valor,
+    required this.unidade,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['dia'] = Variable<String>(dia);
+    map['tipo'] = Variable<String>(tipo);
+    map['valor'] = Variable<double>(valor);
+    map['unidade'] = Variable<String>(unidade);
+    return map;
+  }
+
+  MedidasCompanion toCompanion(bool nullToAbsent) {
+    return MedidasCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      dia: Value(dia),
+      tipo: Value(tipo),
+      valor: Value(valor),
+      unidade: Value(unidade),
+    );
+  }
+
+  factory Medida.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Medida(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      dia: serializer.fromJson<String>(json['dia']),
+      tipo: serializer.fromJson<String>(json['tipo']),
+      valor: serializer.fromJson<double>(json['valor']),
+      unidade: serializer.fromJson<String>(json['unidade']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'dia': serializer.toJson<String>(dia),
+      'tipo': serializer.toJson<String>(tipo),
+      'valor': serializer.toJson<double>(valor),
+      'unidade': serializer.toJson<String>(unidade),
+    };
+  }
+
+  Medida copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? dia,
+    String? tipo,
+    double? valor,
+    String? unidade,
+  }) => Medida(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    dia: dia ?? this.dia,
+    tipo: tipo ?? this.tipo,
+    valor: valor ?? this.valor,
+    unidade: unidade ?? this.unidade,
+  );
+  Medida copyWithCompanion(MedidasCompanion data) {
+    return Medida(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      dia: data.dia.present ? data.dia.value : this.dia,
+      tipo: data.tipo.present ? data.tipo.value : this.tipo,
+      valor: data.valor.present ? data.valor.value : this.valor,
+      unidade: data.unidade.present ? data.unidade.value : this.unidade,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Medida(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('dia: $dia, ')
+          ..write('tipo: $tipo, ')
+          ..write('valor: $valor, ')
+          ..write('unidade: $unidade')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    dia,
+    tipo,
+    valor,
+    unidade,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Medida &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.dia == this.dia &&
+          other.tipo == this.tipo &&
+          other.valor == this.valor &&
+          other.unidade == this.unidade);
+}
+
+class MedidasCompanion extends UpdateCompanion<Medida> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> dia;
+  final Value<String> tipo;
+  final Value<double> valor;
+  final Value<String> unidade;
+  final Value<int> rowid;
+  const MedidasCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.dia = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.valor = const Value.absent(),
+    this.unidade = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MedidasCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String dia,
+    required String tipo,
+    required double valor,
+    required String unidade,
+    this.rowid = const Value.absent(),
+  }) : dia = Value(dia),
+       tipo = Value(tipo),
+       valor = Value(valor),
+       unidade = Value(unidade);
+  static Insertable<Medida> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? dia,
+    Expression<String>? tipo,
+    Expression<double>? valor,
+    Expression<String>? unidade,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (dia != null) 'dia': dia,
+      if (tipo != null) 'tipo': tipo,
+      if (valor != null) 'valor': valor,
+      if (unidade != null) 'unidade': unidade,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MedidasCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? dia,
+    Value<String>? tipo,
+    Value<double>? valor,
+    Value<String>? unidade,
+    Value<int>? rowid,
+  }) {
+    return MedidasCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      dia: dia ?? this.dia,
+      tipo: tipo ?? this.tipo,
+      valor: valor ?? this.valor,
+      unidade: unidade ?? this.unidade,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (dia.present) {
+      map['dia'] = Variable<String>(dia.value);
+    }
+    if (tipo.present) {
+      map['tipo'] = Variable<String>(tipo.value);
+    }
+    if (valor.present) {
+      map['valor'] = Variable<double>(valor.value);
+    }
+    if (unidade.present) {
+      map['unidade'] = Variable<String>(unidade.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MedidasCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('dia: $dia, ')
+          ..write('tipo: $tipo, ')
+          ..write('valor: $valor, ')
+          ..write('unidade: $unidade, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PreferenciasTable extends Preferencias
     with TableInfo<$PreferenciasTable, Preferencia> {
   @override
@@ -5927,6 +9094,12 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   late final $PagamentosTransacaoTable pagamentosTransacao =
       $PagamentosTransacaoTable(this);
   late final $LembretesTable lembretes = $LembretesTable(this);
+  late final $ExerciciosTable exercicios = $ExerciciosTable(this);
+  late final $TreinosTable treinos = $TreinosTable(this);
+  late final $ItensTreinoTable itensTreino = $ItensTreinoTable(this);
+  late final $SessoesTreinoTable sessoesTreino = $SessoesTreinoTable(this);
+  late final $SeriesFeitasTable seriesFeitas = $SeriesFeitasTable(this);
+  late final $MedidasTable medidas = $MedidasTable(this);
   late final $PreferenciasTable preferencias = $PreferenciasTable(this);
   late final Index conclusaoTarefaDia = Index(
     'conclusao_tarefa_dia',
@@ -5939,6 +9112,10 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   late final Index pagamentoTransacaoVenc = Index(
     'pagamento_transacao_venc',
     'CREATE UNIQUE INDEX pagamento_transacao_venc ON pagamentos_transacao (transacao_id, vencimento)',
+  );
+  late final Index medidaDiaTipo = Index(
+    'medida_dia_tipo',
+    'CREATE UNIQUE INDEX medida_dia_tipo ON medidas (dia, tipo)',
   );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -5954,10 +9131,17 @@ abstract class _$BancoAurora extends GeneratedDatabase {
     transacoes,
     pagamentosTransacao,
     lembretes,
+    exercicios,
+    treinos,
+    itensTreino,
+    sessoesTreino,
+    seriesFeitas,
+    medidas,
     preferencias,
     conclusaoTarefaDia,
     registroHabitoDia,
     pagamentoTransacaoVenc,
+    medidaDiaTipo,
   ];
 }
 
@@ -10228,6 +13412,2606 @@ typedef $$LembretesTableProcessedTableManager =
       Lembrete,
       PrefetchHooks Function()
     >;
+typedef $$ExerciciosTableCreateCompanionBuilder = ExerciciosCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  required String nome,
+  Value<String?> grupo,
+  Value<String?> midia,
+  Value<int> rowid,
+});
+typedef $$ExerciciosTableUpdateCompanionBuilder = ExerciciosCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String> nome,
+  Value<String?> grupo,
+  Value<String?> midia,
+  Value<int> rowid,
+});
+
+final class $$ExerciciosTableReferences
+    extends BaseReferences<_$BancoAurora, $ExerciciosTable, Exercicio> {
+  $$ExerciciosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$ItensTreinoTable, List<ItemTreino>>
+  _itensTreinoRefsTable(_$BancoAurora db) => MultiTypedResultKey.fromTable(
+    db.itensTreino,
+    aliasName: 'exercicios__id__itens_treino__exercicio_id',
+  );
+
+  $$ItensTreinoTableProcessedTableManager get itensTreinoRefs {
+    final manager = $$ItensTreinoTableTableManager(
+      $_db,
+      $_db.itensTreino,
+    ).filter((f) => f.exercicioId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_itensTreinoRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$SeriesFeitasTable, List<SerieFeita>>
+  _seriesFeitasRefsTable(_$BancoAurora db) => MultiTypedResultKey.fromTable(
+    db.seriesFeitas,
+    aliasName: 'exercicios__id__series_feitas__exercicio_id',
+  );
+
+  $$SeriesFeitasTableProcessedTableManager get seriesFeitasRefs {
+    final manager = $$SeriesFeitasTableTableManager(
+      $_db,
+      $_db.seriesFeitas,
+    ).filter((f) => f.exercicioId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_seriesFeitasRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ExerciciosTableFilterComposer
+    extends Composer<_$BancoAurora, $ExerciciosTable> {
+  $$ExerciciosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get grupo => $composableBuilder(
+    column: $table.grupo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get midia => $composableBuilder(
+    column: $table.midia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> itensTreinoRefs(
+    Expression<bool> Function($$ItensTreinoTableFilterComposer f) f,
+  ) {
+    final $$ItensTreinoTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.itensTreino,
+      getReferencedColumn: (t) => t.exercicioId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ItensTreinoTableFilterComposer(
+            $db: $db,
+            $table: $db.itensTreino,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> seriesFeitasRefs(
+    Expression<bool> Function($$SeriesFeitasTableFilterComposer f) f,
+  ) {
+    final $$SeriesFeitasTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.seriesFeitas,
+      getReferencedColumn: (t) => t.exercicioId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SeriesFeitasTableFilterComposer(
+            $db: $db,
+            $table: $db.seriesFeitas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ExerciciosTableOrderingComposer
+    extends Composer<_$BancoAurora, $ExerciciosTable> {
+  $$ExerciciosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get grupo => $composableBuilder(
+    column: $table.grupo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get midia => $composableBuilder(
+    column: $table.midia,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ExerciciosTableAnnotationComposer
+    extends Composer<_$BancoAurora, $ExerciciosTable> {
+  $$ExerciciosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<String> get grupo =>
+      $composableBuilder(column: $table.grupo, builder: (column) => column);
+
+  GeneratedColumn<String> get midia =>
+      $composableBuilder(column: $table.midia, builder: (column) => column);
+
+  Expression<T> itensTreinoRefs<T extends Object>(
+    Expression<T> Function($$ItensTreinoTableAnnotationComposer a) f,
+  ) {
+    final $$ItensTreinoTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.itensTreino,
+      getReferencedColumn: (t) => t.exercicioId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ItensTreinoTableAnnotationComposer(
+            $db: $db,
+            $table: $db.itensTreino,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> seriesFeitasRefs<T extends Object>(
+    Expression<T> Function($$SeriesFeitasTableAnnotationComposer a) f,
+  ) {
+    final $$SeriesFeitasTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.seriesFeitas,
+      getReferencedColumn: (t) => t.exercicioId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SeriesFeitasTableAnnotationComposer(
+            $db: $db,
+            $table: $db.seriesFeitas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ExerciciosTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $ExerciciosTable,
+          Exercicio,
+          $$ExerciciosTableFilterComposer,
+          $$ExerciciosTableOrderingComposer,
+          $$ExerciciosTableAnnotationComposer,
+          $$ExerciciosTableCreateCompanionBuilder,
+          $$ExerciciosTableUpdateCompanionBuilder,
+          (Exercicio, $$ExerciciosTableReferences),
+          Exercicio,
+          PrefetchHooks Function({bool itensTreinoRefs, bool seriesFeitasRefs})
+        > {
+  $$ExerciciosTableTableManager(_$BancoAurora db, $ExerciciosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExerciciosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExerciciosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExerciciosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<String?> grupo = const Value.absent(),
+                Value<String?> midia = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExerciciosCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                nome: nome,
+                grupo: grupo,
+                midia: midia,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String nome,
+                Value<String?> grupo = const Value.absent(),
+                Value<String?> midia = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExerciciosCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                nome: nome,
+                grupo: grupo,
+                midia: midia,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ExerciciosTable, Exercicio>(table),
+                  $$ExerciciosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({itensTreinoRefs = false, seriesFeitasRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (itensTreinoRefs) db.itensTreino,
+                    if (seriesFeitasRefs) db.seriesFeitas,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (itensTreinoRefs)
+                        await $_getPrefetchedData<
+                          Exercicio,
+                          $ExerciciosTable,
+                          ItemTreino
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ExerciciosTableReferences
+                              ._itensTreinoRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ExerciciosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).itensTreinoRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.exercicioId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (seriesFeitasRefs)
+                        await $_getPrefetchedData<
+                          Exercicio,
+                          $ExerciciosTable,
+                          SerieFeita
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ExerciciosTableReferences
+                              ._seriesFeitasRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ExerciciosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).seriesFeitasRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.exercicioId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ExerciciosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $ExerciciosTable,
+      Exercicio,
+      $$ExerciciosTableFilterComposer,
+      $$ExerciciosTableOrderingComposer,
+      $$ExerciciosTableAnnotationComposer,
+      $$ExerciciosTableCreateCompanionBuilder,
+      $$ExerciciosTableUpdateCompanionBuilder,
+      (Exercicio, $$ExerciciosTableReferences),
+      Exercicio,
+      PrefetchHooks Function({bool itensTreinoRefs, bool seriesFeitasRefs})
+    >;
+typedef $$TreinosTableCreateCompanionBuilder = TreinosCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  required String nome,
+  Value<String?> foco,
+  Value<int> diasSemana,
+  Value<int> ordem,
+  Value<int> rowid,
+});
+typedef $$TreinosTableUpdateCompanionBuilder = TreinosCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String> nome,
+  Value<String?> foco,
+  Value<int> diasSemana,
+  Value<int> ordem,
+  Value<int> rowid,
+});
+
+final class $$TreinosTableReferences
+    extends BaseReferences<_$BancoAurora, $TreinosTable, Treino> {
+  $$TreinosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$ItensTreinoTable, List<ItemTreino>>
+  _itensTreinoRefsTable(_$BancoAurora db) => MultiTypedResultKey.fromTable(
+    db.itensTreino,
+    aliasName: 'treinos__id__itens_treino__treino_id',
+  );
+
+  $$ItensTreinoTableProcessedTableManager get itensTreinoRefs {
+    final manager = $$ItensTreinoTableTableManager(
+      $_db,
+      $_db.itensTreino,
+    ).filter((f) => f.treinoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_itensTreinoRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$SessoesTreinoTable, List<SessaoTreino>>
+  _sessoesTreinoRefsTable(_$BancoAurora db) => MultiTypedResultKey.fromTable(
+    db.sessoesTreino,
+    aliasName: 'treinos__id__sessoes_treino__treino_id',
+  );
+
+  $$SessoesTreinoTableProcessedTableManager get sessoesTreinoRefs {
+    final manager = $$SessoesTreinoTableTableManager(
+      $_db,
+      $_db.sessoesTreino,
+    ).filter((f) => f.treinoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_sessoesTreinoRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$TreinosTableFilterComposer
+    extends Composer<_$BancoAurora, $TreinosTable> {
+  $$TreinosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get foco => $composableBuilder(
+    column: $table.foco,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get diasSemana => $composableBuilder(
+    column: $table.diasSemana,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> itensTreinoRefs(
+    Expression<bool> Function($$ItensTreinoTableFilterComposer f) f,
+  ) {
+    final $$ItensTreinoTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.itensTreino,
+      getReferencedColumn: (t) => t.treinoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ItensTreinoTableFilterComposer(
+            $db: $db,
+            $table: $db.itensTreino,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> sessoesTreinoRefs(
+    Expression<bool> Function($$SessoesTreinoTableFilterComposer f) f,
+  ) {
+    final $$SessoesTreinoTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.sessoesTreino,
+      getReferencedColumn: (t) => t.treinoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessoesTreinoTableFilterComposer(
+            $db: $db,
+            $table: $db.sessoesTreino,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TreinosTableOrderingComposer
+    extends Composer<_$BancoAurora, $TreinosTable> {
+  $$TreinosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get foco => $composableBuilder(
+    column: $table.foco,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get diasSemana => $composableBuilder(
+    column: $table.diasSemana,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TreinosTableAnnotationComposer
+    extends Composer<_$BancoAurora, $TreinosTable> {
+  $$TreinosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<String> get foco =>
+      $composableBuilder(column: $table.foco, builder: (column) => column);
+
+  GeneratedColumn<int> get diasSemana => $composableBuilder(
+    column: $table.diasSemana,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get ordem =>
+      $composableBuilder(column: $table.ordem, builder: (column) => column);
+
+  Expression<T> itensTreinoRefs<T extends Object>(
+    Expression<T> Function($$ItensTreinoTableAnnotationComposer a) f,
+  ) {
+    final $$ItensTreinoTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.itensTreino,
+      getReferencedColumn: (t) => t.treinoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ItensTreinoTableAnnotationComposer(
+            $db: $db,
+            $table: $db.itensTreino,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> sessoesTreinoRefs<T extends Object>(
+    Expression<T> Function($$SessoesTreinoTableAnnotationComposer a) f,
+  ) {
+    final $$SessoesTreinoTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.sessoesTreino,
+      getReferencedColumn: (t) => t.treinoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessoesTreinoTableAnnotationComposer(
+            $db: $db,
+            $table: $db.sessoesTreino,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TreinosTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $TreinosTable,
+          Treino,
+          $$TreinosTableFilterComposer,
+          $$TreinosTableOrderingComposer,
+          $$TreinosTableAnnotationComposer,
+          $$TreinosTableCreateCompanionBuilder,
+          $$TreinosTableUpdateCompanionBuilder,
+          (Treino, $$TreinosTableReferences),
+          Treino,
+          PrefetchHooks Function({bool itensTreinoRefs, bool sessoesTreinoRefs})
+        > {
+  $$TreinosTableTableManager(_$BancoAurora db, $TreinosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TreinosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TreinosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TreinosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<String?> foco = const Value.absent(),
+                Value<int> diasSemana = const Value.absent(),
+                Value<int> ordem = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TreinosCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                nome: nome,
+                foco: foco,
+                diasSemana: diasSemana,
+                ordem: ordem,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String nome,
+                Value<String?> foco = const Value.absent(),
+                Value<int> diasSemana = const Value.absent(),
+                Value<int> ordem = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TreinosCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                nome: nome,
+                foco: foco,
+                diasSemana: diasSemana,
+                ordem: ordem,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TreinosTable, Treino>(table),
+                  $$TreinosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({itensTreinoRefs = false, sessoesTreinoRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (itensTreinoRefs) db.itensTreino,
+                    if (sessoesTreinoRefs) db.sessoesTreino,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (itensTreinoRefs)
+                        await $_getPrefetchedData<
+                          Treino,
+                          $TreinosTable,
+                          ItemTreino
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TreinosTableReferences
+                              ._itensTreinoRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TreinosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).itensTreinoRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.treinoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (sessoesTreinoRefs)
+                        await $_getPrefetchedData<
+                          Treino,
+                          $TreinosTable,
+                          SessaoTreino
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TreinosTableReferences
+                              ._sessoesTreinoRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TreinosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).sessoesTreinoRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.treinoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$TreinosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $TreinosTable,
+      Treino,
+      $$TreinosTableFilterComposer,
+      $$TreinosTableOrderingComposer,
+      $$TreinosTableAnnotationComposer,
+      $$TreinosTableCreateCompanionBuilder,
+      $$TreinosTableUpdateCompanionBuilder,
+      (Treino, $$TreinosTableReferences),
+      Treino,
+      PrefetchHooks Function({bool itensTreinoRefs, bool sessoesTreinoRefs})
+    >;
+typedef $$ItensTreinoTableCreateCompanionBuilder =
+    ItensTreinoCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      required String treinoId,
+      required String exercicioId,
+      Value<int> ordem,
+      Value<int> series,
+      Value<int> repeticoes,
+      Value<double?> cargaInicial,
+      Value<int> rowid,
+    });
+typedef $$ItensTreinoTableUpdateCompanionBuilder =
+    ItensTreinoCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      Value<String> treinoId,
+      Value<String> exercicioId,
+      Value<int> ordem,
+      Value<int> series,
+      Value<int> repeticoes,
+      Value<double?> cargaInicial,
+      Value<int> rowid,
+    });
+
+final class $$ItensTreinoTableReferences
+    extends BaseReferences<_$BancoAurora, $ItensTreinoTable, ItemTreino> {
+  $$ItensTreinoTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TreinosTable _treinoIdTable(_$BancoAurora db) =>
+      db.treinos.createAlias('itens_treino__treino_id__treinos__id');
+
+  $$TreinosTableProcessedTableManager get treinoId {
+    final $_column = $_itemColumn<String>('treino_id')!;
+
+    final manager = $$TreinosTableTableManager(
+      $_db,
+      $_db.treinos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_treinoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ExerciciosTable _exercicioIdTable(_$BancoAurora db) =>
+      db.exercicios.createAlias('itens_treino__exercicio_id__exercicios__id');
+
+  $$ExerciciosTableProcessedTableManager get exercicioId {
+    final $_column = $_itemColumn<String>('exercicio_id')!;
+
+    final manager = $$ExerciciosTableTableManager(
+      $_db,
+      $_db.exercicios,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_exercicioIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ItensTreinoTableFilterComposer
+    extends Composer<_$BancoAurora, $ItensTreinoTable> {
+  $$ItensTreinoTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get series => $composableBuilder(
+    column: $table.series,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get repeticoes => $composableBuilder(
+    column: $table.repeticoes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get cargaInicial => $composableBuilder(
+    column: $table.cargaInicial,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TreinosTableFilterComposer get treinoId {
+    final $$TreinosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.treinoId,
+      referencedTable: $db.treinos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TreinosTableFilterComposer(
+            $db: $db,
+            $table: $db.treinos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExerciciosTableFilterComposer get exercicioId {
+    final $$ExerciciosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.exercicioId,
+      referencedTable: $db.exercicios,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExerciciosTableFilterComposer(
+            $db: $db,
+            $table: $db.exercicios,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ItensTreinoTableOrderingComposer
+    extends Composer<_$BancoAurora, $ItensTreinoTable> {
+  $$ItensTreinoTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get series => $composableBuilder(
+    column: $table.series,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get repeticoes => $composableBuilder(
+    column: $table.repeticoes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get cargaInicial => $composableBuilder(
+    column: $table.cargaInicial,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TreinosTableOrderingComposer get treinoId {
+    final $$TreinosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.treinoId,
+      referencedTable: $db.treinos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TreinosTableOrderingComposer(
+            $db: $db,
+            $table: $db.treinos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExerciciosTableOrderingComposer get exercicioId {
+    final $$ExerciciosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.exercicioId,
+      referencedTable: $db.exercicios,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExerciciosTableOrderingComposer(
+            $db: $db,
+            $table: $db.exercicios,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ItensTreinoTableAnnotationComposer
+    extends Composer<_$BancoAurora, $ItensTreinoTable> {
+  $$ItensTreinoTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<int> get ordem =>
+      $composableBuilder(column: $table.ordem, builder: (column) => column);
+
+  GeneratedColumn<int> get series =>
+      $composableBuilder(column: $table.series, builder: (column) => column);
+
+  GeneratedColumn<int> get repeticoes => $composableBuilder(
+    column: $table.repeticoes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get cargaInicial => $composableBuilder(
+    column: $table.cargaInicial,
+    builder: (column) => column,
+  );
+
+  $$TreinosTableAnnotationComposer get treinoId {
+    final $$TreinosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.treinoId,
+      referencedTable: $db.treinos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TreinosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.treinos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExerciciosTableAnnotationComposer get exercicioId {
+    final $$ExerciciosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.exercicioId,
+      referencedTable: $db.exercicios,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExerciciosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.exercicios,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ItensTreinoTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $ItensTreinoTable,
+          ItemTreino,
+          $$ItensTreinoTableFilterComposer,
+          $$ItensTreinoTableOrderingComposer,
+          $$ItensTreinoTableAnnotationComposer,
+          $$ItensTreinoTableCreateCompanionBuilder,
+          $$ItensTreinoTableUpdateCompanionBuilder,
+          (ItemTreino, $$ItensTreinoTableReferences),
+          ItemTreino,
+          PrefetchHooks Function({bool treinoId, bool exercicioId})
+        > {
+  $$ItensTreinoTableTableManager(_$BancoAurora db, $ItensTreinoTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ItensTreinoTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ItensTreinoTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ItensTreinoTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> treinoId = const Value.absent(),
+                Value<String> exercicioId = const Value.absent(),
+                Value<int> ordem = const Value.absent(),
+                Value<int> series = const Value.absent(),
+                Value<int> repeticoes = const Value.absent(),
+                Value<double?> cargaInicial = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ItensTreinoCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                treinoId: treinoId,
+                exercicioId: exercicioId,
+                ordem: ordem,
+                series: series,
+                repeticoes: repeticoes,
+                cargaInicial: cargaInicial,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String treinoId,
+                required String exercicioId,
+                Value<int> ordem = const Value.absent(),
+                Value<int> series = const Value.absent(),
+                Value<int> repeticoes = const Value.absent(),
+                Value<double?> cargaInicial = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ItensTreinoCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                treinoId: treinoId,
+                exercicioId: exercicioId,
+                ordem: ordem,
+                series: series,
+                repeticoes: repeticoes,
+                cargaInicial: cargaInicial,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ItensTreinoTable, ItemTreino>(table),
+                  $$ItensTreinoTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({treinoId = false, exercicioId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (treinoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.treinoId,
+                        referencedTable: $$ItensTreinoTableReferences
+                            ._treinoIdTable(db),
+                        referencedColumn: $$ItensTreinoTableReferences
+                            ._treinoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (exercicioId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.exercicioId,
+                        referencedTable: $$ItensTreinoTableReferences
+                            ._exercicioIdTable(db),
+                        referencedColumn: $$ItensTreinoTableReferences
+                            ._exercicioIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ItensTreinoTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $ItensTreinoTable,
+      ItemTreino,
+      $$ItensTreinoTableFilterComposer,
+      $$ItensTreinoTableOrderingComposer,
+      $$ItensTreinoTableAnnotationComposer,
+      $$ItensTreinoTableCreateCompanionBuilder,
+      $$ItensTreinoTableUpdateCompanionBuilder,
+      (ItemTreino, $$ItensTreinoTableReferences),
+      ItemTreino,
+      PrefetchHooks Function({bool treinoId, bool exercicioId})
+    >;
+typedef $$SessoesTreinoTableCreateCompanionBuilder =
+    SessoesTreinoCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      Value<String?> treinoId,
+      required String dia,
+      required DateTime inicio,
+      Value<DateTime?> fim,
+      Value<int> rowid,
+    });
+typedef $$SessoesTreinoTableUpdateCompanionBuilder =
+    SessoesTreinoCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      Value<String?> treinoId,
+      Value<String> dia,
+      Value<DateTime> inicio,
+      Value<DateTime?> fim,
+      Value<int> rowid,
+    });
+
+final class $$SessoesTreinoTableReferences
+    extends BaseReferences<_$BancoAurora, $SessoesTreinoTable, SessaoTreino> {
+  $$SessoesTreinoTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TreinosTable _treinoIdTable(_$BancoAurora db) =>
+      db.treinos.createAlias('sessoes_treino__treino_id__treinos__id');
+
+  $$TreinosTableProcessedTableManager? get treinoId {
+    final $_column = $_itemColumn<String>('treino_id');
+    if ($_column == null) return null;
+    final manager = $$TreinosTableTableManager(
+      $_db,
+      $_db.treinos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_treinoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$SeriesFeitasTable, List<SerieFeita>>
+  _seriesFeitasRefsTable(_$BancoAurora db) => MultiTypedResultKey.fromTable(
+    db.seriesFeitas,
+    aliasName: 'sessoes_treino__id__series_feitas__sessao_id',
+  );
+
+  $$SeriesFeitasTableProcessedTableManager get seriesFeitasRefs {
+    final manager = $$SeriesFeitasTableTableManager(
+      $_db,
+      $_db.seriesFeitas,
+    ).filter((f) => f.sessaoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_seriesFeitasRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$SessoesTreinoTableFilterComposer
+    extends Composer<_$BancoAurora, $SessoesTreinoTable> {
+  $$SessoesTreinoTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get inicio => $composableBuilder(
+    column: $table.inicio,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fim => $composableBuilder(
+    column: $table.fim,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TreinosTableFilterComposer get treinoId {
+    final $$TreinosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.treinoId,
+      referencedTable: $db.treinos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TreinosTableFilterComposer(
+            $db: $db,
+            $table: $db.treinos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> seriesFeitasRefs(
+    Expression<bool> Function($$SeriesFeitasTableFilterComposer f) f,
+  ) {
+    final $$SeriesFeitasTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.seriesFeitas,
+      getReferencedColumn: (t) => t.sessaoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SeriesFeitasTableFilterComposer(
+            $db: $db,
+            $table: $db.seriesFeitas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SessoesTreinoTableOrderingComposer
+    extends Composer<_$BancoAurora, $SessoesTreinoTable> {
+  $$SessoesTreinoTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get inicio => $composableBuilder(
+    column: $table.inicio,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fim => $composableBuilder(
+    column: $table.fim,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TreinosTableOrderingComposer get treinoId {
+    final $$TreinosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.treinoId,
+      referencedTable: $db.treinos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TreinosTableOrderingComposer(
+            $db: $db,
+            $table: $db.treinos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SessoesTreinoTableAnnotationComposer
+    extends Composer<_$BancoAurora, $SessoesTreinoTable> {
+  $$SessoesTreinoTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get dia =>
+      $composableBuilder(column: $table.dia, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get inicio =>
+      $composableBuilder(column: $table.inicio, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fim =>
+      $composableBuilder(column: $table.fim, builder: (column) => column);
+
+  $$TreinosTableAnnotationComposer get treinoId {
+    final $$TreinosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.treinoId,
+      referencedTable: $db.treinos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TreinosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.treinos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> seriesFeitasRefs<T extends Object>(
+    Expression<T> Function($$SeriesFeitasTableAnnotationComposer a) f,
+  ) {
+    final $$SeriesFeitasTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.seriesFeitas,
+      getReferencedColumn: (t) => t.sessaoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SeriesFeitasTableAnnotationComposer(
+            $db: $db,
+            $table: $db.seriesFeitas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SessoesTreinoTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $SessoesTreinoTable,
+          SessaoTreino,
+          $$SessoesTreinoTableFilterComposer,
+          $$SessoesTreinoTableOrderingComposer,
+          $$SessoesTreinoTableAnnotationComposer,
+          $$SessoesTreinoTableCreateCompanionBuilder,
+          $$SessoesTreinoTableUpdateCompanionBuilder,
+          (SessaoTreino, $$SessoesTreinoTableReferences),
+          SessaoTreino,
+          PrefetchHooks Function({bool treinoId, bool seriesFeitasRefs})
+        > {
+  $$SessoesTreinoTableTableManager(_$BancoAurora db, $SessoesTreinoTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SessoesTreinoTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SessoesTreinoTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SessoesTreinoTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String?> treinoId = const Value.absent(),
+                Value<String> dia = const Value.absent(),
+                Value<DateTime> inicio = const Value.absent(),
+                Value<DateTime?> fim = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SessoesTreinoCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                treinoId: treinoId,
+                dia: dia,
+                inicio: inicio,
+                fim: fim,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String?> treinoId = const Value.absent(),
+                required String dia,
+                required DateTime inicio,
+                Value<DateTime?> fim = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SessoesTreinoCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                treinoId: treinoId,
+                dia: dia,
+                inicio: inicio,
+                fim: fim,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SessoesTreinoTable, SessaoTreino>(table),
+                  $$SessoesTreinoTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({treinoId = false, seriesFeitasRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (seriesFeitasRefs) db.seriesFeitas,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (treinoId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.treinoId,
+                            referencedTable: $$SessoesTreinoTableReferences
+                                ._treinoIdTable(db),
+                            referencedColumn: $$SessoesTreinoTableReferences
+                                ._treinoIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (seriesFeitasRefs)
+                        await $_getPrefetchedData<
+                          SessaoTreino,
+                          $SessoesTreinoTable,
+                          SerieFeita
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SessoesTreinoTableReferences
+                              ._seriesFeitasRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SessoesTreinoTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).seriesFeitasRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.sessaoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$SessoesTreinoTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $SessoesTreinoTable,
+      SessaoTreino,
+      $$SessoesTreinoTableFilterComposer,
+      $$SessoesTreinoTableOrderingComposer,
+      $$SessoesTreinoTableAnnotationComposer,
+      $$SessoesTreinoTableCreateCompanionBuilder,
+      $$SessoesTreinoTableUpdateCompanionBuilder,
+      (SessaoTreino, $$SessoesTreinoTableReferences),
+      SessaoTreino,
+      PrefetchHooks Function({bool treinoId, bool seriesFeitasRefs})
+    >;
+typedef $$SeriesFeitasTableCreateCompanionBuilder =
+    SeriesFeitasCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      required String sessaoId,
+      required String exercicioId,
+      required int numero,
+      required int repeticoes,
+      required double cargaKg,
+      Value<int> rowid,
+    });
+typedef $$SeriesFeitasTableUpdateCompanionBuilder =
+    SeriesFeitasCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      Value<String> sessaoId,
+      Value<String> exercicioId,
+      Value<int> numero,
+      Value<int> repeticoes,
+      Value<double> cargaKg,
+      Value<int> rowid,
+    });
+
+final class $$SeriesFeitasTableReferences
+    extends BaseReferences<_$BancoAurora, $SeriesFeitasTable, SerieFeita> {
+  $$SeriesFeitasTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $SessoesTreinoTable _sessaoIdTable(_$BancoAurora db) => db
+      .sessoesTreino
+      .createAlias('series_feitas__sessao_id__sessoes_treino__id');
+
+  $$SessoesTreinoTableProcessedTableManager get sessaoId {
+    final $_column = $_itemColumn<String>('sessao_id')!;
+
+    final manager = $$SessoesTreinoTableTableManager(
+      $_db,
+      $_db.sessoesTreino,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_sessaoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ExerciciosTable _exercicioIdTable(_$BancoAurora db) =>
+      db.exercicios.createAlias('series_feitas__exercicio_id__exercicios__id');
+
+  $$ExerciciosTableProcessedTableManager get exercicioId {
+    final $_column = $_itemColumn<String>('exercicio_id')!;
+
+    final manager = $$ExerciciosTableTableManager(
+      $_db,
+      $_db.exercicios,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_exercicioIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SeriesFeitasTableFilterComposer
+    extends Composer<_$BancoAurora, $SeriesFeitasTable> {
+  $$SeriesFeitasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get numero => $composableBuilder(
+    column: $table.numero,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get repeticoes => $composableBuilder(
+    column: $table.repeticoes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get cargaKg => $composableBuilder(
+    column: $table.cargaKg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$SessoesTreinoTableFilterComposer get sessaoId {
+    final $$SessoesTreinoTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessaoId,
+      referencedTable: $db.sessoesTreino,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessoesTreinoTableFilterComposer(
+            $db: $db,
+            $table: $db.sessoesTreino,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExerciciosTableFilterComposer get exercicioId {
+    final $$ExerciciosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.exercicioId,
+      referencedTable: $db.exercicios,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExerciciosTableFilterComposer(
+            $db: $db,
+            $table: $db.exercicios,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SeriesFeitasTableOrderingComposer
+    extends Composer<_$BancoAurora, $SeriesFeitasTable> {
+  $$SeriesFeitasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get numero => $composableBuilder(
+    column: $table.numero,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get repeticoes => $composableBuilder(
+    column: $table.repeticoes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get cargaKg => $composableBuilder(
+    column: $table.cargaKg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SessoesTreinoTableOrderingComposer get sessaoId {
+    final $$SessoesTreinoTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessaoId,
+      referencedTable: $db.sessoesTreino,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessoesTreinoTableOrderingComposer(
+            $db: $db,
+            $table: $db.sessoesTreino,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExerciciosTableOrderingComposer get exercicioId {
+    final $$ExerciciosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.exercicioId,
+      referencedTable: $db.exercicios,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExerciciosTableOrderingComposer(
+            $db: $db,
+            $table: $db.exercicios,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SeriesFeitasTableAnnotationComposer
+    extends Composer<_$BancoAurora, $SeriesFeitasTable> {
+  $$SeriesFeitasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<int> get numero =>
+      $composableBuilder(column: $table.numero, builder: (column) => column);
+
+  GeneratedColumn<int> get repeticoes => $composableBuilder(
+    column: $table.repeticoes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get cargaKg =>
+      $composableBuilder(column: $table.cargaKg, builder: (column) => column);
+
+  $$SessoesTreinoTableAnnotationComposer get sessaoId {
+    final $$SessoesTreinoTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessaoId,
+      referencedTable: $db.sessoesTreino,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessoesTreinoTableAnnotationComposer(
+            $db: $db,
+            $table: $db.sessoesTreino,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExerciciosTableAnnotationComposer get exercicioId {
+    final $$ExerciciosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.exercicioId,
+      referencedTable: $db.exercicios,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExerciciosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.exercicios,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SeriesFeitasTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $SeriesFeitasTable,
+          SerieFeita,
+          $$SeriesFeitasTableFilterComposer,
+          $$SeriesFeitasTableOrderingComposer,
+          $$SeriesFeitasTableAnnotationComposer,
+          $$SeriesFeitasTableCreateCompanionBuilder,
+          $$SeriesFeitasTableUpdateCompanionBuilder,
+          (SerieFeita, $$SeriesFeitasTableReferences),
+          SerieFeita,
+          PrefetchHooks Function({bool sessaoId, bool exercicioId})
+        > {
+  $$SeriesFeitasTableTableManager(_$BancoAurora db, $SeriesFeitasTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SeriesFeitasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SeriesFeitasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SeriesFeitasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> sessaoId = const Value.absent(),
+                Value<String> exercicioId = const Value.absent(),
+                Value<int> numero = const Value.absent(),
+                Value<int> repeticoes = const Value.absent(),
+                Value<double> cargaKg = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SeriesFeitasCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                sessaoId: sessaoId,
+                exercicioId: exercicioId,
+                numero: numero,
+                repeticoes: repeticoes,
+                cargaKg: cargaKg,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String sessaoId,
+                required String exercicioId,
+                required int numero,
+                required int repeticoes,
+                required double cargaKg,
+                Value<int> rowid = const Value.absent(),
+              }) => SeriesFeitasCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                sessaoId: sessaoId,
+                exercicioId: exercicioId,
+                numero: numero,
+                repeticoes: repeticoes,
+                cargaKg: cargaKg,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SeriesFeitasTable, SerieFeita>(table),
+                  $$SeriesFeitasTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({sessaoId = false, exercicioId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (sessaoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.sessaoId,
+                        referencedTable: $$SeriesFeitasTableReferences
+                            ._sessaoIdTable(db),
+                        referencedColumn: $$SeriesFeitasTableReferences
+                            ._sessaoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (exercicioId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.exercicioId,
+                        referencedTable: $$SeriesFeitasTableReferences
+                            ._exercicioIdTable(db),
+                        referencedColumn: $$SeriesFeitasTableReferences
+                            ._exercicioIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SeriesFeitasTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $SeriesFeitasTable,
+      SerieFeita,
+      $$SeriesFeitasTableFilterComposer,
+      $$SeriesFeitasTableOrderingComposer,
+      $$SeriesFeitasTableAnnotationComposer,
+      $$SeriesFeitasTableCreateCompanionBuilder,
+      $$SeriesFeitasTableUpdateCompanionBuilder,
+      (SerieFeita, $$SeriesFeitasTableReferences),
+      SerieFeita,
+      PrefetchHooks Function({bool sessaoId, bool exercicioId})
+    >;
+typedef $$MedidasTableCreateCompanionBuilder = MedidasCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  required String dia,
+  required String tipo,
+  required double valor,
+  required String unidade,
+  Value<int> rowid,
+});
+typedef $$MedidasTableUpdateCompanionBuilder = MedidasCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String> dia,
+  Value<String> tipo,
+  Value<double> valor,
+  Value<String> unidade,
+  Value<int> rowid,
+});
+
+class $$MedidasTableFilterComposer
+    extends Composer<_$BancoAurora, $MedidasTable> {
+  $$MedidasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get valor => $composableBuilder(
+    column: $table.valor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unidade => $composableBuilder(
+    column: $table.unidade,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MedidasTableOrderingComposer
+    extends Composer<_$BancoAurora, $MedidasTable> {
+  $$MedidasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get valor => $composableBuilder(
+    column: $table.valor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unidade => $composableBuilder(
+    column: $table.unidade,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MedidasTableAnnotationComposer
+    extends Composer<_$BancoAurora, $MedidasTable> {
+  $$MedidasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get dia =>
+      $composableBuilder(column: $table.dia, builder: (column) => column);
+
+  GeneratedColumn<String> get tipo =>
+      $composableBuilder(column: $table.tipo, builder: (column) => column);
+
+  GeneratedColumn<double> get valor =>
+      $composableBuilder(column: $table.valor, builder: (column) => column);
+
+  GeneratedColumn<String> get unidade =>
+      $composableBuilder(column: $table.unidade, builder: (column) => column);
+}
+
+class $$MedidasTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $MedidasTable,
+          Medida,
+          $$MedidasTableFilterComposer,
+          $$MedidasTableOrderingComposer,
+          $$MedidasTableAnnotationComposer,
+          $$MedidasTableCreateCompanionBuilder,
+          $$MedidasTableUpdateCompanionBuilder,
+          (Medida, BaseReferences<_$BancoAurora, $MedidasTable, Medida>),
+          Medida,
+          PrefetchHooks Function()
+        > {
+  $$MedidasTableTableManager(_$BancoAurora db, $MedidasTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MedidasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MedidasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MedidasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> dia = const Value.absent(),
+                Value<String> tipo = const Value.absent(),
+                Value<double> valor = const Value.absent(),
+                Value<String> unidade = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MedidasCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                dia: dia,
+                tipo: tipo,
+                valor: valor,
+                unidade: unidade,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String dia,
+                required String tipo,
+                required double valor,
+                required String unidade,
+                Value<int> rowid = const Value.absent(),
+              }) => MedidasCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                dia: dia,
+                tipo: tipo,
+                valor: valor,
+                unidade: unidade,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$MedidasTable, Medida>(table),
+                  BaseReferences<_$BancoAurora, $MedidasTable, Medida>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MedidasTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $MedidasTable,
+      Medida,
+      $$MedidasTableFilterComposer,
+      $$MedidasTableOrderingComposer,
+      $$MedidasTableAnnotationComposer,
+      $$MedidasTableCreateCompanionBuilder,
+      $$MedidasTableUpdateCompanionBuilder,
+      (Medida, BaseReferences<_$BancoAurora, $MedidasTable, Medida>),
+      Medida,
+      PrefetchHooks Function()
+    >;
 typedef $$PreferenciasTableCreateCompanionBuilder =
     PreferenciasCompanion Function({
       required String chave,
@@ -10397,6 +16181,18 @@ class $BancoAuroraManager {
       $$PagamentosTransacaoTableTableManager(_db, _db.pagamentosTransacao);
   $$LembretesTableTableManager get lembretes =>
       $$LembretesTableTableManager(_db, _db.lembretes);
+  $$ExerciciosTableTableManager get exercicios =>
+      $$ExerciciosTableTableManager(_db, _db.exercicios);
+  $$TreinosTableTableManager get treinos =>
+      $$TreinosTableTableManager(_db, _db.treinos);
+  $$ItensTreinoTableTableManager get itensTreino =>
+      $$ItensTreinoTableTableManager(_db, _db.itensTreino);
+  $$SessoesTreinoTableTableManager get sessoesTreino =>
+      $$SessoesTreinoTableTableManager(_db, _db.sessoesTreino);
+  $$SeriesFeitasTableTableManager get seriesFeitas =>
+      $$SeriesFeitasTableTableManager(_db, _db.seriesFeitas);
+  $$MedidasTableTableManager get medidas =>
+      $$MedidasTableTableManager(_db, _db.medidas);
   $$PreferenciasTableTableManager get preferencias =>
       $$PreferenciasTableTableManager(_db, _db.preferencias);
 }

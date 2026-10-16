@@ -10,6 +10,13 @@ import 'package:aurora/ui/financas/form_lancamento.dart';
 import 'package:aurora/ui/habitos/form_habito.dart';
 import 'package:aurora/ui/metas/form_meta.dart';
 import 'package:aurora/ui/metas/metas_page.dart';
+import 'package:aurora/data/saude_repo.dart';
+import 'package:aurora/ui/habitos/habitos_page.dart';
+import 'package:aurora/ui/saude/ficha_page.dart';
+import 'package:aurora/ui/saude/form_medidas.dart';
+import 'package:aurora/ui/saude/form_sessao.dart';
+import 'package:aurora/ui/saude/form_treino.dart';
+import 'package:aurora/ui/saude/medidas_page.dart';
 import 'package:aurora/ui/lembretes/form_lembrete.dart';
 import 'package:aurora/ui/tarefas/form_tarefa.dart';
 import 'package:drift/native.dart';
@@ -151,6 +158,71 @@ void main() {
           expect(find.text('Shape 80kg'), findsOneWidget);
         }
       }
+    }
+    tester.view.reset();
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('editar treino: incluir e tirar exercício', (tester) async {
+    await tester.runAsync(() => semearExemplo(db));
+    final q = (await tester.runAsync(() => SaudeRepo(db).carregar()))!;
+
+    await abrir(tester, (c) => abrirFormTreino(c, treino: q.treinos.first));
+    expect(tester.takeException(), isNull);
+    expect(find.text('Editar treino'), findsOneWidget);
+    expect(find.byTooltip('Tirar exercício'), findsNWidgets(3));
+    await tester.ensureVisible(find.text('Exercício'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Exercício'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Tirar exercício'), findsNWidgets(4));
+    await tester.ensureVisible(find.byTooltip('Tirar exercício').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Tirar exercício').first);
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Tirar exercício'), findsNWidgets(3));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('registrar sessão de treino', (tester) async {
+    await tester.runAsync(() => semearExemplo(db));
+    final q = (await tester.runAsync(() => SaudeRepo(db).carregar()))!;
+    await abrir(tester, (c) => abrirFormSessao(c, q.treinos.first));
+    expect(tester.takeException(), isNull);
+    expect(find.text('Concluir treino'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel('Série 1 feita').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Concluir treino · 1 séries'), findsOneWidget);
+  });
+
+  testWidgets('registrar medidas', (tester) async {
+    await tester.runAsync(() => semearExemplo(db));
+    final q = (await tester.runAsync(() => SaudeRepo(db).carregar()))!;
+    await abrir(tester, (c) => abrirFormMedidas(c, q));
+    expect(tester.takeException(), isNull);
+    expect(find.text('Registrar medidas'), findsOneWidget);
+    expect(find.text('Cintura'), findsOneWidget);
+  });
+
+  testWidgets('telas de Saúde montam no celular e no desktop', (tester) async {
+    await tester.runAsync(() => semearExemplo(db));
+    for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
+      tester.view.physicalSize = tamanho;
+      tester.view.devicePixelRatio = 1;
+      for (final pagina in [HabitosPage(ir: (_) {}), const FichaPage(), const MedidasPage()]) {
+        await tester.pumpWidget(AuroraEscopo(
+          db: db,
+          escuro: ValueNotifier(true),
+          child: MaterialApp(
+            theme: temaAurora(Brightness.dark),
+            home: Scaffold(body: SingleChildScrollView(child: pagina)),
+          ),
+        ));
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull, reason: '${pagina.runtimeType} $tamanho');
+      }
+      expect(find.text('74 kg'), findsWidgets);
     }
     tester.view.reset();
     await tester.pumpWidget(const SizedBox());

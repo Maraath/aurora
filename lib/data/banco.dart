@@ -157,6 +157,71 @@ class Lembretes extends Table with Sincronizavel {
   TextColumn get itemId => text().nullable()();
 }
 
+/// Exercício do catálogo pessoal. [midia] fica para a biblioteca de GIFs do
+/// dono (convertidos para WebP/MP4 curto), que vem depois.
+class Exercicios extends Table with Sincronizavel {
+  TextColumn get nome => text()();
+  TextColumn get grupo => text().nullable()();
+  TextColumn get midia => text().nullable()();
+}
+
+/// Um treino da ficha ("Treino A · Peito e tríceps") e os dias em que cai.
+class Treinos extends Table with Sincronizavel {
+  TextColumn get nome => text()();
+  TextColumn get foco => text().nullable()();
+
+  /// Bits de segunda (1) a domingo (64), como em Habitos. 0 = sem dia fixo.
+  IntColumn get diasSemana => integer().withDefault(const Constant(0))();
+  IntColumn get ordem => integer().withDefault(const Constant(0))();
+}
+
+/// Exercício dentro de um treino, com o que se planeja fazer.
+@DataClassName('ItemTreino')
+class ItensTreino extends Table with Sincronizavel {
+  TextColumn get treinoId => text().references(Treinos, #id)();
+  TextColumn get exercicioId => text().references(Exercicios, #id)();
+  IntColumn get ordem => integer().withDefault(const Constant(0))();
+  IntColumn get series => integer().withDefault(const Constant(3))();
+
+  /// Repetições alvo por série (a carga sobe quando todas chegam nelas).
+  IntColumn get repeticoes => integer().withDefault(const Constant(10))();
+
+  /// Carga para começar quando ainda não há histórico (kg).
+  RealColumn get cargaInicial => real().nullable()();
+}
+
+/// Um treino feito num dia.
+@DataClassName('SessaoTreino')
+class SessoesTreino extends Table with Sincronizavel {
+  TextColumn get treinoId => text().nullable().references(Treinos, #id)();
+
+  /// "aaaa-mm-dd" no fuso de São Paulo.
+  TextColumn get dia => text()();
+  DateTimeColumn get inicio => dateTime()();
+  DateTimeColumn get fim => dateTime().nullable()();
+}
+
+/// Série feita numa sessão: é daqui que sai a carga sugerida do próximo treino.
+@DataClassName('SerieFeita')
+class SeriesFeitas extends Table with Sincronizavel {
+  TextColumn get sessaoId => text().references(SessoesTreino, #id)();
+  TextColumn get exercicioId => text().references(Exercicios, #id)();
+  IntColumn get numero => integer()();
+  IntColumn get repeticoes => integer()();
+  RealColumn get cargaKg => real()();
+}
+
+/// Medida do corpo: uma linha por medida e dia ("peso" 74 kg, "braço" 37 cm).
+/// Nomes livres permitem qualquer outra medida.
+@TableIndex(name: 'medida_dia_tipo', columns: {#dia, #tipo}, unique: true)
+class Medidas extends Table with Sincronizavel {
+  /// "aaaa-mm-dd" no fuso de São Paulo.
+  TextColumn get dia => text()();
+  TextColumn get tipo => text()();
+  RealColumn get valor => real()();
+  TextColumn get unidade => text()();
+}
+
 /// Preferências do aparelho (tema etc.). Não sincroniza.
 class Preferencias extends Table {
   TextColumn get chave => text()();
@@ -176,13 +241,19 @@ class Preferencias extends Table {
   Transacoes,
   PagamentosTransacao,
   Lembretes,
+  Exercicios,
+  Treinos,
+  ItensTreino,
+  SessoesTreino,
+  SeriesFeitas,
+  Medidas,
   Preferencias,
 ])
 class BancoAurora extends _$BancoAurora {
   BancoAurora([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'aurora'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -198,6 +269,15 @@ class BancoAurora extends _$BancoAurora {
             await m.addColumn(transacoes, transacoes.contaDestinoId);
             await m.createTable(pagamentosTransacao);
             await m.createIndex(pagamentoTransacaoVenc);
+          }
+          if (de < 4) {
+            await m.createTable(exercicios);
+            await m.createTable(treinos);
+            await m.createTable(itensTreino);
+            await m.createTable(sessoesTreino);
+            await m.createTable(seriesFeitas);
+            await m.createTable(medidas);
+            await m.createIndex(medidaDiaTipo);
           }
         },
         beforeOpen: (detalhes) async {

@@ -6,14 +6,19 @@ import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/banco.dart';
 import '../../data/habitos_repo.dart';
+import '../../data/saude_repo.dart';
 import '../calendario.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
+import '../saude/blocos_saude.dart';
+import '../saude/form_sessao.dart';
+import '../shell.dart';
 import 'form_habito.dart';
 import 'linha_habito.dart';
 
 class HabitosPage extends StatefulWidget {
-  const HabitosPage({super.key});
+  const HabitosPage({super.key, required this.ir});
+  final ValueChanged<Secao> ir;
 
   @override
   State<HabitosPage> createState() => _HabitosPageState();
@@ -22,6 +27,7 @@ class HabitosPage extends StatefulWidget {
 class _HabitosPageState extends State<HabitosPage> {
   HabitosRepo? _repo;
   Stream<QuadroHabitos>? _quadro;
+  Stream<QuadroSaude>? _saude;
   late DateTime _mes = hojeSP();
 
   @override
@@ -31,6 +37,7 @@ class _HabitosPageState extends State<HabitosPage> {
     if (_repo?.db != db) {
       _repo = HabitosRepo(db);
       _quadro = _repo!.observarQuadro();
+      _saude = SaudeRepo(db).observarQuadro();
     }
   }
 
@@ -130,19 +137,25 @@ class _HabitosPageState extends State<HabitosPage> {
           style: manrope(12, cor: c.muted, altura: 1.5),
         ),
         const SizedBox(height: 18),
-        Cartao(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('TREINO E MEDIDAS', style: rotulo(c.accent)),
-              const SizedBox(height: 8),
-              Text(
-                'Chegam na Fase 4: ficha de treino com carga sugerida pelo histórico, '
-                'peso e medidas com gráfico de evolução.',
-                style: manrope(14, cor: c.text, altura: 1.5),
-              ),
-            ],
-          ),
+        StreamBuilder<QuadroSaude>(
+          stream: _saude,
+          builder: (context, snap) {
+            final s = snap.data;
+            if (s == null) return const SizedBox(height: 120);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                CartaoTreinoDoDia(
+                  quadro: s,
+                  hoje: hoje,
+                  aoComecar: (t) => abrirFormSessao(context, t),
+                  aoAbrirFicha: () => widget.ir(Secao.treino),
+                ),
+                const SizedBox(height: 10),
+                BlocosMedidas(quadro: s, aoTocar: () => widget.ir(Secao.medidas)),
+              ],
+            );
+          },
         ),
       ],
     );

@@ -9,10 +9,24 @@ import 'habitos/habitos_page.dart';
 import 'lembretes/lembretes_page.dart';
 import 'mais_page.dart';
 import 'metas/metas_page.dart';
+import 'saude/ficha_page.dart';
+import 'saude/medidas_page.dart';
 import 'tarefas/tarefas_page.dart';
 import 'visao/visao_page.dart';
 
-enum Secao { visao, tarefas, habitos, financas, mais, metas, lembretes, projetos, assistente }
+enum Secao {
+  visao,
+  tarefas,
+  habitos,
+  financas,
+  mais,
+  metas,
+  lembretes,
+  projetos,
+  assistente,
+  treino,
+  medidas,
+}
 
 class _ItemNav {
   const _ItemNav(this.secao, this.rotulo, this.icone);
@@ -47,6 +61,7 @@ class _ShellState extends State<Shell> {
   /// Metas, Lembretes e Projetos ficam dentro de "Mais".
   Secao get _secaoDaBarra => switch (_secao) {
         Secao.metas || Secao.lembretes || Secao.projetos => Secao.mais,
+        Secao.treino || Secao.medidas => Secao.habitos,
         _ => _secao,
       };
 
@@ -54,7 +69,9 @@ class _ShellState extends State<Shell> {
         Secao.visao => VisaoPage(ir: _ir),
         Secao.mais => MaisPage(ir: _ir),
         Secao.tarefas => const TarefasPage(),
-        Secao.habitos => const HabitosPage(),
+        Secao.habitos => HabitosPage(ir: _ir),
+        Secao.treino => FichaPage(voltar: () => _ir(Secao.habitos)),
+        Secao.medidas => MedidasPage(voltar: () => _ir(Secao.habitos)),
         Secao.financas => const FinancasPage(),
         Secao.metas => MetasPage(voltar: () => _ir(Secao.mais)),
         Secao.lembretes => LembretesPage(voltar: () => _ir(Secao.mais)),
