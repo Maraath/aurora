@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show FunctionException;
 
 import '../core/comandos.dart';
 import '../core/formato.dart';
+import '../core/nuvem.dart';
 import '../core/relogio.dart';
 import 'banco.dart';
+import 'contexto_ia.dart';
 import 'financas_repo.dart';
 import 'habitos_repo.dart';
 import 'lembretes_repo.dart';
@@ -29,9 +35,69 @@ class Resposta {
   final String? itemId;
 }
 
+/// O que a IA devolve: a resposta e frases de comando rápido para executar.
+class RespostaIa {
+  const RespostaIa(this.resposta, this.comandos);
+  final String resposta;
+  final List<String> comandos;
+}
+
+/// Falha ao falar com a IA. [mensagem] já vem pronta para mostrar.
+class ErroIa implements Exception {
+  const ErroIa(this.mensagem, {this.semConexao = false});
+  final String mensagem;
+  final bool semConexao;
+  @override
+  String toString() => mensagem;
+}
+
+typedef ChamarIa = Future<RespostaIa> Function({
+  required String pedido,
+  required String contexto,
+  required List<MensagemAssistente> historico,
+});
+
+/// Chama a Edge Function "assistente" com a sessão de quem está logado.
+/// Nulo quando não há conta conectada (aí os pedidos esperam na fila).
+ChamarIa? iaDaNuvem() {
+  final cliente = nuvem;
+  if (cliente == null || cliente.auth.currentSession == null) return null;
+  return ({required pedido, required contexto, required historico}) async {
+    try {
+      final r = await cliente.functions.invoke('assistente', body: {
+        'pedido': pedido,
+        'contexto': contexto,
+        'historico': [
+          for (final m in historico)
+            if (m.papel != PapelMensagem.sistema) {'papel': m.papel.name, 'texto': m.texto},
+        ],
+      }).timeout(const Duration(seconds: 45));
+      final dados = r.data as Map<String, dynamic>;
+      return RespostaIa(
+        (dados['resposta'] as String?) ?? '',
+        [for (final c in (dados['comandos'] as List? ?? const [])) '$c'],
+      );
+    } on FunctionException catch (e) {
+      final detalhes = e.details;
+      final erro = detalhes is Map ? detalhes['erro'] as String? : null;
+      throw ErroIa(erro ?? 'A IA não respondeu (erro ${e.status}).');
+    } on TimeoutException {
+      throw const ErroIa('A IA demorou demais para responder. O pedido continua na fila.');
+    } catch (e) {
+      if (e is ErroIa) rethrow;
+      debugPrint('IA: falha $e');
+      throw ErroIa(mensagemDeErro(e), semConexao: true);
+    }
+  };
+}
+
 class AssistenteRepo {
-  AssistenteRepo(this.db);
+  AssistenteRepo(this.db, {ChamarIa? Function()? ia}) : _ia = ia ?? iaDaNuvem;
   final BancoAurora db;
+  final ChamarIa? Function() _ia;
+
+  /// Verdadeiro enquanto a IA está respondendo (para a tela mostrar).
+  static final pensando = ValueNotifier<bool>(false);
 
   Stream<List<MensagemAssistente>> observarConversa() =>
       observar(db, [db.mensagensAssistente], carregarConversa);
@@ -60,14 +126,72 @@ class AssistenteRepo {
     await db.transaction(() async {
       await _gravar(PapelMensagem.eu, limpo, naFila: comando == null);
       if (comando == null) {
-        await _gravar(PapelMensagem.sistema,
-            'A IA ainda não está conectada. Guardei este pedido e respondo quando ela estiver. '
-            'Enquanto isso, comandos rápidos funcionam: gastos, lembretes, tarefas, hábitos e medidas.');
+        if (_ia() == null) {
+          await _gravar(PapelMensagem.sistema,
+              'Guardei este pedido para a IA. Ela responde quando você entrar na conta '
+              '(Mais › Conta e sincronização). Comandos rápidos funcionam sem conta.');
+        }
         return;
       }
       final r = await _executar(comando, hoje, agora);
       await _gravar(PapelMensagem.aurora, r.texto, itemTipo: r.itemTipo, itemId: r.itemId);
     });
+    if (comando == null) await processarFila(avisarFalha: true);
+  }
+
+  static bool _processando = false;
+
+  /// Manda os pedidos da fila para a IA, do mais antigo ao mais novo. Para no
+  /// primeiro erro (sem internet, limite do dia) e tenta de novo depois.
+  /// [avisarFalha]: grava o motivo na conversa (só quando a pessoa acabou de pedir).
+  Future<void> processarFila({bool avisarFalha = false}) async {
+    final ia = _ia();
+    if (ia == null || _processando) return;
+    _processando = true;
+    pensando.value = true;
+    try {
+      final fila = (await carregarConversa()).where((m) => m.naFila).toList();
+      for (final pedido in fila) {
+        final conversa = await carregarConversa();
+        final antes = conversa.takeWhile((m) => m.id != pedido.id).toList();
+        final RespostaIa r;
+        final contexto = await montarContexto(db);
+        try {
+          r = await ia(
+            pedido: pedido.texto,
+            contexto: contexto,
+            historico: antes.length > 10 ? antes.sublist(antes.length - 10) : antes,
+          );
+        } on ErroIa catch (e) {
+          if (avisarFalha) {
+            await _gravar(
+                PapelMensagem.sistema,
+                e.semConexao
+                    ? 'Sem conexão: o pedido fica na fila e a IA responde quando a internet voltar.'
+                    : e.mensagem);
+          }
+          return;
+        }
+        await (db.update(db.mensagensAssistente)..where((m) => m.id.equals(pedido.id))).write(
+            MensagensAssistenteCompanion(naFila: const Value(false), atualizadoEm: Value(DateTime.now())));
+        if (r.resposta.isNotEmpty) await _gravar(PapelMensagem.aurora, r.resposta);
+        await _executarDaIa(r.comandos);
+      }
+    } finally {
+      _processando = false;
+      pensando.value = false;
+    }
+  }
+
+  /// Executa os comandos que a IA propôs com o mesmo interpretador offline.
+  Future<void> _executarDaIa(List<String> comandos) async {
+    for (final texto in comandos) {
+      final agora = agoraSP();
+      final c = interpretar(texto, hoje: dataSP(agora), agora: agora);
+      if (c == null || c is CmdResumoDia || c is CmdResumoFinancas) continue;
+      final r = await _executar(c, dataSP(agora), agora);
+      await _gravar(PapelMensagem.aurora, r.texto, itemTipo: r.itemTipo, itemId: r.itemId);
+    }
   }
 
   /// A conversa é ordenada por `criadoEm`; o relógio pode repetir o mesmo

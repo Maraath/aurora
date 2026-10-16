@@ -83,6 +83,55 @@ void main() {
     expect((await ultima()).texto, contains('Saldo em conta: R\$ 703,18'));
   });
 
+  group('com IA', () {
+    test('responde e executa os comandos que propôs', () async {
+      String? contextoRecebido;
+      final comIa = AssistenteRepo(db, ia: () => ({required pedido, required contexto, required historico}) async {
+            contextoRecebido = contexto;
+            return const RespostaIa('Vou anotar o almoço e te lembrar da consulta.',
+                ['gastei 42 no restaurante', 'me lembra de marcar consulta amanhã às 9h', 'frase que não é comando']);
+          });
+      await comIa.enviar('almocei fora, deu 42 conto, e preciso marcar consulta amanhã');
+      final conversa = await comIa.carregarConversa();
+      expect(conversa.first.naFila, isFalse);
+      expect(conversa.map((m) => m.papel),
+          [PapelMensagem.eu, PapelMensagem.aurora, PapelMensagem.aurora, PapelMensagem.aurora]);
+      expect(conversa[2].itemTipo, 'transacao');
+      expect(conversa[3].itemTipo, 'lembrete');
+      expect((await FinancasRepo(db).carregar()).mes(hojeSP()).saiuCentavos, 4200);
+      // O resumo é montado antes de executar os comandos da IA.
+      expect(contextoRecebido, contains('saldo em conta R\$ 703,18'));
+      expect(contextoRecebido, contains('Shape 80kg'));
+    });
+
+    test('sem conexão: fica na fila, avisa uma vez e responde depois', () async {
+      var online = false;
+      final comIa = AssistenteRepo(db, ia: () => ({required pedido, required contexto, required historico}) async {
+            if (!online) throw const ErroIa('sem rede', semConexao: true);
+            return const RespostaIa('Agora sim.', []);
+          });
+      await comIa.enviar('me sugere um treino de pernas');
+      var conversa = await comIa.carregarConversa();
+      expect(conversa.first.naFila, isTrue);
+      expect(conversa.last.texto, startsWith('Sem conexão'));
+
+      online = true;
+      await comIa.processarFila();
+      conversa = await comIa.carregarConversa();
+      expect(conversa.first.naFila, isFalse);
+      expect(conversa.last.texto, 'Agora sim.');
+    });
+
+    test('limite do dia aparece na conversa', () async {
+      final comIa = AssistenteRepo(db, ia: () => ({required pedido, required contexto, required historico}) async {
+            throw const ErroIa('Você chegou ao limite de 60 pedidos à IA hoje.');
+          });
+      await comIa.enviar('o que acha da minha semana?');
+      expect((await comIa.carregarConversa()).last.texto, contains('limite de 60'));
+      expect(await comIa.tamanhoDaFila(), 1);
+    });
+  });
+
   test('o que não é comando vai para a fila', () async {
     await repo.enviar('me sugere um treino de pernas');
     final conversa = await repo.carregarConversa();

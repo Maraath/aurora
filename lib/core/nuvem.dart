@@ -13,6 +13,12 @@ const supabaseAnonKey =
 Future<bool> iniciarNuvem() async {
   try {
     await Supabase.initialize(url: supabaseUrl, publishableKey: supabaseAnonKey);
+    final auth = Supabase.instance.client.auth;
+    debugPrint('Nuvem: sessão ao abrir = ${auth.currentSession != null}');
+    auth.onAuthStateChange.listen(
+      (e) => debugPrint('Nuvem: ${e.event.name} (sessão: ${e.session != null})'),
+      onError: (Object e) => debugPrint('Nuvem: erro de sessão $e'),
+    );
     return true;
   } catch (e) {
     debugPrint('Nuvem indisponível: $e');

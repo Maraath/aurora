@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthState;
 
 import '../../app.dart';
+import '../../core/nuvem.dart';
 import '../../core/tema.dart';
 import '../../data/assistente_repo.dart';
 import '../../data/banco.dart';
@@ -22,6 +26,9 @@ class _AssistentePageState extends State<AssistentePage> {
   final _chaveEntrada = GlobalKey();
   String _nome = '';
   int _vistas = 0;
+  StreamSubscription<AuthState>? _login;
+
+  bool get _conectada => nuvem?.auth.currentSession != null;
 
   @override
   void didChangeDependencies() {
@@ -33,11 +40,20 @@ class _AssistentePageState extends State<AssistentePage> {
       db.preferencia('nome').then((n) {
         if (mounted) setState(() => _nome = n ?? '');
       });
+      // Pedidos que esperavam na fila seguem para a IA ao abrir a tela e ao entrar na conta.
+      _repo!.processarFila();
+      _login?.cancel();
+      _login = nuvem?.auth.onAuthStateChange.listen((_) {
+        if (!mounted) return;
+        setState(() {});
+        _repo!.processarFila();
+      });
     }
   }
 
   @override
   void dispose() {
+    _login?.cancel();
     _texto.dispose();
     _foco.dispose();
     super.dispose();
@@ -106,29 +122,20 @@ class _AssistentePageState extends State<AssistentePage> {
             const SizedBox(height: 8),
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: c.warn),
-                  ),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(color: c.warn, shape: BoxShape.circle),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(fila == 0 ? 'Comandos rápidos' : 'Comandos rápidos · $fila na fila',
-                        style: manrope(12, peso: FontWeight.w700, cor: c.warn)),
-                  ]),
+                _Selo(
+                  texto: (_conectada ? 'IA conectada' : 'Comandos rápidos') +
+                      (fila == 0 ? '' : ' · $fila na fila'),
+                  cor: _conectada ? c.teal : c.warn,
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
-              'Gastos, lembretes, tarefas, hábitos, medidas e resumos funcionam agora, mesmo sem '
-              'internet. Perguntas livres ficam na fila até a IA ser conectada.',
+              _conectada
+                  ? 'Pergunte qualquer coisa sobre sua rotina. Comandos rápidos (gastos, lembretes, '
+                      'hábitos, medidas) funcionam até sem internet; o resto vai para a IA.'
+                  : 'Gastos, lembretes, tarefas, hábitos, medidas e resumos funcionam agora, mesmo sem '
+                      'internet. Para perguntas livres, entre na conta em Mais › Conta e sincronização.',
               style: manrope(12, cor: c.muted, altura: 1.5),
             ),
             const SizedBox(height: 14),
@@ -145,6 +152,23 @@ class _AssistentePageState extends State<AssistentePage> {
                 desfeita: m.desfeita,
                 aoDesfazer: m.itemId != null && !m.desfeita ? () => _repo!.desfazer(m) : null,
               ),
+            ValueListenableBuilder<bool>(
+              valueListenable: AssistenteRepo.pensando,
+              builder: (context, pensando, _) => !pensando
+                  ? const SizedBox()
+                  : Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Row(children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: c.accent),
+                        ),
+                        const SizedBox(width: 10),
+                        Text('Aurora está pensando…', style: manrope(13, cor: c.muted)),
+                      ]),
+                    ),
+            ),
             const SizedBox(height: 6),
             Wrap(
               spacing: 8,
@@ -202,6 +226,23 @@ class _AssistentePageState extends State<AssistentePage> {
       },
     );
   }
+}
+
+class _Selo extends StatelessWidget {
+  const _Selo({required this.texto, required this.cor});
+  final String texto;
+  final Color cor;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(18), border: Border.all(color: cor)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Container(width: 8, height: 8, decoration: BoxDecoration(color: cor, shape: BoxShape.circle)),
+          const SizedBox(width: 6),
+          Text(texto, style: manrope(12, peso: FontWeight.w700, cor: cor)),
+        ]),
+      );
 }
 
 class _Balao extends StatelessWidget {
