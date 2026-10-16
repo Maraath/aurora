@@ -92,7 +92,7 @@ class Folha extends StatelessWidget {
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: aoExcluir,
-                  style: TextButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                  style: TextButton.styleFrom(minimumSize: const Size(44, 48)),
                   child: Text('Excluir', style: manrope(15, peso: FontWeight.w700, cor: c.bad)),
                 ),
               ],
@@ -272,15 +272,19 @@ class GradeChips extends StatelessWidget {
   const GradeChips({super.key, required this.filhos});
   final List<Widget> filhos;
 
+  // IntrinsicHeight: dentro de uma área rolável a altura é infinita, e
+  // "stretch" sozinho quebraria o layout. Assim todos ficam com a altura do maior.
   @override
-  Widget build(BuildContext context) => Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var i = 0; i < filhos.length; i++) ...[
-            if (i > 0) const SizedBox(width: 8),
-            Expanded(child: filhos[i]),
+  Widget build(BuildContext context) => IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < filhos.length; i++) ...[
+              if (i > 0) const SizedBox(width: 8),
+              Expanded(child: filhos[i]),
+            ],
           ],
-        ],
+        ),
       );
 }
 
