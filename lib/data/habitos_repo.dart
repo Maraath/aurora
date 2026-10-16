@@ -91,7 +91,10 @@ class HabitosRepo {
   Future<void> alternar(String habitoId, DateTime dia, bool feito) {
     return db.into(db.registrosHabito).insert(
           RegistrosHabitoCompanion.insert(
-              habitoId: habitoId, dia: chaveData(dia), feito: Value(feito)),
+              id: Value(idNatural('registro_habito', [habitoId, chaveData(dia)])),
+              habitoId: habitoId,
+              dia: chaveData(dia),
+              feito: Value(feito)),
           onConflict: DoUpdate(
             (_) => RegistrosHabitoCompanion(
                 feito: Value(feito), atualizadoEm: Value(DateTime.now())),

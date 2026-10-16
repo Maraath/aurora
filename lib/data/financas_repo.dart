@@ -383,7 +383,11 @@ class FinancasRepo {
     if (pago) {
       await db.into(db.pagamentosTransacao).insert(
             PagamentosTransacaoCompanion.insert(
-                transacaoId: t.id, vencimento: chave, pagoEm: agora, valorCentavos: t.valorCentavos),
+                id: Value(idNatural('pagamento_transacao', [t.id, chave])),
+                transacaoId: t.id,
+                vencimento: chave,
+                pagoEm: agora,
+                valorCentavos: t.valorCentavos),
             onConflict: DoUpdate(
               (_) => PagamentosTransacaoCompanion(
                 pagoEm: Value(agora),

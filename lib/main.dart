@@ -10,6 +10,7 @@ import 'core/nuvem.dart';
 import 'core/relogio.dart';
 import 'data/banco.dart';
 import 'data/exemplo.dart';
+import 'data/servico_sync.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,4 +27,6 @@ Future<void> main() async {
 
   // Depois da primeira tela: pede permissão e agenda os avisos.
   unawaited(Notificador.instancia.iniciar(db));
+  // Com conta conectada, sincroniza ao abrir e a cada mudança.
+  unawaited(ServicoSync.instancia.iniciar(db));
 }

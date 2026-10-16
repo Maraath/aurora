@@ -6,6 +6,12 @@ part 'banco.g.dart';
 
 const _uuid = Uuid();
 
+/// Id calculado a partir da chave natural (UUID v5). Registros que dois
+/// aparelhos podem criar sozinhos ("Cardio feito em 16/10") ganham o MESMO id
+/// nos dois, e a sincronização não duplica.
+String idNatural(String tipo, List<String> chave) =>
+    _uuid.v5(Namespace.url.value, 'aurora:$tipo:${chave.join('|')}');
+
 /// Campos que todo registro sincronizável leva. `apagadoEm` marca exclusão
 /// sem apagar a linha, para a sincronização (V2) não perder nada.
 mixin Sincronizavel on Table {
@@ -271,7 +277,7 @@ class BancoAurora extends _$BancoAurora {
   BancoAurora([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'aurora'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -300,11 +306,28 @@ class BancoAurora extends _$BancoAurora {
           if (de < 5) {
             await m.createTable(mensagensAssistente);
           }
+          if (de < 6) await _idsNaturais();
         },
         beforeOpen: (detalhes) async {
           await customStatement('PRAGMA foreign_keys = ON');
         },
       );
+
+  /// v6: registros com chave natural passam a usar o id calculado (idNatural).
+  Future<void> _idsNaturais() async {
+    for (final (tabela, tipo, colunas) in const [
+      ('conclusoes_tarefa', 'conclusao_tarefa', ['tarefa_id', 'dia']),
+      ('registros_habito', 'registro_habito', ['habito_id', 'dia']),
+      ('pagamentos_transacao', 'pagamento_transacao', ['transacao_id', 'vencimento']),
+      ('medidas', 'medida', ['dia', 'tipo']),
+    ]) {
+      final linhas = await customSelect('SELECT id, ${colunas.join(', ')} FROM $tabela').get();
+      for (final l in linhas) {
+        final novo = idNatural(tipo, [for (final c in colunas) l.read<String>(c)]);
+        await customStatement('UPDATE $tabela SET id = ? WHERE id = ?', [novo, l.read<String>('id')]);
+      }
+    }
+  }
 
   Future<String?> preferencia(String chave) async {
     final linha = await (select(preferencias)..where((p) => p.chave.equals(chave)))

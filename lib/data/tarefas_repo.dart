@@ -211,7 +211,10 @@ class TarefasRepo {
     final dia = chaveData(o.dia ?? hojeSP());
     if (feita) {
       await db.into(db.conclusoesTarefa).insert(
-            ConclusoesTarefaCompanion.insert(tarefaId: o.tarefa.id, dia: dia),
+            ConclusoesTarefaCompanion.insert(
+                id: Value(idNatural('conclusao_tarefa', [o.tarefa.id, dia])),
+                tarefaId: o.tarefa.id,
+                dia: dia),
             onConflict: DoUpdate(
               (_) => ConclusoesTarefaCompanion(
                   apagadoEm: const Value(null), atualizadoEm: Value(agora)),

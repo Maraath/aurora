@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/formato.dart';
 import '../../core/nuvem.dart';
+import '../../core/relogio.dart';
 import '../../core/tema.dart';
+import '../../data/servico_sync.dart';
+import '../../data/sincronizacao.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import '../formulario.dart';
@@ -109,12 +113,17 @@ class _ContaPageState extends State<ContaPage> {
               Text(usuario.email ?? '', style: sora(18)),
               const SizedBox(height: 8),
               Text(
-                'A sincronização entre aparelhos e a IA do assistente chegam nos próximos passos. '
-                'Seus dados continuam guardados neste aparelho.',
+                'Seus dados ficam neste aparelho e vão para a nuvem sozinhos: ao abrir o app, '
+                'alguns segundos depois de cada mudança e a cada 2 minutos.',
                 style: manrope(13, cor: c.muted, altura: 1.5),
               ),
             ],
           ),
+        ),
+        const SizedBox(height: 14),
+        ValueListenableBuilder<EstadoSync>(
+          valueListenable: ServicoSync.instancia.estado,
+          builder: (context, e, _) => _estadoSync(c, e),
         ),
         const SizedBox(height: 14),
         Align(
@@ -127,6 +136,79 @@ class _ContaPageState extends State<ContaPage> {
         ],
       ],
     );
+  }
+
+  Widget _estadoSync(AuroraCores c, EstadoSync e) {
+    if (e.fase == FaseSync.escolher) {
+      return Cartao(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('PRIMEIRA SINCRONIZAÇÃO', style: rotulo(c.warn)),
+            const SizedBox(height: 8),
+            Text(
+              'Esta conta já tem dados na nuvem e este aparelho também tem os seus. '
+              'Se este aparelho só tem os dados de exemplo, use os da nuvem.',
+              style: manrope(14, altura: 1.5),
+            ),
+            const SizedBox(height: 14),
+            Wrap(spacing: 10, runSpacing: 10, children: [
+              BotaoPilula(texto: 'Usar os dados da nuvem', aoTocar: _usarNuvem),
+              BotaoPilula(
+                texto: 'Juntar os dois',
+                principal: false,
+                aoTocar: () => ServicoSync.instancia.escolher(EscolhaPrimeiraVez.juntar),
+              ),
+            ]),
+          ],
+        ),
+      );
+    }
+    final ultima = e.ultima;
+    final (texto, cor) = switch (e.fase) {
+      FaseSync.sincronizando => ('Sincronizando…', c.accent),
+      FaseSync.erro => ('Não sincronizou: ${e.mensagem}', c.bad),
+      _ => (
+          ultima == null
+              ? 'Ainda não sincronizou.'
+              : 'Sincronizado ${diaRelativo(DateTime(ultima.year, ultima.month, ultima.day), hojeSP())} às ${hora(ultima)}.',
+          c.muted
+        ),
+    };
+    return Row(
+      children: [
+        Expanded(child: Text(texto, style: manrope(13, peso: FontWeight.w600, cor: cor, altura: 1.4))),
+        const SizedBox(width: 10),
+        if (e.fase == FaseSync.sincronizando)
+          const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+        else
+          BotaoPilula(texto: 'Sincronizar agora', principal: false, aoTocar: ServicoSync.instancia.sincronizar),
+      ],
+    );
+  }
+
+  Future<void> _usarNuvem() async {
+    final c = context.cores;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.surface,
+        title: Text('Usar os dados da nuvem?', style: sora(18)),
+        content: Text(
+          'Os dados deste aparelho (tarefas, hábitos, finanças, treinos, medidas e a conversa do '
+          'assistente) serão apagados daqui e trocados pelos que estão na sua conta.',
+          style: manrope(14, cor: c.text, altura: 1.5),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Trocar pelos da nuvem', style: TextStyle(color: c.bad)),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) await ServicoSync.instancia.escolher(EscolhaPrimeiraVez.usarNuvem);
   }
 
   Widget _formulario(AuroraCores c) {

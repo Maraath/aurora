@@ -327,7 +327,12 @@ class SaudeRepo {
     return db.transaction(() async {
       for (final m in lista) {
         await db.into(db.medidas).insert(
-              MedidasCompanion.insert(dia: chave, tipo: m.tipo, valor: m.valor, unidade: m.unidade),
+              MedidasCompanion.insert(
+                  id: Value(idNatural('medida', [chave, m.tipo])),
+                  dia: chave,
+                  tipo: m.tipo,
+                  valor: m.valor,
+                  unidade: m.unidade),
               onConflict: DoUpdate(
                 (_) => MedidasCompanion(
                   valor: Value(m.valor),
