@@ -11,6 +11,8 @@ import 'package:aurora/ui/financas/form_lancamento.dart';
 import 'package:aurora/ui/habitos/form_habito.dart';
 import 'package:aurora/ui/metas/form_meta.dart';
 import 'package:aurora/ui/metas/metas_page.dart';
+import 'package:aurora/data/projetos_repo.dart';
+import 'package:aurora/ui/projetos/projetos_page.dart';
 import 'package:aurora/data/saude_repo.dart';
 import 'package:aurora/ui/habitos/habitos_page.dart';
 import 'package:aurora/ui/saude/ficha_page.dart';
@@ -252,6 +254,45 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Anotei R\$ 35,00'), findsOneWidget);
     expect(find.text('Desfazer'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    tester.view.reset();
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('projetos: tela, linha do tempo e formulário', (tester) async {
+    await tester.runAsync(() async {
+      await semearExemplo(db);
+      final hoje = hojeSP();
+      final repo = ProjetosRepo(db);
+      final id = await repo.salvar(ProjetosCompanion.insert(
+        nome: 'Estágio',
+        inicio: instanteSP(hoje.subtract(const Duration(days: 40))),
+        fim: instanteSP(hoje.add(const Duration(days: 45))),
+      ));
+      await repo.novaEtapa(id, 'Pesquisar vagas');
+      await repo.novaEtapa(id, 'Entrevista', dia: hoje.subtract(const Duration(days: 2)));
+    });
+    for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
+      tester.view.physicalSize = tamanho;
+      tester.view.devicePixelRatio = 1;
+      await tester.pumpWidget(AuroraEscopo(
+        db: db,
+        escuro: ValueNotifier(true),
+        child: MaterialApp(
+          theme: temaAurora(Brightness.dark),
+          home: const Scaffold(body: SingleChildScrollView(child: ProjetosPage())),
+        ),
+      ));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: '$tamanho');
+      expect(find.text('Em risco'), findsOneWidget);
+      expect(find.text('atrasada 2 dias'), findsOneWidget);
+    }
+    await tester.tap(find.byTooltip('Editar projeto'));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.pumpAndSettle();
+    expect(find.text('Editar projeto'), findsOneWidget);
     expect(tester.takeException(), isNull);
     tester.view.reset();
     await tester.pumpWidget(const SizedBox());

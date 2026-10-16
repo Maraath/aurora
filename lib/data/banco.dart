@@ -47,6 +47,17 @@ class Metas extends Table with Sincronizavel {
   TextColumn get status => text().withDefault(const Constant('ativa'))();
 }
 
+/// Projeto: metas vistas no tempo. As etapas são as tarefas com `projetoId`.
+class Projetos extends Table with Sincronizavel {
+  TextColumn get nome => text()();
+  DateTimeColumn get inicio => dateTime()();
+  DateTimeColumn get fim => dateTime()();
+  TextColumn get metaId => text().nullable().references(Metas, #id)();
+
+  /// 'ativo' ou 'arquivado'.
+  TextColumn get status => text().withDefault(const Constant('ativo'))();
+}
+
 class Tarefas extends Table with Sincronizavel {
   TextColumn get titulo => text()();
   TextColumn get notas => text().nullable()();
@@ -57,6 +68,9 @@ class Tarefas extends Table with Sincronizavel {
   DateTimeColumn get feitaEm => dateTime().nullable()();
   TextColumn get regraRepeticao => text().nullable()();
   TextColumn get metaId => text().nullable().references(Metas, #id)();
+
+  /// Etapa de um projeto.
+  TextColumn get projetoId => text().nullable().references(Projetos, #id)();
 }
 
 class Habitos extends Table with Sincronizavel {
@@ -256,6 +270,7 @@ class Preferencias extends Table {
 
 @DriftDatabase(tables: [
   Metas,
+  Projetos,
   Tarefas,
   ConclusoesTarefa,
   Habitos,
@@ -277,7 +292,7 @@ class BancoAurora extends _$BancoAurora {
   BancoAurora([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'aurora'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -307,6 +322,10 @@ class BancoAurora extends _$BancoAurora {
             await m.createTable(mensagensAssistente);
           }
           if (de < 6) await _idsNaturais();
+          if (de < 7) {
+            await m.createTable(projetos);
+            await m.addColumn(tarefas, tarefas.projetoId);
+          }
         },
         beforeOpen: (detalhes) async {
           await customStatement('PRAGMA foreign_keys = ON');

@@ -40,7 +40,7 @@ class MaisPage extends StatelessWidget {
           fundo: c.surface2,
           frente: c.text,
           titulo: 'Projetos',
-          detalhe: 'Metas vistas no tempo',
+          detalhe: 'Etapas e linha do tempo',
           aoTocar: () => ir(Secao.projetos),
         ),
         const SizedBox(height: 10),

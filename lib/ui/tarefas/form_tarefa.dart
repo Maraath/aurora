@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show BooleanExpressionOperators, Value;
 import 'package:flutter/material.dart';
 
 import '../../app.dart';
@@ -10,10 +10,14 @@ import '../../data/tarefas_repo.dart';
 import '../formulario.dart';
 
 /// Abre o formulário de nova tarefa ou de edição de [tarefa].
-Future<void> abrirFormTarefa(BuildContext context, {Tarefa? tarefa, DateTime? dataInicial}) async {
+Future<void> abrirFormTarefa(BuildContext context,
+    {Tarefa? tarefa, DateTime? dataInicial, String? projetoInicial}) async {
   final db = AuroraEscopo.de(context).db;
   final repo = TarefasRepo(db);
   final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
+  final projetos = await (db.select(db.projetos)
+        ..where((p) => p.apagadoEm.isNull() & p.status.equals('ativo')))
+      .get();
   final avisar = tarefa != null && await repo.temLembrete(tarefa.id);
   if (!context.mounted) return;
   await abrirFolha<void>(
@@ -22,6 +26,8 @@ Future<void> abrirFormTarefa(BuildContext context, {Tarefa? tarefa, DateTime? da
       repo: repo,
       tarefa: tarefa,
       metas: metas,
+      projetos: projetos,
+      projetoInicial: projetoInicial,
       avisarInicial: avisar,
       dataInicial: dataInicial,
     ),
@@ -33,6 +39,8 @@ class _FormTarefa extends StatefulWidget {
     required this.repo,
     required this.tarefa,
     required this.metas,
+    required this.projetos,
+    this.projetoInicial,
     required this.avisarInicial,
     this.dataInicial,
   });
@@ -40,6 +48,8 @@ class _FormTarefa extends StatefulWidget {
   final TarefasRepo repo;
   final Tarefa? tarefa;
   final List<Meta> metas;
+  final List<Projeto> projetos;
+  final String? projetoInicial;
   final bool avisarInicial;
   final DateTime? dataInicial;
 
@@ -55,6 +65,7 @@ class _FormTarefaState extends State<_FormTarefa> {
   late OpcaoRepeticao _repetir;
   Regra? _regraAtual;
   String? _metaId;
+  String? _projetoId;
   late bool _avisar;
   String? _erro;
   final _hoje = hojeSP();
@@ -75,6 +86,7 @@ class _FormTarefaState extends State<_FormTarefa> {
     _regraAtual = Regra.ler(t?.regraRepeticao);
     _repetir = OpcaoRepeticao.de(_regraAtual);
     _metaId = t?.metaId;
+    _projetoId = t?.projetoId ?? widget.projetoInicial;
     _avisar = widget.avisarInicial;
   }
 
@@ -101,6 +113,7 @@ class _FormTarefaState extends State<_FormTarefa> {
       prioridade: Value(_prioridade),
       regraRepeticao: Value(regra?.rrule),
       metaId: Value(_metaId),
+      projetoId: Value(_projetoId),
     );
     await widget.repo.salvar(dados, id: widget.tarefa?.id, avisar: _avisar && data != null);
     if (mounted) Navigator.pop(context);
@@ -211,6 +224,18 @@ class _FormTarefaState extends State<_FormTarefa> {
                   ? 'Nenhuma'
                   : widget.metas.firstWhere((m) => m.id == id).nome,
               aoEscolher: (id) => setState(() => _metaId = id),
+            ),
+          ),
+        if (widget.projetos.isNotEmpty)
+          Campo(
+            rotulo: 'Etapa de um projeto',
+            child: GrupoChips<String?>(
+              opcoes: [null, ...widget.projetos.map((p) => p.id)],
+              selecionado: _projetoId,
+              rotulo: (id) => id == null
+                  ? 'Nenhum'
+                  : widget.projetos.firstWhere((p) => p.id == id).nome,
+              aoEscolher: (id) => setState(() => _projetoId = id),
             ),
           ),
         LinhaInterruptor(

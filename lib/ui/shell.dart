@@ -5,12 +5,12 @@ import '../core/tema.dart';
 import 'componentes.dart';
 import 'assistente/assistente_page.dart';
 import 'conta/conta_page.dart';
-import 'em_breve.dart';
 import 'financas/financas_page.dart';
 import 'habitos/habitos_page.dart';
 import 'lembretes/lembretes_page.dart';
 import 'mais_page.dart';
 import 'metas/metas_page.dart';
+import 'projetos/projetos_page.dart';
 import 'saude/ficha_page.dart';
 import 'saude/medidas_page.dart';
 import 'tarefas/tarefas_page.dart';
@@ -78,11 +78,7 @@ class _ShellState extends State<Shell> {
         Secao.financas => const FinancasPage(),
         Secao.metas => MetasPage(voltar: () => _ir(Secao.mais)),
         Secao.lembretes => LembretesPage(voltar: () => _ir(Secao.mais)),
-        Secao.projetos => EmBreve(
-            titulo: 'Projetos',
-            fase: 'Fase 5 (V2)',
-            descricao: 'Linha do tempo por mês, etapas e status de cada projeto.',
-            voltar: () => _ir(Secao.mais)),
+        Secao.projetos => ProjetosPage(voltar: () => _ir(Secao.mais)),
         Secao.assistente => const AssistentePage(),
         Secao.conta => ContaPage(voltar: () => _ir(Secao.mais)),
       };
