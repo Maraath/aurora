@@ -4,7 +4,10 @@ import '../app.dart';
 import '../core/tema.dart';
 import 'componentes.dart';
 import 'em_breve.dart';
+import 'habitos/habitos_page.dart';
+import 'lembretes/lembretes_page.dart';
 import 'mais_page.dart';
+import 'tarefas/tarefas_page.dart';
 import 'visao/visao_page.dart';
 
 enum Secao { visao, tarefas, habitos, financas, mais, metas, lembretes, projetos, assistente }
@@ -48,14 +51,8 @@ class _ShellState extends State<Shell> {
   Widget _pagina() => switch (_secao) {
         Secao.visao => VisaoPage(ir: _ir),
         Secao.mais => MaisPage(ir: _ir),
-        Secao.tarefas => const EmBreve(
-            titulo: 'Tarefas',
-            fase: 'Fase 2',
-            descricao: 'Criar, repetir e concluir tarefas, com prioridade, prazo e calendário.'),
-        Secao.habitos => const EmBreve(
-            titulo: 'Hábitos e saúde',
-            fase: 'Fase 2',
-            descricao: 'Rotina do dia, semana com progresso e calendário. Treino e medidas chegam na Fase 4.'),
+        Secao.tarefas => const TarefasPage(),
+        Secao.habitos => const HabitosPage(),
         Secao.financas => const EmBreve(
             titulo: 'Finanças',
             fase: 'Fase 3',
@@ -65,11 +62,7 @@ class _ShellState extends State<Shell> {
             fase: 'Fase 3',
             descricao: 'Progresso, ritmo necessário por semana e tarefas ligadas a cada meta.',
             voltar: () => _ir(Secao.mais)),
-        Secao.lembretes => EmBreve(
-            titulo: 'Lembretes',
-            fase: 'Fase 2',
-            descricao: 'A seguir, hoje, esta semana e recorrentes, com notificação no aparelho.',
-            voltar: () => _ir(Secao.mais)),
+        Secao.lembretes => LembretesPage(voltar: () => _ir(Secao.mais)),
         Secao.projetos => EmBreve(
             titulo: 'Projetos',
             fase: 'Fase 5 (V2)',

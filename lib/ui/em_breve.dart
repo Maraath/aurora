@@ -43,14 +43,20 @@ class EmBreve extends StatelessWidget {
 
 /// Título grande de página, com botão de voltar opcional.
 class TituloPagina extends StatelessWidget {
-  const TituloPagina(this.texto, {super.key, this.voltar});
+  const TituloPagina(this.texto, {super.key, this.voltar, this.acao, this.sobretitulo});
   final String texto;
   final VoidCallback? voltar;
+
+  /// Botão à direita (ex.: "+").
+  final Widget? acao;
+
+  /// Linha pequena acima do título ("OUTUBRO 2026").
+  final String? sobretitulo;
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    return Row(
+    final linha = Row(
       children: [
         if (voltar != null)
           Padding(
@@ -62,7 +68,18 @@ class TituloPagina extends StatelessWidget {
               style: IconButton.styleFrom(minimumSize: const Size(44, 44)),
             ),
           ),
-        Text(texto, style: sora(26)),
+        Expanded(child: Text(texto, style: sora(26))),
+        ?acao,
+      ],
+    );
+    if (sobretitulo == null) return linha;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(sobretitulo!.toUpperCase(),
+            style: manrope(12, peso: FontWeight.w600, cor: c.muted, espaco: 1.4)),
+        const SizedBox(height: 4),
+        linha,
       ],
     );
   }

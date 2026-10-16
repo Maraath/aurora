@@ -6,6 +6,52 @@ import 'banco.dart';
 /// Preenche o banco com os dados de exemplo do protótipo na primeira abertura.
 /// As datas são relativas a hoje para a tela Visão sempre ter o que mostrar.
 Future<void> semearExemplo(BancoAurora db) async {
+  await _etapa1(db);
+  await _etapa2(db);
+}
+
+/// Fase 2: lembretes do protótipo e uma tarefa recorrente.
+Future<void> _etapa2(BancoAurora db) async {
+  if (await db.preferencia('exemplo_v2') != null) return;
+  final hoje = hojeSP();
+  DateTime dia(int deslocamento, int hora) =>
+      instanteSP(hoje.add(Duration(days: deslocamento)), hora);
+  // Próxima data (a partir de hoje) que cai no dia da semana pedido (1 = segunda).
+  DateTime proximo(int diaSemana, int hora) =>
+      dia((diaSemana - hoje.weekday) % 7, hora);
+
+  await db.transaction(() async {
+    await db.batch((b) {
+      b.insertAll(db.lembretes, [
+        LembretesCompanion.insert(
+            texto: 'Revisar gastos da semana',
+            quando: proximo(DateTime.friday, 18),
+            regraRepeticao: const Value('FREQ=WEEKLY;BYDAY=FR')),
+        LembretesCompanion.insert(
+            texto: 'Academia',
+            quando: proximo(DateTime.monday, 19),
+            regraRepeticao: const Value('FREQ=WEEKLY;BYDAY=MO,WE,FR')),
+        LembretesCompanion.insert(
+            texto: 'Pagar iCloud e Spotify',
+            quando: instanteSP(DateTime(hoje.year, hoje.month, 9), 9),
+            regraRepeticao: const Value('FREQ=MONTHLY;BYMONTHDAY=9')),
+        LembretesCompanion.insert(
+            texto: 'Entregar documentos do estágio', quando: dia(5, 14)),
+      ]);
+      b.insert(
+          db.tarefas,
+          TarefasCompanion.insert(
+            titulo: 'Planejar a semana',
+            prazo: Value(proximo(DateTime.sunday, 20)),
+            prazoTemHora: const Value(true),
+            regraRepeticao: const Value('FREQ=WEEKLY;BYDAY=SU'),
+          ));
+    });
+    await db.salvarPreferencia('exemplo_v2', DateTime.now().toIso8601String());
+  });
+}
+
+Future<void> _etapa1(BancoAurora db) async {
   if (await db.preferencia('exemplo_semeado') != null) return;
 
   final agora = agoraSP();

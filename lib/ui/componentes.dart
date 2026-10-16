@@ -124,6 +124,144 @@ class BotaoRedondo extends StatelessWidget {
   }
 }
 
+/// Controle segmentado (Próximos | Recorrentes), como no protótipo.
+class Segmentos<T> extends StatelessWidget {
+  const Segmentos({
+    super.key,
+    required this.opcoes,
+    required this.selecionado,
+    required this.rotulo,
+    required this.aoEscolher,
+  });
+
+  final List<T> opcoes;
+  final T selecionado;
+  final String Function(T) rotulo;
+  final ValueChanged<T> aoEscolher;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(14)),
+      child: Row(
+        children: [
+          for (final o in opcoes)
+            Expanded(
+              child: Semantics(
+                selected: o == selecionado,
+                button: true,
+                child: Material(
+                  color: o == selecionado ? c.surface : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => aoEscolher(o),
+                    child: SizedBox(
+                      height: 40,
+                      child: Center(
+                        child: Text(
+                          rotulo(o),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: manrope(13,
+                              peso: FontWeight.w700,
+                              cor: o == selecionado ? c.text : c.muted),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Contador do topo das telas (atrasadas / abertas / feitas hoje).
+class Contador extends StatelessWidget {
+  const Contador({super.key, required this.valor, required this.rotulo, this.cor, this.fundo});
+  final String valor;
+  final String rotulo;
+  final Color? cor;
+  final Color? fundo;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: fundo ?? c.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: fundo == null ? Border.all(color: c.line) : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(valor, style: sora(22, cor: cor ?? c.text)),
+          const SizedBox(height: 2),
+          Text(rotulo,
+              style: manrope(12, cor: fundo == null ? c.muted : c.text),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
+        ],
+      ),
+    );
+  }
+}
+
+/// Linha de três contadores com espaço igual.
+class LinhaContadores extends StatelessWidget {
+  const LinhaContadores(this.contadores, {super.key});
+  final List<Contador> contadores;
+
+  @override
+  Widget build(BuildContext context) => Row(
+        children: [
+          for (var i = 0; i < contadores.length; i++) ...[
+            if (i > 0) const SizedBox(width: 8),
+            Expanded(child: contadores[i]),
+          ],
+        ],
+      );
+}
+
+/// Rótulo de seção em caixa alta ("RESOLVER AGORA").
+class TituloSecao extends StatelessWidget {
+  const TituloSecao(this.texto, {super.key, this.direita});
+  final String texto;
+  final Widget? direita;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(children: [
+        Expanded(child: Text(texto.toUpperCase(), style: rotulo(c.muted))),
+        ?direita,
+      ]),
+    );
+  }
+}
+
+/// Texto de lista vazia.
+class Vazio extends StatelessWidget {
+  const Vazio(this.texto, {super.key});
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) => Cartao(
+        raio: 16,
+        padding: const EdgeInsets.all(16),
+        child: Text(texto, style: manrope(14, cor: context.cores.muted, altura: 1.4)),
+      );
+}
+
 /// Círculo de concluir: vazio quando pendente, verde-água com ✓ quando feito.
 class MarcaConcluir extends StatelessWidget {
   const MarcaConcluir({super.key, required this.feito});

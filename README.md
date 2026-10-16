@@ -18,7 +18,7 @@ flutter run -d windows
 ## Estado
 
 - [x] Fase 1: base (tema, navegação, banco local, tela Visão com dados de exemplo)
-- [ ] Fase 2: Tarefas, Hábitos e Lembretes
+- [x] Fase 2: Tarefas, Hábitos e Lembretes (recorrência por regra, calendário, notificações)
 - [ ] Fase 3: Finanças e Metas (V1)
 - [ ] Fase 4: Saúde (treino e medidas)
 - [ ] Fase 5: V2 (sincronização, assistente com IA, projetos, dieta)

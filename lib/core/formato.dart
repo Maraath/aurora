@@ -28,6 +28,38 @@ String diaMesCurto(DateTime d) =>
 /// "21:00"
 String hora(DateTime d) => DateFormat('HH:mm').format(d);
 
+String horaDe(int h, int m) => '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+
+/// "sex, 18 out"
+String diaSemanaCurto(DateTime d) =>
+    DateFormat("EEE',' d MMM", 'pt_BR').format(d).replaceAll('.', '').toLowerCase();
+
+/// "hoje", "amanhã", "ontem", "sex, 18 out" (datas de calendário).
+String diaRelativo(DateTime data, DateTime hoje) {
+  final n = DateTime.utc(data.year, data.month, data.day)
+      .difference(DateTime.utc(hoje.year, hoje.month, hoje.day))
+      .inDays;
+  return switch (n) {
+    0 => 'hoje',
+    1 => 'amanhã',
+    -1 => 'ontem',
+    _ => diaSemanaCurto(data),
+  };
+}
+
+/// Rótulo curto dos lembretes: "HOJE", "AMANHÃ", "SEX 16", "SEG 9/11".
+String rotuloDiaLembrete(DateTime data, DateTime hoje) {
+  final rel = diaRelativo(data, hoje);
+  if (rel == 'hoje' || rel == 'amanhã') return rel.toUpperCase();
+  final semana = DateFormat('EEE', 'pt_BR').format(data).replaceAll('.', '').toUpperCase();
+  return data.month == hoje.month && data.year == hoje.year
+      ? '$semana ${data.day}'
+      : '$semana ${data.day}/${data.month}';
+}
+
+/// "outubro de 2026"
+String mesAno(DateTime d) => DateFormat("MMMM 'de' y", 'pt_BR').format(d);
+
 String saudacao(DateTime d) {
   if (d.hour >= 5 && d.hour < 12) return 'Bom dia';
   if (d.hour >= 12 && d.hour < 18) return 'Boa tarde';

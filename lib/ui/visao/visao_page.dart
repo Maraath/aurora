@@ -8,6 +8,7 @@ import '../../data/banco.dart';
 import '../../data/visao_repo.dart';
 import '../componentes.dart';
 import '../shell.dart';
+import '../habitos/linha_habito.dart';
 import 'foco.dart';
 
 class VisaoPage extends StatefulWidget {
@@ -28,7 +29,7 @@ class _VisaoPageState extends State<VisaoPage> {
     final db = AuroraEscopo.de(context).db;
     if (_repo?.db != db) {
       _repo = VisaoRepo(db);
-      _resumo = _repo!.observar();
+      _resumo = _repo!.observarResumo();
     }
   }
 
@@ -88,9 +89,10 @@ class _Conteudo extends StatelessWidget {
         if (resumo.habitos.isEmpty)
           Text('Nenhum hábito para hoje.', style: manrope(14, cor: c.muted)),
         for (final h in resumo.habitos) ...[
-          _LinhaHabito(
-            item: h,
-            aoTocar: () => repo.alternarHabito(h.habito.id, !h.feito),
+          LinhaHabito(
+            habito: h.habito,
+            feito: h.feito,
+            aoAlternar: () => repo.alternarHabito(h.habito.id, !h.feito),
           ),
           const SizedBox(height: 10),
         ],
@@ -105,10 +107,12 @@ class _Conteudo extends StatelessWidget {
   List<ItemFoco> _itensFoco(ResumoVisao r) => [
         for (final h in r.habitos)
           if (!h.feito) ItemFoco(h.habito.nome, 'para hoje · Hábitos'),
-        for (final t in r.tarefasHoje)
+        for (final o in r.tarefasHoje)
           ItemFoco(
-            t.titulo,
-            t.prazoTemHora ? 'hoje às ${hora(emSP(t.prazo!))} · Tarefas' : 'para hoje · Tarefas',
+            o.tarefa.titulo,
+            o.momento != null && o.horario != null
+                ? 'hoje às ${hora(emSP(o.momento!))} · Tarefas'
+                : 'para hoje · Tarefas',
           ),
       ];
 }
@@ -150,70 +154,6 @@ class _CartaoFoco extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _LinhaHabito extends StatelessWidget {
-  const _LinhaHabito({required this.item, required this.aoTocar});
-  final HabitoDoDia item;
-  final VoidCallback aoTocar;
-
-  String get _detalhe {
-    final h = item.habito;
-    final partes = <String>[];
-    if (h.alvo != null) {
-      partes.add(switch (h.tipo) {
-        TipoHabito.duracao => h.alvo! >= 60 && h.alvo! % 60 == 0 ? '${h.alvo! ~/ 60} h' : '${h.alvo} min',
-        TipoHabito.quantidade => '${h.alvo}x',
-        TipoHabito.marcar => '',
-      });
-    }
-    partes.add(h.horario ?? 'sem horário');
-    return partes.where((p) => p.isNotEmpty).join(' · ');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    return Semantics(
-      label: '${item.feito ? 'Desmarcar' : 'Concluir'} ${item.habito.nome}',
-      button: true,
-      excludeSemantics: true,
-      child: Cartao(
-        raio: 16,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        aoTocar: aoTocar,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 36),
-          child: Row(
-            children: [
-              MarcaConcluir(feito: item.feito),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 180),
-                  opacity: item.feito ? 0.6 : 1,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        item.habito.nome,
-                        style: manrope(15, peso: FontWeight.w600).copyWith(
-                          decoration: item.feito ? TextDecoration.lineThrough : null,
-                          decorationColor: c.text,
-                        ),
-                      ),
-                      Text(_detalhe, style: manrope(12, cor: c.muted)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

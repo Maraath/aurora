@@ -65,7 +65,20 @@ class Habitos extends Table with Sincronizavel {
 
   /// Minutos (duração) ou quantidade, conforme o tipo.
   IntColumn get alvo => integer().nullable()();
+
+  /// Unidade da quantidade ("copos", "páginas").
+  TextColumn get unidade => text().nullable()();
   TextColumn get metaId => text().nullable().references(Metas, #id)();
+}
+
+/// Conclusão de UMA ocorrência de tarefa recorrente. A regra continua gerando
+/// as próximas; só o que foi feito vira linha.
+@TableIndex(name: 'conclusao_tarefa_dia', columns: {#tarefaId, #dia}, unique: true)
+class ConclusoesTarefa extends Table with Sincronizavel {
+  TextColumn get tarefaId => text().references(Tarefas, #id)();
+
+  /// "aaaa-mm-dd" da ocorrência, no fuso de São Paulo.
+  TextColumn get dia => text()();
 }
 
 @TableIndex(name: 'registro_habito_dia', columns: {#habitoId, #dia}, unique: true)
@@ -106,6 +119,9 @@ class Lembretes extends Table with Sincronizavel {
   TextColumn get regraRepeticao => text().nullable()();
   IntColumn get notificarAntesMin => integer().withDefault(const Constant(0))();
 
+  /// O sino: desligado, o lembrete continua salvo mas não notifica.
+  BoolColumn get ativo => boolean().withDefault(const Constant(true))();
+
   /// Item ligado (ex.: 'tarefa', 'transacao') e o id dele.
   TextColumn get itemTipo => text().nullable()();
   TextColumn get itemId => text().nullable()();
@@ -123,6 +139,7 @@ class Preferencias extends Table {
 @DriftDatabase(tables: [
   Metas,
   Tarefas,
+  ConclusoesTarefa,
   Habitos,
   RegistrosHabito,
   ContasFinanceiras,
@@ -134,10 +151,19 @@ class BancoAurora extends _$BancoAurora {
   BancoAurora([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'aurora'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, de, para) async {
+          if (de < 2) {
+            await m.addColumn(habitos, habitos.unidade);
+            await m.addColumn(lembretes, lembretes.ativo);
+            await m.createTable(conclusoesTarefa);
+            await m.createIndex(conclusaoTarefaDia);
+          }
+        },
         beforeOpen: (detalhes) async {
           await customStatement('PRAGMA foreign_keys = ON');
         },
