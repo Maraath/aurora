@@ -51,6 +51,16 @@ void main() {
     expect(const Regra.mensal(9).descricao, 'Todo dia 9');
   });
 
+  test('regra encerrada (UNTIL) para de gerar e sobrevive à leitura', () {
+    final r = const Regra.mensal(10).encerradaEm(DateTime(2026, 12, 10));
+    expect(r.rrule, 'FREQ=MONTHLY;BYMONTHDAY=10;UNTIL=20261210');
+    final lida = Regra.ler(r.rrule)!;
+    expect(lida, r);
+    final dias = lida.ocorrencias(DateTime(2026, 10, 10), DateTime(2026, 10, 1), DateTime(2027, 6, 1));
+    expect(dias, [DateTime(2026, 10, 10), DateTime(2026, 11, 10), DateTime(2026, 12, 10)]);
+    expect(lida.descricao, 'Todo dia 10');
+  });
+
   test('atravessa o fim do horário de verão sem pular dias', () {
     const r = Regra.diaria();
     final dias = r.ocorrencias(DateTime(2026, 10, 1), DateTime(2026, 10, 1), DateTime(2026, 11, 30));

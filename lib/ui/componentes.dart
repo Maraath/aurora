@@ -249,6 +249,65 @@ class TituloSecao extends StatelessWidget {
   }
 }
 
+/// Barra fina de progresso (0 a 1).
+class BarraProgresso extends StatelessWidget {
+  const BarraProgresso({super.key, required this.fracao, required this.cor});
+  final double fracao;
+  final Color cor;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: LinearProgressIndicator(
+          value: fracao.clamp(0.0, 1.0),
+          minHeight: 8,
+          color: cor,
+          backgroundColor: context.cores.surface2,
+        ),
+      );
+}
+
+/// Etiqueta pequena com borda ("Parada", "Nova").
+class Etiqueta extends StatelessWidget {
+  const Etiqueta(this.texto, {super.key, required this.cor});
+  final String texto;
+  final Color cor;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: cor),
+        ),
+        child: Text(texto, style: manrope(11, peso: FontWeight.w700, cor: cor)),
+      );
+}
+
+/// Botão tracejado de "+ Nova …" no fim das listas.
+class CartaoNovo extends StatelessWidget {
+  const CartaoNovo({super.key, required this.titulo, required this.detalhe, required this.aoTocar});
+  final String titulo;
+  final String detalhe;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Cartao(
+      aoTocar: aoTocar,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(titulo, style: manrope(15, peso: FontWeight.w600, cor: c.accent)),
+          const SizedBox(height: 6),
+          Text(detalhe, style: manrope(13, cor: c.muted, altura: 1.4)),
+        ],
+      ),
+    );
+  }
+}
+
 /// Texto de lista vazia.
 class Vazio extends StatelessWidget {
   const Vazio(this.texto, {super.key});

@@ -5,6 +5,7 @@ import '../../core/formato.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/banco.dart';
+import '../../data/metas_repo.dart';
 import '../../data/visao_repo.dart';
 import '../componentes.dart';
 import '../shell.dart';
@@ -194,7 +195,7 @@ class _Panorama extends StatelessWidget {
       if (meta != null)
         _CartaoNumero(
           rotulo: meta.nome,
-          valor: '${numero(meta.valorAtual)} ${meta.unidade}'.trim(),
+          valor: valorMeta(meta.valorAtual, meta.unidade),
           tamanhoValor: 22,
           detalhe: _detalheMeta(meta),
           aoTocar: () => ir(Secao.metas),
@@ -216,7 +217,7 @@ class _Panorama extends StatelessWidget {
   String _detalheMeta(Meta m) {
     final falta = (m.valorAlvo - m.valorAtual).abs();
     final partes = [
-      falta == 0 ? 'meta alcançada' : 'faltam ${numero(falta)} ${m.unidade}'.trim(),
+      falta == 0 ? 'meta alcançada' : 'faltam ${valorMeta(falta, m.unidade)}',
       if (m.dataAlvo != null) diaMesCurto(emSP(m.dataAlvo!)),
     ];
     return partes.join(' · ');

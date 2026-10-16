@@ -4,9 +4,11 @@ import '../app.dart';
 import '../core/tema.dart';
 import 'componentes.dart';
 import 'em_breve.dart';
+import 'financas/financas_page.dart';
 import 'habitos/habitos_page.dart';
 import 'lembretes/lembretes_page.dart';
 import 'mais_page.dart';
+import 'metas/metas_page.dart';
 import 'tarefas/tarefas_page.dart';
 import 'visao/visao_page.dart';
 
@@ -53,15 +55,8 @@ class _ShellState extends State<Shell> {
         Secao.mais => MaisPage(ir: _ir),
         Secao.tarefas => const TarefasPage(),
         Secao.habitos => const HabitosPage(),
-        Secao.financas => const EmBreve(
-            titulo: 'Finanças',
-            fase: 'Fase 3',
-            descricao: 'Contas e cartões, contas a pagar, recorrentes, parceladas e para onde foi o dinheiro.'),
-        Secao.metas => EmBreve(
-            titulo: 'Metas',
-            fase: 'Fase 3',
-            descricao: 'Progresso, ritmo necessário por semana e tarefas ligadas a cada meta.',
-            voltar: () => _ir(Secao.mais)),
+        Secao.financas => const FinancasPage(),
+        Secao.metas => MetasPage(voltar: () => _ir(Secao.mais)),
         Secao.lembretes => LembretesPage(voltar: () => _ir(Secao.mais)),
         Secao.projetos => EmBreve(
             titulo: 'Projetos',

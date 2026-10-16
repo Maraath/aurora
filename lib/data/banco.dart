@@ -30,6 +30,7 @@ enum TipoTransacao { entrada, saida }
 /// `regraRepeticao` usa o padrão RRULE de calendário, por exemplo:
 /// `FREQ=DAILY`, `FREQ=WEEKLY;BYDAY=MO,WE,FR`, `FREQ=MONTHLY;BYMONTHDAY=11`.
 
+/// Com unidade "R$", os valores da meta ficam em centavos (como todo dinheiro).
 class Metas extends Table with Sincronizavel {
   TextColumn get nome => text()();
   RealColumn get valorInicial => real()();
@@ -91,6 +92,7 @@ class RegistrosHabito extends Table with Sincronizavel {
   IntColumn get valor => integer().nullable()();
 }
 
+@DataClassName('ContaFinanceira')
 class ContasFinanceiras extends Table with Sincronizavel {
   TextColumn get nome => text()();
   TextColumn get tipo => textEnum<TipoConta>()();
@@ -99,6 +101,14 @@ class ContasFinanceiras extends Table with Sincronizavel {
   IntColumn get diaVencimento => integer().nullable()();
 }
 
+/// Uma transação é única (sem regra) ou uma REGRA mensal: recorrente (sem fim)
+/// ou parcelada (`parcelaNumero` é a parcela do primeiro vencimento e
+/// `parcelaTotal` o total). Nas regras, `valorCentavos` é o valor de cada
+/// ocorrência, e o pagamento de cada uma vira uma linha em PagamentosTransacao.
+///
+/// Únicas: com `vencimento` = conta a pagar (ou a receber) até ter `pagoEm`;
+/// sem vencimento = movimento já feito em `data` (`pagoEm` igual a `data`).
+@DataClassName('Transacao')
 class Transacoes extends Table with Sincronizavel {
   TextColumn get descricao => text()();
   IntColumn get valorCentavos => integer()();
@@ -111,6 +121,26 @@ class Transacoes extends Table with Sincronizavel {
   IntColumn get parcelaNumero => integer().nullable()();
   IntColumn get parcelaTotal => integer().nullable()();
   TextColumn get contaId => text().nullable().references(ContasFinanceiras, #id)();
+
+  /// Transferência: conta que recebe (ex.: pagamento da fatura de um cartão).
+  /// Transferências não contam como gasto nem como entrada do mês.
+  @ReferenceName('transferenciasRecebidas')
+  TextColumn get contaDestinoId => text().nullable().references(ContasFinanceiras, #id)();
+}
+
+/// Pagamento (ou recebimento) de UMA ocorrência de transação recorrente ou
+/// parcelada. A regra continua gerando as próximas; só o que foi pago vira linha.
+@TableIndex(name: 'pagamento_transacao_venc', columns: {#transacaoId, #vencimento}, unique: true)
+@DataClassName('PagamentoTransacao')
+class PagamentosTransacao extends Table with Sincronizavel {
+  TextColumn get transacaoId => text().references(Transacoes, #id)();
+
+  /// "aaaa-mm-dd" do vencimento da ocorrência, no fuso de São Paulo.
+  TextColumn get vencimento => text()();
+  DateTimeColumn get pagoEm => dateTime()();
+
+  /// Valor pago nesta ocorrência (editar a regra depois não muda o passado).
+  IntColumn get valorCentavos => integer()();
 }
 
 class Lembretes extends Table with Sincronizavel {
@@ -144,6 +174,7 @@ class Preferencias extends Table {
   RegistrosHabito,
   ContasFinanceiras,
   Transacoes,
+  PagamentosTransacao,
   Lembretes,
   Preferencias,
 ])
@@ -151,7 +182,7 @@ class BancoAurora extends _$BancoAurora {
   BancoAurora([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'aurora'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -162,6 +193,11 @@ class BancoAurora extends _$BancoAurora {
             await m.addColumn(lembretes, lembretes.ativo);
             await m.createTable(conclusoesTarefa);
             await m.createIndex(conclusaoTarefaDia);
+          }
+          if (de < 3) {
+            await m.addColumn(transacoes, transacoes.contaDestinoId);
+            await m.createTable(pagamentosTransacao);
+            await m.createIndex(pagamentoTransacaoVenc);
           }
         },
         beforeOpen: (detalhes) async {

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../core/relogio.dart';
 import 'banco.dart';
+import 'financas_repo.dart';
 import 'habitos_repo.dart';
 import 'observar.dart';
 import 'tarefas_repo.dart';
@@ -45,9 +46,13 @@ class ResumoVisao {
 }
 
 class VisaoRepo {
-  VisaoRepo(this.db) : _tarefas = TarefasRepo(db), habitos = HabitosRepo(db);
+  VisaoRepo(this.db)
+      : _tarefas = TarefasRepo(db),
+        _financas = FinancasRepo(db),
+        habitos = HabitosRepo(db);
   final BancoAurora db;
   final TarefasRepo _tarefas;
+  final FinancasRepo _financas;
   final HabitosRepo habitos;
 
   Stream<ResumoVisao> observarResumo() => observar(db, [
@@ -56,6 +61,8 @@ class VisaoRepo {
         db.tarefas,
         db.conclusoesTarefa,
         db.transacoes,
+        db.pagamentosTransacao,
+        db.contasFinanceiras,
         db.metas,
       ], carregar);
 
@@ -71,14 +78,8 @@ class VisaoRepo {
 
     final quadro = await _tarefas.carregar();
 
-    final fimDoMes = diaSP(agora.year, agora.month + 1, 1);
-    final contas = await (db.select(db.transacoes)
-          ..where((t) =>
-              t.tipo.equalsValue(TipoTransacao.saida) &
-              t.pagoEm.isNull() &
-              t.apagadoEm.isNull() &
-              t.vencimento.isSmallerThanValue(fimDoMes)))
-        .get();
+    final financas = await _financas.carregar();
+    final mes = financas.mes(hoje);
 
     final meta = await (db.select(db.metas)
           ..where((m) => m.status.equals('ativa') & m.apagadoEm.isNull())
@@ -92,8 +93,8 @@ class VisaoRepo {
       tarefasHoje: quadro.pendentes.where((o) => o.dia == hoje).toList(),
       tarefasAtrasadas: quadro.atrasadas,
       tarefasAbertas: quadro.abertas,
-      aPagarCentavos: contas.fold(0, (soma, t) => soma + t.valorCentavos),
-      contasAPagar: contas.length,
+      aPagarCentavos: mes.faltaPagarCentavos,
+      contasAPagar: mes.contasAbertas,
       meta: meta,
     );
   }

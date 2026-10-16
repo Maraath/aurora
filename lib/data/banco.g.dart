@@ -2975,7 +2975,7 @@ class RegistrosHabitoCompanion extends UpdateCompanion<RegistrosHabitoData> {
 }
 
 class $ContasFinanceirasTable extends ContasFinanceiras
-    with TableInfo<$ContasFinanceirasTable, ContasFinanceira> {
+    with TableInfo<$ContasFinanceirasTable, ContaFinanceira> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -3095,7 +3095,7 @@ class $ContasFinanceirasTable extends ContasFinanceiras
   static const String $name = 'contas_financeiras';
   @override
   VerificationContext validateIntegrity(
-    Insertable<ContasFinanceira> instance, {
+    Insertable<ContaFinanceira> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -3165,9 +3165,9 @@ class $ContasFinanceirasTable extends ContasFinanceiras
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  ContasFinanceira map(Map<String, dynamic> data, {String? tablePrefix}) {
+  ContaFinanceira map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return ContasFinanceira(
+    return ContaFinanceira(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -3218,8 +3218,7 @@ class $ContasFinanceirasTable extends ContasFinanceiras
       const EnumNameConverter<TipoConta>(TipoConta.values);
 }
 
-class ContasFinanceira extends DataClass
-    implements Insertable<ContasFinanceira> {
+class ContaFinanceira extends DataClass implements Insertable<ContaFinanceira> {
   final String id;
   final DateTime criadoEm;
   final DateTime atualizadoEm;
@@ -3229,7 +3228,7 @@ class ContasFinanceira extends DataClass
   final int saldoInicialCentavos;
   final int? diaFechamento;
   final int? diaVencimento;
-  const ContasFinanceira({
+  const ContaFinanceira({
     required this.id,
     required this.criadoEm,
     required this.atualizadoEm,
@@ -3285,12 +3284,12 @@ class ContasFinanceira extends DataClass
     );
   }
 
-  factory ContasFinanceira.fromJson(
+  factory ContaFinanceira.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return ContasFinanceira(
+    return ContaFinanceira(
       id: serializer.fromJson<String>(json['id']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
@@ -3324,7 +3323,7 @@ class ContasFinanceira extends DataClass
     };
   }
 
-  ContasFinanceira copyWith({
+  ContaFinanceira copyWith({
     String? id,
     DateTime? criadoEm,
     DateTime? atualizadoEm,
@@ -3334,7 +3333,7 @@ class ContasFinanceira extends DataClass
     int? saldoInicialCentavos,
     Value<int?> diaFechamento = const Value.absent(),
     Value<int?> diaVencimento = const Value.absent(),
-  }) => ContasFinanceira(
+  }) => ContaFinanceira(
     id: id ?? this.id,
     criadoEm: criadoEm ?? this.criadoEm,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
@@ -3349,8 +3348,8 @@ class ContasFinanceira extends DataClass
         ? diaVencimento.value
         : this.diaVencimento,
   );
-  ContasFinanceira copyWithCompanion(ContasFinanceirasCompanion data) {
-    return ContasFinanceira(
+  ContaFinanceira copyWithCompanion(ContasFinanceirasCompanion data) {
+    return ContaFinanceira(
       id: data.id.present ? data.id.value : this.id,
       criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
       atualizadoEm: data.atualizadoEm.present
@@ -3373,7 +3372,7 @@ class ContasFinanceira extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('ContasFinanceira(')
+    return (StringBuffer('ContaFinanceira(')
           ..write('id: $id, ')
           ..write('criadoEm: $criadoEm, ')
           ..write('atualizadoEm: $atualizadoEm, ')
@@ -3402,7 +3401,7 @@ class ContasFinanceira extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is ContasFinanceira &&
+      (other is ContaFinanceira &&
           other.id == this.id &&
           other.criadoEm == this.criadoEm &&
           other.atualizadoEm == this.atualizadoEm &&
@@ -3414,7 +3413,7 @@ class ContasFinanceira extends DataClass
           other.diaVencimento == this.diaVencimento);
 }
 
-class ContasFinanceirasCompanion extends UpdateCompanion<ContasFinanceira> {
+class ContasFinanceirasCompanion extends UpdateCompanion<ContaFinanceira> {
   final Value<String> id;
   final Value<DateTime> criadoEm;
   final Value<DateTime> atualizadoEm;
@@ -3450,7 +3449,7 @@ class ContasFinanceirasCompanion extends UpdateCompanion<ContasFinanceira> {
     this.rowid = const Value.absent(),
   }) : nome = Value(nome),
        tipo = Value(tipo);
-  static Insertable<ContasFinanceira> custom({
+  static Insertable<ContaFinanceira> custom({
     Expression<String>? id,
     Expression<DateTime>? criadoEm,
     Expression<DateTime>? atualizadoEm,
@@ -3560,7 +3559,7 @@ class ContasFinanceirasCompanion extends UpdateCompanion<ContasFinanceira> {
 }
 
 class $TransacoesTable extends Transacoes
-    with TableInfo<$TransacoesTable, Transacoe> {
+    with TableInfo<$TransacoesTable, Transacao> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -3728,6 +3727,20 @@ class $TransacoesTable extends Transacoes
       'REFERENCES contas_financeiras (id)',
     ),
   );
+  static const VerificationMeta _contaDestinoIdMeta = const VerificationMeta(
+    'contaDestinoId',
+  );
+  @override
+  late final GeneratedColumn<String> contaDestinoId = GeneratedColumn<String>(
+    'conta_destino_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES contas_financeiras (id)',
+    ),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3745,6 +3758,7 @@ class $TransacoesTable extends Transacoes
     parcelaNumero,
     parcelaTotal,
     contaId,
+    contaDestinoId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3753,7 +3767,7 @@ class $TransacoesTable extends Transacoes
   static const String $name = 'transacoes';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Transacoe> instance, {
+    Insertable<Transacao> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -3860,15 +3874,24 @@ class $TransacoesTable extends Transacoes
         contaId.isAcceptableOrUnknown(data['conta_id']!, _contaIdMeta),
       );
     }
+    if (data.containsKey('conta_destino_id')) {
+      context.handle(
+        _contaDestinoIdMeta,
+        contaDestinoId.isAcceptableOrUnknown(
+          data['conta_destino_id']!,
+          _contaDestinoIdMeta,
+        ),
+      );
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Transacoe map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Transacao map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Transacoe(
+    return Transacao(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -3931,6 +3954,10 @@ class $TransacoesTable extends Transacoes
         DriftSqlType.string,
         data['${effectivePrefix}conta_id'],
       ),
+      contaDestinoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conta_destino_id'],
+      ),
     );
   }
 
@@ -3943,7 +3970,7 @@ class $TransacoesTable extends Transacoes
       const EnumNameConverter<TipoTransacao>(TipoTransacao.values);
 }
 
-class Transacoe extends DataClass implements Insertable<Transacoe> {
+class Transacao extends DataClass implements Insertable<Transacao> {
   final String id;
   final DateTime criadoEm;
   final DateTime atualizadoEm;
@@ -3959,7 +3986,11 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
   final int? parcelaNumero;
   final int? parcelaTotal;
   final String? contaId;
-  const Transacoe({
+
+  /// Transferência: conta que recebe (ex.: pagamento da fatura de um cartão).
+  /// Transferências não contam como gasto nem como entrada do mês.
+  final String? contaDestinoId;
+  const Transacao({
     required this.id,
     required this.criadoEm,
     required this.atualizadoEm,
@@ -3975,6 +4006,7 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
     this.parcelaNumero,
     this.parcelaTotal,
     this.contaId,
+    this.contaDestinoId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4014,6 +4046,9 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
     if (!nullToAbsent || contaId != null) {
       map['conta_id'] = Variable<String>(contaId);
     }
+    if (!nullToAbsent || contaDestinoId != null) {
+      map['conta_destino_id'] = Variable<String>(contaDestinoId);
+    }
     return map;
   }
 
@@ -4050,15 +4085,18 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
       contaId: contaId == null && nullToAbsent
           ? const Value.absent()
           : Value(contaId),
+      contaDestinoId: contaDestinoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contaDestinoId),
     );
   }
 
-  factory Transacoe.fromJson(
+  factory Transacao.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Transacoe(
+    return Transacao(
       id: serializer.fromJson<String>(json['id']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
@@ -4076,6 +4114,7 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
       parcelaNumero: serializer.fromJson<int?>(json['parcelaNumero']),
       parcelaTotal: serializer.fromJson<int?>(json['parcelaTotal']),
       contaId: serializer.fromJson<String?>(json['contaId']),
+      contaDestinoId: serializer.fromJson<String?>(json['contaDestinoId']),
     );
   }
   @override
@@ -4099,10 +4138,11 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
       'parcelaNumero': serializer.toJson<int?>(parcelaNumero),
       'parcelaTotal': serializer.toJson<int?>(parcelaTotal),
       'contaId': serializer.toJson<String?>(contaId),
+      'contaDestinoId': serializer.toJson<String?>(contaDestinoId),
     };
   }
 
-  Transacoe copyWith({
+  Transacao copyWith({
     String? id,
     DateTime? criadoEm,
     DateTime? atualizadoEm,
@@ -4118,7 +4158,8 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
     Value<int?> parcelaNumero = const Value.absent(),
     Value<int?> parcelaTotal = const Value.absent(),
     Value<String?> contaId = const Value.absent(),
-  }) => Transacoe(
+    Value<String?> contaDestinoId = const Value.absent(),
+  }) => Transacao(
     id: id ?? this.id,
     criadoEm: criadoEm ?? this.criadoEm,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
@@ -4138,9 +4179,12 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
         : this.parcelaNumero,
     parcelaTotal: parcelaTotal.present ? parcelaTotal.value : this.parcelaTotal,
     contaId: contaId.present ? contaId.value : this.contaId,
+    contaDestinoId: contaDestinoId.present
+        ? contaDestinoId.value
+        : this.contaDestinoId,
   );
-  Transacoe copyWithCompanion(TransacoesCompanion data) {
-    return Transacoe(
+  Transacao copyWithCompanion(TransacoesCompanion data) {
+    return Transacao(
       id: data.id.present ? data.id.value : this.id,
       criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
       atualizadoEm: data.atualizadoEm.present
@@ -4168,12 +4212,15 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
           ? data.parcelaTotal.value
           : this.parcelaTotal,
       contaId: data.contaId.present ? data.contaId.value : this.contaId,
+      contaDestinoId: data.contaDestinoId.present
+          ? data.contaDestinoId.value
+          : this.contaDestinoId,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('Transacoe(')
+    return (StringBuffer('Transacao(')
           ..write('id: $id, ')
           ..write('criadoEm: $criadoEm, ')
           ..write('atualizadoEm: $atualizadoEm, ')
@@ -4188,7 +4235,8 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
           ..write('regraRepeticao: $regraRepeticao, ')
           ..write('parcelaNumero: $parcelaNumero, ')
           ..write('parcelaTotal: $parcelaTotal, ')
-          ..write('contaId: $contaId')
+          ..write('contaId: $contaId, ')
+          ..write('contaDestinoId: $contaDestinoId')
           ..write(')'))
         .toString();
   }
@@ -4210,11 +4258,12 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
     parcelaNumero,
     parcelaTotal,
     contaId,
+    contaDestinoId,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Transacoe &&
+      (other is Transacao &&
           other.id == this.id &&
           other.criadoEm == this.criadoEm &&
           other.atualizadoEm == this.atualizadoEm &&
@@ -4229,10 +4278,11 @@ class Transacoe extends DataClass implements Insertable<Transacoe> {
           other.regraRepeticao == this.regraRepeticao &&
           other.parcelaNumero == this.parcelaNumero &&
           other.parcelaTotal == this.parcelaTotal &&
-          other.contaId == this.contaId);
+          other.contaId == this.contaId &&
+          other.contaDestinoId == this.contaDestinoId);
 }
 
-class TransacoesCompanion extends UpdateCompanion<Transacoe> {
+class TransacoesCompanion extends UpdateCompanion<Transacao> {
   final Value<String> id;
   final Value<DateTime> criadoEm;
   final Value<DateTime> atualizadoEm;
@@ -4248,6 +4298,7 @@ class TransacoesCompanion extends UpdateCompanion<Transacoe> {
   final Value<int?> parcelaNumero;
   final Value<int?> parcelaTotal;
   final Value<String?> contaId;
+  final Value<String?> contaDestinoId;
   final Value<int> rowid;
   const TransacoesCompanion({
     this.id = const Value.absent(),
@@ -4265,6 +4316,7 @@ class TransacoesCompanion extends UpdateCompanion<Transacoe> {
     this.parcelaNumero = const Value.absent(),
     this.parcelaTotal = const Value.absent(),
     this.contaId = const Value.absent(),
+    this.contaDestinoId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TransacoesCompanion.insert({
@@ -4283,12 +4335,13 @@ class TransacoesCompanion extends UpdateCompanion<Transacoe> {
     this.parcelaNumero = const Value.absent(),
     this.parcelaTotal = const Value.absent(),
     this.contaId = const Value.absent(),
+    this.contaDestinoId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : descricao = Value(descricao),
        valorCentavos = Value(valorCentavos),
        tipo = Value(tipo),
        data = Value(data);
-  static Insertable<Transacoe> custom({
+  static Insertable<Transacao> custom({
     Expression<String>? id,
     Expression<DateTime>? criadoEm,
     Expression<DateTime>? atualizadoEm,
@@ -4304,6 +4357,7 @@ class TransacoesCompanion extends UpdateCompanion<Transacoe> {
     Expression<int>? parcelaNumero,
     Expression<int>? parcelaTotal,
     Expression<String>? contaId,
+    Expression<String>? contaDestinoId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4322,6 +4376,7 @@ class TransacoesCompanion extends UpdateCompanion<Transacoe> {
       if (parcelaNumero != null) 'parcela_numero': parcelaNumero,
       if (parcelaTotal != null) 'parcela_total': parcelaTotal,
       if (contaId != null) 'conta_id': contaId,
+      if (contaDestinoId != null) 'conta_destino_id': contaDestinoId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4342,6 +4397,7 @@ class TransacoesCompanion extends UpdateCompanion<Transacoe> {
     Value<int?>? parcelaNumero,
     Value<int?>? parcelaTotal,
     Value<String?>? contaId,
+    Value<String?>? contaDestinoId,
     Value<int>? rowid,
   }) {
     return TransacoesCompanion(
@@ -4360,6 +4416,7 @@ class TransacoesCompanion extends UpdateCompanion<Transacoe> {
       parcelaNumero: parcelaNumero ?? this.parcelaNumero,
       parcelaTotal: parcelaTotal ?? this.parcelaTotal,
       contaId: contaId ?? this.contaId,
+      contaDestinoId: contaDestinoId ?? this.contaDestinoId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4414,6 +4471,9 @@ class TransacoesCompanion extends UpdateCompanion<Transacoe> {
     if (contaId.present) {
       map['conta_id'] = Variable<String>(contaId.value);
     }
+    if (contaDestinoId.present) {
+      map['conta_destino_id'] = Variable<String>(contaDestinoId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4438,6 +4498,537 @@ class TransacoesCompanion extends UpdateCompanion<Transacoe> {
           ..write('parcelaNumero: $parcelaNumero, ')
           ..write('parcelaTotal: $parcelaTotal, ')
           ..write('contaId: $contaId, ')
+          ..write('contaDestinoId: $contaDestinoId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PagamentosTransacaoTable extends PagamentosTransacao
+    with TableInfo<$PagamentosTransacaoTable, PagamentoTransacao> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PagamentosTransacaoTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _transacaoIdMeta = const VerificationMeta(
+    'transacaoId',
+  );
+  @override
+  late final GeneratedColumn<String> transacaoId = GeneratedColumn<String>(
+    'transacao_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES transacoes (id)',
+    ),
+  );
+  static const VerificationMeta _vencimentoMeta = const VerificationMeta(
+    'vencimento',
+  );
+  @override
+  late final GeneratedColumn<String> vencimento = GeneratedColumn<String>(
+    'vencimento',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pagoEmMeta = const VerificationMeta('pagoEm');
+  @override
+  late final GeneratedColumn<DateTime> pagoEm = GeneratedColumn<DateTime>(
+    'pago_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valorCentavosMeta = const VerificationMeta(
+    'valorCentavos',
+  );
+  @override
+  late final GeneratedColumn<int> valorCentavos = GeneratedColumn<int>(
+    'valor_centavos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    transacaoId,
+    vencimento,
+    pagoEm,
+    valorCentavos,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pagamentos_transacao';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PagamentoTransacao> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('transacao_id')) {
+      context.handle(
+        _transacaoIdMeta,
+        transacaoId.isAcceptableOrUnknown(
+          data['transacao_id']!,
+          _transacaoIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_transacaoIdMeta);
+    }
+    if (data.containsKey('vencimento')) {
+      context.handle(
+        _vencimentoMeta,
+        vencimento.isAcceptableOrUnknown(data['vencimento']!, _vencimentoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_vencimentoMeta);
+    }
+    if (data.containsKey('pago_em')) {
+      context.handle(
+        _pagoEmMeta,
+        pagoEm.isAcceptableOrUnknown(data['pago_em']!, _pagoEmMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pagoEmMeta);
+    }
+    if (data.containsKey('valor_centavos')) {
+      context.handle(
+        _valorCentavosMeta,
+        valorCentavos.isAcceptableOrUnknown(
+          data['valor_centavos']!,
+          _valorCentavosMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_valorCentavosMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PagamentoTransacao map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PagamentoTransacao(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      transacaoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transacao_id'],
+      )!,
+      vencimento: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}vencimento'],
+      )!,
+      pagoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}pago_em'],
+      )!,
+      valorCentavos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}valor_centavos'],
+      )!,
+    );
+  }
+
+  @override
+  $PagamentosTransacaoTable createAlias(String alias) {
+    return $PagamentosTransacaoTable(attachedDatabase, alias);
+  }
+}
+
+class PagamentoTransacao extends DataClass
+    implements Insertable<PagamentoTransacao> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String transacaoId;
+
+  /// "aaaa-mm-dd" do vencimento da ocorrência, no fuso de São Paulo.
+  final String vencimento;
+  final DateTime pagoEm;
+
+  /// Valor pago nesta ocorrência (editar a regra depois não muda o passado).
+  final int valorCentavos;
+  const PagamentoTransacao({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.transacaoId,
+    required this.vencimento,
+    required this.pagoEm,
+    required this.valorCentavos,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['transacao_id'] = Variable<String>(transacaoId);
+    map['vencimento'] = Variable<String>(vencimento);
+    map['pago_em'] = Variable<DateTime>(pagoEm);
+    map['valor_centavos'] = Variable<int>(valorCentavos);
+    return map;
+  }
+
+  PagamentosTransacaoCompanion toCompanion(bool nullToAbsent) {
+    return PagamentosTransacaoCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      transacaoId: Value(transacaoId),
+      vencimento: Value(vencimento),
+      pagoEm: Value(pagoEm),
+      valorCentavos: Value(valorCentavos),
+    );
+  }
+
+  factory PagamentoTransacao.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PagamentoTransacao(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      transacaoId: serializer.fromJson<String>(json['transacaoId']),
+      vencimento: serializer.fromJson<String>(json['vencimento']),
+      pagoEm: serializer.fromJson<DateTime>(json['pagoEm']),
+      valorCentavos: serializer.fromJson<int>(json['valorCentavos']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'transacaoId': serializer.toJson<String>(transacaoId),
+      'vencimento': serializer.toJson<String>(vencimento),
+      'pagoEm': serializer.toJson<DateTime>(pagoEm),
+      'valorCentavos': serializer.toJson<int>(valorCentavos),
+    };
+  }
+
+  PagamentoTransacao copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? transacaoId,
+    String? vencimento,
+    DateTime? pagoEm,
+    int? valorCentavos,
+  }) => PagamentoTransacao(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    transacaoId: transacaoId ?? this.transacaoId,
+    vencimento: vencimento ?? this.vencimento,
+    pagoEm: pagoEm ?? this.pagoEm,
+    valorCentavos: valorCentavos ?? this.valorCentavos,
+  );
+  PagamentoTransacao copyWithCompanion(PagamentosTransacaoCompanion data) {
+    return PagamentoTransacao(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      transacaoId: data.transacaoId.present
+          ? data.transacaoId.value
+          : this.transacaoId,
+      vencimento: data.vencimento.present
+          ? data.vencimento.value
+          : this.vencimento,
+      pagoEm: data.pagoEm.present ? data.pagoEm.value : this.pagoEm,
+      valorCentavos: data.valorCentavos.present
+          ? data.valorCentavos.value
+          : this.valorCentavos,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PagamentoTransacao(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('transacaoId: $transacaoId, ')
+          ..write('vencimento: $vencimento, ')
+          ..write('pagoEm: $pagoEm, ')
+          ..write('valorCentavos: $valorCentavos')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    transacaoId,
+    vencimento,
+    pagoEm,
+    valorCentavos,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PagamentoTransacao &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.transacaoId == this.transacaoId &&
+          other.vencimento == this.vencimento &&
+          other.pagoEm == this.pagoEm &&
+          other.valorCentavos == this.valorCentavos);
+}
+
+class PagamentosTransacaoCompanion extends UpdateCompanion<PagamentoTransacao> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> transacaoId;
+  final Value<String> vencimento;
+  final Value<DateTime> pagoEm;
+  final Value<int> valorCentavos;
+  final Value<int> rowid;
+  const PagamentosTransacaoCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.transacaoId = const Value.absent(),
+    this.vencimento = const Value.absent(),
+    this.pagoEm = const Value.absent(),
+    this.valorCentavos = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PagamentosTransacaoCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String transacaoId,
+    required String vencimento,
+    required DateTime pagoEm,
+    required int valorCentavos,
+    this.rowid = const Value.absent(),
+  }) : transacaoId = Value(transacaoId),
+       vencimento = Value(vencimento),
+       pagoEm = Value(pagoEm),
+       valorCentavos = Value(valorCentavos);
+  static Insertable<PagamentoTransacao> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? transacaoId,
+    Expression<String>? vencimento,
+    Expression<DateTime>? pagoEm,
+    Expression<int>? valorCentavos,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (transacaoId != null) 'transacao_id': transacaoId,
+      if (vencimento != null) 'vencimento': vencimento,
+      if (pagoEm != null) 'pago_em': pagoEm,
+      if (valorCentavos != null) 'valor_centavos': valorCentavos,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PagamentosTransacaoCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? transacaoId,
+    Value<String>? vencimento,
+    Value<DateTime>? pagoEm,
+    Value<int>? valorCentavos,
+    Value<int>? rowid,
+  }) {
+    return PagamentosTransacaoCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      transacaoId: transacaoId ?? this.transacaoId,
+      vencimento: vencimento ?? this.vencimento,
+      pagoEm: pagoEm ?? this.pagoEm,
+      valorCentavos: valorCentavos ?? this.valorCentavos,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (transacaoId.present) {
+      map['transacao_id'] = Variable<String>(transacaoId.value);
+    }
+    if (vencimento.present) {
+      map['vencimento'] = Variable<String>(vencimento.value);
+    }
+    if (pagoEm.present) {
+      map['pago_em'] = Variable<DateTime>(pagoEm.value);
+    }
+    if (valorCentavos.present) {
+      map['valor_centavos'] = Variable<int>(valorCentavos.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PagamentosTransacaoCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('transacaoId: $transacaoId, ')
+          ..write('vencimento: $vencimento, ')
+          ..write('pagoEm: $pagoEm, ')
+          ..write('valorCentavos: $valorCentavos, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5333,6 +5924,8 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   late final $ContasFinanceirasTable contasFinanceiras =
       $ContasFinanceirasTable(this);
   late final $TransacoesTable transacoes = $TransacoesTable(this);
+  late final $PagamentosTransacaoTable pagamentosTransacao =
+      $PagamentosTransacaoTable(this);
   late final $LembretesTable lembretes = $LembretesTable(this);
   late final $PreferenciasTable preferencias = $PreferenciasTable(this);
   late final Index conclusaoTarefaDia = Index(
@@ -5342,6 +5935,10 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   late final Index registroHabitoDia = Index(
     'registro_habito_dia',
     'CREATE UNIQUE INDEX registro_habito_dia ON registros_habito (habito_id, dia)',
+  );
+  late final Index pagamentoTransacaoVenc = Index(
+    'pagamento_transacao_venc',
+    'CREATE UNIQUE INDEX pagamento_transacao_venc ON pagamentos_transacao (transacao_id, vencimento)',
   );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -5355,10 +5952,12 @@ abstract class _$BancoAurora extends GeneratedDatabase {
     registrosHabito,
     contasFinanceiras,
     transacoes,
+    pagamentosTransacao,
     lembretes,
     preferencias,
     conclusaoTarefaDia,
     registroHabitoDia,
+    pagamentoTransacaoVenc,
   ];
 }
 
@@ -7704,7 +8303,7 @@ final class $$ContasFinanceirasTableReferences
         BaseReferences<
           _$BancoAurora,
           $ContasFinanceirasTable,
-          ContasFinanceira
+          ContaFinanceira
         > {
   $$ContasFinanceirasTableReferences(
     super.$_db,
@@ -7712,7 +8311,7 @@ final class $$ContasFinanceirasTableReferences
     super.$_typedResult,
   );
 
-  static MultiTypedResultKey<$TransacoesTable, List<Transacoe>>
+  static MultiTypedResultKey<$TransacoesTable, List<Transacao>>
   _transacoesRefsTable(_$BancoAurora db) => MultiTypedResultKey.fromTable(
     db.transacoes,
     aliasName: 'contas_financeiras__id__transacoes__conta_id',
@@ -7725,6 +8324,27 @@ final class $$ContasFinanceirasTableReferences
     ).filter((f) => f.contaId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_transacoesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransacoesTable, List<Transacao>>
+  _transferenciasRecebidasTable(_$BancoAurora db) =>
+      MultiTypedResultKey.fromTable(
+        db.transacoes,
+        aliasName: 'contas_financeiras__id__transacoes__conta_destino_id',
+      );
+
+  $$TransacoesTableProcessedTableManager get transferenciasRecebidas {
+    final manager = $$TransacoesTableTableManager(
+      $_db,
+      $_db.transacoes,
+    ).filter((f) => f.contaDestinoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transferenciasRecebidasTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -7794,6 +8414,31 @@ class $$ContasFinanceirasTableFilterComposer
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.transacoes,
       getReferencedColumn: (t) => t.contaId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransacoesTableFilterComposer(
+            $db: $db,
+            $table: $db.transacoes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transferenciasRecebidas(
+    Expression<bool> Function($$TransacoesTableFilterComposer f) f,
+  ) {
+    final $$TransacoesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transacoes,
+      getReferencedColumn: (t) => t.contaDestinoId,
       builder:
           (
             joinBuilder, {
@@ -7935,6 +8580,31 @@ class $$ContasFinanceirasTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> transferenciasRecebidas<T extends Object>(
+    Expression<T> Function($$TransacoesTableAnnotationComposer a) f,
+  ) {
+    final $$TransacoesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transacoes,
+      getReferencedColumn: (t) => t.contaDestinoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransacoesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transacoes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ContasFinanceirasTableTableManager
@@ -7942,15 +8612,18 @@ class $$ContasFinanceirasTableTableManager
         RootTableManager<
           _$BancoAurora,
           $ContasFinanceirasTable,
-          ContasFinanceira,
+          ContaFinanceira,
           $$ContasFinanceirasTableFilterComposer,
           $$ContasFinanceirasTableOrderingComposer,
           $$ContasFinanceirasTableAnnotationComposer,
           $$ContasFinanceirasTableCreateCompanionBuilder,
           $$ContasFinanceirasTableUpdateCompanionBuilder,
-          (ContasFinanceira, $$ContasFinanceirasTableReferences),
-          ContasFinanceira,
-          PrefetchHooks Function({bool transacoesRefs})
+          (ContaFinanceira, $$ContasFinanceirasTableReferences),
+          ContaFinanceira,
+          PrefetchHooks Function({
+            bool transacoesRefs,
+            bool transferenciasRecebidas,
+          })
         > {
   $$ContasFinanceirasTableTableManager(
     _$BancoAurora db,
@@ -8019,41 +8692,68 @@ class $$ContasFinanceirasTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable<$ContasFinanceirasTable, ContasFinanceira>(table),
+                  e.readTable<$ContasFinanceirasTable, ContaFinanceira>(table),
                   $$ContasFinanceirasTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({transacoesRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (transacoesRefs) db.transacoes],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (transacoesRefs)
-                    await $_getPrefetchedData<
-                      ContasFinanceira,
-                      $ContasFinanceirasTable,
-                      Transacoe
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ContasFinanceirasTableReferences
-                          ._transacoesRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$ContasFinanceirasTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).transacoesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.contaId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({transacoesRefs = false, transferenciasRecebidas = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (transacoesRefs) db.transacoes,
+                    if (transferenciasRecebidas) db.transacoes,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (transacoesRefs)
+                        await $_getPrefetchedData<
+                          ContaFinanceira,
+                          $ContasFinanceirasTable,
+                          Transacao
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContasFinanceirasTableReferences
+                              ._transacoesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContasFinanceirasTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transacoesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contaId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (transferenciasRecebidas)
+                        await $_getPrefetchedData<
+                          ContaFinanceira,
+                          $ContasFinanceirasTable,
+                          Transacao
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContasFinanceirasTableReferences
+                              ._transferenciasRecebidasTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContasFinanceirasTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transferenciasRecebidas,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contaDestinoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -8062,15 +8762,18 @@ typedef $$ContasFinanceirasTableProcessedTableManager =
     ProcessedTableManager<
       _$BancoAurora,
       $ContasFinanceirasTable,
-      ContasFinanceira,
+      ContaFinanceira,
       $$ContasFinanceirasTableFilterComposer,
       $$ContasFinanceirasTableOrderingComposer,
       $$ContasFinanceirasTableAnnotationComposer,
       $$ContasFinanceirasTableCreateCompanionBuilder,
       $$ContasFinanceirasTableUpdateCompanionBuilder,
-      (ContasFinanceira, $$ContasFinanceirasTableReferences),
-      ContasFinanceira,
-      PrefetchHooks Function({bool transacoesRefs})
+      (ContaFinanceira, $$ContasFinanceirasTableReferences),
+      ContaFinanceira,
+      PrefetchHooks Function({
+        bool transacoesRefs,
+        bool transferenciasRecebidas,
+      })
     >;
 typedef $$TransacoesTableCreateCompanionBuilder = TransacoesCompanion Function({
   Value<String> id,
@@ -8088,6 +8791,7 @@ typedef $$TransacoesTableCreateCompanionBuilder = TransacoesCompanion Function({
   Value<int?> parcelaNumero,
   Value<int?> parcelaTotal,
   Value<String?> contaId,
+  Value<String?> contaDestinoId,
   Value<int> rowid,
 });
 typedef $$TransacoesTableUpdateCompanionBuilder = TransacoesCompanion Function({
@@ -8106,11 +8810,12 @@ typedef $$TransacoesTableUpdateCompanionBuilder = TransacoesCompanion Function({
   Value<int?> parcelaNumero,
   Value<int?> parcelaTotal,
   Value<String?> contaId,
+  Value<String?> contaDestinoId,
   Value<int> rowid,
 });
 
 final class $$TransacoesTableReferences
-    extends BaseReferences<_$BancoAurora, $TransacoesTable, Transacoe> {
+    extends BaseReferences<_$BancoAurora, $TransacoesTable, Transacao> {
   $$TransacoesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $ContasFinanceirasTable _contaIdTable(_$BancoAurora db) => db
@@ -8128,6 +8833,48 @@ final class $$TransacoesTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ContasFinanceirasTable _contaDestinoIdTable(_$BancoAurora db) => db
+      .contasFinanceiras
+      .createAlias('transacoes__conta_destino_id__contas_financeiras__id');
+
+  $$ContasFinanceirasTableProcessedTableManager? get contaDestinoId {
+    final $_column = $_itemColumn<String>('conta_destino_id');
+    if ($_column == null) return null;
+    final manager = $$ContasFinanceirasTableTableManager(
+      $_db,
+      $_db.contasFinanceiras,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contaDestinoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $PagamentosTransacaoTable,
+    List<PagamentoTransacao>
+  >
+  _pagamentosTransacaoRefsTable(_$BancoAurora db) =>
+      MultiTypedResultKey.fromTable(
+        db.pagamentosTransacao,
+        aliasName: 'transacoes__id__pagamentos_transacao__transacao_id',
+      );
+
+  $$PagamentosTransacaoTableProcessedTableManager get pagamentosTransacaoRefs {
+    final manager = $$PagamentosTransacaoTableTableManager(
+      $_db,
+      $_db.pagamentosTransacao,
+    ).filter((f) => f.transacaoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _pagamentosTransacaoRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
@@ -8234,6 +8981,54 @@ class $$TransacoesTableFilterComposer
     );
     return composer;
   }
+
+  $$ContasFinanceirasTableFilterComposer get contaDestinoId {
+    final $$ContasFinanceirasTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contaDestinoId,
+      referencedTable: $db.contasFinanceiras,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContasFinanceirasTableFilterComposer(
+            $db: $db,
+            $table: $db.contasFinanceiras,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> pagamentosTransacaoRefs(
+    Expression<bool> Function($$PagamentosTransacaoTableFilterComposer f) f,
+  ) {
+    final $$PagamentosTransacaoTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.pagamentosTransacao,
+      getReferencedColumn: (t) => t.transacaoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PagamentosTransacaoTableFilterComposer(
+            $db: $db,
+            $table: $db.pagamentosTransacao,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TransacoesTableOrderingComposer
@@ -8319,6 +9114,29 @@ class $$TransacoesTableOrderingComposer
     final $$ContasFinanceirasTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.contaId,
+      referencedTable: $db.contasFinanceiras,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContasFinanceirasTableOrderingComposer(
+            $db: $db,
+            $table: $db.contasFinanceiras,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContasFinanceirasTableOrderingComposer get contaDestinoId {
+    final $$ContasFinanceirasTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contaDestinoId,
       referencedTable: $db.contasFinanceiras,
       getReferencedColumn: (t) => t.id,
       builder:
@@ -8425,6 +9243,56 @@ class $$TransacoesTableAnnotationComposer
         );
     return composer;
   }
+
+  $$ContasFinanceirasTableAnnotationComposer get contaDestinoId {
+    final $$ContasFinanceirasTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.contaDestinoId,
+          referencedTable: $db.contasFinanceiras,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ContasFinanceirasTableAnnotationComposer(
+                $db: $db,
+                $table: $db.contasFinanceiras,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  Expression<T> pagamentosTransacaoRefs<T extends Object>(
+    Expression<T> Function($$PagamentosTransacaoTableAnnotationComposer a) f,
+  ) {
+    final $$PagamentosTransacaoTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.pagamentosTransacao,
+          getReferencedColumn: (t) => t.transacaoId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PagamentosTransacaoTableAnnotationComposer(
+                $db: $db,
+                $table: $db.pagamentosTransacao,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$TransacoesTableTableManager
@@ -8432,15 +9300,19 @@ class $$TransacoesTableTableManager
         RootTableManager<
           _$BancoAurora,
           $TransacoesTable,
-          Transacoe,
+          Transacao,
           $$TransacoesTableFilterComposer,
           $$TransacoesTableOrderingComposer,
           $$TransacoesTableAnnotationComposer,
           $$TransacoesTableCreateCompanionBuilder,
           $$TransacoesTableUpdateCompanionBuilder,
-          (Transacoe, $$TransacoesTableReferences),
-          Transacoe,
-          PrefetchHooks Function({bool contaId})
+          (Transacao, $$TransacoesTableReferences),
+          Transacao,
+          PrefetchHooks Function({
+            bool contaId,
+            bool contaDestinoId,
+            bool pagamentosTransacaoRefs,
+          })
         > {
   $$TransacoesTableTableManager(_$BancoAurora db, $TransacoesTable table)
     : super(
@@ -8470,6 +9342,7 @@ class $$TransacoesTableTableManager
                 Value<int?> parcelaNumero = const Value.absent(),
                 Value<int?> parcelaTotal = const Value.absent(),
                 Value<String?> contaId = const Value.absent(),
+                Value<String?> contaDestinoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TransacoesCompanion(
                 id: id,
@@ -8487,6 +9360,7 @@ class $$TransacoesTableTableManager
                 parcelaNumero: parcelaNumero,
                 parcelaTotal: parcelaTotal,
                 contaId: contaId,
+                contaDestinoId: contaDestinoId,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -8506,6 +9380,7 @@ class $$TransacoesTableTableManager
                 Value<int?> parcelaNumero = const Value.absent(),
                 Value<int?> parcelaTotal = const Value.absent(),
                 Value<String?> contaId = const Value.absent(),
+                Value<String?> contaDestinoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TransacoesCompanion.insert(
                 id: id,
@@ -8523,17 +9398,459 @@ class $$TransacoesTableTableManager
                 parcelaNumero: parcelaNumero,
                 parcelaTotal: parcelaTotal,
                 contaId: contaId,
+                contaDestinoId: contaDestinoId,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable<$TransacoesTable, Transacoe>(table),
+                  e.readTable<$TransacoesTable, Transacao>(table),
                   $$TransacoesTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({contaId = false}) {
+          prefetchHooksCallback:
+              ({
+                contaId = false,
+                contaDestinoId = false,
+                pagamentosTransacaoRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (pagamentosTransacaoRefs) db.pagamentosTransacao,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (contaId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.contaId,
+                            referencedTable: $$TransacoesTableReferences
+                                ._contaIdTable(db),
+                            referencedColumn: $$TransacoesTableReferences
+                                ._contaIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (contaDestinoId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.contaDestinoId,
+                            referencedTable: $$TransacoesTableReferences
+                                ._contaDestinoIdTable(db),
+                            referencedColumn: $$TransacoesTableReferences
+                                ._contaDestinoIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (pagamentosTransacaoRefs)
+                        await $_getPrefetchedData<
+                          Transacao,
+                          $TransacoesTable,
+                          PagamentoTransacao
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransacoesTableReferences
+                              ._pagamentosTransacaoRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransacoesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).pagamentosTransacaoRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transacaoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$TransacoesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $TransacoesTable,
+      Transacao,
+      $$TransacoesTableFilterComposer,
+      $$TransacoesTableOrderingComposer,
+      $$TransacoesTableAnnotationComposer,
+      $$TransacoesTableCreateCompanionBuilder,
+      $$TransacoesTableUpdateCompanionBuilder,
+      (Transacao, $$TransacoesTableReferences),
+      Transacao,
+      PrefetchHooks Function({
+        bool contaId,
+        bool contaDestinoId,
+        bool pagamentosTransacaoRefs,
+      })
+    >;
+typedef $$PagamentosTransacaoTableCreateCompanionBuilder =
+    PagamentosTransacaoCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      required String transacaoId,
+      required String vencimento,
+      required DateTime pagoEm,
+      required int valorCentavos,
+      Value<int> rowid,
+    });
+typedef $$PagamentosTransacaoTableUpdateCompanionBuilder =
+    PagamentosTransacaoCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      Value<String> transacaoId,
+      Value<String> vencimento,
+      Value<DateTime> pagoEm,
+      Value<int> valorCentavos,
+      Value<int> rowid,
+    });
+
+final class $$PagamentosTransacaoTableReferences
+    extends
+        BaseReferences<
+          _$BancoAurora,
+          $PagamentosTransacaoTable,
+          PagamentoTransacao
+        > {
+  $$PagamentosTransacaoTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TransacoesTable _transacaoIdTable(_$BancoAurora db) => db.transacoes
+      .createAlias('pagamentos_transacao__transacao_id__transacoes__id');
+
+  $$TransacoesTableProcessedTableManager get transacaoId {
+    final $_column = $_itemColumn<String>('transacao_id')!;
+
+    final manager = $$TransacoesTableTableManager(
+      $_db,
+      $_db.transacoes,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transacaoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PagamentosTransacaoTableFilterComposer
+    extends Composer<_$BancoAurora, $PagamentosTransacaoTable> {
+  $$PagamentosTransacaoTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vencimento => $composableBuilder(
+    column: $table.vencimento,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get pagoEm => $composableBuilder(
+    column: $table.pagoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TransacoesTableFilterComposer get transacaoId {
+    final $$TransacoesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transacaoId,
+      referencedTable: $db.transacoes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransacoesTableFilterComposer(
+            $db: $db,
+            $table: $db.transacoes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PagamentosTransacaoTableOrderingComposer
+    extends Composer<_$BancoAurora, $PagamentosTransacaoTable> {
+  $$PagamentosTransacaoTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vencimento => $composableBuilder(
+    column: $table.vencimento,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get pagoEm => $composableBuilder(
+    column: $table.pagoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TransacoesTableOrderingComposer get transacaoId {
+    final $$TransacoesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transacaoId,
+      referencedTable: $db.transacoes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransacoesTableOrderingComposer(
+            $db: $db,
+            $table: $db.transacoes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PagamentosTransacaoTableAnnotationComposer
+    extends Composer<_$BancoAurora, $PagamentosTransacaoTable> {
+  $$PagamentosTransacaoTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get vencimento => $composableBuilder(
+    column: $table.vencimento,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get pagoEm =>
+      $composableBuilder(column: $table.pagoEm, builder: (column) => column);
+
+  GeneratedColumn<int> get valorCentavos => $composableBuilder(
+    column: $table.valorCentavos,
+    builder: (column) => column,
+  );
+
+  $$TransacoesTableAnnotationComposer get transacaoId {
+    final $$TransacoesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transacaoId,
+      referencedTable: $db.transacoes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransacoesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transacoes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PagamentosTransacaoTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $PagamentosTransacaoTable,
+          PagamentoTransacao,
+          $$PagamentosTransacaoTableFilterComposer,
+          $$PagamentosTransacaoTableOrderingComposer,
+          $$PagamentosTransacaoTableAnnotationComposer,
+          $$PagamentosTransacaoTableCreateCompanionBuilder,
+          $$PagamentosTransacaoTableUpdateCompanionBuilder,
+          (PagamentoTransacao, $$PagamentosTransacaoTableReferences),
+          PagamentoTransacao,
+          PrefetchHooks Function({bool transacaoId})
+        > {
+  $$PagamentosTransacaoTableTableManager(
+    _$BancoAurora db,
+    $PagamentosTransacaoTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PagamentosTransacaoTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PagamentosTransacaoTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PagamentosTransacaoTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> transacaoId = const Value.absent(),
+                Value<String> vencimento = const Value.absent(),
+                Value<DateTime> pagoEm = const Value.absent(),
+                Value<int> valorCentavos = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PagamentosTransacaoCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                transacaoId: transacaoId,
+                vencimento: vencimento,
+                pagoEm: pagoEm,
+                valorCentavos: valorCentavos,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String transacaoId,
+                required String vencimento,
+                required DateTime pagoEm,
+                required int valorCentavos,
+                Value<int> rowid = const Value.absent(),
+              }) => PagamentosTransacaoCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                transacaoId: transacaoId,
+                vencimento: vencimento,
+                pagoEm: pagoEm,
+                valorCentavos: valorCentavos,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PagamentosTransacaoTable, PagamentoTransacao>(
+                    table,
+                  ),
+                  $$PagamentosTransacaoTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({transacaoId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -8553,14 +9870,14 @@ class $$TransacoesTableTableManager
                       dynamic
                     >
                   >(state) {
-                    if (contaId) {
+                    if (transacaoId) {
                       state = state.withJoin(
                         currentTable: table,
-                        currentColumn: table.contaId,
-                        referencedTable: $$TransacoesTableReferences
-                            ._contaIdTable(db),
-                        referencedColumn: $$TransacoesTableReferences
-                            ._contaIdTable(db)
+                        currentColumn: table.transacaoId,
+                        referencedTable: $$PagamentosTransacaoTableReferences
+                            ._transacaoIdTable(db),
+                        referencedColumn: $$PagamentosTransacaoTableReferences
+                            ._transacaoIdTable(db)
                             .id,
                       ) as T;
                     }
@@ -8576,19 +9893,19 @@ class $$TransacoesTableTableManager
       );
 }
 
-typedef $$TransacoesTableProcessedTableManager =
+typedef $$PagamentosTransacaoTableProcessedTableManager =
     ProcessedTableManager<
       _$BancoAurora,
-      $TransacoesTable,
-      Transacoe,
-      $$TransacoesTableFilterComposer,
-      $$TransacoesTableOrderingComposer,
-      $$TransacoesTableAnnotationComposer,
-      $$TransacoesTableCreateCompanionBuilder,
-      $$TransacoesTableUpdateCompanionBuilder,
-      (Transacoe, $$TransacoesTableReferences),
-      Transacoe,
-      PrefetchHooks Function({bool contaId})
+      $PagamentosTransacaoTable,
+      PagamentoTransacao,
+      $$PagamentosTransacaoTableFilterComposer,
+      $$PagamentosTransacaoTableOrderingComposer,
+      $$PagamentosTransacaoTableAnnotationComposer,
+      $$PagamentosTransacaoTableCreateCompanionBuilder,
+      $$PagamentosTransacaoTableUpdateCompanionBuilder,
+      (PagamentoTransacao, $$PagamentosTransacaoTableReferences),
+      PagamentoTransacao,
+      PrefetchHooks Function({bool transacaoId})
     >;
 typedef $$LembretesTableCreateCompanionBuilder = LembretesCompanion Function({
   Value<String> id,
@@ -9076,6 +10393,8 @@ class $BancoAuroraManager {
       $$ContasFinanceirasTableTableManager(_db, _db.contasFinanceiras);
   $$TransacoesTableTableManager get transacoes =>
       $$TransacoesTableTableManager(_db, _db.transacoes);
+  $$PagamentosTransacaoTableTableManager get pagamentosTransacao =>
+      $$PagamentosTransacaoTableTableManager(_db, _db.pagamentosTransacao);
   $$LembretesTableTableManager get lembretes =>
       $$LembretesTableTableManager(_db, _db.lembretes);
   $$PreferenciasTableTableManager get preferencias =>

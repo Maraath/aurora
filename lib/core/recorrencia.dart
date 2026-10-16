@@ -1,6 +1,6 @@
 /// Regras de repetição no padrão RRULE de calendário (subconjunto):
 /// `FREQ=DAILY`, `FREQ=WEEKLY;BYDAY=MO,WE,FR`, `FREQ=MONTHLY;BYMONTHDAY=11`,
-/// com `INTERVAL=n` opcional.
+/// com `INTERVAL=n` e `UNTIL=aaaammdd` (última data possível) opcionais.
 ///
 /// Uma regra NUNCA vira uma linha por dia no banco: as ocorrências são
 /// calculadas a partir da data inicial (o "prazo" ou "quando" do item).
@@ -19,7 +19,7 @@ const diasUteis = 31;
 int bitDoDiaDaSemana(DateTime d) => 1 << (d.weekday - 1);
 
 class Regra {
-  const Regra._(this.frequencia, {this.intervalo = 1, this.dias = 0, this.diaDoMes});
+  const Regra._(this.frequencia, {this.intervalo = 1, this.dias = 0, this.diaDoMes, this.fim});
 
   const Regra.diaria({int intervalo = 1}) : this._(Frequencia.diaria, intervalo: intervalo);
 
@@ -35,6 +35,13 @@ class Regra {
   final int dias;
   final int? diaDoMes;
 
+  /// Última data em que a regra ainda gera ocorrência (UNTIL); nulo = sem fim.
+  final DateTime? fim;
+
+  /// A mesma regra, encerrada em [data] (inclusive).
+  Regra encerradaEm(DateTime data) => Regra._(frequencia,
+      intervalo: intervalo, dias: dias, diaDoMes: diaDoMes, fim: _soData(data));
+
   /// Lê uma regra RRULE. Retorna nulo para texto vazio ou não suportado.
   static Regra? ler(String? texto) {
     if (texto == null || texto.trim().isEmpty) return null;
@@ -44,30 +51,37 @@ class Regra {
       if (i > 0) partes[p.substring(0, i).toUpperCase()] = p.substring(i + 1).toUpperCase();
     }
     final intervalo = int.tryParse(partes['INTERVAL'] ?? '') ?? 1;
+    final fim = _lerData(partes['UNTIL']);
     switch (partes['FREQ']) {
       case 'DAILY':
-        return Regra.diaria(intervalo: intervalo);
+        return Regra._(Frequencia.diaria, intervalo: intervalo, fim: fim);
       case 'WEEKLY':
         var bits = 0;
         for (final s in (partes['BYDAY'] ?? '').split(',')) {
           final i = _siglas.indexOf(s.trim());
           if (i >= 0) bits |= 1 << i;
         }
-        return Regra.semanal(bits, intervalo: intervalo);
+        return Regra._(Frequencia.semanal, dias: bits, intervalo: intervalo, fim: fim);
       case 'MONTHLY':
         final dia = int.tryParse(partes['BYMONTHDAY'] ?? '');
-        return dia == null ? null : Regra.mensal(dia, intervalo: intervalo);
+        return dia == null
+            ? null
+            : Regra._(Frequencia.mensal, diaDoMes: dia, intervalo: intervalo, fim: fim);
     }
     return null;
   }
 
   String get rrule {
     final intervaloTxt = intervalo > 1 ? ';INTERVAL=$intervalo' : '';
+    final f = fim;
+    final fimTxt = f == null
+        ? ''
+        : ';UNTIL=${f.year}${f.month.toString().padLeft(2, '0')}${f.day.toString().padLeft(2, '0')}';
     return switch (frequencia) {
-      Frequencia.diaria => 'FREQ=DAILY$intervaloTxt',
+      Frequencia.diaria => 'FREQ=DAILY$intervaloTxt$fimTxt',
       Frequencia.semanal =>
-        'FREQ=WEEKLY;BYDAY=${[for (var i = 0; i < 7; i++) if (dias & (1 << i) != 0) _siglas[i]].join(',')}$intervaloTxt',
-      Frequencia.mensal => 'FREQ=MONTHLY;BYMONTHDAY=$diaDoMes$intervaloTxt',
+        'FREQ=WEEKLY;BYDAY=${[for (var i = 0; i < 7; i++) if (dias & (1 << i) != 0) _siglas[i]].join(',')}$intervaloTxt$fimTxt',
+      Frequencia.mensal => 'FREQ=MONTHLY;BYMONTHDAY=$diaDoMes$intervaloTxt$fimTxt',
     };
   }
 
@@ -86,6 +100,7 @@ class Regra {
     final d = _soData(dia);
     final i = _soData(inicio);
     if (d.isBefore(i)) return false;
+    if (fim != null && d.isAfter(fim!)) return false;
     switch (frequencia) {
       case Frequencia.diaria:
         return _diasEntre(i, d) % intervalo == 0;
@@ -107,10 +122,11 @@ class Regra {
   /// Datas (sem hora) das ocorrências entre [de] e [ate], inclusive.
   Iterable<DateTime> ocorrencias(DateTime inicio, DateTime de, DateTime ate) sync* {
     var d = _soData(de);
-    final fim = _soData(ate);
+    var ultimo = _soData(ate);
+    if (fim != null && fim!.isBefore(ultimo)) ultimo = fim!;
     final i = _soData(inicio);
     if (d.isBefore(i)) d = i;
-    while (!d.isAfter(fim)) {
+    while (!d.isAfter(ultimo)) {
       if (ocorreEm(d, i)) yield d;
       d = DateTime(d.year, d.month, d.day + 1);
     }
@@ -158,6 +174,15 @@ String descreverDias(int dias) {
 }
 
 DateTime _soData(DateTime d) => DateTime(d.year, d.month, d.day);
+
+/// "20261031" ou "20261031T000000Z" → data.
+DateTime? _lerData(String? texto) {
+  if (texto == null || texto.length < 8) return null;
+  final a = int.tryParse(texto.substring(0, 4));
+  final m = int.tryParse(texto.substring(4, 6));
+  final d = int.tryParse(texto.substring(6, 8));
+  return a == null || m == null || d == null ? null : DateTime(a, m, d);
+}
 
 DateTime _segunda(DateTime d) => DateTime(d.year, d.month, d.day - (d.weekday - 1));
 

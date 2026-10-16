@@ -136,6 +136,7 @@ class CampoTexto extends StatelessWidget {
     this.erro,
     this.autofoco = false,
     this.numerico = false,
+    this.decimal = false,
     this.aoMudar,
   });
 
@@ -144,6 +145,9 @@ class CampoTexto extends StatelessWidget {
   final String? erro;
   final bool autofoco;
   final bool numerico;
+
+  /// Teclado numérico com vírgula ("74,5").
+  final bool decimal;
   final ValueChanged<String>? aoMudar;
 
   @override
@@ -160,7 +164,9 @@ class CampoTexto extends StatelessWidget {
           controller: controle,
           autofocus: autofoco,
           onChanged: aoMudar,
-          keyboardType: numerico ? TextInputType.number : TextInputType.text,
+          keyboardType: decimal
+              ? const TextInputType.numberWithOptions(decimal: true)
+              : (numerico ? TextInputType.number : TextInputType.text),
           textCapitalization: TextCapitalization.sentences,
           style: manrope(16, cor: c.text),
           cursorColor: c.accent,
@@ -180,6 +186,50 @@ class CampoTexto extends StatelessWidget {
           Text(erro!, style: manrope(12, peso: FontWeight.w600, cor: c.bad)),
         ],
       ],
+    );
+  }
+}
+
+/// Valor em reais: "R$" à esquerda e número grande, como no protótipo.
+class CampoValor extends StatelessWidget {
+  const CampoValor({super.key, required this.controle, this.cor, this.aoMudar});
+
+  final TextEditingController controle;
+  final Color? cor;
+  final ValueChanged<String>? aoMudar;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: c.bg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.line),
+      ),
+      child: Row(
+        children: [
+          Text(r'R$', style: sora(18, cor: c.muted)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: controle,
+              onChanged: aoMudar,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              style: sora(24, cor: cor ?? c.text),
+              cursorColor: c.accent,
+              decoration: InputDecoration(
+                hintText: '0,00',
+                hintStyle: sora(24, cor: c.muted),
+                border: InputBorder.none,
+                isDense: true,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
