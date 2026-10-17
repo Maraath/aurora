@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/atualizacao.dart';
 import '../../core/formato.dart';
 import '../../core/login_google.dart';
 import '../../core/nuvem.dart';
@@ -8,6 +9,7 @@ import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/servico_sync.dart';
 import '../../data/sincronizacao.dart';
+import '../atualizacao_ui.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import '../formulario.dart';
@@ -115,6 +117,8 @@ class _ContaPageState extends State<ContaPage> {
               return usuario == null ? _formulario(c) : _logado(c, usuario);
             },
           ),
+        const SizedBox(height: 28),
+        _Versao(),
       ],
     );
   }
@@ -328,5 +332,49 @@ class _BotaoGoogle extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Versão instalada e, no app instalado do Windows, "Procurar atualização".
+class _Versao extends StatefulWidget {
+  @override
+  State<_Versao> createState() => _VersaoState();
+}
+
+class _VersaoState extends State<_Versao> {
+  String? _texto;
+  bool _procurando = false;
+
+  Future<void> _procurar() async {
+    setState(() {
+      _procurando = true;
+      _texto = null;
+    });
+    final a = await Atualizador.instancia.verificar();
+    if (!mounted) return;
+    setState(() {
+      _procurando = false;
+      if (a == null) _texto = 'Você já está na versão mais nova.';
+    });
+    if (a != null) await mostrarAtualizacao(context, a);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    final at = Atualizador.instancia;
+    if (!at.suportado) return const SizedBox.shrink();
+    return Row(children: [
+      Expanded(
+        child: Text(
+          _texto ?? (at.versaoAtual.isEmpty ? 'Aurora para Windows' : 'Aurora ${at.versaoAtual}'),
+          style: manrope(13, cor: c.muted),
+        ),
+      ),
+      if (_procurando)
+        const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+      else
+        BotaoPilula(texto: 'Procurar atualização', principal: false, aoTocar: _procurar),
+    ]);
   }
 }

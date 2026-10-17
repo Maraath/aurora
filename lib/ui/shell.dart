@@ -4,6 +4,7 @@ import '../app.dart';
 import '../core/tema.dart';
 import 'componentes.dart';
 import 'alimentacao/alimentacao_page.dart';
+import 'atualizacao_ui.dart';
 import 'assistente/assistente_page.dart';
 import 'automacoes/automacoes_page.dart';
 import 'conta/conta_page.dart';
@@ -64,6 +65,13 @@ class Shell extends StatefulWidget {
 
 class _ShellState extends State<Shell> {
   Secao _secao = Secao.visao;
+
+  @override
+  void initState() {
+    super.initState();
+    // App instalado no Windows: confere se saiu versão nova.
+    WidgetsBinding.instance.addPostFrameCallback((_) => oferecerAtualizacao(context));
+  }
 
   void _ir(Secao s) => setState(() => _secao = s);
 
