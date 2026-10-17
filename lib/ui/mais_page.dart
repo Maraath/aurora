@@ -45,6 +45,15 @@ class MaisPage extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         _Linha(
+          icone: Icons.schedule_outlined,
+          fundo: c.accentSoft,
+          frente: c.accent,
+          titulo: 'Automações',
+          detalhe: 'Briefing do dia e revisões no horário',
+          aoTocar: () => ir(Secao.automacoes),
+        ),
+        const SizedBox(height: 10),
+        _Linha(
           icone: Icons.cloud_outlined,
           fundo: c.surface2,
           frente: c.text,

@@ -9,6 +9,7 @@ import 'package:aurora/ui/alimentacao/alimentacao_page.dart';
 import 'package:aurora/ui/alimentacao/form_alvos.dart';
 import 'package:aurora/ui/alimentacao/form_registro.dart';
 import 'package:aurora/ui/assistente/assistente_page.dart';
+import 'package:aurora/ui/automacoes/automacoes_page.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:aurora/ui/financas/financas_page.dart';
 import 'package:aurora/ui/financas/form_conta.dart';
@@ -345,6 +346,35 @@ void main() {
     await abrir(tester, (c) => abrirFormAlvos(c));
     expect(find.text('DIA DE TREINO'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('automações: tela e formulário', (tester) async {
+    await tester.runAsync(() => semearExemplo(db));
+    for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
+      tester.view.physicalSize = tamanho;
+      tester.view.devicePixelRatio = 1;
+      await tester.pumpWidget(AuroraEscopo(
+        db: db,
+        escuro: ValueNotifier(true),
+        child: MaterialApp(
+          theme: temaAurora(Brightness.dark),
+          home: const Scaffold(body: SingleChildScrollView(child: AutomacoesPage())),
+        ),
+      ));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: '$tamanho');
+      expect(find.text('Briefing do dia'), findsOneWidget);
+      expect(find.text('Todo dia às 07:00'), findsOneWidget);
+    }
+    await tester.tap(find.text('Briefing do dia'));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.pumpAndSettle();
+    expect(find.text('Editar automação'), findsOneWidget);
+    expect(find.text('Excluir'), findsNothing); // modelos prontos não se excluem
+    expect(tester.takeException(), isNull);
+    tester.view.reset();
+    await tester.pumpWidget(const SizedBox());
   });
 
   test('relógio iniciado', () => expect(hojeSP(), isNotNull));

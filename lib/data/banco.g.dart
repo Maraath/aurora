@@ -12108,6 +12108,670 @@ class MensagensAssistenteCompanion extends UpdateCompanion<MensagemAssistente> {
   }
 }
 
+class $AutomacoesTable extends Automacoes
+    with TableInfo<$AutomacoesTable, Automacao> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AutomacoesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _modeloMeta = const VerificationMeta('modelo');
+  @override
+  late final GeneratedColumn<String> modelo = GeneratedColumn<String>(
+    'modelo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _diasSemanaMeta = const VerificationMeta(
+    'diasSemana',
+  );
+  @override
+  late final GeneratedColumn<int> diasSemana = GeneratedColumn<int>(
+    'dias_semana',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(127),
+  );
+  static const VerificationMeta _horarioMeta = const VerificationMeta(
+    'horario',
+  );
+  @override
+  late final GeneratedColumn<String> horario = GeneratedColumn<String>(
+    'horario',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ativaMeta = const VerificationMeta('ativa');
+  @override
+  late final GeneratedColumn<bool> ativa = GeneratedColumn<bool>(
+    'ativa',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ativa" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _pedidoMeta = const VerificationMeta('pedido');
+  @override
+  late final GeneratedColumn<String> pedido = GeneratedColumn<String>(
+    'pedido',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ultimaExecucaoMeta = const VerificationMeta(
+    'ultimaExecucao',
+  );
+  @override
+  late final GeneratedColumn<String> ultimaExecucao = GeneratedColumn<String>(
+    'ultima_execucao',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    nome,
+    modelo,
+    diasSemana,
+    horario,
+    ativa,
+    pedido,
+    ultimaExecucao,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'automacoes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Automacao> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('modelo')) {
+      context.handle(
+        _modeloMeta,
+        modelo.isAcceptableOrUnknown(data['modelo']!, _modeloMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_modeloMeta);
+    }
+    if (data.containsKey('dias_semana')) {
+      context.handle(
+        _diasSemanaMeta,
+        diasSemana.isAcceptableOrUnknown(data['dias_semana']!, _diasSemanaMeta),
+      );
+    }
+    if (data.containsKey('horario')) {
+      context.handle(
+        _horarioMeta,
+        horario.isAcceptableOrUnknown(data['horario']!, _horarioMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_horarioMeta);
+    }
+    if (data.containsKey('ativa')) {
+      context.handle(
+        _ativaMeta,
+        ativa.isAcceptableOrUnknown(data['ativa']!, _ativaMeta),
+      );
+    }
+    if (data.containsKey('pedido')) {
+      context.handle(
+        _pedidoMeta,
+        pedido.isAcceptableOrUnknown(data['pedido']!, _pedidoMeta),
+      );
+    }
+    if (data.containsKey('ultima_execucao')) {
+      context.handle(
+        _ultimaExecucaoMeta,
+        ultimaExecucao.isAcceptableOrUnknown(
+          data['ultima_execucao']!,
+          _ultimaExecucaoMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Automacao map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Automacao(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      modelo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}modelo'],
+      )!,
+      diasSemana: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dias_semana'],
+      )!,
+      horario: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}horario'],
+      )!,
+      ativa: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ativa'],
+      )!,
+      pedido: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pedido'],
+      ),
+      ultimaExecucao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ultima_execucao'],
+      ),
+    );
+  }
+
+  @override
+  $AutomacoesTable createAlias(String alias) {
+    return $AutomacoesTable(attachedDatabase, alias);
+  }
+}
+
+class Automacao extends DataClass implements Insertable<Automacao> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String nome;
+  final String modelo;
+
+  /// Bits de segunda (1) a domingo (64).
+  final int diasSemana;
+
+  /// "HH:mm".
+  final String horario;
+  final bool ativa;
+  final String? pedido;
+
+  /// "aaaa-mm-dd HH:mm" da última ocorrência executada (em qualquer aparelho).
+  final String? ultimaExecucao;
+  const Automacao({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.nome,
+    required this.modelo,
+    required this.diasSemana,
+    required this.horario,
+    required this.ativa,
+    this.pedido,
+    this.ultimaExecucao,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['nome'] = Variable<String>(nome);
+    map['modelo'] = Variable<String>(modelo);
+    map['dias_semana'] = Variable<int>(diasSemana);
+    map['horario'] = Variable<String>(horario);
+    map['ativa'] = Variable<bool>(ativa);
+    if (!nullToAbsent || pedido != null) {
+      map['pedido'] = Variable<String>(pedido);
+    }
+    if (!nullToAbsent || ultimaExecucao != null) {
+      map['ultima_execucao'] = Variable<String>(ultimaExecucao);
+    }
+    return map;
+  }
+
+  AutomacoesCompanion toCompanion(bool nullToAbsent) {
+    return AutomacoesCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      nome: Value(nome),
+      modelo: Value(modelo),
+      diasSemana: Value(diasSemana),
+      horario: Value(horario),
+      ativa: Value(ativa),
+      pedido: pedido == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pedido),
+      ultimaExecucao: ultimaExecucao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ultimaExecucao),
+    );
+  }
+
+  factory Automacao.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Automacao(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      nome: serializer.fromJson<String>(json['nome']),
+      modelo: serializer.fromJson<String>(json['modelo']),
+      diasSemana: serializer.fromJson<int>(json['diasSemana']),
+      horario: serializer.fromJson<String>(json['horario']),
+      ativa: serializer.fromJson<bool>(json['ativa']),
+      pedido: serializer.fromJson<String?>(json['pedido']),
+      ultimaExecucao: serializer.fromJson<String?>(json['ultimaExecucao']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'nome': serializer.toJson<String>(nome),
+      'modelo': serializer.toJson<String>(modelo),
+      'diasSemana': serializer.toJson<int>(diasSemana),
+      'horario': serializer.toJson<String>(horario),
+      'ativa': serializer.toJson<bool>(ativa),
+      'pedido': serializer.toJson<String?>(pedido),
+      'ultimaExecucao': serializer.toJson<String?>(ultimaExecucao),
+    };
+  }
+
+  Automacao copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? nome,
+    String? modelo,
+    int? diasSemana,
+    String? horario,
+    bool? ativa,
+    Value<String?> pedido = const Value.absent(),
+    Value<String?> ultimaExecucao = const Value.absent(),
+  }) => Automacao(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    nome: nome ?? this.nome,
+    modelo: modelo ?? this.modelo,
+    diasSemana: diasSemana ?? this.diasSemana,
+    horario: horario ?? this.horario,
+    ativa: ativa ?? this.ativa,
+    pedido: pedido.present ? pedido.value : this.pedido,
+    ultimaExecucao: ultimaExecucao.present
+        ? ultimaExecucao.value
+        : this.ultimaExecucao,
+  );
+  Automacao copyWithCompanion(AutomacoesCompanion data) {
+    return Automacao(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      modelo: data.modelo.present ? data.modelo.value : this.modelo,
+      diasSemana: data.diasSemana.present
+          ? data.diasSemana.value
+          : this.diasSemana,
+      horario: data.horario.present ? data.horario.value : this.horario,
+      ativa: data.ativa.present ? data.ativa.value : this.ativa,
+      pedido: data.pedido.present ? data.pedido.value : this.pedido,
+      ultimaExecucao: data.ultimaExecucao.present
+          ? data.ultimaExecucao.value
+          : this.ultimaExecucao,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Automacao(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('nome: $nome, ')
+          ..write('modelo: $modelo, ')
+          ..write('diasSemana: $diasSemana, ')
+          ..write('horario: $horario, ')
+          ..write('ativa: $ativa, ')
+          ..write('pedido: $pedido, ')
+          ..write('ultimaExecucao: $ultimaExecucao')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    nome,
+    modelo,
+    diasSemana,
+    horario,
+    ativa,
+    pedido,
+    ultimaExecucao,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Automacao &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.nome == this.nome &&
+          other.modelo == this.modelo &&
+          other.diasSemana == this.diasSemana &&
+          other.horario == this.horario &&
+          other.ativa == this.ativa &&
+          other.pedido == this.pedido &&
+          other.ultimaExecucao == this.ultimaExecucao);
+}
+
+class AutomacoesCompanion extends UpdateCompanion<Automacao> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> nome;
+  final Value<String> modelo;
+  final Value<int> diasSemana;
+  final Value<String> horario;
+  final Value<bool> ativa;
+  final Value<String?> pedido;
+  final Value<String?> ultimaExecucao;
+  final Value<int> rowid;
+  const AutomacoesCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.modelo = const Value.absent(),
+    this.diasSemana = const Value.absent(),
+    this.horario = const Value.absent(),
+    this.ativa = const Value.absent(),
+    this.pedido = const Value.absent(),
+    this.ultimaExecucao = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AutomacoesCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String nome,
+    required String modelo,
+    this.diasSemana = const Value.absent(),
+    required String horario,
+    this.ativa = const Value.absent(),
+    this.pedido = const Value.absent(),
+    this.ultimaExecucao = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : nome = Value(nome),
+       modelo = Value(modelo),
+       horario = Value(horario);
+  static Insertable<Automacao> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? nome,
+    Expression<String>? modelo,
+    Expression<int>? diasSemana,
+    Expression<String>? horario,
+    Expression<bool>? ativa,
+    Expression<String>? pedido,
+    Expression<String>? ultimaExecucao,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (nome != null) 'nome': nome,
+      if (modelo != null) 'modelo': modelo,
+      if (diasSemana != null) 'dias_semana': diasSemana,
+      if (horario != null) 'horario': horario,
+      if (ativa != null) 'ativa': ativa,
+      if (pedido != null) 'pedido': pedido,
+      if (ultimaExecucao != null) 'ultima_execucao': ultimaExecucao,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AutomacoesCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? nome,
+    Value<String>? modelo,
+    Value<int>? diasSemana,
+    Value<String>? horario,
+    Value<bool>? ativa,
+    Value<String?>? pedido,
+    Value<String?>? ultimaExecucao,
+    Value<int>? rowid,
+  }) {
+    return AutomacoesCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      nome: nome ?? this.nome,
+      modelo: modelo ?? this.modelo,
+      diasSemana: diasSemana ?? this.diasSemana,
+      horario: horario ?? this.horario,
+      ativa: ativa ?? this.ativa,
+      pedido: pedido ?? this.pedido,
+      ultimaExecucao: ultimaExecucao ?? this.ultimaExecucao,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (modelo.present) {
+      map['modelo'] = Variable<String>(modelo.value);
+    }
+    if (diasSemana.present) {
+      map['dias_semana'] = Variable<int>(diasSemana.value);
+    }
+    if (horario.present) {
+      map['horario'] = Variable<String>(horario.value);
+    }
+    if (ativa.present) {
+      map['ativa'] = Variable<bool>(ativa.value);
+    }
+    if (pedido.present) {
+      map['pedido'] = Variable<String>(pedido.value);
+    }
+    if (ultimaExecucao.present) {
+      map['ultima_execucao'] = Variable<String>(ultimaExecucao.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AutomacoesCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('nome: $nome, ')
+          ..write('modelo: $modelo, ')
+          ..write('diasSemana: $diasSemana, ')
+          ..write('horario: $horario, ')
+          ..write('ativa: $ativa, ')
+          ..write('pedido: $pedido, ')
+          ..write('ultimaExecucao: $ultimaExecucao, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PreferenciasTable extends Preferencias
     with TableInfo<$PreferenciasTable, Preferencia> {
   @override
@@ -12347,6 +13011,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
       $RegistrosAlimentacaoTable(this);
   late final $MensagensAssistenteTable mensagensAssistente =
       $MensagensAssistenteTable(this);
+  late final $AutomacoesTable automacoes = $AutomacoesTable(this);
   late final $PreferenciasTable preferencias = $PreferenciasTable(this);
   late final Index conclusaoTarefaDia = Index(
     'conclusao_tarefa_dia',
@@ -12389,6 +13054,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
     alvosDieta,
     registrosAlimentacao,
     mensagensAssistente,
+    automacoes,
     preferencias,
     conclusaoTarefaDia,
     registroHabitoDia,
@@ -21503,6 +22169,330 @@ typedef $$MensagensAssistenteTableProcessedTableManager =
       MensagemAssistente,
       PrefetchHooks Function()
     >;
+typedef $$AutomacoesTableCreateCompanionBuilder = AutomacoesCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  required String nome,
+  required String modelo,
+  Value<int> diasSemana,
+  required String horario,
+  Value<bool> ativa,
+  Value<String?> pedido,
+  Value<String?> ultimaExecucao,
+  Value<int> rowid,
+});
+typedef $$AutomacoesTableUpdateCompanionBuilder = AutomacoesCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String> nome,
+  Value<String> modelo,
+  Value<int> diasSemana,
+  Value<String> horario,
+  Value<bool> ativa,
+  Value<String?> pedido,
+  Value<String?> ultimaExecucao,
+  Value<int> rowid,
+});
+
+class $$AutomacoesTableFilterComposer
+    extends Composer<_$BancoAurora, $AutomacoesTable> {
+  $$AutomacoesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelo => $composableBuilder(
+    column: $table.modelo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get diasSemana => $composableBuilder(
+    column: $table.diasSemana,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get horario => $composableBuilder(
+    column: $table.horario,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get ativa => $composableBuilder(
+    column: $table.ativa,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pedido => $composableBuilder(
+    column: $table.pedido,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ultimaExecucao => $composableBuilder(
+    column: $table.ultimaExecucao,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AutomacoesTableOrderingComposer
+    extends Composer<_$BancoAurora, $AutomacoesTable> {
+  $$AutomacoesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelo => $composableBuilder(
+    column: $table.modelo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get diasSemana => $composableBuilder(
+    column: $table.diasSemana,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get horario => $composableBuilder(
+    column: $table.horario,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get ativa => $composableBuilder(
+    column: $table.ativa,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pedido => $composableBuilder(
+    column: $table.pedido,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ultimaExecucao => $composableBuilder(
+    column: $table.ultimaExecucao,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AutomacoesTableAnnotationComposer
+    extends Composer<_$BancoAurora, $AutomacoesTable> {
+  $$AutomacoesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<String> get modelo =>
+      $composableBuilder(column: $table.modelo, builder: (column) => column);
+
+  GeneratedColumn<int> get diasSemana => $composableBuilder(
+    column: $table.diasSemana,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get horario =>
+      $composableBuilder(column: $table.horario, builder: (column) => column);
+
+  GeneratedColumn<bool> get ativa =>
+      $composableBuilder(column: $table.ativa, builder: (column) => column);
+
+  GeneratedColumn<String> get pedido =>
+      $composableBuilder(column: $table.pedido, builder: (column) => column);
+
+  GeneratedColumn<String> get ultimaExecucao => $composableBuilder(
+    column: $table.ultimaExecucao,
+    builder: (column) => column,
+  );
+}
+
+class $$AutomacoesTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $AutomacoesTable,
+          Automacao,
+          $$AutomacoesTableFilterComposer,
+          $$AutomacoesTableOrderingComposer,
+          $$AutomacoesTableAnnotationComposer,
+          $$AutomacoesTableCreateCompanionBuilder,
+          $$AutomacoesTableUpdateCompanionBuilder,
+          (
+            Automacao,
+            BaseReferences<_$BancoAurora, $AutomacoesTable, Automacao>,
+          ),
+          Automacao,
+          PrefetchHooks Function()
+        > {
+  $$AutomacoesTableTableManager(_$BancoAurora db, $AutomacoesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AutomacoesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AutomacoesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AutomacoesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<String> modelo = const Value.absent(),
+                Value<int> diasSemana = const Value.absent(),
+                Value<String> horario = const Value.absent(),
+                Value<bool> ativa = const Value.absent(),
+                Value<String?> pedido = const Value.absent(),
+                Value<String?> ultimaExecucao = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AutomacoesCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                nome: nome,
+                modelo: modelo,
+                diasSemana: diasSemana,
+                horario: horario,
+                ativa: ativa,
+                pedido: pedido,
+                ultimaExecucao: ultimaExecucao,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String nome,
+                required String modelo,
+                Value<int> diasSemana = const Value.absent(),
+                required String horario,
+                Value<bool> ativa = const Value.absent(),
+                Value<String?> pedido = const Value.absent(),
+                Value<String?> ultimaExecucao = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AutomacoesCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                nome: nome,
+                modelo: modelo,
+                diasSemana: diasSemana,
+                horario: horario,
+                ativa: ativa,
+                pedido: pedido,
+                ultimaExecucao: ultimaExecucao,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AutomacoesTable, Automacao>(table),
+                  BaseReferences<_$BancoAurora, $AutomacoesTable, Automacao>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AutomacoesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $AutomacoesTable,
+      Automacao,
+      $$AutomacoesTableFilterComposer,
+      $$AutomacoesTableOrderingComposer,
+      $$AutomacoesTableAnnotationComposer,
+      $$AutomacoesTableCreateCompanionBuilder,
+      $$AutomacoesTableUpdateCompanionBuilder,
+      (Automacao, BaseReferences<_$BancoAurora, $AutomacoesTable, Automacao>),
+      Automacao,
+      PrefetchHooks Function()
+    >;
 typedef $$PreferenciasTableCreateCompanionBuilder =
     PreferenciasCompanion Function({
       required String chave,
@@ -21694,6 +22684,8 @@ class $BancoAuroraManager {
       $$RegistrosAlimentacaoTableTableManager(_db, _db.registrosAlimentacao);
   $$MensagensAssistenteTableTableManager get mensagensAssistente =>
       $$MensagensAssistenteTableTableManager(_db, _db.mensagensAssistente);
+  $$AutomacoesTableTableManager get automacoes =>
+      $$AutomacoesTableTableManager(_db, _db.automacoes);
   $$PreferenciasTableTableManager get preferencias =>
       $$PreferenciasTableTableManager(_db, _db.preferencias);
 }

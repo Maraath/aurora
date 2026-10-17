@@ -140,6 +140,17 @@ class AssistenteRepo {
     if (comando == null) await processarFila(avisarFalha: true);
   }
 
+  /// Mensagem de uma automação (modelo pronto), já com o texto montado.
+  Future<void> mensagemDaAutomacao(String titulo, String texto) =>
+      _gravar(PapelMensagem.aurora, '$titulo\n$texto');
+
+  /// Automação personalizada: o pedido entra na fila da IA como se a pessoa
+  /// tivesse pedido, e segue já se houver conexão.
+  Future<void> pedidoDaAutomacao(String titulo, String pedido) async {
+    await _gravar(PapelMensagem.eu, '$titulo: $pedido', naFila: true);
+    await processarFila();
+  }
+
   static bool _processando = false;
 
   /// Manda os pedidos da fila para a IA, do mais antigo ao mais novo. Para no

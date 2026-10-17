@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../data/automacoes_repo.dart';
 import '../data/banco.dart';
 import '../data/lembretes_repo.dart';
 import 'recorrencia.dart';
@@ -66,6 +67,20 @@ List<AvisoPlanejado> planejarAvisos({
   return avisos.take(limite).toList();
 }
 
+/// Avisos das automações ligadas nos próximos [dias] (com a chave geral ligada).
+List<AvisoPlanejado> avisosDeAutomacoes(List<Automacao> automacoes, DateTime agora, {int dias = 14}) => [
+      for (final a in automacoes)
+        if (a.ativa && a.apagadoEm == null)
+          for (final quando in proximasOcorrencias(a, agora, dias: dias))
+            AvisoPlanejado(
+              quando: quando,
+              titulo: a.nome,
+              corpo: ModeloAutomacao.de(a.modelo) == ModeloAutomacao.personalizada
+                  ? 'A Aurora está respondendo: ${a.pedido ?? ''}'
+                  : 'Pronto no assistente do Aurora.',
+            ),
+    ];
+
 /// Agenda os avisos no sistema (Windows, Android, iOS) e reagenda quando
 /// lembretes, tarefas ou hábitos mudam.
 class Notificador {
@@ -112,6 +127,7 @@ class Notificador {
           db.conclusoesTarefa,
           db.habitos,
           db.registrosHabito,
+          db.automacoes,
         ]))
         .listen((_) {
       _espera?.cancel();
@@ -145,14 +161,19 @@ class Notificador {
       habitosFeitos.putIfAbsent(r.dia, () => {}).add(r.habitoId);
     }
 
-    final avisos = planejarAvisos(
-      lembretes: lembretes,
-      tarefas: tarefas,
-      habitos: habitos,
-      tarefasFeitasNoDia: tarefasFeitas,
-      habitosFeitosNoDia: habitosFeitos,
-      agora: agora,
-    );
+    final automacoes = AutomacoesRepo(db);
+    final avisos = [
+      ...planejarAvisos(
+        lembretes: lembretes,
+        tarefas: tarefas,
+        habitos: habitos,
+        tarefasFeitasNoDia: tarefasFeitas,
+        habitosFeitosNoDia: habitosFeitos,
+        agora: agora,
+      ),
+      if (await automacoes.ligadas()) ...avisosDeAutomacoes(await automacoes.listar(), agora),
+    ]..sort((a, b) => a.quando.compareTo(b.quando));
+    if (avisos.length > 60) avisos.removeRange(60, avisos.length);
 
     try {
       await _plugin.cancelAll();

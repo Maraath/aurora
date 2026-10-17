@@ -285,6 +285,25 @@ class RegistrosAlimentacao extends Table with Sincronizavel {
   RealColumn get gordura => real().withDefault(const Constant(0))();
 }
 
+/// Rotina agendada do assistente. Modelos prontos usam id natural (um por
+/// modelo, igual em todos os aparelhos); 'personalizada' manda [pedido] à IA.
+@DataClassName('Automacao')
+class Automacoes extends Table with Sincronizavel {
+  TextColumn get nome => text()();
+  TextColumn get modelo => text()();
+
+  /// Bits de segunda (1) a domingo (64).
+  IntColumn get diasSemana => integer().withDefault(const Constant(127))();
+
+  /// "HH:mm".
+  TextColumn get horario => text()();
+  BoolColumn get ativa => boolean().withDefault(const Constant(false))();
+  TextColumn get pedido => text().nullable()();
+
+  /// "aaaa-mm-dd HH:mm" da última ocorrência executada (em qualquer aparelho).
+  TextColumn get ultimaExecucao => text().nullable()();
+}
+
 enum PapelMensagem { eu, aurora, sistema }
 
 /// Conversa com o assistente. Pedidos que só a IA responde ficam com
@@ -332,13 +351,14 @@ class Preferencias extends Table {
   AlvosDieta,
   RegistrosAlimentacao,
   MensagensAssistente,
+  Automacoes,
   Preferencias,
 ])
 class BancoAurora extends _$BancoAurora {
   BancoAurora([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'aurora'));
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -377,6 +397,7 @@ class BancoAurora extends _$BancoAurora {
             await m.createTable(alvosDieta);
             await m.createTable(registrosAlimentacao);
           }
+          if (de < 9) await m.createTable(automacoes);
         },
         beforeOpen: (detalhes) async {
           await customStatement('PRAGMA foreign_keys = ON');

@@ -10,6 +10,7 @@ import 'core/nuvem.dart';
 import 'core/relogio.dart';
 import 'data/banco.dart';
 import 'data/exemplo.dart';
+import 'data/servico_automacoes.dart';
 import 'data/servico_sync.dart';
 
 Future<void> main() async {
@@ -29,4 +30,6 @@ Future<void> main() async {
   unawaited(Notificador.instancia.iniciar(db));
   // Com conta conectada, sincroniza ao abrir e a cada mudança.
   unawaited(ServicoSync.instancia.iniciar(db));
+  // Briefing e outras rotinas no horário (e as que passaram há pouco).
+  unawaited(ServicoAutomacoes.instancia.iniciar(db));
 }
