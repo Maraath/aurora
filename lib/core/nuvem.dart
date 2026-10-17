@@ -8,6 +8,11 @@ const supabaseUrl = 'https://fhmhmdzbujqhkdsfnbtx.supabase.co';
 const supabaseAnonKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZobWhtZHpidWpxaGtkc2ZuYnR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNzkyMjAsImV4cCI6MjEwNzc1NTIyMH0.L4c8wzk3bZGO3eX8tmjC8JuZtXa5Agwmiys36AT8lok';
 
+/// Para onde o link de confirmação do cadastro leva: a imagem "E-mail
+/// confirmado" no balde público (tool/paginas/gerar.ps1). Tem de estar nas
+/// Redirect URLs do Supabase.
+const urlConfirmado = '$supabaseUrl/storage/v1/object/public/atualizacoes/paginas/confirmado.png';
+
 /// Liga o cliente da nuvem. Funciona sem internet (só lê a sessão salva);
 /// se algo der errado, o app segue offline.
 Future<bool> iniciarNuvem() async {
@@ -41,7 +46,13 @@ String mensagemDeErro(Object e) {
     final m = e.message.toLowerCase();
     if (m.contains('invalid login credentials')) return 'E-mail ou senha incorretos.';
     if (m.contains('email not confirmed')) {
-      return 'Confirme o e-mail primeiro: abra o link que o Supabase enviou.';
+      return 'Confirme o e-mail primeiro: abra o link que mandamos.';
+    }
+    if (m.contains('expired') || (m.contains('token') && m.contains('invalid'))) {
+      return 'Código errado ou vencido. Confira os números ou peça um novo.';
+    }
+    if (m.contains('security purposes') || m.contains('only request this after')) {
+      return 'Espere alguns segundos antes de pedir de novo.';
     }
     if (m.contains('already registered')) return 'Já existe uma conta com esse e-mail. Use Entrar.';
     if (m.contains('password should be')) return 'A senha precisa ter pelo menos 6 caracteres.';

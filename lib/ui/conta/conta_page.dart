@@ -30,16 +30,95 @@ enum _Modo { entrar, criar }
 class _ContaPageState extends State<ContaPage> {
   final _email = TextEditingController();
   final _senha = TextEditingController();
+  final _codigo = TextEditingController();
   _Modo _modo = _Modo.entrar;
   bool _ocupado = false;
   String? _erro;
   String? _aviso;
 
+  /// E-mail esperando confirmação (nulo = formulário normal).
+  String? _verificando;
+
+  /// Senha digitada no cadastro, só na memória: o "Já confirmei" entra direto.
+  String? _senhaPendente;
+
   @override
   void dispose() {
     _email.dispose();
     _senha.dispose();
+    _codigo.dispose();
     super.dispose();
+  }
+
+  void _pedirConfirmacao(String email, String senha, String aviso) {
+    _verificando = email;
+    _senhaPendente = senha;
+    _aviso = aviso;
+    _codigo.clear();
+  }
+
+  void _sairDaConfirmacao() {
+    _verificando = null;
+    _senhaPendente = null;
+    _codigo.clear();
+  }
+
+  /// Ação com o indicador de "ocupado" e o erro traduzido.
+  Future<void> _executar(Future<void> Function() acao) async {
+    setState(() {
+      _ocupado = true;
+      _erro = null;
+      _aviso = null;
+    });
+    try {
+      await acao();
+    } catch (e) {
+      _erro = mensagemDeErro(e);
+    } finally {
+      if (mounted) setState(() => _ocupado = false);
+    }
+  }
+
+  /// Depois de abrir o link do e-mail: entra com a senha do cadastro.
+  Future<void> _jaConfirmei() async {
+    final cliente = nuvem, email = _verificando, senha = _senhaPendente;
+    if (cliente == null || email == null) return;
+    if (senha == null) {
+      setState(() {
+        _sairDaConfirmacao();
+        _aviso = 'Agora entre com o seu e-mail e senha.';
+      });
+      return;
+    }
+    await _executar(() async {
+      await cliente.auth.signInWithPassword(email: email, password: senha);
+      _sairDaConfirmacao();
+    });
+  }
+
+  /// Quando o e-mail traz um código de 6 números (com serviço de e-mail próprio
+  /// o modelo mostra `{{ .Token }}`), confirma por ele e já entra.
+  Future<void> _verificarCodigo() async {
+    final cliente = nuvem, email = _verificando;
+    if (cliente == null || email == null) return;
+    final codigo = _codigo.text.replaceAll(RegExp(r'\D'), '');
+    if (codigo.length < 6) {
+      setState(() => _erro = 'Digite os números do código que chegou no seu e-mail.');
+      return;
+    }
+    await _executar(() async {
+      await cliente.auth.verifyOTP(type: OtpType.signup, email: email, token: codigo);
+      _sairDaConfirmacao();
+    });
+  }
+
+  Future<void> _reenviar() async {
+    final cliente = nuvem, email = _verificando;
+    if (cliente == null || email == null) return;
+    await _executar(() async {
+      await cliente.auth.resend(type: OtpType.signup, email: email, emailRedirectTo: urlConfirmado);
+      _aviso = 'Mandamos um e-mail novo para $email.';
+    });
   }
 
   Future<void> _confirmar() async {
@@ -60,15 +139,22 @@ class _ContaPageState extends State<ContaPage> {
       if (_modo == _Modo.entrar) {
         await cliente.auth.signInWithPassword(email: email, password: senha);
       } else {
-        final r = await cliente.auth.signUp(email: email, password: senha);
+        final r = await cliente.auth.signUp(email: email, password: senha, emailRedirectTo: urlConfirmado);
         if (r.session == null) {
-          _aviso = 'Conta criada. Abra o e-mail de confirmação que o Supabase enviou e depois toque em Entrar.';
           _modo = _Modo.entrar;
+          _pedirConfirmacao(email, senha, 'Conta criada. Mandamos um e-mail de confirmação para $email.');
         }
       }
       _senha.clear();
     } catch (e) {
-      _erro = mensagemDeErro(e);
+      // Tentou entrar sem ter confirmado o e-mail: vai direto para a confirmação.
+      if (e is AuthException && e.message.toLowerCase().contains('email not confirmed')) {
+        _pedirConfirmacao(email, senha, 'Falta confirmar o e-mail. Abra o link que mandamos para $email, '
+            'ou peça um novo.');
+        _senha.clear();
+      } else {
+        _erro = mensagemDeErro(e);
+      }
     } finally {
       if (mounted) setState(() => _ocupado = false);
     }
@@ -116,7 +202,8 @@ class _ContaPageState extends State<ContaPage> {
             stream: cliente.auth.onAuthStateChange,
             builder: (context, _) {
               final usuario = cliente.auth.currentUser;
-              return usuario == null ? _formulario(c) : _logado(c, usuario);
+              if (usuario != null) return _logado(c, usuario);
+              return _verificando == null ? _formulario(c) : _formularioCodigo(c);
             },
           ),
         const SizedBox(height: 28),
@@ -236,6 +323,81 @@ class _ContaPageState extends State<ContaPage> {
       ),
     );
     if (ok == true) await ServicoSync.instancia.escolher(EscolhaPrimeiraVez.usarNuvem);
+  }
+
+  /// Depois do cadastro: confirmar pelo link do e-mail (ou por um código).
+  Widget _formularioCodigo(AuroraCores c) {
+    final carregando = const Padding(
+      padding: EdgeInsets.all(10),
+      child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5)),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Cartao(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('CONFIRME O SEU E-MAIL', style: rotulo(c.accent)),
+              const SizedBox(height: 6),
+              Text(_verificando!, style: sora(18)),
+              const SizedBox(height: 8),
+              Text(
+                'Abra o e-mail que mandamos e toque no link de confirmação. Quando aparecer '
+                '"E-mail confirmado", volte aqui e toque em Já confirmei. '
+                'Se não chegar, olhe no spam ou peça outro.',
+                style: manrope(13, cor: c.muted, altura: 1.5),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            if (_ocupado)
+              carregando
+            else ...[
+              BotaoPilula(texto: 'Já confirmei', aoTocar: _jaConfirmei),
+              BotaoPilula(texto: 'Reenviar e-mail', principal: false, aoTocar: _reenviar),
+            ],
+            TextButton(
+              onPressed: () => setState(() {
+                _sairDaConfirmacao();
+                _erro = null;
+                _aviso = null;
+              }),
+              child: Text('Usar outro e-mail', style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
+            ),
+          ],
+        ),
+        if (_aviso != null) ...[
+          const SizedBox(height: 12),
+          Text(_aviso!, style: manrope(13, peso: FontWeight.w600, cor: c.teal, altura: 1.4)),
+        ],
+        if (_erro != null) ...[
+          const SizedBox(height: 12),
+          Text(_erro!, style: manrope(13, peso: FontWeight.w600, cor: c.bad, altura: 1.4)),
+        ],
+        const SizedBox(height: 22),
+        Text('O e-mail trouxe um código de 6 números?', style: manrope(13, peso: FontWeight.w700)),
+        const SizedBox(height: 8),
+        Row(children: [
+          Expanded(
+            child: CampoTexto(
+              controle: _codigo,
+              dica: '123456',
+              numerico: true,
+              aoMudar: (_) => setState(() => _erro = null),
+            ),
+          ),
+          const SizedBox(width: 10),
+          BotaoPilula(texto: 'Confirmar código', principal: false, aoTocar: _verificarCodigo),
+        ]),
+      ],
+    );
   }
 
   Widget _formulario(AuroraCores c) {

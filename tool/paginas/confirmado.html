@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Imagem "E-mail confirmado" para onde o link de confirmação do cadastro leva.
+     O Storage do Supabase entrega HTML como texto, por isso a página vira um PNG:
+     powershell -File tool\paginas\gerar.ps1 (desenha com o Edge e envia ao balde). -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600&family=Manrope:wght@500;700&display=block');
+  html, body { margin: 0; width: 1200px; height: 800px; background: #080716; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 120%, rgba(92,240,176,.18), transparent 60%),
+                radial-gradient(ellipse at 80% -10%, rgba(157,140,255,.22), transparent 55%), #080716;
+    font-family: Manrope, sans-serif; color: #EEF0FB;
+  }
+  .caixa { text-align: center; max-width: 820px; }
+  img { width: 120px; height: 120px; }
+  .ok {
+    width: 84px; height: 84px; margin: 30px auto 0; border-radius: 50%;
+    background: linear-gradient(90deg, #3EDB9A, #7E7BFF);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px; color: #06061A; font-weight: 700;
+  }
+  h1 { font-family: Sora, sans-serif; font-weight: 600; font-size: 56px; margin: 28px 0 14px; }
+  p { font-size: 26px; line-height: 1.5; color: #A3A6C8; margin: 0; }
+  b { color: #5CF0B0; font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="caixa">
+    <img src="logo.png" alt="">
+    <div class="ok">✓</div>
+    <h1>E-mail confirmado</h1>
+    <p>Pode fechar esta página. Volte ao <b>Aurora</b> e toque em <b>Já confirmei</b>,<br>ou entre com o seu e-mail e senha.</p>
+  </div>
+</body>
+</html>
