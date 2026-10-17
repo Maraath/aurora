@@ -104,3 +104,52 @@ List<Parcelada> listarParceladas(QuadroFinancas q) {
   });
   return lista;
 }
+
+/// Números do painel (aba Resumo) de um mês.
+class PainelMes {
+  const PainelMes({
+    required this.saldoCentavos,
+    required this.receitasCentavos,
+    required this.despesasCentavos,
+    required this.receitasAnteriorCentavos,
+    required this.despesasAnteriorCentavos,
+    required this.categorias,
+    required this.recentes,
+  });
+
+  /// Saldo de hoje em todas as contas (não depende do mês escolhido).
+  final int saldoCentavos;
+  final int receitasCentavos;
+  final int despesasCentavos;
+  final int receitasAnteriorCentavos;
+  final int despesasAnteriorCentavos;
+
+  /// Despesas do mês por categoria, da maior para a menor.
+  final List<CategoriaGasto> categorias;
+
+  /// Últimas transações do mês (sem transferências), da mais nova à mais antiga.
+  final List<Movimento> recentes;
+
+  /// O que sobrou (ou faltou) no mês.
+  int get resultadoCentavos => receitasCentavos - despesasCentavos;
+
+  /// Variação em relação ao mês anterior (0,05 = 5% a mais); nulo sem base.
+  double? get variacaoReceitas => _variacao(receitasCentavos, receitasAnteriorCentavos);
+  double? get variacaoDespesas => _variacao(despesasCentavos, despesasAnteriorCentavos);
+
+  static double? _variacao(int atual, int anterior) => anterior == 0 ? null : atual / anterior - 1;
+}
+
+PainelMes painelDoMes(QuadroFinancas q, DateTime mes, {int recentes = 6}) {
+  final atual = q.mes(mes);
+  final anterior = q.mes(DateTime(mes.year, mes.month - 1, 1));
+  return PainelMes(
+    saldoCentavos: q.saldoCentavos,
+    receitasCentavos: atual.entrouCentavos,
+    despesasCentavos: atual.saiuCentavos,
+    receitasAnteriorCentavos: anterior.entrouCentavos,
+    despesasAnteriorCentavos: anterior.saiuCentavos,
+    categorias: atual.categorias,
+    recentes: atual.extrato.where((m) => !m.transferencia).take(recentes).toList(),
+  );
+}

@@ -3,6 +3,7 @@ import 'package:aurora/data/analise_financas.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/data/financas_repo.dart';
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -54,5 +55,42 @@ void main() {
     final b = analisarMes(q, passado, hoje);
     expect(b.projecaoCentavos, isNull);
     expect(b.mediaDiaCentavos, b.gastoCentavos ~/ DateTime(passado.year, passado.month + 1, 0).day);
+  });
+
+  test('painel: receitas, despesas, tendência e transações recentes', () async {
+    final repo = FinancasRepo(db);
+    final hoje = hojeSP();
+    final mes = DateTime(hoje.year, hoje.month, 1);
+    final passado = DateTime(hoje.year, hoje.month - 1, 10);
+    Future<void> lancar(String nome, int centavos, TipoTransacao tipo, DateTime quando, String cat) =>
+        db.into(db.transacoes).insert(TransacoesCompanion.insert(
+              descricao: nome,
+              valorCentavos: centavos,
+              tipo: tipo,
+              data: instanteSP(quando, 12),
+              categoria: Value(cat),
+              pagoEm: Value(instanteSP(quando, 12)),
+            ));
+    await lancar('Salário', 500000, TipoTransacao.entrada, passado, 'Salário');
+    await lancar('Mercado', 40000, TipoTransacao.saida, passado, 'Mercado');
+    await lancar('Salário', 550000, TipoTransacao.entrada, hoje, 'Salário');
+    await lancar('Mercado', 30000, TipoTransacao.saida, hoje, 'Mercado');
+    await lancar('Cinema', 6000, TipoTransacao.saida, hoje, 'Lazer');
+
+    final q = await repo.carregar();
+    final p = painelDoMes(q, mes);
+    final m = q.mes(mes);
+    expect(p.receitasCentavos, m.entrouCentavos);
+    expect(p.despesasCentavos, m.saiuCentavos);
+    expect(p.resultadoCentavos, m.entrouCentavos - m.saiuCentavos);
+    expect(p.saldoCentavos, q.saldoCentavos);
+    // Há receitas no mês passado, então dá para comparar.
+    expect(p.variacaoReceitas, isNotNull);
+    expect(p.categorias.first.centavos, greaterThanOrEqualTo(p.categorias.last.centavos));
+    expect(p.recentes.length, lessThanOrEqualTo(6));
+    expect(p.recentes.every((x) => !x.transferencia), isTrue);
+    for (var i = 1; i < p.recentes.length; i++) {
+      expect(p.recentes[i - 1].instante.isBefore(p.recentes[i].instante), isFalse);
+    }
   });
 }

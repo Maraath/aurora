@@ -12,7 +12,10 @@ import '../componentes.dart';
 import '../em_breve.dart';
 import 'form_conta.dart';
 import 'form_lancamento.dart';
-import 'grafico_meses.dart';
+import 'painel/cartoes_resumo.dart';
+import 'painel/grafico_categorias.dart';
+import 'painel/grafico_fluxo.dart';
+import 'painel/transacoes.dart';
 
 enum _Vista {
   resumo('Resumo'),
@@ -105,6 +108,7 @@ class _FinancasPageState extends State<FinancasPage> {
               hoje: _hoje,
               aoPagar: (o) => _repo!.pagar(o, !o.paga),
               aoEditar: (t) => _lancar(q, t),
+              aoVerExtrato: () => setState(() => _vista = _Vista.extrato),
             ),
           _Vista.extrato => _Extrato(quadro: q, mes: mes, hoje: _hoje, aoEditar: (t) => _lancar(q, t)),
           _Vista.fixas => _Fixas(quadro: q, aoEditar: (t) => _lancar(q, t)),
@@ -154,6 +158,8 @@ class _SeletorMes extends StatelessWidget {
 
 // ---------------------------------------------------------------- Resumo
 
+/// Painel do mês: cartões de resumo, contas do mês, despesas por categoria,
+/// fluxo de caixa e as últimas transações.
 class _Resumo extends StatelessWidget {
   const _Resumo({
     required this.quadro,
@@ -161,6 +167,7 @@ class _Resumo extends StatelessWidget {
     required this.hoje,
     required this.aoPagar,
     required this.aoEditar,
+    required this.aoVerExtrato,
   });
 
   final QuadroFinancas quadro;
@@ -168,54 +175,39 @@ class _Resumo extends StatelessWidget {
   final DateTime hoje;
   final ValueChanged<Ocorrencia> aoPagar;
   final ValueChanged<Transacao> aoEditar;
+  final VoidCallback aoVerExtrato;
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final faltaReceber =
-        mes.aReceber.where((o) => !o.paga).fold(0, (s, o) => s + o.valorCentavos);
+    final painel = painelDoMes(quadro, mes.mes);
+    final faltaReceber = mes.aReceber.where((o) => !o.paga).fold(0, (s, o) => s + o.valorCentavos);
+    final categorias = GraficoCategorias(categorias: painel.categorias);
+    final fluxo = GraficoFluxo(meses: quadro.serie(mes.mes), mesEscolhido: mes.mes);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Cartao(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Saldo em conta', style: manrope(12, peso: FontWeight.w600, cor: c.muted)),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(reais(quadro.saldoCentavos),
-                    style: sora(30, cor: quadro.saldoCentavos < 0 ? c.bad : c.text)),
+        CartoesResumo(painel: painel),
+        if (mes.aPagar.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          TituloSecao(
+            'Contas a pagar',
+            direita: Text(reais(mes.faltaPagarCentavos), style: manrope(13, peso: FontWeight.w700)),
+          ),
+          for (final o in mes.aPagar)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _LinhaConta(
+                ocorrencia: o,
+                hoje: hoje,
+                aoPagar: () => aoPagar(o),
+                aoEditar: () => aoEditar(o.transacao),
               ),
-              const SizedBox(height: 14),
-              Row(children: [
-                Expanded(child: _Caixa('Entrou', mes.entrouCentavos, c.tealSoft, c.teal)),
-                const SizedBox(width: 10),
-                Expanded(child: _Caixa('Saiu', mes.saiuCentavos, c.badSoft, c.bad)),
-              ]),
-            ],
-          ),
-        ),
-        const SizedBox(height: 18),
-        TituloSecao(
-          'Contas a pagar',
-          direita: Text(reais(mes.faltaPagarCentavos), style: manrope(13, peso: FontWeight.w700)),
-        ),
-        if (mes.aPagar.isEmpty) const Vazio('Nenhuma conta neste mês. Toque em + para lançar.'),
-        for (final o in mes.aPagar)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _LinhaConta(
-              ocorrencia: o,
-              hoje: hoje,
-              aoPagar: () => aoPagar(o),
-              aoEditar: () => aoEditar(o.transacao),
             ),
-          ),
+        ],
         if (mes.aReceber.isNotEmpty) ...[
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           TituloSecao(
             'A receber',
             direita: Text(reais(faltaReceber), style: manrope(13, peso: FontWeight.w700, cor: c.teal)),
@@ -231,6 +223,31 @@ class _Resumo extends StatelessWidget {
               ),
             ),
         ],
+        const SizedBox(height: 24),
+        // Largo: os dois gráficos lado a lado; estreito: um embaixo do outro.
+        LayoutBuilder(builder: (context, box) {
+          if (box.maxWidth >= 700) {
+            return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Expanded(child: categorias),
+              const SizedBox(width: 16),
+              Expanded(child: fluxo),
+            ]);
+          }
+          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            categorias,
+            const SizedBox(height: 16),
+            fluxo,
+          ]);
+        }),
+        const SizedBox(height: 16),
+        TransacoesRecentes(
+          movimentos: painel.recentes,
+          hoje: hoje,
+          nomesContas: {for (final conta in quadro.contas) conta.id: conta.nome},
+          contaPrincipalId: quadro.contaPrincipalId,
+          aoVerTudo: aoVerExtrato,
+          aoEditar: aoEditar,
+        ),
       ],
     );
   }
@@ -377,13 +394,15 @@ class _Extrato extends StatelessWidget {
           ),
           Cartao(
             raio: 16,
-            padding: EdgeInsets.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
             child: Column(
               children: [
                 for (var i = 0; i < lista.length; i++) ...[
                   if (i > 0) Divider(height: 1, color: c.line),
-                  _LinhaMovimento(
+                  LinhaTransacao(
                     movimento: lista[i],
+                    hoje: hoje,
+                    mostrarDia: false,
                     conta: nomes[lista[i].transacao.contaId ?? quadro.contaPrincipalId],
                     destino: nomes[lista[i].transacao.contaDestinoId],
                     aoTocar: () => aoEditar(lista[i].transacao),
@@ -405,56 +424,6 @@ class _Extrato extends StatelessWidget {
       total += m.entrada ? m.valorCentavos : -m.valorCentavos;
     }
     return total >= 0 ? '+${reais(total)}' : '−${reais(-total)}';
-  }
-}
-
-class _LinhaMovimento extends StatelessWidget {
-  const _LinhaMovimento({
-    required this.movimento,
-    required this.conta,
-    required this.destino,
-    required this.aoTocar,
-  });
-
-  final Movimento movimento;
-  final String? conta;
-  final String? destino;
-  final VoidCallback aoTocar;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    final m = movimento;
-    final detalhe = m.transferencia
-        ? '${conta ?? ''} → ${destino ?? ''}'
-        : [m.categoria, ?conta].join(' · ');
-    final valor = m.transferencia
-        ? reais(m.valorCentavos)
-        : (m.entrada ? '+${reais(m.valorCentavos)}' : '−${reais(m.valorCentavos)}');
-    return InkWell(
-      onTap: m.transferencia ? null : aoTocar,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(m.nome, style: manrope(15, peso: FontWeight.w600)),
-                  Text(detalhe, style: manrope(12, cor: c.muted)),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(valor,
-                style: manrope(15,
-                    peso: FontWeight.w700,
-                    cor: m.transferencia ? c.muted : (m.entrada ? c.teal : c.text))),
-          ],
-        ),
-      ),
-    );
   }
 }
 
@@ -822,12 +791,6 @@ class _Analise extends StatelessWidget {
               ]),
             ],
           ),
-        ),
-        const SizedBox(height: 18),
-        const TituloSecao('Entrou x saiu'),
-        Cartao(
-          padding: const EdgeInsets.fromLTRB(12, 18, 12, 8),
-          child: GraficoMeses(meses: quadro.serie(mes)),
         ),
         const SizedBox(height: 18),
         const TituloSecao('Para onde foi'),
