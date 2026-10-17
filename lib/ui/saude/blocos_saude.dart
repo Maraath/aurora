@@ -4,6 +4,7 @@ import '../../core/formato.dart';
 import '../../core/tema.dart';
 import '../../data/saude_repo.dart';
 import '../componentes.dart';
+import 'biblioteca_ui.dart';
 
 /// "TREINO DE HOJE" do protótipo: exercícios, séries e carga sugerida.
 /// Em dia de descanso mostra o próximo treino.
@@ -107,6 +108,14 @@ class LinhaExercicio extends StatelessWidget {
               ],
             ),
           ),
+          if (e.exercicio.midia != null)
+            IconButton(
+              tooltip: 'Ver o movimento',
+              visualDensity: VisualDensity.compact,
+              onPressed: () => verExercicio(context,
+                  nome: e.exercicio.nome, arquivo: e.exercicio.midia!, grupo: e.exercicio.grupo),
+              icon: Icon(Icons.play_circle_outline_rounded, color: c.accent),
+            ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [

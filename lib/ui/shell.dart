@@ -13,6 +13,7 @@ import 'lembretes/lembretes_page.dart';
 import 'mais_page.dart';
 import 'metas/metas_page.dart';
 import 'projetos/projetos_page.dart';
+import 'saude/biblioteca_ui.dart';
 import 'saude/ficha_page.dart';
 import 'saude/medidas_page.dart';
 import 'tarefas/tarefas_page.dart';
@@ -32,6 +33,7 @@ enum Secao {
   medidas,
   alimentacao,
   automacoes,
+  biblioteca,
   conta,
 }
 
@@ -68,7 +70,7 @@ class _ShellState extends State<Shell> {
   /// Metas, Lembretes e Projetos ficam dentro de "Mais".
   Secao get _secaoDaBarra => switch (_secao) {
         Secao.metas || Secao.lembretes || Secao.projetos || Secao.conta || Secao.automacoes => Secao.mais,
-        Secao.treino || Secao.medidas || Secao.alimentacao => Secao.habitos,
+        Secao.treino || Secao.medidas || Secao.alimentacao || Secao.biblioteca => Secao.habitos,
         _ => _secao,
       };
 
@@ -77,7 +79,9 @@ class _ShellState extends State<Shell> {
         Secao.mais => MaisPage(ir: _ir),
         Secao.tarefas => const TarefasPage(),
         Secao.habitos => HabitosPage(ir: _ir),
-        Secao.treino => FichaPage(voltar: () => _ir(Secao.habitos)),
+        Secao.treino => FichaPage(
+            voltar: () => _ir(Secao.habitos), abrirBiblioteca: () => _ir(Secao.biblioteca)),
+        Secao.biblioteca => BibliotecaPage(voltar: () => _ir(Secao.treino)),
         Secao.medidas => MedidasPage(voltar: () => _ir(Secao.habitos)),
         Secao.alimentacao => AlimentacaoPage(voltar: () => _ir(Secao.habitos)),
         Secao.financas => const FinancasPage(),

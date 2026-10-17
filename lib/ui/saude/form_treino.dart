@@ -7,6 +7,7 @@ import '../../core/tema.dart';
 import '../../data/banco.dart';
 import '../../data/saude_repo.dart';
 import '../formulario.dart';
+import 'biblioteca_ui.dart';
 
 Future<void> abrirFormTreino(BuildContext context, {TreinoCompleto? treino}) {
   final repo = SaudeRepo(AuroraEscopo.de(context).db);
@@ -23,6 +24,13 @@ class _Linha {
   final TextEditingController series;
   final TextEditingController reps;
   final TextEditingController carga;
+
+  /// Da biblioteca: arquivo da animação e grupo (vale enquanto o nome não mudar).
+  String? midia;
+  String? grupo;
+  String? nomeDaBiblioteca;
+
+  String? get midiaValida => nome.text.trim() == nomeDaBiblioteca ? midia : null;
 
   void dispose() {
     nome.dispose();
@@ -64,7 +72,10 @@ class _FormTreinoState extends State<_FormTreino> {
                 series: e.item.series,
                 reps: e.item.repeticoes,
                 carga: e.item.cargaInicial,
-              ),
+              )
+                ..midia = e.exercicio.midia
+                ..grupo = e.exercicio.grupo
+                ..nomeDaBiblioteca = e.exercicio.nome,
           ];
   }
 
@@ -106,8 +117,23 @@ class _FormTreinoState extends State<_FormTreino> {
       ),
       itens,
       id: widget.treino?.treino.id,
+      biblioteca: {
+        for (final l in _linhas)
+          if (l.midiaValida != null) l.nome.text.trim().toLowerCase(): (l.midiaValida!, l.grupo ?? ''),
+      },
     );
     if (mounted) Navigator.pop(context);
+  }
+
+  Future<void> _daBiblioteca(_Linha l) async {
+    final e = await escolherDaBiblioteca(context, busca: l.nome.text.trim());
+    if (e == null || !mounted) return;
+    setState(() {
+      l.nome.text = e.nome;
+      l.midia = e.arquivo;
+      l.grupo = e.grupo;
+      l.nomeDaBiblioteca = e.nome;
+    });
   }
 
   Future<void> _excluir() async {
@@ -221,7 +247,21 @@ class _FormTreinoState extends State<_FormTreino> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(children: [
-            Expanded(child: CampoTexto(controle: l.nome, dica: 'Ex.: Supino reto')),
+            Expanded(
+              child: CampoTexto(
+                controle: l.nome,
+                dica: 'Ex.: Supino reto',
+                aoMudar: (_) => setState(() {}),
+              ),
+            ),
+            IconButton(
+              tooltip: 'Escolher da biblioteca',
+              onPressed: () => _daBiblioteca(l),
+              icon: Icon(
+                l.midiaValida != null ? Icons.play_circle_rounded : Icons.video_library_outlined,
+                color: l.midiaValida != null ? c.teal : c.accent,
+              ),
+            ),
             IconButton(
               tooltip: 'Tirar exercício',
               onPressed: _linhas.length == 1

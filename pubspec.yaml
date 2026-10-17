@@ -15,7 +15,9 @@ dependencies:
   flutter_local_notifications: ^22.3.2
   flutter_localizations:
     sdk: flutter
+  http: ^1.6.0
   intl: ^0.20.3
+  path_provider: ^2.1.6
   supabase_flutter: ^2.18.3
   timezone: ^0.11.2
   uuid: ^4.6.0
@@ -33,6 +35,8 @@ flutter:
   assets:
     # Catálogo de alimentos: TACO 4ª ed., NEPA/Unicamp (gerado por tool/taco/converter.dart).
     - assets/taco.json
+    # Biblioteca de exercícios (gerada por tool/exercicios/converter.ps1; animações no Storage).
+    - assets/exercicios.json
   fonts:
     - family: Sora
       fonts:

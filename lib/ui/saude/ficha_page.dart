@@ -13,8 +13,9 @@ import 'form_sessao.dart';
 import 'form_treino.dart';
 
 class FichaPage extends StatefulWidget {
-  const FichaPage({super.key, this.voltar});
+  const FichaPage({super.key, this.voltar, this.abrirBiblioteca});
   final VoidCallback? voltar;
+  final VoidCallback? abrirBiblioteca;
 
   @override
   State<FichaPage> createState() => _FichaPageState();
@@ -63,7 +64,26 @@ class _FichaPageState extends State<FichaPage> {
             aoTocar: () => abrirFormTreino(context),
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 14),
+        if (widget.abrirBiblioteca != null) ...[
+          Cartao(
+            raio: 16,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            aoTocar: widget.abrirBiblioteca,
+            child: Row(children: [
+              Icon(Icons.video_library_outlined, color: c.accent),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('Biblioteca de exercícios', style: manrope(15, peso: FontWeight.w600)),
+                  Text('Busque por nome ou grupo e veja o movimento', style: manrope(12, cor: c.muted)),
+                ]),
+              ),
+              Icon(Icons.chevron_right_rounded, color: c.muted),
+            ]),
+          ),
+          const SizedBox(height: 14),
+        ],
         for (final t in q.treinos)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),

@@ -50,3 +50,6 @@ app.*.map.json
 # Supabase CLI (arquivos locais da máquina)
 supabase/.temp/
 supabase/.branches/
+
+# GIFs originais dos exercícios (1,1 GB): ficam só na máquina do dono
+/Exercicios/

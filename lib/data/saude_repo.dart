@@ -239,13 +239,22 @@ class SaudeRepo {
   }
 
   /// Exercício pelo nome (sem diferenciar maiúsculas); cria se não existir.
-  Future<String> exercicioPorNome(String nome) async {
+  /// Com [midia] (arquivo da animação na biblioteca), o exercício fica ligado a ela.
+  Future<String> exercicioPorNome(String nome, {String? midia, String? grupo}) async {
     final limpo = nome.trim();
     final existentes = await (db.select(db.exercicios)..where((e) => e.apagadoEm.isNull())).get();
     for (final e in existentes) {
-      if (e.nome.toLowerCase() == limpo.toLowerCase()) return e.id;
+      if (e.nome.toLowerCase() == limpo.toLowerCase()) {
+        if (midia != null && e.midia != midia) {
+          await (db.update(db.exercicios)..where((x) => x.id.equals(e.id))).write(ExerciciosCompanion(
+              midia: Value(midia), grupo: Value(grupo ?? e.grupo), atualizadoEm: Value(DateTime.now())));
+        }
+        return e.id;
+      }
     }
-    return (await db.into(db.exercicios).insertReturning(ExerciciosCompanion.insert(nome: limpo))).id;
+    return (await db.into(db.exercicios).insertReturning(
+            ExerciciosCompanion.insert(nome: limpo, midia: Value(midia), grupo: Value(grupo))))
+        .id;
   }
 
   /// Cria ou atualiza um treino com a lista de exercícios na ordem dada.
@@ -253,6 +262,10 @@ class SaudeRepo {
     TreinosCompanion dados,
     List<({String nome, int series, int repeticoes, double? cargaInicial})> itens, {
     String? id,
+
+    /// Nome do exercício (minúsculo) → (arquivo da animação, grupo muscular),
+    /// para os escolhidos na biblioteca.
+    Map<String, (String, String)> biblioteca = const {},
   }) {
     return db.transaction(() async {
       final agora = DateTime.now();
@@ -271,7 +284,9 @@ class SaudeRepo {
         final it = itens[n];
         await db.into(db.itensTreino).insert(ItensTreinoCompanion.insert(
               treinoId: treinoId,
-              exercicioId: await exercicioPorNome(it.nome),
+              exercicioId: await exercicioPorNome(it.nome,
+                  midia: biblioteca[it.nome.trim().toLowerCase()]?.$1,
+                  grupo: biblioteca[it.nome.trim().toLowerCase()]?.$2),
               ordem: Value(n),
               series: Value(it.series),
               repeticoes: Value(it.repeticoes),

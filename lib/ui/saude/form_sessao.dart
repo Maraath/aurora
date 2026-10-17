@@ -5,6 +5,7 @@ import '../../core/formato.dart';
 import '../../core/tema.dart';
 import '../../data/saude_repo.dart';
 import '../formulario.dart';
+import 'biblioteca_ui.dart';
 
 /// Registro de um treino: cada série vem preenchida com a carga sugerida e as
 /// repetições alvo; marca-se o que foi feito (ajustando se precisar).
@@ -101,6 +102,14 @@ class _FormSessaoState extends State<_FormSessao> {
         Row(
           children: [
             Expanded(child: Text(e.exercicio.nome, style: manrope(15, peso: FontWeight.w700))),
+            if (e.exercicio.midia != null)
+              IconButton(
+                tooltip: 'Ver o movimento',
+                visualDensity: VisualDensity.compact,
+                onPressed: () => verExercicio(context,
+                    nome: e.exercicio.nome, arquivo: e.exercicio.midia!, grupo: e.exercicio.grupo),
+                icon: Icon(Icons.play_circle_outline_rounded, color: c.accent),
+              ),
             Text(e.plano, style: manrope(12, cor: c.muted)),
           ],
         ),

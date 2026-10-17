@@ -21,6 +21,8 @@ import 'package:aurora/data/projetos_repo.dart';
 import 'package:aurora/ui/projetos/projetos_page.dart';
 import 'package:aurora/data/saude_repo.dart';
 import 'package:aurora/ui/habitos/habitos_page.dart';
+import 'package:aurora/ui/formulario.dart' show OpcaoChip;
+import 'package:aurora/ui/saude/biblioteca_ui.dart';
 import 'package:aurora/ui/saude/ficha_page.dart';
 import 'package:aurora/ui/saude/form_medidas.dart';
 import 'package:aurora/ui/saude/form_sessao.dart';
@@ -376,6 +378,35 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Editar automação'), findsOneWidget);
     expect(find.text('Excluir'), findsNothing); // modelos prontos não se excluem
+    expect(tester.takeException(), isNull);
+    tester.view.reset();
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('biblioteca de exercícios: página, grupos e animação', (tester) async {
+    for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
+      tester.view.physicalSize = tamanho;
+      tester.view.devicePixelRatio = 1;
+      await tester.pumpWidget(AuroraEscopo(
+        db: db,
+        escuro: ValueNotifier(true),
+        child: MaterialApp(
+          theme: temaAurora(Brightness.dark),
+          home: const Scaffold(body: SingleChildScrollView(child: BibliotecaPage())),
+        ),
+      ));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: '$tamanho');
+      expect(find.text('Todos'), findsOneWidget);
+    }
+    await tester.tap(find.widgetWithText(OpcaoChip, 'Antebraço'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Ver o movimento'), findsNWidgets(15));
+    await tester.tap(find.byTooltip('Ver o movimento').first);
+    // A animação tenta baixar (carregando): só confere que a folha abriu com ela.
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byType(AnimacaoExercicio), findsOneWidget);
     expect(tester.takeException(), isNull);
     tester.view.reset();
     await tester.pumpWidget(const SizedBox());
