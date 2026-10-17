@@ -26,9 +26,13 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.35.1
   build_runner: ^2.16.2
+  xml: ^7.1.0
 
 flutter:
   uses-material-design: true
+  assets:
+    # Catálogo de alimentos: TACO 4ª ed., NEPA/Unicamp (gerado por tool/taco/converter.dart).
+    - assets/taco.json
   fonts:
     - family: Sora
       fonts:

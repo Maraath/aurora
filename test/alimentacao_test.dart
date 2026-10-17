@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:aurora/core/relogio.dart';
+import 'package:aurora/data/catalogo_taco.dart';
 import 'package:aurora/data/alimentacao_repo.dart';
 import 'package:aurora/data/assistente_repo.dart';
 import 'package:aurora/data/banco.dart';
@@ -11,6 +14,7 @@ import 'package:intl/date_symbol_data_local.dart';
 void main() {
   late BancoAurora db;
   late AlimentacaoRepo repo;
+  final taco = CatalogoTaco.deTexto(File('assets/taco.json').readAsStringSync());
 
   setUpAll(() async {
     iniciarRelogio();
@@ -84,6 +88,31 @@ void main() {
     expect(await repo.acharAlimento('picanha'), isNull);
   });
 
+  group('catálogo TACO', () {
+    test('591 alimentos, valores conhecidos', () {
+      expect(taco.itens, hasLength(591));
+      final frango = taco.porCodigo(410)!;
+      expect(frango.nome, 'Frango, peito, sem pele, grelhado');
+      expect((frango.kcal, frango.proteina, frango.gordura), (159.0, 32.0, 2.5));
+    });
+
+    test('busca por palavras, sem acento e sem plural; o mais genérico primeiro', () {
+      expect(taco.buscar('ovo cozido').first.nome, startsWith('Ovo, de galinha, inteiro, cozido'));
+      expect(taco.buscar('banana prata').first.nome, 'Banana, prata, crua');
+      expect(taco.buscar('pães').map((i) => i.nome), contains(startsWith('Pão')));
+      expect(taco.buscar('xyzw'), isEmpty);
+    });
+
+    test('copiar da TACO usa id fixo pelo código e reativa se excluído', () async {
+      final repoTaco = AlimentacaoRepo(db, catalogo: () async => taco);
+      final a = await repoTaco.doCatalogo(taco.porCodigo(410)!);
+      expect(a.id, idNatural('taco', ['410']));
+      await repoTaco.excluirAlimento(a.id);
+      await repoTaco.doCatalogo(taco.porCodigo(410)!);
+      expect(await repoTaco.listarAlimentos(), hasLength(1));
+    });
+  });
+
   group('pelo assistente', () {
     late AssistenteRepo assistente;
     setUp(() => assistente = AssistenteRepo(db));
@@ -101,9 +130,28 @@ void main() {
       expect((await repo.carregarDia(hojeSP())).registros, isEmpty);
     });
 
-    test('alimento desconhecido pede cadastro', () async {
-      await assistente.enviar('comi 200 g de picanha');
-      expect((await ultima()).texto, contains('Não achei “picanha”'));
+    test('fora da lista e da TACO pede cadastro', () async {
+      final semTaco = AssistenteRepo(db, catalogo: () async => CatalogoTaco.deTexto('{"alimentos": []}'));
+      await semTaco.enviar('comi 200 g de picanha');
+      expect((await ultima()).texto, contains('Não achei “picanha” nos seus alimentos nem na TACO'));
+    });
+
+    test('várias opções na TACO: lista para a pessoa escolher', () async {
+      final comTaco = AssistenteRepo(db, catalogo: () async => taco);
+      await comTaco.enviar('comi 200 g de picanha');
+      final r = (await ultima()).texto;
+      expect(r, startsWith('Achei mais de uma opção na TACO para “picanha”'));
+      expect(r, contains('Carne, bovina, picanha'));
+    });
+
+    test('uma opção só na TACO: registra e copia para a lista', () async {
+      final comTaco = AssistenteRepo(db, catalogo: () async => taco);
+      await comTaco.enviar('comi 150 g de frango peito sem pele grelhado no almoço');
+      expect((await ultima()).texto,
+          startsWith('Anotei 150 g de Frango, peito, sem pele, grelhado no almoço: 239 kcal, 48 g de proteína.'));
+      final copia = (await repo.listarAlimentos()).single;
+      expect(copia.origem, 'taco');
+      expect(copia.id, idNatural('taco', ['410']));
     });
 
     test('sem porção e número pequeno pergunta os gramas', () async {

@@ -10,6 +10,7 @@ import '../core/nuvem.dart';
 import '../core/relogio.dart';
 import 'alimentacao_repo.dart';
 import 'banco.dart';
+import 'catalogo_taco.dart';
 import 'contexto_ia.dart';
 import 'financas_repo.dart';
 import 'habitos_repo.dart';
@@ -93,9 +94,12 @@ ChamarIa? iaDaNuvem() {
 }
 
 class AssistenteRepo {
-  AssistenteRepo(this.db, {ChamarIa? Function()? ia}) : _ia = ia ?? iaDaNuvem;
+  AssistenteRepo(this.db, {ChamarIa? Function()? ia, Future<CatalogoTaco> Function()? catalogo})
+      : _ia = ia ?? iaDaNuvem,
+        _catalogoTaco = catalogo ?? CatalogoTaco.carregar;
   final BancoAurora db;
   final ChamarIa? Function() _ia;
+  final Future<CatalogoTaco> Function() _catalogoTaco;
 
   /// Verdadeiro enquanto a IA está respondendo (para a tela mostrar).
   static final pensando = ValueNotifier<bool>(false);
@@ -320,11 +324,17 @@ class AssistenteRepo {
   }
 
   Future<Resposta> _comida(CmdComida c, DateTime hoje, DateTime agora) async {
-    final repo = AlimentacaoRepo(db);
-    final alimento = await repo.acharAlimento(c.nome);
+    final repo = AlimentacaoRepo(db, catalogo: _catalogoTaco);
+    final busca = await repo.resolver(c.nome);
+    final alimento = busca.alimento;
     if (alimento == null) {
-      return Resposta('Não achei “${c.nome}” nos seus alimentos. Cadastre em Hábitos › Alimentação '
-          '(valores por 100 g) e peça de novo.');
+      if (busca.opcoes.isNotEmpty) {
+        return Resposta('Achei mais de uma opção na TACO para “${c.nome}”: '
+            '${busca.opcoes.map((o) => o.nome).join('; ')}. '
+            'Diga qual, por exemplo “comi 150 g de ${busca.opcoes.first.nome.toLowerCase()}”.');
+      }
+      return Resposta('Não achei “${c.nome}” nos seus alimentos nem na TACO. Cadastre em '
+          'Hábitos › Alimentação (valores por 100 g) e peça de novo.');
     }
     double? gramas = c.gramas;
     if (gramas == null && c.porcoes != null) {

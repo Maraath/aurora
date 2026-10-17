@@ -7,6 +7,7 @@ import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/alimentacao_repo.dart';
 import '../../data/banco.dart';
+import '../../data/catalogo_taco.dart';
 import '../componentes.dart';
 import '../formulario.dart';
 import 'form_alimento.dart';
@@ -45,6 +46,29 @@ class _FormRegistroState extends State<_FormRegistro> {
   Alimento? _escolhido;
   bool _emPorcoes = false;
   String? _erro;
+  CatalogoTaco? _taco;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.repo.catalogo().then((c) {
+      if (mounted) setState(() => _taco = c);
+    });
+  }
+
+  /// Da TACO, sem repetir o que já está na lista da pessoa.
+  List<ItemCatalogo> get _daTaco {
+    final taco = _taco;
+    if (taco == null || _busca.text.trim().length < 2) return const [];
+    final meus = {for (final a in _alimentos) normalizar(a.nome)};
+    return taco.buscar(_busca.text, limite: 12).where((i) => !meus.contains(normalizar(i.nome))).take(6).toList();
+  }
+
+  Future<void> _escolherDaTaco(ItemCatalogo item) async {
+    final a = await widget.repo.doCatalogo(item);
+    _alimentos = await widget.repo.listarAlimentos();
+    if (mounted) _escolher(a);
+  }
 
   @override
   void dispose() {
@@ -144,8 +168,29 @@ class _FormRegistroState extends State<_FormRegistro> {
                       ]),
                     ),
                   ),
-                if (_alimentos.isEmpty)
-                  Text('Você ainda não tem alimentos cadastrados.', style: manrope(13, cor: c.muted)),
+                if (_daTaco.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text('DA TACO', style: rotulo(c.accent)),
+                  const SizedBox(height: 6),
+                  for (final x in _daTaco)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Cartao(
+                        raio: 14,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        aoTocar: () => _escolherDaTaco(x),
+                        child: Row(children: [
+                          Expanded(child: Text(x.nome, style: manrope(14))),
+                          const SizedBox(width: 8),
+                          Text('${numero(x.kcal)} kcal/100 g', style: manrope(12, cor: c.muted)),
+                        ]),
+                      ),
+                    ),
+                  Text(fonteTaco, style: manrope(11, cor: c.muted)),
+                ],
+                if (_alimentos.isEmpty && _busca.text.trim().isEmpty)
+                  Text('Busque um alimento: os seus e os ${_taco?.itens.length ?? 591} da TACO.',
+                      style: manrope(13, cor: c.muted)),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(

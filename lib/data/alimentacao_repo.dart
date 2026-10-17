@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import '../core/comandos.dart' show normalizar;
 import '../core/relogio.dart';
 import 'banco.dart';
+import 'catalogo_taco.dart';
 import 'observar.dart';
 import 'saude_repo.dart';
 
@@ -76,9 +77,21 @@ class DiaAlimentacao {
   List<RegistroAlimentacao> daRefeicao(Refeicao r) => registros.where((x) => x.refeicao == r.name).toList();
 }
 
+class ResultadoBusca {
+  const ResultadoBusca({this.alimento, this.opcoes = const []});
+  final Alimento? alimento;
+
+  /// Vários da TACO casaram: a pessoa precisa dizer qual.
+  final List<ItemCatalogo> opcoes;
+}
+
 class AlimentacaoRepo {
-  AlimentacaoRepo(this.db);
+  AlimentacaoRepo(this.db, {Future<CatalogoTaco> Function()? catalogo})
+      : _catalogo = catalogo ?? CatalogoTaco.carregar;
   final BancoAurora db;
+  final Future<CatalogoTaco> Function() _catalogo;
+
+  Future<CatalogoTaco> catalogo() => _catalogo();
 
   Stream<DiaAlimentacao> observarDia(DateTime dia) => observar(db, [
         db.alimentos,
@@ -132,33 +145,53 @@ class AlimentacaoRepo {
         ..orderBy([(a) => OrderingTerm(expression: a.nome)]))
       .get();
 
-  /// Alimento pelo nome: igual (sem acento/maiúscula); senão, o de nome mais
-  /// curto em que cada palavra buscada (sem plural) começa alguma palavra
-  /// do nome: "ovos" acha "Ovo cozido", "pao" acha "Pão francês".
+  /// Alimento da SUA lista pelo nome: igual (sem acento/maiúscula); senão, o
+  /// de nome mais curto em que cada palavra buscada (sem plural) começa alguma
+  /// palavra do nome: "ovos" acha "Ovo cozido", "pao" acha "Pão francês".
   Future<Alimento?> acharAlimento(String nome) async {
     final alvo = normalizar(nome.trim());
     final todos = await listarAlimentos();
     for (final a in todos) {
       if (normalizar(a.nome) == alvo) return a;
     }
-    final buscadas = _palavras(alvo);
-    if (buscadas.isEmpty) return null;
-    final achados = todos.where((a) {
-      final doNome = _palavras(normalizar(a.nome));
-      return buscadas.every((b) => doNome.any((p) => p.startsWith(b) || b.startsWith(p)));
-    }).toList()
+    final buscadas = palavrasBusca(alvo);
+    final achados = todos.where((a) => casaBusca(buscadas, palavrasBusca(a.nome))).toList()
       ..sort((a, b) => a.nome.length.compareTo(b.nome.length));
     return achados.firstOrNull;
   }
 
-  /// Palavras sem plural simples e sem "de/da/do".
-  static List<String> _palavras(String texto) => [
-        for (final p in texto.split(RegExp(r'[^a-z0-9]+')))
-          if (p.length > 2 && !const {'de', 'da', 'do', 'das', 'dos', 'com'}.contains(p))
-            p.endsWith('oes') || p.endsWith('aes')
-                ? '${p.substring(0, p.length - 3)}ao'
-                : (p.endsWith('s') && p.length > 3 ? p.substring(0, p.length - 1) : p),
-      ];
+  /// Copia um item da TACO para a lista da pessoa (ou reativa a cópia). O id
+  /// vem do código da TACO: dois aparelhos fazem a MESMA cópia.
+  Future<Alimento> doCatalogo(ItemCatalogo item) async {
+    final id = idNatural('taco', ['${item.codigo}']);
+    await db.into(db.alimentos).insert(
+          AlimentosCompanion.insert(
+            id: Value(id),
+            nome: item.nome,
+            kcal: item.kcal,
+            proteina: Value(item.proteina),
+            carboidrato: Value(item.carboidrato),
+            gordura: Value(item.gordura),
+            origem: const Value('taco'),
+          ),
+          onConflict: DoUpdate((_) => AlimentosCompanion(
+                apagadoEm: const Value(null),
+                atualizadoEm: Value(DateTime.now()),
+              )),
+        );
+    return (db.select(db.alimentos)..where((a) => a.id.equals(id))).getSingle();
+  }
+
+  /// Nome pedido (ex.: pelo assistente) → alimento. Primeiro na lista da
+  /// pessoa; senão na TACO: um resultado só vira alimento; vários viram opções.
+  Future<ResultadoBusca> resolver(String nome) async {
+    final meu = await acharAlimento(nome);
+    if (meu != null) return ResultadoBusca(alimento: meu);
+    final catalogo = await _catalogo();
+    final opcoes = catalogo.buscar(nome, limite: 5);
+    if (opcoes.length == 1) return ResultadoBusca(alimento: await doCatalogo(opcoes.single));
+    return ResultadoBusca(opcoes: opcoes);
+  }
 
   Future<String> salvarAlimento(AlimentosCompanion dados, {String? id}) async {
     if (id == null) return (await db.into(db.alimentos).insertReturning(dados)).id;

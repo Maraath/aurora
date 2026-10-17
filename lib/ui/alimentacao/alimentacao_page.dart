@@ -6,6 +6,7 @@ import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/alimentacao_repo.dart';
 import '../../data/banco.dart';
+import '../../data/catalogo_taco.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import 'form_alimento.dart';
@@ -139,6 +140,10 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
                 aoTocar: () => abrirFormAlimento(context, alimento: a),
                 child: Row(children: [
                   Expanded(child: Text(a.nome, style: manrope(14, peso: FontWeight.w600))),
+                  if (a.origem == 'taco') ...[
+                    Etiqueta('TACO', cor: c.muted),
+                    const SizedBox(width: 8),
+                  ],
                   Text('${_kcal(a.kcal)} kcal · P ${_g(a.proteina)} · C ${_g(a.carboidrato)} · G ${_g(a.gordura)}',
                       style: manrope(12, cor: c.muted)),
                 ]),
@@ -146,9 +151,14 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
             ),
         CartaoNovo(
           titulo: '+ Novo alimento',
-          detalhe: 'Valores por 100 g, como no rótulo. Dá para ter uma porção caseira (1 ovo, 1 colher).',
+          detalhe: 'Para o que não está na TACO (marcas, receitas). Valores por 100 g, como no rótulo, '
+              'e uma porção caseira opcional (1 ovo, 1 colher).',
           aoTocar: () => abrirFormAlimento(context),
         ),
+        const SizedBox(height: 10),
+        Text('Ao registrar, a busca inclui os 591 alimentos da $fonteTaco. '
+            'Os que você usa entram em "Meus alimentos" e podem ganhar porção caseira.',
+            style: manrope(12, cor: c.muted, altura: 1.4)),
       ],
     );
   }
