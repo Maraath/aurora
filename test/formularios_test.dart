@@ -251,17 +251,20 @@ void main() {
         escuro: ValueNotifier(true),
         child: MaterialApp(
           theme: temaAurora(Brightness.dark),
-          home: const Scaffold(body: SingleChildScrollView(child: AssistentePage())),
+          home: const Scaffold(body: AssistentePage()),
         ),
       ));
+      // A orbe da conversa vazia pulsa sem parar: nada de pumpAndSettle.
       await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
       expect(tester.takeException(), isNull, reason: '$tamanho');
     }
-    await tester.ensureVisible(find.text('Gastei 35 no mercado'));
-    await tester.tap(find.text('Gastei 35 no mercado'));
+    await tester.tap(find.text('Gastei 35 no mercado').first);
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
-    await tester.pumpAndSettle();
+    // A resposta aparece aos poucos (efeito de digitação).
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     expect(find.textContaining('Anotei R\$ 35,00'), findsOneWidget);
     expect(find.text('Desfazer'), findsOneWidget);
     expect(tester.takeException(), isNull);

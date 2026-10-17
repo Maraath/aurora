@@ -14,6 +14,7 @@ import 'financas/financas_page.dart';
 import 'habitos/habitos_page.dart';
 import 'lembretes/lembretes_page.dart';
 import 'mais_page.dart';
+import 'menu_dock.dart';
 import 'metas/metas_page.dart';
 import 'projetos/projetos_page.dart';
 import 'saude/biblioteca_ui.dart';
@@ -171,30 +172,46 @@ class _ShellState extends State<Shell> {
     final c = context.cores;
     final desktop = MediaQuery.sizeOf(context).width >= larguraDesktop;
 
+    final cabecalho = _Cabecalho(
+      mostrarLogo: !desktop,
+      assistenteAtivo: _secao == Secao.assistente,
+      abrirAssistente: () => _ir(Secao.assistente),
+    );
+    final pagina = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 160),
+      child: KeyedSubtree(
+        key: ValueKey((_secao, _abaSaude, _abaLembretes)),
+        child: _pagina(desktop),
+      ),
+    );
     final conteudo = SafeArea(
       bottom: false,
       child: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 760),
-          child: ListView(
-            padding: EdgeInsets.fromLTRB(20, 20, 20, desktop ? 40 : 28),
-            children: [
-              _Cabecalho(
-                mostrarLogo: !desktop,
-                assistenteAtivo: _secao == Secao.assistente,
-                abrirAssistente: () => _ir(Secao.assistente),
-              ),
-              const SizedBox(height: 20),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 160),
-                child: KeyedSubtree(
-                  key: ValueKey((_secao, _abaSaude, _abaLembretes)),
-                  child: _pagina(desktop),
+          constraints: const BoxConstraints(maxWidth: 820),
+          // O assistente ocupa a altura toda (conversa rolando e campo fixo
+          // embaixo); as outras áreas rolam inteiras.
+          child: _secao == Secao.assistente
+              ? Padding(
+                  padding: desktop
+                      ? const EdgeInsets.fromLTRB(Espaco.xl, Espaco.lg, Espaco.xl, Espaco.lg)
+                      : const EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      cabecalho,
+                      const SizedBox(height: Espaco.md),
+                      Expanded(child: pagina),
+                    ],
+                  ),
+                )
+              : ListView(
+                  padding: desktop
+                      ? const EdgeInsets.fromLTRB(Espaco.xl, Espaco.lg, Espaco.xl, Espaco.xxl)
+                      : const EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.xl),
+                  children: [cabecalho, const SizedBox(height: Espaco.lg), pagina],
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -376,8 +393,8 @@ class _BarraInferior extends StatelessWidget {
   }
 }
 
-/// Menu lateral estreito, só de ícones: o nome da área
-/// aparece ao passar o mouse. Grupos separados por um traço; Conta embaixo.
+/// Menu lateral (computador): dock só de ícones. Os ícones
+/// crescem com mola perto do mouse e o nome aparece ao lado (ver MenuDock).
 class _BarraLateral extends StatelessWidget {
   const _BarraLateral({required this.atual, required this.ir});
   final Secao atual;
@@ -386,68 +403,35 @@ class _BarraLateral extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
+    final itens = <ItemDock>[];
+    for (var g = 0; g < _gruposLateral.length; g++) {
+      for (var i = 0; i < _gruposLateral[g].length; i++) {
+        final item = _gruposLateral[g][i];
+        itens.add(ItemDock(
+          icone: item.icone,
+          rotulo: item.rotulo,
+          ativo: atual == item.secao,
+          aoTocar: () => ir(item.secao),
+          espacoAntes: g > 0 && i == 0 ? 16 : 0,
+        ));
+      }
+    }
+    itens.add(ItemDock(
+      icone: _itemConta.icone,
+      rotulo: _itemConta.rotulo,
+      ativo: atual == _itemConta.secao,
+      aoTocar: () => ir(_itemConta.secao),
+      espacoAntes: 16,
+    ));
     return Container(
       width: 72,
       color: c.surface,
       padding: const EdgeInsets.symmetric(vertical: 18),
-      child: Column(
-        children: [
-          const Tooltip(message: 'Aurora', child: LogoAurora(tamanho: 34)),
-          const SizedBox(height: 18),
-          for (var g = 0; g < _gruposLateral.length; g++) ...[
-            if (g > 0)
-              Container(
-                width: 24,
-                height: 1,
-                margin: const EdgeInsets.symmetric(vertical: 10),
-                color: c.line,
-              ),
-            for (final item in _gruposLateral[g])
-              _IconeLateral(item: item, ativo: atual == item.secao, aoTocar: () => ir(item.secao)),
-          ],
-          const Spacer(),
-          _IconeLateral(item: _itemConta, ativo: atual == _itemConta.secao, aoTocar: () => ir(_itemConta.secao)),
-        ],
-      ),
-    );
-  }
-}
-
-class _IconeLateral extends StatelessWidget {
-  const _IconeLateral({required this.item, required this.ativo, required this.aoTocar});
-  final _ItemNav item;
-  final bool ativo;
-  final VoidCallback aoTocar;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Tooltip(
-        message: item.rotulo,
-        preferBelow: false,
-        verticalOffset: 0,
-        margin: const EdgeInsets.only(left: 64),
-        child: Semantics(
-          label: item.rotulo,
-          selected: ativo,
-          button: true,
-          child: Material(
-            color: ativo ? c.accentSoft : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: aoTocar,
-              child: SizedBox(
-                width: 48,
-                height: 44,
-                child: Icon(item.icone, size: 22, color: ativo ? c.accent : c.muted),
-              ),
-            ),
-          ),
-        ),
-      ),
+      child: Column(children: [
+        const LogoAurora(tamanho: 34),
+        const SizedBox(height: 22),
+        MenuDock(itens: itens),
+      ]),
     );
   }
 }

@@ -7,11 +7,12 @@ class Cartao extends StatelessWidget {
   const Cartao({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(18),
-    this.raio = 20,
+    this.padding = const EdgeInsets.all(20),
+    this.raio = Raio.cartao,
     this.aoTocar,
     this.cor,
     this.borda = true,
+    this.sombra = true,
   });
 
   final Widget child;
@@ -21,6 +22,9 @@ class Cartao extends StatelessWidget {
   final Color? cor;
   final bool borda;
 
+  /// Sombra sutil de elevação (desligue em cartões dentro de cartões).
+  final bool sombra;
+
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
@@ -28,13 +32,19 @@ class Cartao extends StatelessWidget {
       borderRadius: BorderRadius.circular(raio),
       side: borda ? BorderSide(color: c.line) : BorderSide.none,
     );
-    return Material(
-      color: cor ?? c.surface,
-      shape: forma,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: aoTocar,
-        child: Padding(padding: padding, child: child),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(raio),
+        boxShadow: sombra ? sombraCartao(context) : null,
+      ),
+      child: Material(
+        color: cor ?? c.surface,
+        shape: forma,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: aoTocar,
+          child: Padding(padding: padding, child: child),
+        ),
       ),
     );
   }
@@ -258,11 +268,11 @@ class TituloSecao extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.cores;
+    // Título de verdade (Sora 16, cor do texto), não mais um rótulo em caixa alta.
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(children: [
-        Expanded(child: Text(texto.toUpperCase(), style: rotulo(c.muted))),
+      padding: const EdgeInsets.only(top: Espaco.sm, bottom: Espaco.md - 4),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        Expanded(child: Text(texto, style: sora(16))),
         ?direita,
       ]),
     );

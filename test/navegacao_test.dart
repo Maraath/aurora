@@ -1,4 +1,4 @@
-import 'package:aurora/app.dart';
+﻿import 'package:aurora/app.dart';
 import 'package:aurora/core/relogio.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
@@ -38,23 +38,23 @@ void main() {
   testWidgets('computador: todas as áreas no menu lateral', (tester) async {
     await abrirApp(tester, const Size(1280, 860));
     for (final area in ['Tarefas', 'Hábitos', 'Metas', 'Projetos', 'Finanças', 'Assistente', 'Visão']) {
-      await tocar(tester, find.byTooltip(area));
+      await tocar(tester, find.bySemanticsLabel(area));
     }
     // Abas novas (Análise e Parceladas).
-    await tocar(tester, find.byTooltip('Tarefas'));
+    await tocar(tester, find.bySemanticsLabel('Tarefas'));
     await tocar(tester, find.text('Análise'));
-    await tocar(tester, find.byTooltip('Hábitos'));
+    await tocar(tester, find.bySemanticsLabel('Hábitos'));
     await tocar(tester, find.text('Análise'));
-    await tocar(tester, find.byTooltip('Finanças'));
+    await tocar(tester, find.bySemanticsLabel('Finanças'));
     await tocar(tester, find.text('Parceladas'));
     await tocar(tester, find.text('Análise'));
-    await tocar(tester, find.byTooltip('Saúde'));
+    await tocar(tester, find.bySemanticsLabel('Saúde'));
     for (final aba in ['Alimentação', 'Medidas', 'Exercícios', 'Treino']) {
       await tocar(tester, find.text(aba));
     }
-    await tocar(tester, find.byTooltip('Lembretes'));
+    await tocar(tester, find.bySemanticsLabel('Lembretes'));
     await tocar(tester, find.text('Automações'));
-    await tocar(tester, find.byTooltip('Conta e sincronização'));
+    await tocar(tester, find.bySemanticsLabel('Conta e sincronização'));
     await tester.pumpWidget(const SizedBox());
   });
 

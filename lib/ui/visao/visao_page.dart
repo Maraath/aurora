@@ -62,33 +62,44 @@ class _Conteudo extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     final agora = agoraSP();
+    final data = DateFormat("EEEE, d 'de' MMMM", 'pt_BR').format(agora);
+    final feitos = resumo.linha.where((i) => i.feito).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('${dataCabecalho(agora)} · ${hora(agora)}',
-            style: manrope(12, peso: FontWeight.w600, cor: c.muted, espaco: 1.4)),
-        const SizedBox(height: 4),
+        // Cabeçalho: data discreta, saudação grande.
+        Text('${data[0].toUpperCase()}${data.substring(1)} · ${hora(agora)}',
+            style: manrope(13, peso: FontWeight.w500, cor: c.muted)),
+        const SizedBox(height: Espaco.sm),
         Text(
           resumo.nome.isEmpty ? saudacao(agora) : '${saudacao(agora)}, ${resumo.nome}',
-          style: sora(28, altura: 1.2),
+          style: sora(30, altura: 1.15, espaco: -0.3),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: Espaco.lg),
         _CartaoFoco(itens: _itensFoco(resumo)),
-        const SizedBox(height: 22),
-        _TituloBloco('Linha do dia',
-            direita: '${resumo.linha.where((i) => i.feito).length}/${resumo.linha.length} feitos'),
-        _LinhaDoDia(itens: resumo.linha, repo: repo),
-        const SizedBox(height: 22),
-        const _TituloBloco('Semana'),
-        _Semana(dias: resumo.semana, aoTocar: () => ir(Secao.tarefas)),
-        const SizedBox(height: 22),
-        const _TituloBloco('Painel das áreas'),
-        _Panorama(resumo: resumo, ir: ir),
+        const SizedBox(height: Espaco.xl),
+        _Bloco(
+          titulo: 'Linha do dia',
+          descricao: 'Tudo o que é de hoje, na ordem do relógio.',
+          direita: resumo.linha.isEmpty ? null : '$feitos de ${resumo.linha.length} feitos',
+          child: _LinhaDoDia(itens: resumo.linha, repo: repo),
+        ),
+        const SizedBox(height: Espaco.xl),
+        _Bloco(
+          titulo: 'Semana',
+          descricao: 'Compromissos de hoje e dos próximos 6 dias.',
+          child: _Semana(dias: resumo.semana, aoTocar: () => ir(Secao.tarefas)),
+        ),
+        const SizedBox(height: Espaco.xl),
+        _Bloco(
+          titulo: 'Painel das áreas',
+          descricao: 'Toque num cartão para abrir a área.',
+          child: _Panorama(resumo: resumo, ir: ir),
+        ),
         if (resumo.insights.isNotEmpty) ...[
-          const SizedBox(height: 22),
-          const _TituloBloco('Insights'),
-          _Insights(frases: resumo.insights),
+          const SizedBox(height: Espaco.xl),
+          _Bloco(titulo: 'Insights', child: _Insights(frases: resumo.insights)),
         ],
       ],
     );
@@ -96,35 +107,94 @@ class _Conteudo extends StatelessWidget {
 
   List<ItemFoco> _itensFoco(ResumoVisao r) => [
         for (final h in r.habitos)
-          if (!h.feito) ItemFoco(h.habito.nome, 'para hoje · Hábitos'),
+          if (!h.feito) ItemFoco(h.habito.nome, 'Para hoje · Hábitos'),
         for (final o in r.tarefasHoje)
           ItemFoco(
             o.tarefa.titulo,
             o.momento != null && o.horario != null
-                ? 'hoje às ${hora(emSP(o.momento!))} · Tarefas'
-                : 'para hoje · Tarefas',
+                ? 'Hoje às ${hora(emSP(o.momento!))} · Tarefas'
+                : 'Para hoje · Tarefas',
           ),
       ];
 }
 
-class _TituloBloco extends StatelessWidget {
-  const _TituloBloco(this.texto, {this.direita});
-  final String texto;
+/// Bloco da Visão: título, uma linha de explicação e o conteúdo.
+class _Bloco extends StatelessWidget {
+  const _Bloco({required this.titulo, required this.child, this.descricao, this.direita});
+  final String titulo;
+  final String? descricao;
   final String? direita;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(texto, style: sora(17)),
-          const Spacer(),
-          if (direita != null) Text(direita!, style: manrope(13, cor: c.muted)),
-        ],
-      ),
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(titulo, style: sora(18)),
+            if (descricao != null) ...[
+              const SizedBox(height: Espaco.xs),
+              Text(descricao!, style: manrope(13, cor: c.muted)),
+            ],
+          ]),
+        ),
+        if (direita != null) Text(direita!, style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
+      ]),
+      const SizedBox(height: Espaco.md),
+      child,
+    ]);
+  }
+}
+
+/// O que fazer agora: um item por vez, com o botão principal da tela.
+class _CartaoFoco extends StatelessWidget {
+  const _CartaoFoco({required this.itens});
+  final List<ItemFoco> itens;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    final foco = ControleFoco.instancia;
+    return ListenableBuilder(
+      listenable: foco,
+      builder: (context, _) {
+        final item = itens.isEmpty
+            ? const ItemFoco('Tudo em dia', 'Nada pendente para hoje.')
+            : itens[foco.indice % itens.length];
+        return Cartao(
+          padding: const EdgeInsets.all(Espaco.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Icon(Icons.adjust_rounded, size: 16, color: c.accent),
+                const SizedBox(width: Espaco.sm),
+                Text('Em foco agora', style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
+                const Spacer(),
+                if (itens.length > 1)
+                  Text('${foco.indice % itens.length + 1} de ${itens.length}',
+                      style: manrope(12, peso: FontWeight.w600, cor: c.muted)),
+              ]),
+              const SizedBox(height: Espaco.md),
+              Text(item.titulo, style: sora(24, altura: 1.2)),
+              const SizedBox(height: Espaco.xs),
+              Text(item.detalhe, style: manrope(14, cor: c.muted)),
+              const SizedBox(height: Espaco.lg),
+              Wrap(
+                spacing: Espaco.sm + 4,
+                runSpacing: Espaco.sm + 4,
+                children: [
+                  BotaoPilula(texto: foco.rotulo, aoTocar: foco.alternar),
+                  if (itens.length > 1)
+                    BotaoPilula(texto: 'Focar em outra', principal: false, aoTocar: foco.proximo),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -140,64 +210,74 @@ class _LinhaDoDia extends StatelessWidget {
     final c = context.cores;
     if (itens.isEmpty) {
       return Cartao(
-        child: Text('Dia livre: nada marcado para hoje.', style: manrope(14, cor: c.muted)),
+        padding: const EdgeInsets.all(Espaco.lg),
+        child: Row(children: [
+          Icon(Icons.wb_twilight_rounded, color: c.muted),
+          const SizedBox(width: Espaco.md),
+          Expanded(child: Text('Dia livre: nada marcado para hoje.', style: manrope(14, cor: c.muted))),
+        ]),
       );
     }
     return Cartao(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: [
-          for (var i = 0; i < itens.length; i++) ...[
-            if (i > 0) Divider(height: 1, color: c.line),
-            _linha(context, itens[i]),
-          ],
+      padding: const EdgeInsets.symmetric(horizontal: Espaco.md + 4, vertical: Espaco.xs),
+      child: Column(children: [
+        for (var i = 0; i < itens.length; i++) ...[
+          if (i > 0) Divider(height: 1, color: c.line),
+          _linha(context, itens[i]),
         ],
-      ),
+      ]),
     );
   }
 
   Widget _linha(BuildContext context, ItemLinha item) {
     final c = context.cores;
-    final (cor, icone, tipo) = switch (item.tipo) {
-      TipoItemLinha.tarefa => (c.accent, Icons.check_box_outlined, 'Tarefa'),
-      TipoItemLinha.lembrete => (c.violeta, Icons.notifications_none_rounded, 'Lembrete'),
-      TipoItemLinha.conta => (c.warn, Icons.receipt_long_outlined, 'Conta'),
-      TipoItemLinha.habito => (c.teal, Icons.repeat_rounded, 'Hábito'),
+    final (icone, tipo) = switch (item.tipo) {
+      TipoItemLinha.tarefa => (Icons.check_box_outlined, 'Tarefa'),
+      TipoItemLinha.lembrete => (Icons.notifications_none_rounded, 'Lembrete'),
+      TipoItemLinha.conta => (Icons.receipt_long_outlined, 'Conta'),
+      TipoItemLinha.habito => (Icons.repeat_rounded, 'Hábito'),
     };
     final habito = item.habitoId;
     return InkWell(
       onTap: habito == null ? null : () => repo.alternarHabito(habito, !item.feito),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 48,
-              child: Text(item.hora == null ? 'dia' : hora(emSP(item.hora!)),
-                  style: manrope(13, peso: FontWeight.w700, cor: item.hora == null ? c.muted : c.text)),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Row(children: [
+          SizedBox(
+            width: 52,
+            child: Text(item.hora == null ? 'Dia' : hora(emSP(item.hora!)),
+                style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
+          ),
+          // Ícone neutro; só o "feito" ganha cor.
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: item.feito ? c.tealSoft : c.surface2,
+              borderRadius: BorderRadius.circular(10),
             ),
-            Icon(icone, size: 18, color: item.feito ? c.muted : cor),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                item.titulo,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: manrope(14,
-                    peso: FontWeight.w600,
-                    cor: item.feito ? c.muted : (item.atrasado ? c.bad : c.text)),
-              ),
+            child: Icon(item.feito ? Icons.check_rounded : icone, size: 17, color: item.feito ? c.teal : c.muted),
+          ),
+          const SizedBox(width: Espaco.md - 4),
+          Expanded(
+            child: Text(
+              item.titulo,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: manrope(15,
+                  peso: FontWeight.w600,
+                  cor: item.feito ? c.muted : (item.atrasado ? c.bad : c.text)),
             ),
-            const SizedBox(width: 8),
-            Text(item.feito ? 'feito' : tipo, style: manrope(12, cor: item.feito ? c.teal : c.muted)),
-          ],
-        ),
+          ),
+          const SizedBox(width: Espaco.sm),
+          Text(item.feito ? 'Feito' : tipo, style: manrope(12, peso: FontWeight.w500, cor: c.muted)),
+        ]),
       ),
     );
   }
 }
 
-/// Hoje e os próximos 6 dias, com quantos compromissos cada um tem.
+/// Hoje e os próximos 6 dias: barra mais alta = dia mais cheio; hoje em destaque.
 class _Semana extends StatelessWidget {
   const _Semana({required this.dias, required this.aoTocar});
   final List<DiaSemana> dias;
@@ -209,7 +289,7 @@ class _Semana extends StatelessWidget {
     final maior = dias.fold<int>(1, (m, d) => d.total > m ? d.total : m);
     return Cartao(
       aoTocar: aoTocar,
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+      padding: const EdgeInsets.fromLTRB(Espaco.md, Espaco.lg, Espaco.md, Espaco.md + 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -218,27 +298,27 @@ class _Semana extends StatelessWidget {
               child: Column(
                 children: [
                   Text('${dias[i].total}',
-                      style: manrope(12, peso: FontWeight.w700, cor: dias[i].total == 0 ? c.muted : c.text)),
-                  const SizedBox(height: 6),
+                      style: manrope(13, peso: FontWeight.w700, cor: i == 0 ? c.text : c.muted)),
+                  const SizedBox(height: Espaco.sm),
                   Container(
-                    height: 6 + 46 * dias[i].total / maior,
-                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    height: 6 + 56 * dias[i].total / maior,
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
                     decoration: BoxDecoration(
-                      gradient: dias[i].total == 0
-                          ? null
-                          : LinearGradient(
+                      gradient: i == 0 && dias[i].total > 0
+                          ? LinearGradient(
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
                               colors: [c.gradIni, c.gradFim],
-                            ),
-                      color: dias[i].total == 0 ? c.line : null,
-                      borderRadius: BorderRadius.circular(6),
+                            )
+                          : null,
+                      color: i == 0 && dias[i].total > 0 ? null : c.line,
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: Espaco.sm + 2),
                   Text(
-                    i == 0 ? 'hoje' : DateFormat('EEE', 'pt_BR').format(dias[i].dia).replaceAll('.', ''),
-                    style: manrope(11, peso: FontWeight.w700, cor: i == 0 ? c.accent : c.muted),
+                    i == 0 ? 'Hoje' : _primeiraMaiuscula(DateFormat('EEE', 'pt_BR').format(dias[i].dia).replaceAll('.', '')),
+                    style: manrope(12, peso: FontWeight.w600, cor: i == 0 ? c.text : c.muted),
                   ),
                 ],
               ),
@@ -247,6 +327,8 @@ class _Semana extends StatelessWidget {
       ),
     );
   }
+
+  static String _primeiraMaiuscula(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }
 
 class _Insights extends StatelessWidget {
@@ -257,63 +339,30 @@ class _Insights extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     return Cartao(
+      padding: const EdgeInsets.all(Espaco.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (var i = 0; i < frases.length; i++) ...[
-            if (i > 0) const SizedBox(height: 10),
+            if (i > 0) const SizedBox(height: Espaco.md),
             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Icon(Icons.auto_awesome_outlined, size: 16, color: c.violeta),
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(9)),
+                child: Icon(Icons.auto_awesome_outlined, size: 15, color: c.violeta),
               ),
-              const SizedBox(width: 10),
-              Expanded(child: Text(frases[i], style: manrope(14, altura: 1.4))),
+              const SizedBox(width: Espaco.md - 4),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(frases[i], style: manrope(14, altura: 1.5)),
+                ),
+              ),
             ]),
           ],
         ],
       ),
-    );
-  }
-}
-
-class _CartaoFoco extends StatelessWidget {
-  const _CartaoFoco({required this.itens});
-  final List<ItemFoco> itens;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    final foco = ControleFoco.instancia;
-    return ListenableBuilder(
-      listenable: foco,
-      builder: (context, _) {
-        final item = itens.isEmpty
-            ? const ItemFoco('Tudo em dia', 'nada pendente para hoje')
-            : itens[foco.indice % itens.length];
-        return Cartao(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('EM FOCO AGORA', style: rotulo(c.teal)),
-              const SizedBox(height: 14),
-              Text(item.titulo, style: sora(22)),
-              const SizedBox(height: 2),
-              Text(item.detalhe, style: manrope(13, cor: c.muted)),
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  BotaoPilula(texto: foco.rotulo, aoTocar: foco.alternar),
-                  if (itens.length > 1)
-                    BotaoPilula(texto: 'Focar em outra', principal: false, aoTocar: foco.proximo),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
@@ -331,39 +380,40 @@ class _Panorama extends StatelessWidget {
 
     final cartoes = <Widget>[
       _CartaoNumero(
+        icone: Icons.check_box_outlined,
         rotulo: 'Tarefas',
         valor: '${resumo.tarefasAtrasadas}',
-        corValor: resumo.tarefasAtrasadas > 0 ? c.bad : c.text,
+        corValor: resumo.tarefasAtrasadas > 0 ? c.bad : null,
         detalhe: 'atrasadas · ${resumo.tarefasAbertas} abertas',
         aoTocar: () => ir(Secao.tarefas),
       ),
       _CartaoNumero(
+        icone: Icons.repeat_rounded,
         rotulo: 'Hábitos',
         valor: '${resumo.habitosFeitos}/${resumo.habitos.length}',
-        corValor: c.teal,
         detalhe: 'feitos hoje',
         aoTocar: () => ir(Secao.habitos),
       ),
       _CartaoNumero(
+        icone: Icons.account_balance_wallet_outlined,
         rotulo: nomeDoMes(agora),
         valor: reais(resumo.aPagarCentavos),
-        tamanhoValor: 22,
         detalhe: 'a pagar · ${resumo.contasAPagar} ${resumo.contasAPagar == 1 ? 'conta' : 'contas'}',
         aoTocar: () => ir(Secao.financas),
       ),
       if (meta != null)
         _CartaoNumero(
+          icone: Icons.flag_outlined,
           rotulo: meta.nome,
           valor: valorMeta(meta.valorAtual, meta.unidade),
-          tamanhoValor: 22,
           detalhe: _detalheMeta(meta),
           aoTocar: () => ir(Secao.metas),
         ),
     ];
 
     return LayoutBuilder(builder: (context, box) {
-      final colunas = box.maxWidth >= 620 ? 4 : 2;
-      const espaco = 10.0;
+      final colunas = box.maxWidth >= 640 ? cartoes.length.clamp(2, 4) : 2;
+      const espaco = Espaco.md;
       final largura = (box.maxWidth - espaco * (colunas - 1)) / colunas;
       return Wrap(
         spacing: espaco,
@@ -385,39 +435,52 @@ class _Panorama extends StatelessWidget {
 
 class _CartaoNumero extends StatelessWidget {
   const _CartaoNumero({
+    required this.icone,
     required this.rotulo,
     required this.valor,
     required this.detalhe,
     required this.aoTocar,
     this.corValor,
-    this.tamanhoValor = 24,
   });
 
+  final IconData icone;
   final String rotulo;
   final String valor;
   final String detalhe;
   final VoidCallback aoTocar;
   final Color? corValor;
-  final double tamanhoValor;
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
     return Cartao(
-      raio: 16,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(Espaco.md + 4),
       aoTocar: aoTocar,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(rotulo, style: manrope(12, peso: FontWeight.w600, cor: c.muted)),
-          const SizedBox(height: 6),
+          Row(children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(9)),
+              child: Icon(icone, size: 16, color: c.muted),
+            ),
+            const SizedBox(width: Espaco.sm + 2),
+            Expanded(
+              child: Text(rotulo,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
+            ),
+          ]),
+          const SizedBox(height: Espaco.md),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(valor, style: sora(tamanhoValor, cor: corValor ?? c.text)),
+            child: Text(valor, style: sora(24, cor: corValor ?? c.text)),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: Espaco.xs),
           Text(detalhe, style: manrope(12, cor: c.muted), maxLines: 1, overflow: TextOverflow.ellipsis),
         ],
       ),

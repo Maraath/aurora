@@ -55,11 +55,11 @@ class AuroraCores extends ThemeExtension<AuroraCores> {
 
   static const escuro = AuroraCores(
     bg: Color(0xFF080716),
-    surface: Color(0xFF0F0E26),
-    surface2: Color(0xFF18173A),
-    line: Color(0xFF232250),
-    text: Color(0xFFEEF0FB),
-    muted: Color(0xFFA3A6C8),
+    surface: Color(0xFF100F28),
+    surface2: Color(0xFF191838),
+    line: Color(0xFF1F1E46),
+    text: Color(0xFFEDEFF8),
+    muted: Color(0xFF9497BA),
     accent: Color(0xFF5CF0B0),
     accentFill: Color(0xFF3EDB9A),
     accentSoft: Color(0x295CF0B0), // 16%
@@ -74,13 +74,14 @@ class AuroraCores extends ThemeExtension<AuroraCores> {
     badSoft: Color(0x24E77BFF), // 14%
   );
 
+  // Claro "premium": fundo off-white, cartões brancos, texto em slate.
   static const claro = AuroraCores(
-    bg: Color(0xFFF4F3FB),
+    bg: Color(0xFFF9FAFB),
     surface: Color(0xFFFFFFFF),
-    surface2: Color(0xFFE9E8F6),
-    line: Color(0xFFD6D4EA),
-    text: Color(0xFF0D0B26),
-    muted: Color(0xFF55557A),
+    surface2: Color(0xFFF1F5F9),
+    line: Color(0xFFE2E8F0),
+    text: Color(0xFF0F172A),
+    muted: Color(0xFF64748B),
     accent: Color(0xFF0B8A5C),
     accentFill: Color(0xFF0B8A5C),
     accentSoft: Color(0x1A0B8A5C), // 10%
@@ -123,6 +124,23 @@ class AuroraCores extends ThemeExtension<AuroraCores> {
       badSoft: l(badSoft, other.badSoft),
     );
   }
+}
+
+/// Escala de espaçamento: use estes valores em vez de números soltos, para o
+/// respiro ser o mesmo em todas as telas.
+abstract final class Espaco {
+  static const xs = 4.0;
+  static const sm = 8.0;
+  static const md = 16.0;
+  static const lg = 24.0;
+  static const xl = 32.0;
+  static const xxl = 48.0;
+}
+
+/// Raio dos cantos: 12 em controles, 16 em cartões.
+abstract final class Raio {
+  static const controle = 12.0;
+  static const cartao = 16.0;
 }
 
 extension AuroraContexto on BuildContext {
@@ -183,3 +201,13 @@ ThemeData temaAurora(Brightness brilho) {
     dividerColor: c.line,
   );
 }
+
+/// Elevação dos cartões: sombra bem suave e difusa (no escuro, mais funda,
+/// porque sombra clara não aparece sobre o céu noturno).
+List<BoxShadow> sombraCartao(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const [BoxShadow(color: Color(0x4D000000), blurRadius: 24, offset: Offset(0, 8))]
+        : const [
+            BoxShadow(color: Color(0x0A0F172A), blurRadius: 2, offset: Offset(0, 1)),
+            BoxShadow(color: Color(0x0F0F172A), blurRadius: 16, offset: Offset(0, 4)),
+          ];

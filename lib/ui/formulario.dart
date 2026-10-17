@@ -164,14 +164,16 @@ class CampoTexto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    OutlineInputBorder borda(Color cor) => OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: cor, width: 1.5),
+    OutlineInputBorder borda(Color cor, [double largura = 1]) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Raio.controle),
+          borderSide: BorderSide(color: cor, width: largura),
         );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
+        ContornoVivo(
+          erro: erro != null,
+          builder: (passando) => TextField(
           controller: controle,
           autofocus: autofoco,
           onChanged: aoMudar,
@@ -191,11 +193,12 @@ class CampoTexto extends StatelessWidget {
             hintText: dica,
             hintStyle: manrope(16, cor: c.muted),
             filled: true,
-            fillColor: c.bg,
+            fillColor: c.surface,
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            enabledBorder: borda(erro != null ? c.bad : c.line),
-            focusedBorder: borda(erro != null ? c.bad : c.accent),
+            enabledBorder: borda(erro != null ? c.bad : (passando ? c.muted.withValues(alpha: 0.6) : c.line)),
+            focusedBorder: borda(erro != null ? c.bad : c.accent, 1.5),
+          ),
           ),
         ),
         if (erro != null) ...[
@@ -602,5 +605,44 @@ enum OpcaoRepeticao {
       if (r.dias != 0 && r.dias & (r.dias - 1) == 0) return todaSemana; // um dia só
     }
     return personalizada;
+  }
+}
+
+/// Contorno dos campos: avisa quando o mouse passa (para a borda escurecer) e
+/// desenha um halo suave na cor da marca enquanto o campo está em foco.
+class ContornoVivo extends StatefulWidget {
+  const ContornoVivo({super.key, required this.builder, this.erro = false});
+  final Widget Function(bool passando) builder;
+  final bool erro;
+
+  @override
+  State<ContornoVivo> createState() => _ContornoVivoState();
+}
+
+class _ContornoVivoState extends State<ContornoVivo> {
+  bool _passando = false;
+  bool _foco = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    final halo = widget.erro ? c.bad : c.accent;
+    return MouseRegion(
+      onEnter: (_) => setState(() => _passando = true),
+      onExit: (_) => setState(() => _passando = false),
+      child: Focus(
+        skipTraversal: true,
+        canRequestFocus: false,
+        onFocusChange: (f) => setState(() => _foco = f),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Raio.controle),
+            boxShadow: _foco ? [BoxShadow(color: halo.withValues(alpha: 0.16), spreadRadius: 3)] : const [],
+          ),
+          child: widget.builder(_passando),
+        ),
+      ),
+    );
   }
 }
