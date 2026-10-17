@@ -19,8 +19,8 @@ enum _Vista {
 }
 
 class LembretesPage extends StatefulWidget {
-  const LembretesPage({super.key, required this.voltar});
-  final VoidCallback voltar;
+  const LembretesPage({super.key, this.voltar});
+  final VoidCallback? voltar;
 
   @override
   State<LembretesPage> createState() => _LembretesPageState();

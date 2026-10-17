@@ -44,6 +44,23 @@ void main() {
     expect(r.meta?.nome, 'Shape 80kg');
   });
 
+  test('linha do dia, semana e insights', () async {
+    final r = await visao.carregar();
+    // Hábitos de hoje entram na linha, com o id para marcar direto dela.
+    final habitos = r.linha.where((i) => i.tipo == TipoItemLinha.habito).toList();
+    expect(habitos.map((i) => i.titulo), containsAll(['Cardio', 'Estudo']));
+    expect(habitos.every((i) => i.habitoId != null), isTrue);
+    // Itens com hora vêm antes dos sem hora, em ordem.
+    final horas = r.linha.takeWhile((i) => i.hora != null).map((i) => i.hora!).toList();
+    expect(horas, [...horas]..sort());
+    expect(r.linha.skip(horas.length).every((i) => i.hora == null), isTrue);
+
+    expect(r.semana, hasLength(7));
+    expect(r.semana.first.dia, hojeSP());
+    expect(r.insights, isNotEmpty);
+    expect(r.insights.length, lessThanOrEqualTo(3));
+  });
+
   test('semear duas vezes não duplica', () async {
     await semearExemplo(db);
     expect((await visao.carregar()).tarefasAbertas, 6);

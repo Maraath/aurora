@@ -5,22 +5,15 @@ import '../../app.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/banco.dart';
-import '../../data/alimentacao_repo.dart';
 import '../../data/habitos_repo.dart';
-import '../../data/saude_repo.dart';
 import '../calendario.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
-import '../alimentacao/alimentacao_page.dart';
-import '../saude/blocos_saude.dart';
-import '../saude/form_sessao.dart';
-import '../shell.dart';
 import 'form_habito.dart';
 import 'linha_habito.dart';
 
 class HabitosPage extends StatefulWidget {
-  const HabitosPage({super.key, required this.ir});
-  final ValueChanged<Secao> ir;
+  const HabitosPage({super.key});
 
   @override
   State<HabitosPage> createState() => _HabitosPageState();
@@ -29,9 +22,8 @@ class HabitosPage extends StatefulWidget {
 class _HabitosPageState extends State<HabitosPage> {
   HabitosRepo? _repo;
   Stream<QuadroHabitos>? _quadro;
-  Stream<QuadroSaude>? _saude;
-  Stream<DiaAlimentacao>? _alimentacao;
   late DateTime _mes = hojeSP();
+  _Aba _aba = _Aba.hoje;
 
   @override
   void didChangeDependencies() {
@@ -40,8 +32,6 @@ class _HabitosPageState extends State<HabitosPage> {
     if (_repo?.db != db) {
       _repo = HabitosRepo(db);
       _quadro = _repo!.observarQuadro();
-      _saude = SaudeRepo(db).observarQuadro();
-      _alimentacao = AlimentacaoRepo(db).observarDia(hojeSP());
     }
   }
 
@@ -76,7 +66,7 @@ class _HabitosPageState extends State<HabitosPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TituloPagina(
-          'Hábitos e saúde',
+          'Hábitos',
           acao: BotaoRedondo(
             icone: Icons.add_rounded,
             dica: 'Novo hábito',
@@ -84,95 +74,81 @@ class _HabitosPageState extends State<HabitosPage> {
             aoTocar: () => _editar(q),
           ),
         ),
-        const SizedBox(height: 18),
-        _Semana(quadro: q, hoje: hoje),
-        const SizedBox(height: 18),
-        TituloSecao(
-          'Rotina de hoje',
-          direita: Text('$feitosHoje/${deHoje.length}', style: rotulo(c.teal)),
+        const SizedBox(height: 14),
+        Segmentos<_Aba>(
+          opcoes: _Aba.values,
+          selecionado: _aba,
+          rotulo: (a) => a.rotulo,
+          aoEscolher: (a) => setState(() => _aba = a),
         ),
-        if (deHoje.isEmpty)
-          const Vazio('Nenhum hábito para hoje. Toque em + para criar um.'),
-        for (final h in deHoje)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: LinhaHabito(
-              habito: h,
-              feito: q.feito(h.id, hoje),
-              detalhe: detalheHabito(h, sequencia: q.sequencia(h, hoje)),
-              aoAlternar: () => _repo!.alternar(h.id, hoje, !q.feito(h.id, hoje)),
-              aoEditar: () => _editar(q, h),
-            ),
+        const SizedBox(height: 18),
+        if (_aba == _Aba.hoje) ...[
+          _Semana(quadro: q, hoje: hoje),
+          const SizedBox(height: 18),
+          TituloSecao(
+            'Rotina de hoje',
+            direita: Text('$feitosHoje/${deHoje.length}', style: rotulo(c.teal)),
           ),
-        if (outros.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          const TituloSecao('Outros dias'),
-          for (final h in outros)
+          if (deHoje.isEmpty)
+            const Vazio('Nenhum hábito para hoje. Toque em + para criar um.'),
+          for (final h in deHoje)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: LinhaHabito(
                 habito: h,
-                feito: false,
-                detalhe: detalheHabito(h, mostrarDias: true),
-                aoAlternar: null,
+                feito: q.feito(h.id, hoje),
+                detalhe: detalheHabito(h, sequencia: q.sequencia(h, hoje)),
+                aoAlternar: () => _repo!.alternar(h.id, hoje, !q.feito(h.id, hoje)),
                 aoEditar: () => _editar(q, h),
               ),
             ),
-        ],
-        const SizedBox(height: 10),
-        const TituloSecao('Calendário'),
-        Cartao(
-          padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
-          child: CalendarioMes(
-            mes: _mes,
-            hoje: hoje,
-            aoMudarMes: (m) => setState(() => _mes = m),
-            marcador: (d) {
-              if (d.isAfter(hoje)) return null;
-              final p = q.progresso(d);
-              if (p == null) return null;
-              return Ponto(p >= 1 ? c.teal : (p > 0 ? c.warn : (d == hoje ? c.line : c.bad)));
-            },
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Verde-água: tudo feito. Amarelo: parte. Vermelho: nada feito no dia.',
-          style: manrope(12, cor: c.muted, altura: 1.5),
-        ),
-        const SizedBox(height: 18),
-        StreamBuilder<QuadroSaude>(
-          stream: _saude,
-          builder: (context, snap) {
-            final s = snap.data;
-            if (s == null) return const SizedBox(height: 120);
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                CartaoTreinoDoDia(
-                  quadro: s,
-                  hoje: hoje,
-                  aoComecar: (t) => abrirFormSessao(context, t),
-                  aoAbrirFicha: () => widget.ir(Secao.treino),
+          if (outros.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            const TituloSecao('Outros dias'),
+            for (final h in outros)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: LinhaHabito(
+                  habito: h,
+                  feito: false,
+                  detalhe: detalheHabito(h, mostrarDias: true),
+                  aoAlternar: null,
+                  aoEditar: () => _editar(q, h),
                 ),
-                const SizedBox(height: 10),
-                BlocosMedidas(quadro: s, aoTocar: () => widget.ir(Secao.medidas)),
-              ],
-            );
-          },
-        ),
-        const SizedBox(height: 10),
-        StreamBuilder<DiaAlimentacao>(
-          stream: _alimentacao,
-          builder: (context, snap) {
-            final d = snap.data;
-            if (d == null) return const SizedBox(height: 80);
-            return CartaoAlimentacao(dia: d, aoTocar: () => widget.ir(Secao.alimentacao));
-          },
-        ),
+              ),
+          ],
+        ] else ...[
+          Cartao(
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
+            child: CalendarioMes(
+              mes: _mes,
+              hoje: hoje,
+              aoMudarMes: (m) => setState(() => _mes = m),
+              marcador: (d) {
+                if (d.isAfter(hoje)) return null;
+                final p = q.progresso(d);
+                if (p == null) return null;
+                return Ponto(p >= 1 ? c.teal : (p > 0 ? c.warn : (d == hoje ? c.line : c.bad)));
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Turquesa: tudo feito. Amarelo: parte. Magenta: nada feito no dia.',
+            style: manrope(12, cor: c.muted, altura: 1.5),
+          ),
+        ],
       ],
     );
   }
+}
+
+enum _Aba {
+  hoje('Hoje'),
+  calendario('Calendário');
+
+  const _Aba(this.rotulo);
+  final String rotulo;
 }
 
 /// Semana atual (segunda a domingo) com o progresso de cada dia.

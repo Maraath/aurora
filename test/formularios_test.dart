@@ -220,7 +220,7 @@ void main() {
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
       tester.view.devicePixelRatio = 1;
-      for (final pagina in [HabitosPage(ir: (_) {}), const FichaPage(), const MedidasPage()]) {
+      for (final pagina in const [HabitosPage(), FichaPage(), MedidasPage()]) {
         await tester.pumpWidget(AuroraEscopo(
           db: db,
           escuro: ValueNotifier(true),

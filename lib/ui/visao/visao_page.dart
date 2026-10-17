@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../app.dart';
 import '../../core/formato.dart';
@@ -9,9 +10,10 @@ import '../../data/metas_repo.dart';
 import '../../data/visao_repo.dart';
 import '../componentes.dart';
 import '../shell.dart';
-import '../habitos/linha_habito.dart';
 import 'foco.dart';
 
+/// Visão: o dia inteiro numa tela, em cinco blocos fixos: em
+/// foco, linha do dia, semana, painel das áreas e insights.
 class VisaoPage extends StatefulWidget {
   const VisaoPage({super.key, required this.ir});
   final ValueChanged<Secao> ir;
@@ -60,12 +62,11 @@ class _Conteudo extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     final agora = agoraSP();
-    final restantes = resumo.habitos.length - resumo.habitosFeitos;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(dataCabecalho(agora),
+        Text('${dataCabecalho(agora)} · ${hora(agora)}',
             style: manrope(12, peso: FontWeight.w600, cor: c.muted, espaco: 1.4)),
         const SizedBox(height: 4),
         Text(
@@ -74,33 +75,21 @@ class _Conteudo extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         _CartaoFoco(itens: _itensFoco(resumo)),
-        const SizedBox(height: 20),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text('Hoje', style: sora(17)),
-            const Spacer(),
-            Text(
-              restantes == 1 ? '1 hábito restante' : '$restantes hábitos restantes',
-              style: manrope(13, cor: c.muted),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        if (resumo.habitos.isEmpty)
-          Text('Nenhum hábito para hoje.', style: manrope(14, cor: c.muted)),
-        for (final h in resumo.habitos) ...[
-          LinhaHabito(
-            habito: h.habito,
-            feito: h.feito,
-            aoAlternar: () => repo.alternarHabito(h.habito.id, !h.feito),
-          ),
-          const SizedBox(height: 10),
-        ],
-        const SizedBox(height: 10),
-        Text('Panorama', style: sora(17)),
-        const SizedBox(height: 10),
+        const SizedBox(height: 22),
+        _TituloBloco('Linha do dia',
+            direita: '${resumo.linha.where((i) => i.feito).length}/${resumo.linha.length} feitos'),
+        _LinhaDoDia(itens: resumo.linha, repo: repo),
+        const SizedBox(height: 22),
+        const _TituloBloco('Semana'),
+        _Semana(dias: resumo.semana, aoTocar: () => ir(Secao.tarefas)),
+        const SizedBox(height: 22),
+        const _TituloBloco('Painel das áreas'),
         _Panorama(resumo: resumo, ir: ir),
+        if (resumo.insights.isNotEmpty) ...[
+          const SizedBox(height: 22),
+          const _TituloBloco('Insights'),
+          _Insights(frases: resumo.insights),
+        ],
       ],
     );
   }
@@ -116,6 +105,176 @@ class _Conteudo extends StatelessWidget {
                 : 'para hoje · Tarefas',
           ),
       ];
+}
+
+class _TituloBloco extends StatelessWidget {
+  const _TituloBloco(this.texto, {this.direita});
+  final String texto;
+  final String? direita;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(texto, style: sora(17)),
+          const Spacer(),
+          if (direita != null) Text(direita!, style: manrope(13, cor: c.muted)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hoje em ordem de horário: tarefas, lembretes, contas e hábitos.
+class _LinhaDoDia extends StatelessWidget {
+  const _LinhaDoDia({required this.itens, required this.repo});
+  final List<ItemLinha> itens;
+  final VisaoRepo repo;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    if (itens.isEmpty) {
+      return Cartao(
+        child: Text('Dia livre: nada marcado para hoje.', style: manrope(14, cor: c.muted)),
+      );
+    }
+    return Cartao(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        children: [
+          for (var i = 0; i < itens.length; i++) ...[
+            if (i > 0) Divider(height: 1, color: c.line),
+            _linha(context, itens[i]),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _linha(BuildContext context, ItemLinha item) {
+    final c = context.cores;
+    final (cor, icone, tipo) = switch (item.tipo) {
+      TipoItemLinha.tarefa => (c.accent, Icons.check_box_outlined, 'Tarefa'),
+      TipoItemLinha.lembrete => (c.violeta, Icons.notifications_none_rounded, 'Lembrete'),
+      TipoItemLinha.conta => (c.warn, Icons.receipt_long_outlined, 'Conta'),
+      TipoItemLinha.habito => (c.teal, Icons.repeat_rounded, 'Hábito'),
+    };
+    final habito = item.habitoId;
+    return InkWell(
+      onTap: habito == null ? null : () => repo.alternarHabito(habito, !item.feito),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 48,
+              child: Text(item.hora == null ? 'dia' : hora(emSP(item.hora!)),
+                  style: manrope(13, peso: FontWeight.w700, cor: item.hora == null ? c.muted : c.text)),
+            ),
+            Icon(icone, size: 18, color: item.feito ? c.muted : cor),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                item.titulo,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: manrope(14,
+                    peso: FontWeight.w600,
+                    cor: item.feito ? c.muted : (item.atrasado ? c.bad : c.text)),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(item.feito ? 'feito' : tipo, style: manrope(12, cor: item.feito ? c.teal : c.muted)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Hoje e os próximos 6 dias, com quantos compromissos cada um tem.
+class _Semana extends StatelessWidget {
+  const _Semana({required this.dias, required this.aoTocar});
+  final List<DiaSemana> dias;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    final maior = dias.fold<int>(1, (m, d) => d.total > m ? d.total : m);
+    return Cartao(
+      aoTocar: aoTocar,
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (var i = 0; i < dias.length; i++)
+            Expanded(
+              child: Column(
+                children: [
+                  Text('${dias[i].total}',
+                      style: manrope(12, peso: FontWeight.w700, cor: dias[i].total == 0 ? c.muted : c.text)),
+                  const SizedBox(height: 6),
+                  Container(
+                    height: 6 + 46 * dias[i].total / maior,
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    decoration: BoxDecoration(
+                      gradient: dias[i].total == 0
+                          ? null
+                          : LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [c.gradIni, c.gradFim],
+                            ),
+                      color: dias[i].total == 0 ? c.line : null,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    i == 0 ? 'hoje' : DateFormat('EEE', 'pt_BR').format(dias[i].dia).replaceAll('.', ''),
+                    style: manrope(11, peso: FontWeight.w700, cor: i == 0 ? c.accent : c.muted),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Insights extends StatelessWidget {
+  const _Insights({required this.frases});
+  final List<String> frases;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Cartao(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < frases.length; i++) ...[
+            if (i > 0) const SizedBox(height: 10),
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Icon(Icons.auto_awesome_outlined, size: 16, color: c.violeta),
+              ),
+              const SizedBox(width: 10),
+              Expanded(child: Text(frases[i], style: manrope(14, altura: 1.4))),
+            ]),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 class _CartaoFoco extends StatelessWidget {
