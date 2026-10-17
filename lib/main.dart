@@ -8,6 +8,7 @@ import 'app.dart';
 import 'core/notificacoes.dart';
 import 'core/nuvem.dart';
 import 'core/relogio.dart';
+import 'data/alimentacao_repo.dart';
 import 'data/banco.dart';
 import 'data/exemplo.dart';
 import 'data/servico_automacoes.dart';
@@ -32,4 +33,6 @@ Future<void> main() async {
   unawaited(ServicoSync.instancia.iniciar(db));
   // Briefing e outras rotinas no horário (e as que passaram há pouco).
   unawaited(ServicoAutomacoes.instancia.iniciar(db));
+  // Cópias de alimentos da TACO acompanham o catálogo do app.
+  unawaited(AlimentacaoRepo(db).atualizarCopiasTaco());
 }

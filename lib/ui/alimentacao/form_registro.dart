@@ -98,6 +98,64 @@ class _FormRegistroState extends State<_FormRegistro> {
         _quantidade.text = _emPorcoes ? '1' : '100';
       });
 
+  /// + e − nas unidades (meia unidade se descer de 1).
+  void _passo(int delta) => setState(() {
+        final q = lerNumero(_quantidade.text) ?? 0;
+        final novo = delta > 0 ? q.floorToDouble() + 1 : (q > 1 ? q.ceilToDouble() - 1 : 0.5);
+        _quantidade.text = numero(novo);
+        _erro = null;
+      });
+
+  /// Cria ou ajusta a unidade do alimento ("1 maçã" = 150 g). Vale daqui para frente.
+  Future<void> _ajustarUnidade(Alimento a) async {
+    final c = context.cores;
+    final nome = TextEditingController(text: a.porcaoNome ?? '1 unidade');
+    final gramas = TextEditingController(text: a.porcaoGramas == null ? '' : numero(a.porcaoGramas!));
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.surface,
+        title: Text('Peso de uma unidade', style: sora(18)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('${a.nome}. Se puder, pese uma vez; o Aurora usa esse peso daqui para frente.',
+                style: manrope(13, cor: c.muted, altura: 1.4)),
+            const SizedBox(height: 12),
+            CampoTexto(controle: nome, dica: '1 unidade'),
+            const SizedBox(height: 8),
+            Row(children: [
+              SizedBox(width: 100, child: CampoTexto(controle: gramas, dica: 'g', decimal: true, autofoco: true)),
+              const SizedBox(width: 8),
+              Text('gramas cada', style: manrope(13, cor: c.muted)),
+            ]),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Salvar')),
+        ],
+      ),
+    );
+    final g = lerNumero(gramas.text);
+    final n = nome.text.trim().isEmpty ? '1 unidade' : nome.text.trim();
+    nome.dispose();
+    gramas.dispose();
+    if (ok != true || g == null || g <= 0) return;
+    await widget.repo.definirPorcao(a.id, n, g);
+    _alimentos = await widget.repo.listarAlimentos();
+    final atualizado = _alimentos.where((x) => x.id == a.id).firstOrNull;
+    if (atualizado == null || !mounted) return;
+    setState(() {
+      final jaEmUnidades = _emPorcoes;
+      _escolhido = atualizado;
+      _emPorcoes = true;
+      // Já contando unidades: mantém o número; vindo de gramas: começa em 1.
+      if (!jaEmUnidades) _quantidade.text = '1';
+    });
+  }
+
   Future<void> _cadastrar() async {
     final id = await abrirFormAlimento(context, nomeInicial: _busca.text.trim());
     if (id == null) return;
@@ -189,7 +247,7 @@ class _FormRegistroState extends State<_FormRegistro> {
                   Text(fonteTaco, style: manrope(11, cor: c.muted)),
                 ],
                 if (_alimentos.isEmpty && _busca.text.trim().isEmpty)
-                  Text('Busque um alimento: os seus e os ${_taco?.itens.length ?? 591} da TACO.',
+                  Text('Busque um alimento: os seus e os da TACO.',
                       style: manrope(13, cor: c.muted)),
                 Align(
                   alignment: Alignment.centerLeft,
@@ -219,32 +277,72 @@ class _FormRegistroState extends State<_FormRegistro> {
           ),
           Campo(
             rotulo: 'Quantidade',
-            child: Row(children: [
-              SizedBox(
-                width: 100,
-                child: CampoTexto(
-                  controle: _quantidade,
-                  dica: '0',
-                  decimal: true,
-                  aoMudar: (_) => setState(() => _erro = null),
-                ),
-              ),
-              const SizedBox(width: 10),
-              if (a.porcaoGramas != null)
-                Expanded(
-                  child: Segmentos<bool>(
-                    opcoes: const [false, true],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (a.porcaoGramas != null) ...[
+                  Segmentos<bool>(
+                    opcoes: const [true, false],
                     selecionado: _emPorcoes,
-                    rotulo: (p) => p ? '${a.porcaoNome} (${numero(a.porcaoGramas!)} g)' : 'gramas',
+                    rotulo: (p) => p ? 'Unidades' : 'Gramas',
                     aoEscolher: (p) => setState(() {
+                      if (p == _emPorcoes) return;
+                      // Troca mantendo a mesma quantidade comida.
+                      final g = _gramas;
                       _emPorcoes = p;
-                      _quantidade.text = p ? '1' : numero(a.porcaoGramas!);
+                      _quantidade.text = p
+                          ? numero(g == null ? 1 : ((g / a.porcaoGramas!) * 2).round() / 2)
+                          : numero(g ?? a.porcaoGramas!);
                     }),
                   ),
-                )
-              else
-                Text('gramas', style: manrope(13, cor: c.muted)),
-            ]),
+                  const SizedBox(height: 10),
+                ],
+                Row(children: [
+                  if (_emPorcoes)
+                    IconButton.filledTonal(
+                      tooltip: 'Uma a menos',
+                      onPressed: () => _passo(-1),
+                      icon: const Icon(Icons.remove_rounded),
+                    ),
+                  const SizedBox(width: 6),
+                  SizedBox(
+                    width: _emPorcoes ? 70 : 100,
+                    child: CampoTexto(
+                      controle: _quantidade,
+                      dica: '0',
+                      decimal: true,
+                      aoMudar: (_) => setState(() => _erro = null),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  if (_emPorcoes)
+                    IconButton.filledTonal(
+                      tooltip: 'Uma a mais',
+                      onPressed: () => _passo(1),
+                      icon: const Icon(Icons.add_rounded),
+                    ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _emPorcoes ? '× ${a.porcaoNome} (≈ ${numero(a.porcaoGramas!)} g cada)' : 'gramas',
+                      style: manrope(13, cor: c.muted),
+                    ),
+                  ),
+                ]),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => _ajustarUnidade(a),
+                    icon: Icon(a.porcaoGramas == null ? Icons.tag_rounded : Icons.tune_rounded,
+                        size: 18, color: c.accent),
+                    label: Text(
+                      a.porcaoGramas == null ? 'Contar por unidade' : 'Ajustar peso da unidade',
+                      style: manrope(13, peso: FontWeight.w700, cor: c.accent),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           if (n != null)
             Container(

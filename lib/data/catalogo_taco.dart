@@ -17,7 +17,13 @@ class ItemCatalogo {
     required this.proteina,
     required this.carboidrato,
     required this.gordura,
+    this.porcaoNome,
+    this.porcaoGramas,
   });
+
+  /// Unidade com peso médio aproximado ("1 ovo" = 50 g), quando faz sentido.
+  final String? porcaoNome;
+  final double? porcaoGramas;
 
   final int codigo;
   final String nome;
@@ -35,6 +41,8 @@ class ItemCatalogo {
         proteina: (j['p'] as num).toDouble(),
         carboidrato: (j['cb'] as num).toDouble(),
         gordura: (j['l'] as num).toDouble(),
+        porcaoNome: j['u'] as String?,
+        porcaoGramas: (j['ug'] as num?)?.toDouble(),
       );
 }
 

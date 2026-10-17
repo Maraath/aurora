@@ -339,6 +339,10 @@ void main() {
     await tester.tap(find.text('Ovo cozido'));
     await tester.pumpAndSettle();
     expect(find.textContaining('73 kcal'), findsOneWidget); // 1 ovo = 50 g
+    await tester.tap(find.byTooltip('Uma a mais'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('146 kcal'), findsOneWidget); // 2 ovos
+    expect(find.text('Ajustar peso da unidade'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

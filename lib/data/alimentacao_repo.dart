@@ -172,6 +172,8 @@ class AlimentacaoRepo {
             proteina: Value(item.proteina),
             carboidrato: Value(item.carboidrato),
             gordura: Value(item.gordura),
+            porcaoNome: Value(item.porcaoNome),
+            porcaoGramas: Value(item.porcaoGramas),
             origem: const Value('taco'),
           ),
           onConflict: DoUpdate((_) => AlimentosCompanion(
@@ -179,7 +181,50 @@ class AlimentacaoRepo {
                 atualizadoEm: Value(DateTime.now()),
               )),
         );
-    return (db.select(db.alimentos)..where((a) => a.id.equals(id))).getSingle();
+    final a = await (db.select(db.alimentos)..where((a) => a.id.equals(id))).getSingle();
+    // Cópia antiga sem unidade ganha a do catálogo (a ajustada pela pessoa fica).
+    if (a.porcaoGramas == null && item.porcaoGramas != null) {
+      await definirPorcao(a.id, item.porcaoNome!, item.porcaoGramas!);
+      return (db.select(db.alimentos)..where((a) => a.id.equals(id))).getSingle();
+    }
+    return a;
+  }
+
+  /// Unidade do alimento ("1 ovo" = 50 g). Ajustar vale para os próximos registros.
+  Future<void> definirPorcao(String alimentoId, String nome, double gramas) =>
+      (db.update(db.alimentos)..where((a) => a.id.equals(alimentoId))).write(AlimentosCompanion(
+          porcaoNome: Value(nome), porcaoGramas: Value(gramas), atualizadoEm: Value(DateTime.now())));
+
+  /// Versão do catálogo nas cópias: muda quando o catálogo muda de nomes ou
+  /// perde itens (v2: tirados os crus que não se comem, sufixo "cru" removido;
+  /// v3: peso por unidade).
+  static const versaoCatalogo = '3';
+
+  /// Alinha as cópias da TACO na lista da pessoa com o catálogo atual: renomeia
+  /// e tira as que saíram do catálogo. Registros antigos não mudam (guardam
+  /// nome e valores do momento). Roda uma vez por versão do catálogo.
+  Future<void> atualizarCopiasTaco() async {
+    if (await db.preferencia('taco_copias') == versaoCatalogo) return;
+    final catalogo = await _catalogo();
+    final porId = {for (final i in catalogo.itens) idNatural('taco', ['${i.codigo}']): i};
+    final agora = DateTime.now();
+    for (final a in await listarAlimentos()) {
+      if (a.origem != 'taco') continue;
+      final item = porId[a.id];
+      if (item == null) {
+        await (db.update(db.alimentos)..where((x) => x.id.equals(a.id)))
+            .write(AlimentosCompanion(apagadoEm: Value(agora), atualizadoEm: Value(agora)));
+      } else {
+        if (item.nome != a.nome && RegExp(r'\bcru[as]*\b').hasMatch(a.nome)) {
+          await (db.update(db.alimentos)..where((x) => x.id.equals(a.id)))
+              .write(AlimentosCompanion(nome: Value(item.nome), atualizadoEm: Value(agora)));
+        }
+        if (a.porcaoGramas == null && item.porcaoGramas != null) {
+          await definirPorcao(a.id, item.porcaoNome!, item.porcaoGramas!);
+        }
+      }
+    }
+    await db.salvarPreferencia('taco_copias', versaoCatalogo);
   }
 
   /// Nome pedido (ex.: pelo assistente) → alimento. Primeiro na lista da

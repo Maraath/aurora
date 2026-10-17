@@ -117,6 +117,7 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
           _Refeicao(
             refeicao: r,
             registros: d.daRefeicao(r),
+            alimentos: {for (final a in d.alimentos) a.id: a},
             aoAdicionar: () => abrirFormRegistro(context, dia: _dia, alimentos: d.alimentos, refeicao: r),
             aoExcluir: (x) => _excluir(x),
           ),
@@ -156,7 +157,7 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
           aoTocar: () => abrirFormAlimento(context),
         ),
         const SizedBox(height: 10),
-        Text('Ao registrar, a busca inclui os 591 alimentos da $fonteTaco. '
+        Text('Ao registrar, a busca inclui os alimentos da $fonteTaco. '
             'Os que você usa entram em "Meus alimentos" e podem ganhar porção caseira.',
             style: manrope(12, cor: c.muted, altura: 1.4)),
       ],
@@ -255,9 +256,27 @@ class ResumoAlimentacao extends StatelessWidget {
 }
 
 class _Refeicao extends StatelessWidget {
-  const _Refeicao({required this.refeicao, required this.registros, required this.aoAdicionar, required this.aoExcluir});
+  const _Refeicao({
+    required this.refeicao,
+    required this.registros,
+    required this.alimentos,
+    required this.aoAdicionar,
+    required this.aoExcluir,
+  });
   final Refeicao refeicao;
   final List<RegistroAlimentacao> registros;
+  final Map<String, Alimento> alimentos;
+
+  /// "2 × 1 ovo" quando o peso fecha em unidades (ou meias); senão "100 g".
+  String _quantidade(RegistroAlimentacao r) {
+    final a = alimentos[r.alimentoId];
+    final porcao = a?.porcaoGramas;
+    if (porcao != null && porcao > 0) {
+      final n = r.gramas / porcao;
+      if (((n * 2) - (n * 2).round()).abs() < 0.01 && n >= 0.5) return '${numero(n)} × ${a!.porcaoNome}';
+    }
+    return '${_g(r.gramas)} g';
+  }
   final VoidCallback aoAdicionar;
   final ValueChanged<RegistroAlimentacao> aoExcluir;
 
@@ -287,7 +306,7 @@ class _Refeicao extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(0, 6, 8, 6),
                 child: Row(children: [
                   Expanded(child: Text(r.nome, style: manrope(14))),
-                  Text('${_g(r.gramas)} g', style: manrope(12, cor: c.muted)),
+                  Text(_quantidade(r), style: manrope(12, cor: c.muted)),
                   const SizedBox(width: 12),
                   SizedBox(
                     width: 64,

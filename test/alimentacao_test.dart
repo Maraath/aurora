@@ -89,18 +89,74 @@ void main() {
   });
 
   group('catálogo TACO', () {
-    test('591 alimentos, valores conhecidos', () {
-      expect(taco.itens, hasLength(591));
+    test('valores conhecidos', () {
       final frango = taco.porCodigo(410)!;
       expect(frango.nome, 'Frango, peito, sem pele, grelhado');
       expect((frango.kcal, frango.proteina, frango.gordura), (159.0, 32.0, 2.5));
     });
 
+    test('sem crus que não se comem; comidos crus sem o sufixo', () {
+      final nomes = taco.itens.map((i) => i.nome).toSet();
+      expect(taco.itens.where((i) => i.grupo.startsWith('Carnes') && i.nome.contains('cru')), isEmpty);
+      expect(nomes, isNot(contains('Arroz, tipo 1, cru')));
+      expect(nomes, isNot(contains('Feijão, carioca, cru')));
+      expect(nomes, isNot(contains('Ovo, de galinha, inteiro, cru')));
+      expect(nomes, containsAll(['Arroz, tipo 1, cozido', 'Maçã, Fuji, com casca', 'Laranja, pêra', 'Cenoura', 'Noz']));
+      // Só existem crus e se cozinham antes: ficam, avisando que é o peso cru.
+      expect(nomes, contains('Macarrão, trigo, peso cru'));
+      expect(
+          taco.itens.where((i) => RegExp(r'\bcru[as]*\b').hasMatch(i.nome) && !i.nome.endsWith('peso cru')),
+          isEmpty);
+    });
+
     test('busca por palavras, sem acento e sem plural; o mais genérico primeiro', () {
       expect(taco.buscar('ovo cozido').first.nome, startsWith('Ovo, de galinha, inteiro, cozido'));
-      expect(taco.buscar('banana prata').first.nome, 'Banana, prata, crua');
+      expect(taco.buscar('banana prata').first.nome, 'Banana, prata');
       expect(taco.buscar('pães').map((i) => i.nome), contains(startsWith('Pão')));
       expect(taco.buscar('xyzw'), isEmpty);
+    });
+
+    test('alimentos de unidade trazem o peso de uma unidade', () async {
+      final ovo = taco.itens.firstWhere((i) => i.nome.startsWith('Ovo, de galinha, inteiro, cozido'));
+      expect((ovo.porcaoNome, ovo.porcaoGramas), ('1 ovo', 50.0));
+      expect(taco.itens.firstWhere((i) => i.nome == 'Banana, prata').porcaoGramas, 70);
+      expect(taco.itens.firstWhere((i) => i.nome == 'Laranja, pêra, suco').porcaoGramas, isNull);
+      expect(taco.itens.firstWhere((i) => i.nome == 'Arroz, tipo 1, cozido').porcaoGramas, isNull);
+
+      final repoTaco = AlimentacaoRepo(db, catalogo: () async => taco);
+      final copia = await repoTaco.doCatalogo(ovo);
+      expect((copia.porcaoNome, copia.porcaoGramas), ('1 ovo', 50.0));
+
+      // Ajuste da pessoa vale e não é desfeito ao usar de novo.
+      await repoTaco.definirPorcao(copia.id, '1 ovo grande', 60);
+      expect((await repoTaco.doCatalogo(ovo)).porcaoGramas, 60);
+    });
+
+    test('pelo assistente: "comi 2 ovos cozidos" usa a unidade da TACO', () async {
+      final comTaco = AssistenteRepo(db, catalogo: () async => taco);
+      await comTaco.enviar('comi 2 ovos cozidos no café');
+      expect((await comTaco.carregarConversa()).last.texto,
+          startsWith('Anotei 100 g de Ovo, de galinha, inteiro, cozido/10minutos no café da manhã: 146 kcal'));
+    });
+
+    test('cópias antigas acompanham o catálogo: renomeia e tira as que saíram', () async {
+      Future<String> copia(int codigo, String nome) async {
+        final id = idNatural('taco', ['$codigo']);
+        await db.into(db.alimentos).insert(AlimentosCompanion.insert(
+            id: Value(id), nome: nome, kcal: 100, origem: const Value('taco')));
+        return id;
+      }
+
+      final maca = await copia(taco.itens.firstWhere((i) => i.nome == 'Maçã, Fuji, com casca').codigo,
+          'Maçã, Fuji, com casca, crua');
+      final arrozCru = await copia(9999, 'Arroz, tipo 1, cru'); // código fora do catálogo
+      final repoTaco = AlimentacaoRepo(db, catalogo: () async => taco);
+      await repoTaco.atualizarCopiasTaco();
+
+      final lista = {for (final a in await repoTaco.listarAlimentos()) a.id: a};
+      expect(lista[maca]?.nome, 'Maçã, Fuji, com casca');
+      expect(lista[maca]?.porcaoNome, '1 maçã'); // ganhou a unidade
+      expect(lista.containsKey(arrozCru), isFalse);
     });
 
     test('copiar da TACO usa id fixo pelo código e reativa se excluído', () async {
