@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/formato.dart';
+import '../../core/login_google.dart';
 import '../../core/nuvem.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
@@ -69,8 +70,26 @@ class _ContaPageState extends State<ContaPage> {
     }
   }
 
+  Future<void> _google() async {
+    setState(() {
+      _ocupado = true;
+      _erro = null;
+      _aviso = null;
+    });
+    try {
+      await entrarComGoogle();
+    } on LoginCancelado {
+      // A pessoa desistiu: nada a mostrar.
+    } catch (e) {
+      _erro = mensagemDeErro(e);
+    } finally {
+      if (mounted) setState(() => _ocupado = false);
+    }
+  }
+
   Future<void> _sair() async {
     try {
+      await sairDoGoogle();
       await nuvem?.auth.signOut();
     } catch (e) {
       if (mounted) setState(() => _erro = mensagemDeErro(e));
@@ -221,6 +240,17 @@ class _ContaPageState extends State<ContaPage> {
           style: manrope(14, cor: c.text, altura: 1.5),
         ),
         const SizedBox(height: 16),
+        _BotaoGoogle(ocupado: _ocupado, aoTocar: _google),
+        const SizedBox(height: 16),
+        Row(children: [
+          Expanded(child: Divider(color: c.line)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text('ou com e-mail', style: manrope(12, cor: c.muted)),
+          ),
+          Expanded(child: Divider(color: c.line)),
+        ]),
+        const SizedBox(height: 16),
         Segmentos<_Modo>(
           opcoes: _Modo.values,
           selecionado: _modo,
@@ -269,6 +299,34 @@ class _ContaPageState extends State<ContaPage> {
           Text(_erro!, style: manrope(13, peso: FontWeight.w600, cor: c.bad, altura: 1.4)),
         ],
       ],
+    );
+  }
+}
+
+/// Botão "Continuar com Google" (branco, como pede a identidade do Google).
+class _BotaoGoogle extends StatelessWidget {
+  const _BotaoGoogle({required this.ocupado, required this.aoTocar});
+  final bool ocupado;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Material(
+      color: Colors.white,
+      shape: StadiumBorder(side: BorderSide(color: c.line)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: ocupado ? null : aoTocar,
+        child: SizedBox(
+          height: 48,
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text('G', style: sora(20, cor: const Color(0xFF4285F4))),
+            const SizedBox(width: 12),
+            Text('Continuar com Google', style: manrope(15, peso: FontWeight.w700, cor: const Color(0xFF1F1F1F))),
+          ]),
+        ),
+      ),
     );
   }
 }
