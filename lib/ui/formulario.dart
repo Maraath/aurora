@@ -75,16 +75,19 @@ class Folha extends StatelessWidget {
               for (final campo in campos) ...[const SizedBox(height: 16), campo],
               const SizedBox(height: 20),
               Material(
-                color: c.accentFill,
+                color: Colors.transparent,
                 shape: const StadiumBorder(),
                 clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: aoSalvar,
-                  child: Container(
-                    height: 52,
-                    alignment: Alignment.center,
-                    child: Text(textoSalvar,
-                        style: manrope(16, peso: FontWeight.w700, cor: Colors.white)),
+                child: Ink(
+                  decoration: BoxDecoration(gradient: c.gradiente),
+                  child: InkWell(
+                    onTap: aoSalvar,
+                    child: Container(
+                      height: 52,
+                      alignment: Alignment.center,
+                      child: Text(textoSalvar,
+                          style: manrope(16, peso: FontWeight.w700, cor: c.noAccent)),
+                    ),
                   ),
                 ),
               ),
@@ -505,7 +508,7 @@ class SeletorDias extends StatelessWidget {
                       child: Text(_letras[i],
                           style: manrope(13,
                               peso: FontWeight.w700,
-                              cor: dias & (1 << i) != 0 ? Colors.white : c.text)),
+                              cor: dias & (1 << i) != 0 ? c.noAccent : c.text)),
                     ),
                   ),
                 ),

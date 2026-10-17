@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícone adaptável (Android 8+): a arte inteira é o fundo; o aparelho recorta
+     no formato dele (círculo, gota, quadrado). Gerado por tool/icone/gerar.ps1. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@mipmap/ic_launcher_fundo" />
+    <foreground android:drawable="@android:color/transparent" />
+</adaptive-icon>

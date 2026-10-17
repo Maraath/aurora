@@ -304,7 +304,7 @@ class _Balao extends StatelessWidget {
               child: Text(
                 texto,
                 style: manrope(14,
-                        cor: eu ? Colors.white : (desfeita ? c.muted : c.text), altura: 1.45)
+                        cor: eu ? c.noAccent : (desfeita ? c.muted : c.text), altura: 1.45)
                     .copyWith(decoration: desfeita ? TextDecoration.lineThrough : null),
               ),
             ),

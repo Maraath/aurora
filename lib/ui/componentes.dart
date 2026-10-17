@@ -57,22 +57,25 @@ class BotaoPilula extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     return Material(
-      color: principal ? c.accentFill : Colors.transparent,
+      color: Colors.transparent,
       shape: StadiumBorder(
           side: principal ? BorderSide.none : BorderSide(color: c.line)),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: aoTocar,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 44),
-          padding: const EdgeInsets.symmetric(horizontal: 18),
-          child: Center(
-            widthFactor: 1,
-            child: Text(
-              texto,
-              style: manrope(14,
-                  peso: principal ? FontWeight.w700 : FontWeight.w600,
-                  cor: principal ? Colors.white : c.text),
+      child: Ink(
+        decoration: BoxDecoration(gradient: principal ? c.gradiente : null),
+        child: InkWell(
+          onTap: aoTocar,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 44),
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Center(
+              widthFactor: 1,
+              child: Text(
+                texto,
+                style: manrope(14,
+                    peso: principal ? FontWeight.w700 : FontWeight.w600,
+                    cor: principal ? c.noAccent : c.text),
+              ),
             ),
           ),
         ),
@@ -102,7 +105,7 @@ class BotaoRedondo extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     final Color fundo = preenchido ? c.accentFill : (ativo ? c.accentSoft : c.surface);
-    final Color frente = preenchido ? Colors.white : (ativo ? c.accent : c.text);
+    final Color frente = preenchido ? c.noAccent : (ativo ? c.accent : c.text);
     return Tooltip(
       message: dica,
       child: Material(
@@ -338,50 +341,22 @@ class MarcaConcluir extends StatelessWidget {
         color: feito ? c.teal : Colors.transparent,
         border: Border.all(color: feito ? c.teal : c.muted, width: 2),
       ),
-      child: feito ? const Icon(Icons.check_rounded, size: 15, color: Colors.white) : null,
+      child: feito ? Icon(Icons.check_rounded, size: 15, color: c.noAccent) : null,
     );
   }
 }
 
-/// Logo provisória: círculo com dois arcos (do protótipo).
 class LogoAurora extends StatelessWidget {
   const LogoAurora({super.key, this.tamanho = 28});
   final double tamanho;
 
+  /// O mesmo desenho do ícone do app (gerado por tool/icone/gerar.ps1).
   @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    return CustomPaint(
-      size: Size.square(tamanho),
-      painter: _LogoPintor(c.accent, c.teal),
-    );
-  }
-}
-
-class _LogoPintor extends CustomPainter {
-  _LogoPintor(this.azul, this.verde);
-  final Color azul;
-  final Color verde;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.scale(size.width / 28);
-    final traco = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    canvas.drawCircle(const Offset(14, 14), 13, traco..color = azul..strokeWidth = 1.5);
-    final arcoMaior = Path()
-      ..moveTo(5, 17)
-      ..cubicTo(8, 12, 11, 10, 14, 10)
-      ..cubicTo(17, 10, 20, 12, 23, 17);
-    canvas.drawPath(arcoMaior, traco..color = verde..strokeWidth = 2);
-    final arcoMenor = Path()
-      ..moveTo(8, 20)
-      ..cubicTo(10, 17, 12, 16, 14, 16)
-      ..cubicTo(16, 16, 18, 17, 20, 20);
-    canvas.drawPath(arcoMenor, traco..color = azul..strokeWidth = 2);
-  }
-
-  @override
-  bool shouldRepaint(_LogoPintor old) => old.azul != azul || old.verde != verde;
+  Widget build(BuildContext context) => Image.asset(
+        'assets/icone/aurora.png',
+        width: tamanho,
+        height: tamanho,
+        filterQuality: FilterQuality.medium,
+        semanticLabel: 'Aurora',
+      );
 }

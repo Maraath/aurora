@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Tokens de cor do Aurora (ver CLAUDE.md). Acesse com `context.cores`.
+/// Tokens de cor do Aurora: paleta "Aurora completa" (ver CLAUDE.md).
+/// Acesse com `context.cores`.
 @immutable
 class AuroraCores extends ThemeExtension<AuroraCores> {
   const AuroraCores({
@@ -13,6 +14,10 @@ class AuroraCores extends ThemeExtension<AuroraCores> {
     required this.accent,
     required this.accentFill,
     required this.accentSoft,
+    required this.noAccent,
+    required this.gradIni,
+    required this.gradFim,
+    required this.violeta,
     required this.teal,
     required this.tealSoft,
     required this.warn,
@@ -27,46 +32,67 @@ class AuroraCores extends ThemeExtension<AuroraCores> {
   final Color text;
   final Color muted;
   final Color accent;
+
+  /// Preenchimento sólido (marcadores, balões); o botão principal usa [gradiente].
   final Color accentFill;
   final Color accentSoft;
+
+  /// Texto e ícones sobre [accentFill], [gradiente] e [teal].
+  final Color noAccent;
+  final Color gradIni;
+  final Color gradFim;
+
+  /// Nitrogênio da aurora: assistente e destaques secundários.
+  final Color violeta;
   final Color teal;
   final Color tealSoft;
   final Color warn;
   final Color bad;
   final Color badSoft;
 
+  /// Verde → violeta, como a aurora sobe no céu. Só no botão principal.
+  LinearGradient get gradiente => LinearGradient(colors: [gradIni, gradFim]);
+
   static const escuro = AuroraCores(
-    bg: Color(0xFF060B18),
-    surface: Color(0xFF0D1730),
-    surface2: Color(0xFF16264D),
-    line: Color(0xFF1F3160),
-    text: Color(0xFFE9EFFC),
-    muted: Color(0xFF9DACCB),
-    accent: Color(0xFF6B9AF2),
-    accentFill: Color(0xFF2F63D6),
-    accentSoft: Color(0x296B9AF2), // 16%
-    teal: Color(0xFF4FD6C3),
-    tealSoft: Color(0x244FD6C3), // 14%
-    warn: Color(0xFFF2B45A),
-    bad: Color(0xFFF27E8C),
-    badSoft: Color(0x24F27E8C), // 14%
+    bg: Color(0xFF080716),
+    surface: Color(0xFF0F0E26),
+    surface2: Color(0xFF18173A),
+    line: Color(0xFF232250),
+    text: Color(0xFFEEF0FB),
+    muted: Color(0xFFA3A6C8),
+    accent: Color(0xFF5CF0B0),
+    accentFill: Color(0xFF3EDB9A),
+    accentSoft: Color(0x295CF0B0), // 16%
+    noAccent: Color(0xFF06061A),
+    gradIni: Color(0xFF3EDB9A),
+    gradFim: Color(0xFF7E7BFF),
+    violeta: Color(0xFF9D8CFF),
+    teal: Color(0xFF42E3C8),
+    tealSoft: Color(0x2442E3C8), // 14%
+    warn: Color(0xFFF5C35B),
+    bad: Color(0xFFE77BFF),
+    badSoft: Color(0x24E77BFF), // 14%
   );
 
   static const claro = AuroraCores(
-    bg: Color(0xFFF2F5FB),
+    bg: Color(0xFFF4F3FB),
     surface: Color(0xFFFFFFFF),
-    surface2: Color(0xFFE6ECF8),
-    line: Color(0xFFD3DBEC),
-    text: Color(0xFF0A1530),
-    muted: Color(0xFF4A5878),
-    accent: Color(0xFF1E56C8),
-    accentFill: Color(0xFF1E56C8),
-    accentSoft: Color(0x1A1E56C8), // 10%
-    teal: Color(0xFF0B7A6B),
-    tealSoft: Color(0x1A0B7A6B),
+    surface2: Color(0xFFE9E8F6),
+    line: Color(0xFFD6D4EA),
+    text: Color(0xFF0D0B26),
+    muted: Color(0xFF55557A),
+    accent: Color(0xFF0B8A5C),
+    accentFill: Color(0xFF0B8A5C),
+    accentSoft: Color(0x1A0B8A5C), // 10%
+    noAccent: Color(0xFFFFFFFF),
+    gradIni: Color(0xFF0B8A5C),
+    gradFim: Color(0xFF5B45D6),
+    violeta: Color(0xFF5B45D6),
+    teal: Color(0xFF0A7C70),
+    tealSoft: Color(0x1A0A7C70),
     warn: Color(0xFF9A5B06),
-    bad: Color(0xFFB92F44),
-    badSoft: Color(0x1AB92F44),
+    bad: Color(0xFFA8259A),
+    badSoft: Color(0x1AA8259A),
   );
 
   @override
@@ -86,6 +112,10 @@ class AuroraCores extends ThemeExtension<AuroraCores> {
       accent: l(accent, other.accent),
       accentFill: l(accentFill, other.accentFill),
       accentSoft: l(accentSoft, other.accentSoft),
+      noAccent: l(noAccent, other.noAccent),
+      gradIni: l(gradIni, other.gradIni),
+      gradFim: l(gradFim, other.gradFim),
+      violeta: l(violeta, other.violeta),
       teal: l(teal, other.teal),
       tealSoft: l(tealSoft, other.tealSoft),
       warn: l(warn, other.warn),
@@ -137,6 +167,7 @@ ThemeData temaAurora(Brightness brilho) {
       seedColor: c.accentFill,
       brightness: brilho,
       primary: c.accentFill,
+      onPrimary: c.noAccent,
       surface: c.surface,
       onSurface: c.text,
       error: c.bad,
