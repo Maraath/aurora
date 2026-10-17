@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/tema.dart';
 import 'data/banco.dart';
+import 'ui/bloqueio_ui.dart';
 import 'ui/shell.dart';
 
 /// Dá acesso ao banco e ao tema em qualquer tela: `AuroraEscopo.de(context)`.
@@ -53,6 +54,8 @@ class AuroraApp extends StatelessWidget {
           supportedLocales: const [Locale('pt', 'BR')],
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
           home: Shell(primeiraVez: primeiraVez),
+          // O bloqueio cobre tudo, inclusive diálogos abertos.
+          builder: (context, filho) => PortaoBloqueio(db: db, child: filho!),
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../app.dart';
 import '../../core/atualizacao.dart';
 import '../../core/formato.dart';
 import '../../core/login_google.dart';
@@ -10,6 +11,7 @@ import '../../core/tema.dart';
 import '../../data/servico_sync.dart';
 import '../../data/sincronizacao.dart';
 import '../atualizacao_ui.dart';
+import '../bloqueio_ui.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import '../formulario.dart';
@@ -117,6 +119,8 @@ class _ContaPageState extends State<ContaPage> {
               return usuario == null ? _formulario(c) : _logado(c, usuario);
             },
           ),
+        const SizedBox(height: 28),
+        SecaoBloqueio(db: AuroraEscopo.de(context).db),
         const SizedBox(height: 28),
         _Versao(),
       ],

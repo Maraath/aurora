@@ -72,4 +72,6 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     // FileProvider: entrega o APK baixado ao instalador do Android.
     implementation("androidx.core:core:1.13.1")
+    // Tema AppCompat da abertura: exigido pelo local_auth no Android 8 e anteriores.
+    implementation("androidx.appcompat:appcompat:1.7.0")
 }

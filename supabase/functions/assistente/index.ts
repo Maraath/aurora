@@ -10,7 +10,9 @@
 //
 // Fornecedor trocável por segredo: IA_FORNECEDOR = "gemini" (padrão) ou
 // "anthropic". Chaves só em segredos: GEMINI_API_KEY / ANTHROPIC_API_KEY.
-// Limite diário por pessoa: LIMITE_DIARIO (padrão 60).
+// Limite diário por pessoa: LIMITE_DIARIO (padrão 60). Limite diário somando
+// todas as contas: LIMITE_GERAL_DIARIO (padrão 300); e-mails em
+// IA_SEM_LIMITE_GERAL ficam fora dele (o dono).
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -168,6 +170,19 @@ Deno.serve(async (req) => {
   const usados = uso?.pedidos ?? 0;
   if (usados >= limite) {
     return json({ erro: `Você chegou ao limite de ${limite} pedidos à IA hoje. Amanhã libera de novo.` }, 429);
+  }
+
+  // Limite de todas as contas juntas: criar contas novas não esgota a cota da
+  // IA. Quem está em IA_SEM_LIMITE_GERAL (e-mails separados por vírgula) passa.
+  const limiteGeral = Number(Deno.env.get("LIMITE_GERAL_DIARIO") ?? "300");
+  const livres = (Deno.env.get("IA_SEM_LIMITE_GERAL") ?? "")
+    .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  if (!livres.includes((user.email ?? "").toLowerCase())) {
+    const { data: hojeTodos } = await servico.from("uso_ia").select("pedidos").eq("dia", hoje);
+    const total = (hojeTodos ?? []).reduce((s, l) => s + (l.pedidos ?? 0), 0);
+    if (total >= limiteGeral) {
+      return json({ erro: "A IA chegou ao limite do dia para todos. Amanhã libera de novo." }, 429);
+    }
   }
   await servico.from("uso_ia").upsert({ user_id: user.id, dia: hoje, pedidos: usados + 1 });
 
