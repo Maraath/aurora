@@ -4,7 +4,10 @@ import '../../app.dart';
 import '../../core/formato.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
+import '../../data/analise_tarefas.dart';
+import '../../data/banco.dart';
 import '../../data/tarefas_repo.dart';
+import '../barras_dias.dart';
 import '../calendario.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
@@ -15,7 +18,8 @@ enum _Vista {
   agora('Agora'),
   todas('Todas'),
   recorrentes('Recorrentes'),
-  calendario('Calendário');
+  calendario('Calendário'),
+  analise('Análise');
 
   const _Vista(this.rotulo);
   final String rotulo;
@@ -93,6 +97,7 @@ class _TarefasPageState extends State<TarefasPage> {
           _Vista.todas => _todas(q, hoje),
           _Vista.recorrentes => _recorrentes(q, hoje),
           _Vista.calendario => _calendario(q, hoje),
+          _Vista.analise => _analise(q, hoje),
         },
       ],
     );
@@ -164,6 +169,83 @@ class _TarefasPageState extends State<TarefasPage> {
           style: manrope(12, cor: context.cores.muted, altura: 1.5),
         ),
       ];
+
+  static const _diasSemana = ['na segunda', 'na terça', 'na quarta', 'na quinta', 'na sexta', 'no sábado', 'no domingo'];
+
+  List<Widget> _analise(QuadroTarefas q, DateTime hoje) {
+    final c = context.cores;
+    final a = analisarTarefas(q, hoje);
+    final diferenca = a.semana - a.semanaAnterior;
+    final taxa = a.taxaNoPrazo;
+    String plural(int n) => n == 1 ? '1 tarefa' : '$n tarefas';
+    return [
+      Cartao(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Concluídas nos últimos 7 dias', style: manrope(12, peso: FontWeight.w600, cor: c.muted)),
+            const SizedBox(height: 2),
+            Text('${a.semana}', style: sora(30)),
+            Text(
+              diferenca == 0
+                  ? 'o mesmo que nos 7 dias anteriores'
+                  : '${plural(diferenca.abs())} ${diferenca > 0 ? 'a mais' : 'a menos'} que nos 7 dias anteriores',
+              style: manrope(13, peso: FontWeight.w600, cor: diferenca >= 0 ? c.teal : c.warn),
+            ),
+            const SizedBox(height: 16),
+            BarrasDias(
+              valores: [for (final d in a.porDia) d.feitas],
+              rotulos: [for (final d in a.porDia) d.dia == hoje ? 'hoje' : '${d.dia.day}'],
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 18),
+      const TituloSecao('No prazo'),
+      Cartao(
+        child: taxa == null
+            ? Text('Nenhuma tarefa com prazo concluída nos últimos 30 dias.',
+                style: manrope(14, cor: c.muted))
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(children: [
+                    Expanded(
+                      child: Text('${a.noPrazo} de ${a.comPrazo} feitas até o prazo (30 dias)',
+                          style: manrope(14)),
+                    ),
+                    Text('${(taxa * 100).round()}%', style: sora(20, cor: taxa >= 0.7 ? c.teal : c.warn)),
+                  ]),
+                  const SizedBox(height: 10),
+                  BarraProgresso(fracao: taxa, cor: taxa >= 0.7 ? c.teal : c.warn),
+                ],
+              ),
+      ),
+      const SizedBox(height: 18),
+      const TituloSecao('Abertas por prioridade'),
+      LinhaContadores([
+        Contador(
+            valor: '${a.abertasPorPrioridade[Prioridade.alta]}', rotulo: 'alta', cor: c.bad, fundo: c.badSoft),
+        Contador(valor: '${a.abertasPorPrioridade[Prioridade.media]}', rotulo: 'média'),
+        Contador(valor: '${a.abertasPorPrioridade[Prioridade.baixa]}', rotulo: 'baixa'),
+      ]),
+      if (a.melhorDiaSemana != null) ...[
+        const SizedBox(height: 18),
+        Cartao(
+          child: Row(children: [
+            Icon(Icons.auto_awesome_outlined, size: 18, color: c.violeta),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Você conclui mais tarefas ${_diasSemana[a.melhorDiaSemana! - 1]} (últimos 60 dias).',
+                style: manrope(14, altura: 1.4),
+              ),
+            ),
+          ]),
+        ),
+      ],
+    ];
+  }
 
   List<Widget> _calendario(QuadroTarefas q, DateTime hoje) {
     final c = context.cores;

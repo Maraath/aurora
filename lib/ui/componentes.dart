@@ -127,7 +127,8 @@ class BotaoRedondo extends StatelessWidget {
   }
 }
 
-/// Controle segmentado (Próximos | Recorrentes), como no protótipo.
+/// Controle segmentado (Próximos | Recorrentes), como no protótipo. Quando os
+/// rótulos não cabem na largura (muitas abas no celular), rola de lado.
 class Segmentos<T> extends StatelessWidget {
   const Segmentos({
     super.key,
@@ -148,40 +149,56 @@ class Segmentos<T> extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(14)),
-      child: Row(
-        children: [
-          for (final o in opcoes)
-            Expanded(
-              child: Semantics(
-                selected: o == selecionado,
-                button: true,
-                child: Material(
-                  color: o == selecionado ? c.surface : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () => aoEscolher(o),
-                    child: SizedBox(
-                      height: 40,
-                      child: Center(
-                        child: Text(
-                          rotulo(o),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: manrope(13,
-                              peso: FontWeight.w700,
-                              cor: o == selecionado ? c.text : c.muted),
-                        ),
-                      ),
-                    ),
-                  ),
+      child: LayoutBuilder(builder: (context, box) {
+        final larguras = [for (final o in opcoes) _largura(context, rotulo(o)) + 28];
+        final cabe = larguras.fold<double>(0, (s, l) => s + l) <= box.maxWidth;
+        if (cabe) {
+          return Row(children: [for (final o in opcoes) Expanded(child: _opcao(c, o))]);
+        }
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: [
+            for (var i = 0; i < opcoes.length; i++)
+              SizedBox(width: larguras[i], child: _opcao(c, opcoes[i])),
+          ]),
+        );
+      }),
+    );
+  }
+
+  double _largura(BuildContext context, String texto) {
+    final p = TextPainter(
+      text: TextSpan(text: texto, style: manrope(13, peso: FontWeight.w700)),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    return p.width;
+  }
+
+  Widget _opcao(AuroraCores c, T o) => Semantics(
+        selected: o == selecionado,
+        button: true,
+        child: Material(
+          color: o == selecionado ? c.surface : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => aoEscolher(o),
+            child: SizedBox(
+              height: 40,
+              child: Center(
+                child: Text(
+                  rotulo(o),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: manrope(13, peso: FontWeight.w700, cor: o == selecionado ? c.text : c.muted),
                 ),
               ),
             ),
-        ],
-      ),
-    );
-  }
+          ),
+        ),
+      );
 }
 
 /// Contador do topo das telas (atrasadas / abertas / feitas hoje).

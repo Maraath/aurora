@@ -5,7 +5,9 @@ import '../../app.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/banco.dart';
+import '../../data/analise_habitos.dart';
 import '../../data/habitos_repo.dart';
+import '../barras_dias.dart';
 import '../calendario.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
@@ -54,6 +56,77 @@ class _HabitosPageState extends State<HabitosPage> {
         metas: q.metas,
         avisar: h != null && q.comAviso.contains(h.id),
       );
+
+  static const _diasSemana = ['às segundas', 'às terças', 'às quartas', 'às quintas', 'às sextas', 'aos sábados', 'aos domingos'];
+
+  List<Widget> _analise(QuadroHabitos q, DateTime hoje) {
+    final c = context.cores;
+    final a = analisarHabitos(q, hoje);
+    if (q.habitos.isEmpty) return const [Vazio('Crie um hábito para ver a constância aqui.')];
+    final taxa = a.taxa30;
+    return [
+      Cartao(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Constância nos últimos 30 dias', style: manrope(12, peso: FontWeight.w600, cor: c.muted)),
+            const SizedBox(height: 2),
+            Text(taxa == null ? '—' : '${(taxa * 100).round()}%', style: sora(30)),
+            Text('média do que foi feito em cada dia', style: manrope(13, cor: c.muted)),
+            const SizedBox(height: 16),
+            BarrasDias(
+              valores: [for (final d in a.porDia) d.progresso ?? 0],
+              maximo: 1,
+              rotulos: [for (final d in a.porDia) d.dia == hoje ? 'hoje' : '${d.dia.day}'],
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 18),
+      const TituloSecao('Por hábito'),
+      for (final h in a.habitos)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Cartao(
+            raio: 16,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(children: [
+                  Expanded(child: Text(h.habito.nome, style: manrope(15, peso: FontWeight.w600))),
+                  Text(h.devidos == 0 ? '—' : '${(h.taxa * 100).round()}%',
+                      style: manrope(14, peso: FontWeight.w700, cor: h.taxa >= 0.7 ? c.teal : c.text)),
+                ]),
+                Text(
+                  [
+                    '${h.feitos} de ${h.devidos} dias',
+                    if (h.sequencia > 0) 'sequência de ${h.sequencia}',
+                    if (h.melhorSequencia > 1) 'recorde ${h.melhorSequencia}',
+                  ].join(' · '),
+                  style: manrope(12, cor: c.muted),
+                ),
+                const SizedBox(height: 10),
+                BarraProgresso(fracao: h.taxa, cor: c.teal),
+              ],
+            ),
+          ),
+        ),
+      if (a.melhorDiaSemana != null) ...[
+        const SizedBox(height: 10),
+        Cartao(
+          child: Row(children: [
+            Icon(Icons.auto_awesome_outlined, size: 18, color: c.violeta),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text('Seus hábitos rendem mais ${_diasSemana[a.melhorDiaSemana! - 1]} (últimos 60 dias).',
+                  style: manrope(14, altura: 1.4)),
+            ),
+          ]),
+        ),
+      ],
+    ];
+  }
 
   Widget _conteudo(BuildContext context, QuadroHabitos q) {
     final c = context.cores;
@@ -117,6 +190,8 @@ class _HabitosPageState extends State<HabitosPage> {
                 ),
               ),
           ],
+        ] else if (_aba == _Aba.analise) ...[
+          ..._analise(q, hoje),
         ] else ...[
           Cartao(
             padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
@@ -145,7 +220,8 @@ class _HabitosPageState extends State<HabitosPage> {
 
 enum _Aba {
   hoje('Hoje'),
-  calendario('Calendário');
+  calendario('Calendário'),
+  analise('Análise');
 
   const _Aba(this.rotulo);
   final String rotulo;

@@ -159,7 +159,9 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         if (pagina is FinancasPage) {
-          for (final aba in ['Extrato', 'Fixas', 'Contas', 'Resumo']) {
+          for (final aba in ['Extrato', 'Fixas', 'Parceladas', 'Contas', 'Análise', 'Resumo']) {
+            // No celular a barra de abas rola de lado.
+            await tester.ensureVisible(find.text(aba));
             await tester.tap(find.text(aba));
             await tester.pumpAndSettle();
             expect(tester.takeException(), isNull, reason: aba);

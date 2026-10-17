@@ -40,6 +40,14 @@ void main() {
     for (final area in ['Tarefas', 'Hábitos', 'Metas', 'Projetos', 'Finanças', 'Assistente', 'Visão']) {
       await tocar(tester, find.byTooltip(area));
     }
+    // Abas novas (Análise e Parceladas).
+    await tocar(tester, find.byTooltip('Tarefas'));
+    await tocar(tester, find.text('Análise'));
+    await tocar(tester, find.byTooltip('Hábitos'));
+    await tocar(tester, find.text('Análise'));
+    await tocar(tester, find.byTooltip('Finanças'));
+    await tocar(tester, find.text('Parceladas'));
+    await tocar(tester, find.text('Análise'));
     await tocar(tester, find.byTooltip('Saúde'));
     for (final aba in ['Alimentação', 'Medidas', 'Exercícios', 'Treino']) {
       await tocar(tester, find.text(aba));
@@ -56,6 +64,11 @@ void main() {
       await tocar(tester, find.text('Mais'));
       await tocar(tester, find.text(area));
     }
+    // Finanças tem 6 abas: no celular a barra rola de lado até a Análise.
+    await tocar(tester, find.text('Finanças'));
+    await tester.ensureVisible(find.text('Análise'));
+    await tocar(tester, find.text('Análise'));
+    expect(find.text('Gasto no mês'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
 }
