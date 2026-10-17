@@ -151,16 +151,19 @@ class QuadroFinancas {
   late final List<Movimento> movimentos;
   late final List<SaldoConta> saldos;
 
+  /// Movimentos sem conta cadastrada (ou de conta excluída).
+  late final int semContaCentavos;
+
   /// Conta usada quando a transação não diz qual: a primeira que não é cartão.
   String? get contaPrincipalId =>
       contas.where((c) => c.tipo != TipoConta.cartao).firstOrNull?.id ?? contas.firstOrNull?.id;
 
   int get saldoCentavos =>
-      saldos.where((s) => !s.cartao).fold(0, (soma, s) => soma + s.saldoCentavos);
+      saldos.where((s) => !s.cartao).fold(semContaCentavos, (soma, s) => soma + s.saldoCentavos);
   int get faturasCentavos => saldos.fold(0, (soma, s) => soma + s.faturaCentavos);
 
   /// Patrimônio: o que há nas contas menos as faturas em aberto.
-  int get patrimonioCentavos => saldos.fold(0, (soma, s) => soma + s.saldoCentavos);
+  int get patrimonioCentavos => saldos.fold(semContaCentavos, (soma, s) => soma + s.saldoCentavos);
 
   List<Transacao> get recorrentes =>
       transacoes.where((t) => formaDe(t) == FormaTransacao.recorrente).toList()
@@ -199,17 +202,29 @@ class QuadroFinancas {
 
     final principal = contaPrincipalId;
     final soma = {for (final c in contas) c.id: c.saldoInicialCentavos};
+    var semConta = 0;
+    // Sem conta cadastrada (ou com a conta excluída) o valor não some: vai
+    // para "sem conta", que também entra no saldo.
+    void somar(String? conta, int centavos) {
+      if (conta != null && soma.containsKey(conta)) {
+        soma[conta] = soma[conta]! + centavos;
+      } else {
+        semConta += centavos;
+      }
+    }
+
     for (final m in lista) {
       final conta = m.transacao.contaId ?? principal;
       if (m.entrada) {
-        if (conta != null) soma.update(conta, (v) => v + m.valorCentavos, ifAbsent: () => 0);
+        somar(conta, m.valorCentavos);
       } else {
-        if (conta != null) soma.update(conta, (v) => v - m.valorCentavos, ifAbsent: () => 0);
+        somar(conta, -m.valorCentavos);
         final destino = m.transacao.contaDestinoId;
-        if (destino != null) soma.update(destino, (v) => v + m.valorCentavos, ifAbsent: () => 0);
+        if (destino != null) somar(destino, m.valorCentavos);
       }
     }
     saldos = [for (final c in contas) SaldoConta(c, soma[c.id] ?? 0)];
+    semContaCentavos = semConta;
   }
 
   /// Ocorrências de [t] com vencimento entre [de] e [ate] (inclusive).

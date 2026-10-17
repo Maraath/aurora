@@ -608,6 +608,33 @@ class _Contas extends StatelessWidget {
                   : null,
             ),
           ),
+        if (quadro.semContaCentavos != 0)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Cartao(
+              raio: 16,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(12)),
+                  child: Icon(Icons.payments_outlined, size: 20, color: c.muted),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Sem conta', style: manrope(15, peso: FontWeight.w600)),
+                    Text('Lançamentos que não dizem a conta. Cadastre uma conta e escolha nela.',
+                        style: manrope(12, cor: c.muted)),
+                  ]),
+                ),
+                const SizedBox(width: 8),
+                Text(reais(quadro.semContaCentavos),
+                    style: manrope(14, peso: FontWeight.w700, cor: quadro.semContaCentavos < 0 ? c.bad : c.text)),
+              ]),
+            ),
+          ),
         const SizedBox(height: 2),
         CartaoNovo(
           titulo: '+ Nova conta ou cartão',

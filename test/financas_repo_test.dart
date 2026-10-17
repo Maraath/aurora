@@ -185,4 +185,41 @@ void main() {
     expect(q.saldoCentavos, 70318 + 500000);
     expect(q.serie(hoje).last.entrouCentavos, 500000);
   });
+
+  test('sem nenhuma conta cadastrada, a entrada recebida entra no saldo', () async {
+    // App novo: começa vazio, sem conta. (Bug da 1.0.6: o saldo ficava em zero.)
+    final vazio = BancoAurora(NativeDatabase.memory());
+    addTearDown(vazio.close);
+    await vazio.into(vazio.transacoes).insert(TransacoesCompanion.insert(
+          descricao: 'Salário',
+          valorCentavos: 70000,
+          tipo: TipoTransacao.entrada,
+          data: instanteSP(hoje, 9),
+          pagoEm: Value(instanteSP(hoje, 9)),
+        ));
+    final q = await FinancasRepo(vazio).carregar();
+    expect(q.contas, isEmpty);
+    expect(q.mes(hoje).entrouCentavos, 70000);
+    expect(q.semContaCentavos, 70000);
+    expect(q.saldoCentavos, 70000);
+    expect(q.patrimonioCentavos, 70000);
+  });
+
+  test('lançamento numa conta excluída não some do saldo', () async {
+    final conta = await db.into(db.contasFinanceiras).insertReturning(
+        ContasFinanceirasCompanion.insert(nome: 'Antiga', tipo: TipoConta.corrente));
+    await (db.update(db.contasFinanceiras)..where((c) => c.id.equals(conta.id)))
+        .write(ContasFinanceirasCompanion(apagadoEm: Value(DateTime.now())));
+    final antes = await repo.carregar();
+    await db.into(db.transacoes).insert(TransacoesCompanion.insert(
+          descricao: 'Pix recebido',
+          valorCentavos: 5000,
+          tipo: TipoTransacao.entrada,
+          data: instanteSP(hoje, 10),
+          pagoEm: Value(instanteSP(hoje, 10)),
+          contaId: Value(conta.id),
+        ));
+    final depois = await repo.carregar();
+    expect(depois.saldoCentavos, antes.saldoCentavos + 5000);
+  });
 }
