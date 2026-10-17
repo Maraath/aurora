@@ -367,7 +367,7 @@ class _VersaoState extends State<_Versao> {
     return Row(children: [
       Expanded(
         child: Text(
-          _texto ?? (at.versaoAtual.isEmpty ? 'Aurora para Windows' : 'Aurora ${at.versaoAtual}'),
+          _texto ?? (at.versaoAtual.isEmpty ? 'Aurora' : 'Aurora ${at.versaoAtual}'),
           style: manrope(13, cor: c.muted),
         ),
       ),

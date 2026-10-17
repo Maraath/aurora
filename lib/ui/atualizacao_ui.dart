@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../core/atualizacao.dart';
@@ -34,7 +36,7 @@ class _DialogoAtualizacaoState extends State<_DialogoAtualizacao> {
     try {
       await Atualizador.instancia.aplicar(widget.a);
     } catch (e) {
-      if (mounted) setState(() => _erro = 'Não deu para atualizar: $e');
+      if (mounted) setState(() => _erro = e is PermissaoInstalar ? '$e' : 'Não deu para atualizar: $e');
     }
   }
 
@@ -62,7 +64,9 @@ class _DialogoAtualizacaoState extends State<_DialogoAtualizacao> {
             const SizedBox(height: 12),
             Text(
               p == null
-                  ? 'O Aurora fecha, instala a nova versão e abre de novo sozinho. Seus dados continuam aqui.'
+                  ? (Platform.isAndroid
+                      ? 'O Aurora baixa a nova versão e o Android pede para você confirmar a instalação. Seus dados continuam aqui.'
+                      : 'O Aurora fecha, instala a nova versão e abre de novo sozinho. Seus dados continuam aqui.')
                   : 'Baixando… ${(p * 100).round()}%',
               style: manrope(13, cor: c.muted, altura: 1.5),
             ),

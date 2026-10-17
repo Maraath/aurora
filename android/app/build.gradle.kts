@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -31,11 +33,27 @@ android {
         versionName = flutter.versionName
     }
 
+    // Chave de lançamento: fica fora do projeto (C:\src\chaves) e a senha em
+    // android/key.properties, que não vai para o Git. Sem o arquivo, o build
+    // release usa a chave de debug (só para testes).
+    val chave = Properties().apply {
+        val arquivo = rootProject.file("key.properties")
+        if (arquivo.exists()) arquivo.inputStream().use { load(it) }
+    }
+    signingConfigs {
+        if (chave.getProperty("storeFile") != null) {
+            create("lancamento") {
+                storeFile = file(chave.getProperty("storeFile"))
+                storePassword = chave.getProperty("storePassword")
+                keyAlias = chave.getProperty("keyAlias")
+                keyPassword = chave.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("lancamento") ?: signingConfigs.getByName("debug")
         }
     }
 }
@@ -52,4 +70,6 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // FileProvider: entrega o APK baixado ao instalador do Android.
+    implementation("androidx.core:core:1.13.1")
 }

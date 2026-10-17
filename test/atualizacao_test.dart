@@ -21,4 +21,31 @@ void main() {
     expect(novaVersao(json, 2), isNull);
     expect(novaVersao(json, 3), isNull);
   });
+
+  group('Android, um APK por arquitetura', () {
+    final android = {
+      'versao': '1.0.2',
+      'build': 3,
+      'abis': {
+        'arm64-v8a': {'instalador': 'Aurora-1.0.2-arm64-v8a.apk', 'sha256': 'AA'},
+        'x86_64': {'instalador': 'Aurora-1.0.2-x86_64.apk', 'sha256': 'BB'},
+      },
+    };
+
+    test('escolhe a primeira arquitetura do aparelho que foi publicada', () {
+      final a = novaVersao(android, 2, abis: ['x86_64', 'x86', 'arm64-v8a'])!;
+      expect(a.instalador, 'Aurora-1.0.2-x86_64.apk');
+      expect(a.sha256, 'bb');
+      expect(novaVersao(android, 2, abis: ['arm64-v8a', 'armeabi-v7a'])!.instalador, 'Aurora-1.0.2-arm64-v8a.apk');
+    });
+
+    test('ignora o 1000 × arquitetura somado ao versionCode', () {
+      expect(novaVersao(android, 4002, abis: ['x86_64']), isNotNull);
+      expect(novaVersao(android, 4003, abis: ['x86_64']), isNull);
+    });
+
+    test('sem APK para a arquitetura do aparelho, não oferece', () {
+      expect(novaVersao(android, 2, abis: ['armeabi-v7a']), isNull);
+    });
+  });
 }
