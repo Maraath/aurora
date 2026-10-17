@@ -54,15 +54,11 @@ $json = [ordered]@{ versao = $versao; build = $build; notas = $Notas; abis = $ab
 
 if ($SemEnviar) { return }
 
-# O CLI do Storage só aceita caminho relativo. Os APKs vão antes do versao.json.
-foreach ($a in $abis.Values) {
-  npx --yes supabase --experimental storage cp "build\instalador\$($a.instalador)" "ss:///atualizacoes/android/$($a.instalador)" --linked
-  if ($LASTEXITCODE -ne 0) { throw "Envio de $($a.instalador) falhou." }
-}
-$ErrorActionPreference = 'Continue'  # na primeira publicação o versao.json ainda não existe
-npx --yes supabase --experimental storage rm "ss:///atualizacoes/android/versao.json" --linked --yes 2>&1 | Out-Null
-$ErrorActionPreference = 'Stop'
-npx --yes supabase --experimental storage cp build\instalador\versao-android.json "ss:///atualizacoes/android/versao.json" --linked
-if ($LASTEXITCODE -ne 0) { throw 'Envio do versao.json falhou.' }
+# Os APKs vão antes do versao.json. Aurora.apk (arm64, o de quase todo
+# celular) é o link fixo para instalar pela 1ª vez.
+. "$PSScriptRoot\comum.ps1"
+foreach ($a in $abis.Values) { Enviar "build\instalador\$($a.instalador)" "android/$($a.instalador)" }
+Substituir "build\instalador\$($abis['arm64-v8a'].instalador)" 'baixar/Aurora.apk'
+Substituir build\instalador\versao-android.json 'android/versao.json'
 Write-Host "Publicado: Aurora $versao para Android"
-Write-Host "Link para instalar pela primeira vez (celular comum): https://fhmhmdzbujqhkdsfnbtx.supabase.co/storage/v1/object/public/atualizacoes/android/$($abis['arm64-v8a'].instalador)"
+Write-Host "Link fixo para baixar: $UrlBalde/baixar/Aurora.apk"

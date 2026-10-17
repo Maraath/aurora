@@ -30,10 +30,11 @@ class AuroraEscopo extends InheritedWidget {
 }
 
 class AuroraApp extends StatelessWidget {
-  const AuroraApp({super.key, required this.db, required this.escuro});
+  const AuroraApp({super.key, required this.db, required this.escuro, this.primeiraVez = false});
 
   final BancoAurora db;
   final ValueNotifier<bool> escuro;
+  final bool primeiraVez;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +52,7 @@ class AuroraApp extends StatelessWidget {
           locale: const Locale('pt', 'BR'),
           supportedLocales: const [Locale('pt', 'BR')],
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          home: const Shell(),
+          home: Shell(primeiraVez: primeiraVez),
         ),
       ),
     );

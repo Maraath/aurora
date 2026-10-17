@@ -355,7 +355,10 @@ class Preferencias extends Table {
   Preferencias,
 ])
 class BancoAurora extends _$BancoAurora {
-  BancoAurora([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'aurora'));
+  /// `--dart-define=AURORA_BANCO=outro` abre um banco separado (para testar
+  /// um aparelho novo sem mexer nos dados de verdade).
+  BancoAurora([QueryExecutor? executor])
+      : super(executor ?? driftDatabase(name: const String.fromEnvironment('AURORA_BANCO', defaultValue: 'aurora')));
 
   @override
   int get schemaVersion => 9;

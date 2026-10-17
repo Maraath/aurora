@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../app.dart';
 import '../core/tema.dart';
+import '../data/exemplo.dart';
 import 'componentes.dart';
 import 'alimentacao/alimentacao_page.dart';
 import 'atualizacao_ui.dart';
+import 'boas_vindas_page.dart';
 import 'assistente/assistente_page.dart';
 import 'automacoes/automacoes_page.dart';
 import 'conta/conta_page.dart';
@@ -57,7 +59,10 @@ const _itensNav = [
 const larguraDesktop = 840.0;
 
 class Shell extends StatefulWidget {
-  const Shell({super.key});
+  const Shell({super.key, this.primeiraVez = false});
+
+  /// Aparelho novo: mostra as boas-vindas antes de tudo.
+  final bool primeiraVez;
 
   @override
   State<Shell> createState() => _ShellState();
@@ -65,6 +70,18 @@ class Shell extends StatefulWidget {
 
 class _ShellState extends State<Shell> {
   Secao _secao = Secao.visao;
+  late bool _boasVindas = widget.primeiraVez;
+
+  Future<void> _sairDasBoasVindas(String nome, Secao destino) async {
+    final db = AuroraEscopo.de(context).db;
+    if (nome.isNotEmpty) await db.salvarPreferencia('nome', nome);
+    await db.salvarPreferencia(chaveInicio, DateTime.now().toIso8601String());
+    if (!mounted) return;
+    setState(() {
+      _boasVindas = false;
+      _secao = destino;
+    });
+  }
 
   @override
   void initState() {
@@ -104,6 +121,12 @@ class _ShellState extends State<Shell> {
 
   @override
   Widget build(BuildContext context) {
+    if (_boasVindas) {
+      return BoasVindasPage(
+        aoComecar: (nome) => _sairDasBoasVindas(nome, Secao.visao),
+        aoEntrar: () => _sairDasBoasVindas('', Secao.conta),
+      );
+    }
     final c = context.cores;
     final desktop = MediaQuery.sizeOf(context).width >= larguraDesktop;
 

@@ -45,13 +45,11 @@ Write-Host "Instalador: $arquivo ($([math]::Round((Get-Item $arquivo).Length / 1
 
 if ($SemEnviar) { return }
 
-# O CLI do Storage só aceita caminho relativo. O instalador vai antes do
-# versao.json, para nenhum app ver a versão nova sem o arquivo no ar.
-npx --yes supabase --experimental storage cp $arquivo "ss:///atualizacoes/windows/$nome" --linked
-if ($LASTEXITCODE -ne 0) { throw 'Envio do instalador falhou.' }
-$ErrorActionPreference = 'Continue'  # na primeira publicação o versao.json ainda não existe
-npx --yes supabase --experimental storage rm "ss:///atualizacoes/windows/versao.json" --linked --yes 2>&1 | Out-Null
-$ErrorActionPreference = 'Stop'
-npx --yes supabase --experimental storage cp build\instalador\versao.json "ss:///atualizacoes/windows/versao.json" --linked
-if ($LASTEXITCODE -ne 0) { throw 'Envio do versao.json falhou.' }
+# O instalador vai antes do versao.json, para nenhum app ver a versão nova
+# sem o arquivo no ar. Aurora-setup.exe é o link fixo para instalar pela 1ª vez.
+. "$PSScriptRoot\comum.ps1"
+Enviar $arquivo "windows/$nome"
+Substituir $arquivo 'baixar/Aurora-setup.exe'
+Substituir build\instalador\versao.json 'windows/versao.json'
 Write-Host "Publicado: Aurora $versao"
+Write-Host "Link fixo para baixar: $UrlBalde/baixar/Aurora-setup.exe"

@@ -4,8 +4,16 @@ import '../core/relogio.dart';
 import 'banco.dart';
 import 'saude_repo.dart';
 
-/// Preenche o banco com os dados de exemplo do protótipo na primeira abertura.
-/// As datas são relativas a hoje para a tela Visão sempre ter o que mostrar.
+/// Preferência gravada quando a pessoa passa pelas boas-vindas.
+const chaveInicio = 'inicio';
+
+/// Aparelho novo: nunca passou pelas boas-vindas nem recebeu os dados de
+/// exemplo (que só existem nos aparelhos de antes da versão 1.0.3).
+Future<bool> ehPrimeiraVez(BancoAurora db) async =>
+    await db.preferencia(chaveInicio) == null && await db.preferencia('exemplo_semeado') == null;
+
+/// Dados de exemplo do protótipo. O app não os cria mais (cada pessoa começa
+/// vazia); ficam para os testes. As datas são relativas a hoje.
 Future<void> semearExemplo(BancoAurora db) async {
   await _etapa1(db);
   await _etapa2(db);

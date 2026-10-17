@@ -22,10 +22,10 @@ Future<void> main() async {
   await iniciarNuvem();
 
   final db = BancoAurora();
-  await semearExemplo(db);
   final tema = await db.preferencia('tema');
+  final primeiraVez = await ehPrimeiraVez(db);
 
-  runApp(AuroraApp(db: db, escuro: ValueNotifier(tema != 'claro')));
+  runApp(AuroraApp(db: db, escuro: ValueNotifier(tema != 'claro'), primeiraVez: primeiraVez));
 
   // Depois da primeira tela: pede permissão e agenda os avisos.
   unawaited(Notificador.instancia.iniciar(db));
