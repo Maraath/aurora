@@ -49,9 +49,48 @@ void main() {
     await tocar(tester, find.text('Parceladas'));
     await tocar(tester, find.text('Análise'));
     await tocar(tester, find.bySemanticsLabel('Saúde'));
-    for (final aba in ['Alimentação', 'Medidas', 'Exercícios', 'Treino']) {
+    for (final aba in ['Alimentação', 'Treino']) {
       await tocar(tester, find.text(aba));
     }
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('Saúde: Medidas e Exercícios ficam dentro de Treino', (tester) async {
+    await abrirApp(tester, const Size(1280, 860));
+    await tocar(tester, find.bySemanticsLabel('Saúde'));
+    // No topo, só Treino e Alimentação; Treino abre na ficha.
+    expect(find.text('Alimentação'), findsOneWidget);
+    expect(find.text('Ficha de treino'), findsOneWidget);
+    await tocar(tester, find.text('Medidas'));
+    expect(find.text('Ficha de treino'), findsNothing);
+    expect(find.text('Medidas'), findsNWidgets(2)); // a pílula e o título da tela
+    await tocar(tester, find.text('Exercícios'));
+    expect(find.text('Biblioteca de exercícios'), findsOneWidget);
+    // A subseção sobrevive a uma ida até Alimentação.
+    await tocar(tester, find.text('Alimentação'));
+    expect(find.text('Biblioteca de exercícios'), findsNothing);
+    await tocar(tester, find.text('Treino'));
+    expect(find.text('Biblioteca de exercícios'), findsOneWidget);
+    await tocar(tester, find.text('Ficha'));
+    expect(find.text('Ficha de treino'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('celular: Saúde › Treino troca de subseção', (tester) async {
+    await abrirApp(tester, const Size(390, 844));
+    await tocar(tester, find.text('Mais'));
+    await tocar(tester, find.text('Saúde'));
+    // Se as pílulas não couberem na largura, a fileira rola de lado.
+    for (final sub in ['Medidas', 'Exercícios', 'Shape', 'Ficha']) {
+      await tester.ensureVisible(find.text(sub).first);
+      await tocar(tester, find.text(sub));
+    }
+    expect(find.text('Ficha de treino'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('computador: Lembretes e Conta', (tester) async {
+    await abrirApp(tester, const Size(1280, 860));
     await tocar(tester, find.bySemanticsLabel('Lembretes'));
     await tocar(tester, find.text('Automações'));
     await tocar(tester, find.bySemanticsLabel('Conta e sincronização'));

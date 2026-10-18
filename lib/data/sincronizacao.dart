@@ -31,6 +31,7 @@ List<TableInfo<Table, dynamic>> tabelasSincronizadas(BancoAurora db) => [
       db.sessoesTreino,
       db.seriesFeitas,
       db.medidas,
+      db.fotosShape,
       db.alimentos,
       db.alvosDieta,
       db.registrosAlimentacao,
@@ -44,6 +45,7 @@ const _chavesNaturais = {
   'registros_habito': ['habito_id', 'dia'],
   'pagamentos_transacao': ['transacao_id', 'vencimento'],
   'medidas': ['dia', 'tipo'],
+  'fotos_shape': ['dia', 'angulo'],
   'alvos_dieta': ['tipo_dia'],
 };
 

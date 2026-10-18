@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/nuvem.dart';
 import 'banco.dart';
+import 'fotos_sync.dart';
+import 'shape_repo.dart';
 import 'sincronizacao.dart';
 
 /// O servidor de verdade: as tabelas do Supabase, protegidas por RLS.
@@ -106,6 +108,19 @@ class ServicoSync {
     return Sincronizador(db, RemotoSupabase(cliente), usuarioId: usuario.id);
   }
 
+  /// Imagens do Shape, depois das linhas. Uma falha aqui não derruba o resto:
+  /// tenta de novo na próxima rodada.
+  Future<void> _sincronizarFotos(Sincronizador s) async {
+    final cliente = nuvem;
+    if (cliente == null) return;
+    try {
+      final r = await SincronizadorFotos(ShapeRepo(s.db), ArmazemSupabase(cliente, s.usuarioId)).sincronizar();
+      if (r.enviadas + r.baixadas > 0) debugPrint('Shape: ${r.enviadas} fotos enviadas, ${r.baixadas} baixadas');
+    } catch (e) {
+      debugPrint('Shape: sincronização das fotos falhou: $e');
+    }
+  }
+
   Future<void> sincronizar() => _executar((s) => s.sincronizar());
 
   /// Resposta da pessoa na primeira sincronização com dados dos dois lados.
@@ -123,6 +138,7 @@ class ServicoSync {
     try {
       final r = await acao(s);
       debugPrint('Sincronização: ${r.enviadas} enviadas, ${r.recebidas} recebidas');
+      await _sincronizarFotos(s);
       estado.value = EstadoSync(FaseSync.ocioso, ultima: DateTime.now());
     } on PrecisaEscolher {
       estado.value = EstadoSync(FaseSync.escolher, ultima: estado.value.ultima);

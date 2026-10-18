@@ -7,6 +7,7 @@ import 'componentes.dart';
 import 'alimentacao/alimentacao_page.dart';
 import 'atualizacao_ui.dart';
 import 'boas_vindas_page.dart';
+import 'ceu_estrelado.dart';
 import 'assistente/assistente_page.dart';
 import 'automacoes/automacoes_page.dart';
 import 'conta/conta_page.dart';
@@ -17,9 +18,7 @@ import 'mais_page.dart';
 import 'menu_dock.dart';
 import 'metas/metas_page.dart';
 import 'projetos/projetos_page.dart';
-import 'saude/biblioteca_ui.dart';
-import 'saude/ficha_page.dart';
-import 'saude/medidas_page.dart';
+import 'saude/treino_page.dart';
 import 'tarefas/tarefas_page.dart';
 import 'visao/visao_page.dart';
 
@@ -79,8 +78,9 @@ const _itemConta = _ItemNav(Secao.conta, 'Conta e sincronização', Icons.person
 /// A partir desta largura a barra de navegação vai para a lateral.
 const larguraDesktop = 840.0;
 
-/// Abas das áreas que juntam várias telas.
-const abasSaude = ['Treino', 'Alimentação', 'Medidas', 'Exercícios'];
+/// Abas das áreas que juntam várias telas. Medidas e Exercícios ficam dentro
+/// de Treino (ver TreinoPage).
+const abasSaude = ['Treino', 'Alimentação'];
 const abasLembretes = ['Lembretes', 'Automações'];
 
 class Shell extends StatefulWidget {
@@ -96,6 +96,7 @@ class Shell extends StatefulWidget {
 class _ShellState extends State<Shell> {
   Secao _secao = Secao.visao;
   int _abaSaude = 0;
+  SubTreino _subTreino = SubTreino.ficha;
   int _abaLembretes = 0;
   late bool _boasVindas = widget.primeiraVez;
 
@@ -138,12 +139,12 @@ class _ShellState extends State<Shell> {
             atual: _abaSaude,
             aoEscolher: (i) => setState(() => _abaSaude = i),
             voltar: _voltar(desktop),
-            child: switch (_abaSaude) {
-              0 => const FichaPage(),
-              1 => const AlimentacaoPage(),
-              2 => const MedidasPage(),
-              _ => const BibliotecaPage(),
-            },
+            child: _abaSaude == 0
+                ? TreinoPage(
+                    sub: _subTreino,
+                    aoEscolher: (s) => setState(() => _subTreino = s),
+                  )
+                : const AlimentacaoPage(),
           ),
         Secao.lembretes => AbasArea(
             abas: abasLembretes,
@@ -222,13 +223,13 @@ class _ShellState extends State<Shell> {
           children: [
             _BarraLateral(atual: _secaoDaBarra(true), ir: _ir),
             VerticalDivider(width: 1, thickness: 1, color: c.line),
-            Expanded(child: conteudo),
+            Expanded(child: CeuEstrelado(child: conteudo)),
           ],
         ),
       );
     }
     return Scaffold(
-      body: conteudo,
+      body: CeuEstrelado(child: conteudo),
       bottomNavigationBar: _BarraInferior(atual: _secaoDaBarra(false), ir: _ir),
     );
   }

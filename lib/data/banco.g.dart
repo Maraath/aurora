@@ -9475,6 +9475,461 @@ class MedidasCompanion extends UpdateCompanion<Medida> {
   }
 }
 
+class $FotosShapeTable extends FotosShape
+    with TableInfo<$FotosShapeTable, FotoShape> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FotosShapeTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _diaMeta = const VerificationMeta('dia');
+  @override
+  late final GeneratedColumn<String> dia = GeneratedColumn<String>(
+    'dia',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _anguloMeta = const VerificationMeta('angulo');
+  @override
+  late final GeneratedColumn<String> angulo = GeneratedColumn<String>(
+    'angulo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _arquivoMeta = const VerificationMeta(
+    'arquivo',
+  );
+  @override
+  late final GeneratedColumn<String> arquivo = GeneratedColumn<String>(
+    'arquivo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    dia,
+    angulo,
+    arquivo,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fotos_shape';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FotoShape> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('dia')) {
+      context.handle(
+        _diaMeta,
+        dia.isAcceptableOrUnknown(data['dia']!, _diaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_diaMeta);
+    }
+    if (data.containsKey('angulo')) {
+      context.handle(
+        _anguloMeta,
+        angulo.isAcceptableOrUnknown(data['angulo']!, _anguloMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_anguloMeta);
+    }
+    if (data.containsKey('arquivo')) {
+      context.handle(
+        _arquivoMeta,
+        arquivo.isAcceptableOrUnknown(data['arquivo']!, _arquivoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_arquivoMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FotoShape map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FotoShape(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      dia: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dia'],
+      )!,
+      angulo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}angulo'],
+      )!,
+      arquivo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}arquivo'],
+      )!,
+    );
+  }
+
+  @override
+  $FotosShapeTable createAlias(String alias) {
+    return $FotosShapeTable(attachedDatabase, alias);
+  }
+}
+
+class FotoShape extends DataClass implements Insertable<FotoShape> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+
+  /// "aaaa-mm-dd" no fuso de São Paulo.
+  final String dia;
+  final String angulo;
+  final String arquivo;
+  const FotoShape({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.dia,
+    required this.angulo,
+    required this.arquivo,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['dia'] = Variable<String>(dia);
+    map['angulo'] = Variable<String>(angulo);
+    map['arquivo'] = Variable<String>(arquivo);
+    return map;
+  }
+
+  FotosShapeCompanion toCompanion(bool nullToAbsent) {
+    return FotosShapeCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      dia: Value(dia),
+      angulo: Value(angulo),
+      arquivo: Value(arquivo),
+    );
+  }
+
+  factory FotoShape.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FotoShape(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      dia: serializer.fromJson<String>(json['dia']),
+      angulo: serializer.fromJson<String>(json['angulo']),
+      arquivo: serializer.fromJson<String>(json['arquivo']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'dia': serializer.toJson<String>(dia),
+      'angulo': serializer.toJson<String>(angulo),
+      'arquivo': serializer.toJson<String>(arquivo),
+    };
+  }
+
+  FotoShape copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? dia,
+    String? angulo,
+    String? arquivo,
+  }) => FotoShape(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    dia: dia ?? this.dia,
+    angulo: angulo ?? this.angulo,
+    arquivo: arquivo ?? this.arquivo,
+  );
+  FotoShape copyWithCompanion(FotosShapeCompanion data) {
+    return FotoShape(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      dia: data.dia.present ? data.dia.value : this.dia,
+      angulo: data.angulo.present ? data.angulo.value : this.angulo,
+      arquivo: data.arquivo.present ? data.arquivo.value : this.arquivo,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FotoShape(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('dia: $dia, ')
+          ..write('angulo: $angulo, ')
+          ..write('arquivo: $arquivo')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, criadoEm, atualizadoEm, apagadoEm, dia, angulo, arquivo);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FotoShape &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.dia == this.dia &&
+          other.angulo == this.angulo &&
+          other.arquivo == this.arquivo);
+}
+
+class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> dia;
+  final Value<String> angulo;
+  final Value<String> arquivo;
+  final Value<int> rowid;
+  const FotosShapeCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.dia = const Value.absent(),
+    this.angulo = const Value.absent(),
+    this.arquivo = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FotosShapeCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String dia,
+    required String angulo,
+    required String arquivo,
+    this.rowid = const Value.absent(),
+  }) : dia = Value(dia),
+       angulo = Value(angulo),
+       arquivo = Value(arquivo);
+  static Insertable<FotoShape> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? dia,
+    Expression<String>? angulo,
+    Expression<String>? arquivo,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (dia != null) 'dia': dia,
+      if (angulo != null) 'angulo': angulo,
+      if (arquivo != null) 'arquivo': arquivo,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FotosShapeCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? dia,
+    Value<String>? angulo,
+    Value<String>? arquivo,
+    Value<int>? rowid,
+  }) {
+    return FotosShapeCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      dia: dia ?? this.dia,
+      angulo: angulo ?? this.angulo,
+      arquivo: arquivo ?? this.arquivo,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (dia.present) {
+      map['dia'] = Variable<String>(dia.value);
+    }
+    if (angulo.present) {
+      map['angulo'] = Variable<String>(angulo.value);
+    }
+    if (arquivo.present) {
+      map['arquivo'] = Variable<String>(arquivo.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FotosShapeCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('dia: $dia, ')
+          ..write('angulo: $angulo, ')
+          ..write('arquivo: $arquivo, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $AlimentosTable extends Alimentos
     with TableInfo<$AlimentosTable, Alimento> {
   @override
@@ -13005,6 +13460,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   late final $SessoesTreinoTable sessoesTreino = $SessoesTreinoTable(this);
   late final $SeriesFeitasTable seriesFeitas = $SeriesFeitasTable(this);
   late final $MedidasTable medidas = $MedidasTable(this);
+  late final $FotosShapeTable fotosShape = $FotosShapeTable(this);
   late final $AlimentosTable alimentos = $AlimentosTable(this);
   late final $AlvosDietaTable alvosDieta = $AlvosDietaTable(this);
   late final $RegistrosAlimentacaoTable registrosAlimentacao =
@@ -13029,6 +13485,10 @@ abstract class _$BancoAurora extends GeneratedDatabase {
     'medida_dia_tipo',
     'CREATE UNIQUE INDEX medida_dia_tipo ON medidas (dia, tipo)',
   );
+  late final Index fotoShapeDiaAngulo = Index(
+    'foto_shape_dia_angulo',
+    'CREATE UNIQUE INDEX foto_shape_dia_angulo ON fotos_shape (dia, angulo)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -13050,6 +13510,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
     sessoesTreino,
     seriesFeitas,
     medidas,
+    fotosShape,
     alimentos,
     alvosDieta,
     registrosAlimentacao,
@@ -13060,6 +13521,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
     registroHabitoDia,
     pagamentoTransacaoVenc,
     medidaDiaTipo,
+    fotoShapeDiaAngulo,
   ];
 }
 
@@ -20620,6 +21082,250 @@ typedef $$MedidasTableProcessedTableManager =
       Medida,
       PrefetchHooks Function()
     >;
+typedef $$FotosShapeTableCreateCompanionBuilder = FotosShapeCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  required String dia,
+  required String angulo,
+  required String arquivo,
+  Value<int> rowid,
+});
+typedef $$FotosShapeTableUpdateCompanionBuilder = FotosShapeCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String> dia,
+  Value<String> angulo,
+  Value<String> arquivo,
+  Value<int> rowid,
+});
+
+class $$FotosShapeTableFilterComposer
+    extends Composer<_$BancoAurora, $FotosShapeTable> {
+  $$FotosShapeTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get angulo => $composableBuilder(
+    column: $table.angulo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get arquivo => $composableBuilder(
+    column: $table.arquivo,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FotosShapeTableOrderingComposer
+    extends Composer<_$BancoAurora, $FotosShapeTable> {
+  $$FotosShapeTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dia => $composableBuilder(
+    column: $table.dia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get angulo => $composableBuilder(
+    column: $table.angulo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get arquivo => $composableBuilder(
+    column: $table.arquivo,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FotosShapeTableAnnotationComposer
+    extends Composer<_$BancoAurora, $FotosShapeTable> {
+  $$FotosShapeTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get dia =>
+      $composableBuilder(column: $table.dia, builder: (column) => column);
+
+  GeneratedColumn<String> get angulo =>
+      $composableBuilder(column: $table.angulo, builder: (column) => column);
+
+  GeneratedColumn<String> get arquivo =>
+      $composableBuilder(column: $table.arquivo, builder: (column) => column);
+}
+
+class $$FotosShapeTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $FotosShapeTable,
+          FotoShape,
+          $$FotosShapeTableFilterComposer,
+          $$FotosShapeTableOrderingComposer,
+          $$FotosShapeTableAnnotationComposer,
+          $$FotosShapeTableCreateCompanionBuilder,
+          $$FotosShapeTableUpdateCompanionBuilder,
+          (
+            FotoShape,
+            BaseReferences<_$BancoAurora, $FotosShapeTable, FotoShape>,
+          ),
+          FotoShape,
+          PrefetchHooks Function()
+        > {
+  $$FotosShapeTableTableManager(_$BancoAurora db, $FotosShapeTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FotosShapeTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FotosShapeTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FotosShapeTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> dia = const Value.absent(),
+                Value<String> angulo = const Value.absent(),
+                Value<String> arquivo = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FotosShapeCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                dia: dia,
+                angulo: angulo,
+                arquivo: arquivo,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String dia,
+                required String angulo,
+                required String arquivo,
+                Value<int> rowid = const Value.absent(),
+              }) => FotosShapeCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                dia: dia,
+                angulo: angulo,
+                arquivo: arquivo,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FotosShapeTable, FotoShape>(table),
+                  BaseReferences<_$BancoAurora, $FotosShapeTable, FotoShape>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FotosShapeTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $FotosShapeTable,
+      FotoShape,
+      $$FotosShapeTableFilterComposer,
+      $$FotosShapeTableOrderingComposer,
+      $$FotosShapeTableAnnotationComposer,
+      $$FotosShapeTableCreateCompanionBuilder,
+      $$FotosShapeTableUpdateCompanionBuilder,
+      (FotoShape, BaseReferences<_$BancoAurora, $FotosShapeTable, FotoShape>),
+      FotoShape,
+      PrefetchHooks Function()
+    >;
 typedef $$AlimentosTableCreateCompanionBuilder = AlimentosCompanion Function({
   Value<String> id,
   Value<DateTime> criadoEm,
@@ -22676,6 +23382,8 @@ class $BancoAuroraManager {
       $$SeriesFeitasTableTableManager(_db, _db.seriesFeitas);
   $$MedidasTableTableManager get medidas =>
       $$MedidasTableTableManager(_db, _db.medidas);
+  $$FotosShapeTableTableManager get fotosShape =>
+      $$FotosShapeTableTableManager(_db, _db.fotosShape);
   $$AlimentosTableTableManager get alimentos =>
       $$AlimentosTableTableManager(_db, _db.alimentos);
   $$AlvosDietaTableTableManager get alvosDieta =>

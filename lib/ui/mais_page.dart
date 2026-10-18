@@ -23,7 +23,7 @@ class MaisPage extends StatelessWidget {
           fundo: c.accentSoft,
           frente: c.accent,
           titulo: 'Saúde',
-          detalhe: 'Treino, alimentação, medidas e exercícios',
+          detalhe: 'Treino (com medidas e exercícios) e alimentação',
           aoTocar: () => ir(Secao.saude),
         ),
         const SizedBox(height: 10),

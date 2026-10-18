@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../core/bloqueio.dart';
 import '../core/tema.dart';
 import '../data/banco.dart';
+import 'ceu_estrelado.dart';
 import 'componentes.dart';
 
 /// Cobre o app com a tela de bloqueio ao abrir e ao voltar depois de
@@ -128,7 +129,8 @@ class _TelaBloqueioState extends State<TelaBloqueio> {
     final c = context.cores;
     return Material(
       color: c.bg,
-      child: SafeArea(
+      child: CeuEstrelado(
+        child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -164,6 +166,7 @@ class _TelaBloqueioState extends State<TelaBloqueio> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

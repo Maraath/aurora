@@ -242,6 +242,19 @@ class Medidas extends Table with Sincronizavel {
   TextColumn get unidade => text()();
 }
 
+/// Foto do check-in de shape: uma por dia e ângulo ('frente', 'costas',
+/// 'lado'). Id natural. A imagem fica num arquivo do aparelho
+/// (`<suporte>/shape/<arquivo>`) e no balde PRIVADO "shape" do Supabase, em
+/// `<user_id>/<arquivo>`; trocar a foto gera outro [arquivo].
+@DataClassName('FotoShape')
+@TableIndex(name: 'foto_shape_dia_angulo', columns: {#dia, #angulo}, unique: true)
+class FotosShape extends Table with Sincronizavel {
+  /// "aaaa-mm-dd" no fuso de São Paulo.
+  TextColumn get dia => text()();
+  TextColumn get angulo => text()();
+  TextColumn get arquivo => text()();
+}
+
 /// Alimento com valores por 100 g. [origem] 'pessoal' (cadastrado pela
 /// pessoa); no futuro, 'catalogo' para uma tabela importada (ex.: TACO).
 class Alimentos extends Table with Sincronizavel {
@@ -347,6 +360,7 @@ class Preferencias extends Table {
   SessoesTreino,
   SeriesFeitas,
   Medidas,
+  FotosShape,
   Alimentos,
   AlvosDieta,
   RegistrosAlimentacao,
@@ -361,7 +375,7 @@ class BancoAurora extends _$BancoAurora {
       : super(executor ?? driftDatabase(name: const String.fromEnvironment('AURORA_BANCO', defaultValue: 'aurora')));
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -401,6 +415,10 @@ class BancoAurora extends _$BancoAurora {
             await m.createTable(registrosAlimentacao);
           }
           if (de < 9) await m.createTable(automacoes);
+          if (de < 10) {
+            await m.createTable(fotosShape);
+            await m.createIndex(fotoShapeDiaAngulo);
+          }
         },
         beforeOpen: (detalhes) async {
           await customStatement('PRAGMA foreign_keys = ON');

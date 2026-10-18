@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/tema.dart';
+import 'ceu_estrelado.dart';
 import 'componentes.dart';
 import 'formulario.dart';
 
@@ -31,7 +32,8 @@ class _BoasVindasPageState extends State<BoasVindasPage> {
   Widget build(BuildContext context) {
     final c = context.cores;
     return Scaffold(
-      body: SafeArea(
+      body: CeuEstrelado(
+        child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -78,6 +80,7 @@ class _BoasVindasPageState extends State<BoasVindasPage> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
