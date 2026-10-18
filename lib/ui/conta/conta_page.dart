@@ -97,7 +97,7 @@ class _ContaPageState extends State<ContaPage> {
     });
   }
 
-  /// Quando o e-mail traz um código de 6 números (com serviço de e-mail próprio
+  /// Quando o e-mail traz um código numérico (com serviço de e-mail próprio
   /// o modelo mostra `{{ .Token }}`), confirma por ele e já entra.
   Future<void> _verificarCodigo() async {
     final cliente = nuvem, email = _verificando;
@@ -412,7 +412,7 @@ class _ContaPageState extends State<ContaPage> {
           Text(_erro!, style: manrope(13, peso: FontWeight.w600, cor: c.bad, altura: 1.4)),
         ],
         const SizedBox(height: 22),
-        Text('O e-mail trouxe um código de 6 números?', style: manrope(13, peso: FontWeight.w700)),
+        Text('O e-mail trouxe um código numérico?', style: manrope(13, peso: FontWeight.w700)),
         const SizedBox(height: 8),
         Row(children: [
           Expanded(

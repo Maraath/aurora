@@ -82,6 +82,12 @@ String mensagemDeErro(Object e) {
     }
     if (m.contains('already registered')) return 'Já existe uma conta com esse e-mail. Use Entrar.';
     if (m.contains('password should be')) return 'A senha precisa ter pelo menos 6 caracteres.';
+    // Limite de envio de e-mails do projeto inteiro (não é culpa de quem tenta):
+    // com o serviço de e-mail padrão do Supabase são poucos por hora.
+    if (e.code == 'over_email_send_rate_limit' || m.contains('email rate limit')) {
+      return 'O Aurora mandou e-mails demais nesta hora e o envio pausou. Tente de novo mais tarde '
+          'ou entre com o Google.';
+    }
     if (m.contains('rate limit')) return 'Muitas tentativas. Espere um pouco e tente de novo.';
     if (m.contains('invalid') && m.contains('email')) return 'Esse e-mail não parece válido.';
     return e.message;
