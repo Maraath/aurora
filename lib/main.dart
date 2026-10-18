@@ -13,6 +13,7 @@ import 'data/banco.dart';
 import 'data/exemplo.dart';
 import 'data/servico_automacoes.dart';
 import 'data/servico_sync.dart';
+import 'data/shape_repo.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,4 +36,6 @@ Future<void> main() async {
   unawaited(ServicoAutomacoes.instancia.iniciar(db));
   // Cópias de alimentos da TACO acompanham o catálogo do app.
   unawaited(AlimentacaoRepo(db).atualizarCopiasTaco());
+  // Fotos do Shape de antes da 1.6 (JPEG 1600 px) viram WebP 1080 px com miniatura.
+  unawaited(ShapeRepo(db).converterFotosAntigas());
 }

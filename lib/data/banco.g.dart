@@ -9555,6 +9555,30 @@ class $FotosShapeTable extends FotosShape
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _hashMeta = const VerificationMeta('hash');
+  @override
+  late final GeneratedColumn<String> hash = GeneratedColumn<String>(
+    'hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _naNuvemMeta = const VerificationMeta(
+    'naNuvem',
+  );
+  @override
+  late final GeneratedColumn<bool> naNuvem = GeneratedColumn<bool>(
+    'na_nuvem',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("na_nuvem" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -9564,6 +9588,8 @@ class $FotosShapeTable extends FotosShape
     dia,
     angulo,
     arquivo,
+    hash,
+    naNuvem,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -9625,6 +9651,18 @@ class $FotosShapeTable extends FotosShape
     } else if (isInserting) {
       context.missing(_arquivoMeta);
     }
+    if (data.containsKey('hash')) {
+      context.handle(
+        _hashMeta,
+        hash.isAcceptableOrUnknown(data['hash']!, _hashMeta),
+      );
+    }
+    if (data.containsKey('na_nuvem')) {
+      context.handle(
+        _naNuvemMeta,
+        naNuvem.isAcceptableOrUnknown(data['na_nuvem']!, _naNuvemMeta),
+      );
+    }
     return context;
   }
 
@@ -9662,6 +9700,14 @@ class $FotosShapeTable extends FotosShape
         DriftSqlType.string,
         data['${effectivePrefix}arquivo'],
       )!,
+      hash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}hash'],
+      ),
+      naNuvem: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}na_nuvem'],
+      )!,
     );
   }
 
@@ -9680,7 +9726,16 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
   /// "aaaa-mm-dd" no fuso de São Paulo.
   final String dia;
   final String angulo;
+
+  /// Nome do arquivo no aparelho (`<id>.webp`). Antes da v11 era um JPEG solto.
   final String arquivo;
+
+  /// SHA-256 da foto inteira (WebP). Muda quando a foto é trocada: é por ele que
+  /// cada aparelho sabe se a cópia local está atual.
+  final String? hash;
+
+  /// A imagem está no balde da nuvem (senão só no aparelho que a tirou).
+  final bool naNuvem;
   const FotoShape({
     required this.id,
     required this.criadoEm,
@@ -9689,6 +9744,8 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
     required this.dia,
     required this.angulo,
     required this.arquivo,
+    this.hash,
+    required this.naNuvem,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -9702,6 +9759,10 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
     map['dia'] = Variable<String>(dia);
     map['angulo'] = Variable<String>(angulo);
     map['arquivo'] = Variable<String>(arquivo);
+    if (!nullToAbsent || hash != null) {
+      map['hash'] = Variable<String>(hash);
+    }
+    map['na_nuvem'] = Variable<bool>(naNuvem);
     return map;
   }
 
@@ -9716,6 +9777,8 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
       dia: Value(dia),
       angulo: Value(angulo),
       arquivo: Value(arquivo),
+      hash: hash == null && nullToAbsent ? const Value.absent() : Value(hash),
+      naNuvem: Value(naNuvem),
     );
   }
 
@@ -9732,6 +9795,8 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
       dia: serializer.fromJson<String>(json['dia']),
       angulo: serializer.fromJson<String>(json['angulo']),
       arquivo: serializer.fromJson<String>(json['arquivo']),
+      hash: serializer.fromJson<String?>(json['hash']),
+      naNuvem: serializer.fromJson<bool>(json['naNuvem']),
     );
   }
   @override
@@ -9745,6 +9810,8 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
       'dia': serializer.toJson<String>(dia),
       'angulo': serializer.toJson<String>(angulo),
       'arquivo': serializer.toJson<String>(arquivo),
+      'hash': serializer.toJson<String?>(hash),
+      'naNuvem': serializer.toJson<bool>(naNuvem),
     };
   }
 
@@ -9756,6 +9823,8 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
     String? dia,
     String? angulo,
     String? arquivo,
+    Value<String?> hash = const Value.absent(),
+    bool? naNuvem,
   }) => FotoShape(
     id: id ?? this.id,
     criadoEm: criadoEm ?? this.criadoEm,
@@ -9764,6 +9833,8 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
     dia: dia ?? this.dia,
     angulo: angulo ?? this.angulo,
     arquivo: arquivo ?? this.arquivo,
+    hash: hash.present ? hash.value : this.hash,
+    naNuvem: naNuvem ?? this.naNuvem,
   );
   FotoShape copyWithCompanion(FotosShapeCompanion data) {
     return FotoShape(
@@ -9776,6 +9847,8 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
       dia: data.dia.present ? data.dia.value : this.dia,
       angulo: data.angulo.present ? data.angulo.value : this.angulo,
       arquivo: data.arquivo.present ? data.arquivo.value : this.arquivo,
+      hash: data.hash.present ? data.hash.value : this.hash,
+      naNuvem: data.naNuvem.present ? data.naNuvem.value : this.naNuvem,
     );
   }
 
@@ -9788,14 +9861,25 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
           ..write('apagadoEm: $apagadoEm, ')
           ..write('dia: $dia, ')
           ..write('angulo: $angulo, ')
-          ..write('arquivo: $arquivo')
+          ..write('arquivo: $arquivo, ')
+          ..write('hash: $hash, ')
+          ..write('naNuvem: $naNuvem')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, criadoEm, atualizadoEm, apagadoEm, dia, angulo, arquivo);
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    dia,
+    angulo,
+    arquivo,
+    hash,
+    naNuvem,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -9806,7 +9890,9 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
           other.apagadoEm == this.apagadoEm &&
           other.dia == this.dia &&
           other.angulo == this.angulo &&
-          other.arquivo == this.arquivo);
+          other.arquivo == this.arquivo &&
+          other.hash == this.hash &&
+          other.naNuvem == this.naNuvem);
 }
 
 class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
@@ -9817,6 +9903,8 @@ class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
   final Value<String> dia;
   final Value<String> angulo;
   final Value<String> arquivo;
+  final Value<String?> hash;
+  final Value<bool> naNuvem;
   final Value<int> rowid;
   const FotosShapeCompanion({
     this.id = const Value.absent(),
@@ -9826,6 +9914,8 @@ class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
     this.dia = const Value.absent(),
     this.angulo = const Value.absent(),
     this.arquivo = const Value.absent(),
+    this.hash = const Value.absent(),
+    this.naNuvem = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   FotosShapeCompanion.insert({
@@ -9836,6 +9926,8 @@ class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
     required String dia,
     required String angulo,
     required String arquivo,
+    this.hash = const Value.absent(),
+    this.naNuvem = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : dia = Value(dia),
        angulo = Value(angulo),
@@ -9848,6 +9940,8 @@ class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
     Expression<String>? dia,
     Expression<String>? angulo,
     Expression<String>? arquivo,
+    Expression<String>? hash,
+    Expression<bool>? naNuvem,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -9858,6 +9952,8 @@ class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
       if (dia != null) 'dia': dia,
       if (angulo != null) 'angulo': angulo,
       if (arquivo != null) 'arquivo': arquivo,
+      if (hash != null) 'hash': hash,
+      if (naNuvem != null) 'na_nuvem': naNuvem,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -9870,6 +9966,8 @@ class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
     Value<String>? dia,
     Value<String>? angulo,
     Value<String>? arquivo,
+    Value<String?>? hash,
+    Value<bool>? naNuvem,
     Value<int>? rowid,
   }) {
     return FotosShapeCompanion(
@@ -9880,6 +9978,8 @@ class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
       dia: dia ?? this.dia,
       angulo: angulo ?? this.angulo,
       arquivo: arquivo ?? this.arquivo,
+      hash: hash ?? this.hash,
+      naNuvem: naNuvem ?? this.naNuvem,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -9908,6 +10008,12 @@ class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
     if (arquivo.present) {
       map['arquivo'] = Variable<String>(arquivo.value);
     }
+    if (hash.present) {
+      map['hash'] = Variable<String>(hash.value);
+    }
+    if (naNuvem.present) {
+      map['na_nuvem'] = Variable<bool>(naNuvem.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -9924,6 +10030,8 @@ class FotosShapeCompanion extends UpdateCompanion<FotoShape> {
           ..write('dia: $dia, ')
           ..write('angulo: $angulo, ')
           ..write('arquivo: $arquivo, ')
+          ..write('hash: $hash, ')
+          ..write('naNuvem: $naNuvem, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -21090,6 +21198,8 @@ typedef $$FotosShapeTableCreateCompanionBuilder = FotosShapeCompanion Function({
   required String dia,
   required String angulo,
   required String arquivo,
+  Value<String?> hash,
+  Value<bool> naNuvem,
   Value<int> rowid,
 });
 typedef $$FotosShapeTableUpdateCompanionBuilder = FotosShapeCompanion Function({
@@ -21100,6 +21210,8 @@ typedef $$FotosShapeTableUpdateCompanionBuilder = FotosShapeCompanion Function({
   Value<String> dia,
   Value<String> angulo,
   Value<String> arquivo,
+  Value<String?> hash,
+  Value<bool> naNuvem,
   Value<int> rowid,
 });
 
@@ -21144,6 +21256,16 @@ class $$FotosShapeTableFilterComposer
 
   ColumnFilters<String> get arquivo => $composableBuilder(
     column: $table.arquivo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hash => $composableBuilder(
+    column: $table.hash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get naNuvem => $composableBuilder(
+    column: $table.naNuvem,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -21191,6 +21313,16 @@ class $$FotosShapeTableOrderingComposer
     column: $table.arquivo,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get hash => $composableBuilder(
+    column: $table.hash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get naNuvem => $composableBuilder(
+    column: $table.naNuvem,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$FotosShapeTableAnnotationComposer
@@ -21224,6 +21356,12 @@ class $$FotosShapeTableAnnotationComposer
 
   GeneratedColumn<String> get arquivo =>
       $composableBuilder(column: $table.arquivo, builder: (column) => column);
+
+  GeneratedColumn<String> get hash =>
+      $composableBuilder(column: $table.hash, builder: (column) => column);
+
+  GeneratedColumn<bool> get naNuvem =>
+      $composableBuilder(column: $table.naNuvem, builder: (column) => column);
 }
 
 class $$FotosShapeTableTableManager
@@ -21264,6 +21402,8 @@ class $$FotosShapeTableTableManager
                 Value<String> dia = const Value.absent(),
                 Value<String> angulo = const Value.absent(),
                 Value<String> arquivo = const Value.absent(),
+                Value<String?> hash = const Value.absent(),
+                Value<bool> naNuvem = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FotosShapeCompanion(
                 id: id,
@@ -21273,6 +21413,8 @@ class $$FotosShapeTableTableManager
                 dia: dia,
                 angulo: angulo,
                 arquivo: arquivo,
+                hash: hash,
+                naNuvem: naNuvem,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -21284,6 +21426,8 @@ class $$FotosShapeTableTableManager
                 required String dia,
                 required String angulo,
                 required String arquivo,
+                Value<String?> hash = const Value.absent(),
+                Value<bool> naNuvem = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FotosShapeCompanion.insert(
                 id: id,
@@ -21293,6 +21437,8 @@ class $$FotosShapeTableTableManager
                 dia: dia,
                 angulo: angulo,
                 arquivo: arquivo,
+                hash: hash,
+                naNuvem: naNuvem,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

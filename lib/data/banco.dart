@@ -243,16 +243,26 @@ class Medidas extends Table with Sincronizavel {
 }
 
 /// Foto do check-in de shape: uma por dia e ângulo ('frente', 'costas',
-/// 'lado'). Id natural. A imagem fica num arquivo do aparelho
-/// (`<suporte>/shape/<arquivo>`) e no balde PRIVADO "shape" do Supabase, em
-/// `<user_id>/<arquivo>`; trocar a foto gera outro [arquivo].
+/// 'lado'). Id natural. A linha sempre sincroniza; a imagem, só se [naNuvem]
+/// (ver lib/data/fotos/). No aparelho: `<suporte>/fotos/<id>.webp` e
+/// `<suporte>/miniaturas/<id>.webp`; na nuvem, o balde PRIVADO "fotos", em
+/// `<user_id>/fotos/<id>.webp` e `<user_id>/miniaturas/<id>.webp`.
 @DataClassName('FotoShape')
 @TableIndex(name: 'foto_shape_dia_angulo', columns: {#dia, #angulo}, unique: true)
 class FotosShape extends Table with Sincronizavel {
   /// "aaaa-mm-dd" no fuso de São Paulo.
   TextColumn get dia => text()();
   TextColumn get angulo => text()();
+
+  /// Nome do arquivo no aparelho (`<id>.webp`). Antes da v11 era um JPEG solto.
   TextColumn get arquivo => text()();
+
+  /// SHA-256 da foto inteira (WebP). Muda quando a foto é trocada: é por ele que
+  /// cada aparelho sabe se a cópia local está atual.
+  TextColumn get hash => text().nullable()();
+
+  /// A imagem está no balde da nuvem (senão só no aparelho que a tirou).
+  BoolColumn get naNuvem => boolean().withDefault(const Constant(false))();
 }
 
 /// Alimento com valores por 100 g. [origem] 'pessoal' (cadastrado pela
@@ -375,7 +385,7 @@ class BancoAurora extends _$BancoAurora {
       : super(executor ?? driftDatabase(name: const String.fromEnvironment('AURORA_BANCO', defaultValue: 'aurora')));
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -422,11 +432,22 @@ class BancoAurora extends _$BancoAurora {
             await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS foto_shape_dia_angulo '
                 'ON fotos_shape (dia, angulo)');
           }
+          if (de < 11) {
+            // Também aguenta rodar de novo (ver acima): a tabela criada no
+            // passo anterior já vem com as colunas.
+            if (!await _temColuna('fotos_shape', 'hash')) await m.addColumn(fotosShape, fotosShape.hash);
+            if (!await _temColuna('fotos_shape', 'na_nuvem')) await m.addColumn(fotosShape, fotosShape.naNuvem);
+          }
         },
         beforeOpen: (detalhes) async {
           await customStatement('PRAGMA foreign_keys = ON');
         },
       );
+
+  Future<bool> _temColuna(String tabela, String coluna) async {
+    final colunas = await customSelect('PRAGMA table_info($tabela)').get();
+    return colunas.any((c) => c.read<String>('name') == coluna);
+  }
 
   /// v6: registros com chave natural passam a usar o id calculado (idNatural).
   Future<void> _idsNaturais() async {

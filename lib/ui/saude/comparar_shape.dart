@@ -136,8 +136,8 @@ class _CompararShapePageState extends State<CompararShapePage> {
                       ),
                     )
                   : SizedBox.expand(
-                      key: ValueKey(foto.arquivo),
-                      child: ImagemShape(repo: widget.repo, arquivo: foto.arquivo),
+                      key: ValueKey('${foto.id}|${foto.hash}'),
+                      child: ImagemShape(repo: widget.repo, foto: foto),
                     ),
             ),
           ),

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../app.dart';
 import '../../core/formato.dart';
+import '../../core/nuvem.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/banco.dart';
@@ -71,7 +72,7 @@ class _ShapePageState extends State<ShapePage> {
         const TituloPagina('Shape'),
         const SizedBox(height: 4),
         Text(
-          'Fotos de frente, costas e lado para ver a evolução. Ficam só na sua conta.',
+          'Fotos de frente, costas e lado para ver a evolução. Onde elas ficam você escolhe em Conta › Fotos.',
           style: manrope(13, cor: c.muted, altura: 1.4),
         ),
         const SizedBox(height: 18),
@@ -179,10 +180,28 @@ class _ShapePageState extends State<ShapePage> {
   Future<void> _tocarVaga(CheckinShape k, AnguloShape a) async {
     final foto = k.fotos[a];
     if (foto == null) return _enviar(k.data, a);
-    final acao = await abrirFolha<String>(context, (ctx) => _FolhaFoto(repo: _repo!, foto: foto, angulo: a));
+    final aqui = await _repo!.cofre.local(foto.ref) != null;
+    if (!mounted) return;
+    final acao = await abrirFolha<String>(
+      context,
+      (ctx) => _FolhaFoto(repo: _repo!, foto: foto, angulo: a, podeEnviar: aqui && !foto.naNuvem),
+    );
     if (!mounted || acao == null) return;
     if (acao == 'trocar') await _enviar(k.data, a);
     if (acao == 'apagar') await _repo!.apagarFoto(foto);
+    if (acao == 'nuvem') await _enviarParaNuvem(foto);
+  }
+
+  Future<void> _enviarParaNuvem(FotoShape foto) async {
+    final aviso = ScaffoldMessenger.of(context);
+    try {
+      await _repo!.enviarParaNuvem(foto);
+      aviso.showSnackBar(const SnackBar(content: Text('Foto enviada para a nuvem.')));
+    } catch (e) {
+      aviso.showSnackBar(SnackBar(
+        content: Text(e is StateError ? e.message : 'Não consegui enviar agora: ${mensagemDeErro(e)}'),
+      ));
+    }
   }
 
   Future<void> _enviar(DateTime dia, AnguloShape a) async {
@@ -316,7 +335,7 @@ class VagaFoto extends StatelessWidget {
                   : Stack(
                       fit: StackFit.expand,
                       children: [
-                        ImagemShape(repo: repo, arquivo: foto!.arquivo, larguraCache: compacta ? 240 : 480),
+                        ImagemShape(repo: repo, foto: foto!, miniatura: true, larguraCache: compacta ? 240 : 480),
                         Positioned(
                           left: 6,
                           top: 6,
@@ -342,28 +361,71 @@ class VagaFoto extends StatelessWidget {
   }
 }
 
-/// A imagem guardada no aparelho, cortada para preencher (cover). Se ainda
-/// não chegou da nuvem, mostra um aviso no lugar.
-class ImagemShape extends StatelessWidget {
-  const ImagemShape({super.key, required this.repo, required this.arquivo, this.larguraCache});
+/// A imagem da foto, cortada para preencher (cover). [miniatura] em listas e
+/// grades; a inteira só quando a pessoa abre a foto. Vem da cópia do aparelho
+/// ou, se está na nuvem, é baixada uma vez e guardada. Sem imagem: "Foto
+/// guardada em outro aparelho" (não foi para a nuvem) ou "Sem conexão".
+class ImagemShape extends StatefulWidget {
+  const ImagemShape({super.key, required this.repo, required this.foto, this.miniatura = false, this.larguraCache});
   final ShapeRepo repo;
-  final String arquivo;
+  final FotoShape foto;
+  final bool miniatura;
   final int? larguraCache;
+
+  @override
+  State<ImagemShape> createState() => _ImagemShapeState();
+}
+
+class _ImagemShapeState extends State<ImagemShape> {
+  late Future<File?> _arquivo = _buscar();
+
+  Future<File?> _buscar() => widget.repo.cofre.obter(widget.foto.ref, miniatura: widget.miniatura);
+
+  @override
+  void didUpdateWidget(ImagemShape antigo) {
+    super.didUpdateWidget(antigo);
+    if (antigo.foto.hash != widget.foto.hash ||
+        antigo.foto.naNuvem != widget.foto.naNuvem ||
+        antigo.miniatura != widget.miniatura) {
+      _arquivo = _buscar();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final aviso = Center(child: Icon(Icons.cloud_download_outlined, color: c.muted));
+    final emOutro = !widget.foto.naNuvem;
+    final aviso = LayoutBuilder(
+      builder: (context, box) {
+        final pequeno = box.maxWidth < 120;
+        return Container(
+          color: c.surface2,
+          padding: const EdgeInsets.all(8),
+          alignment: Alignment.center,
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Icon(emOutro ? Icons.devices_other_rounded : Icons.cloud_off_rounded,
+                color: c.muted, size: pequeno ? 20 : 30),
+            const SizedBox(height: 6),
+            Text(
+              emOutro ? 'Foto guardada em outro aparelho' : 'Sem conexão para baixar a foto',
+              textAlign: TextAlign.center,
+              style: manrope(pequeno ? 9.5 : 12, peso: FontWeight.w600, cor: c.muted, altura: 1.25),
+            ),
+          ]),
+        );
+      },
+    );
     return FutureBuilder<File?>(
-      future: repo.arquivoLocal(arquivo).then((f) async => await f.exists() ? f : null),
+      future: _arquivo,
       builder: (context, snap) {
         final f = snap.data;
         if (f == null) return snap.connectionState == ConnectionState.done ? aviso : const SizedBox();
         final dpr = MediaQuery.devicePixelRatioOf(context);
         return Image.file(
           f,
+          key: ValueKey('${widget.foto.id}|${widget.foto.hash}|${widget.miniatura}'),
           fit: BoxFit.cover,
-          cacheWidth: larguraCache == null ? null : (larguraCache! * dpr).round(),
+          cacheWidth: widget.larguraCache == null ? null : (widget.larguraCache! * dpr).round(),
           gaplessPlayback: true,
           errorBuilder: (_, _, _) => aviso,
         );
@@ -386,31 +448,44 @@ class _FolhaOrigem extends StatelessWidget {
   );
 }
 
-/// Foto já enviada: ver maior, trocar ou apagar.
+/// Foto já enviada: ver a foto inteira, onde ela está guardada, trocar,
+/// enviar para a nuvem ou apagar.
 class _FolhaFoto extends StatelessWidget {
-  const _FolhaFoto({required this.repo, required this.foto, required this.angulo});
+  const _FolhaFoto({required this.repo, required this.foto, required this.angulo, required this.podeEnviar});
   final ShapeRepo repo;
   final FotoShape foto;
   final AnguloShape angulo;
 
+  /// A imagem está neste aparelho e ainda não está na nuvem.
+  final bool podeEnviar;
+
   @override
-  Widget build(BuildContext context) => _FolhaOpcoes(
-    titulo: '${angulo.rotulo} · ${diaMesLongo(DateTime.parse(foto.dia))}',
-    topo: ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.45),
-        child: AspectRatio(
-          aspectRatio: 3 / 4,
-          child: ImagemShape(repo: repo, arquivo: foto.arquivo),
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return _FolhaOpcoes(
+      titulo: '${angulo.rotulo} · ${diaMesLongo(DateTime.parse(foto.dia))}',
+      topo: Column(children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.45),
+            child: AspectRatio(aspectRatio: 3 / 4, child: ImagemShape(repo: repo, foto: foto)),
+          ),
         ),
-      ),
-    ),
-    opcoes: const [
-      (Icons.swap_horiz_rounded, 'Trocar foto', 'trocar', false),
-      (Icons.delete_outline_rounded, 'Apagar foto', 'apagar', true),
-    ],
-  );
+        const SizedBox(height: 10),
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(foto.naNuvem ? Icons.cloud_done_outlined : Icons.phone_android_rounded, size: 16, color: c.muted),
+          const SizedBox(width: 6),
+          Text(foto.naNuvem ? 'Na nuvem' : 'Só neste aparelho', style: manrope(12.5, cor: c.muted)),
+        ]),
+      ]),
+      opcoes: [
+        (Icons.swap_horiz_rounded, 'Trocar foto', 'trocar', false),
+        if (podeEnviar) (Icons.cloud_upload_outlined, 'Enviar para a nuvem', 'nuvem', false),
+        (Icons.delete_outline_rounded, 'Apagar foto', 'apagar', true),
+      ],
+    );
+  }
 }
 
 class _FolhaOpcoes<T> extends StatelessWidget {

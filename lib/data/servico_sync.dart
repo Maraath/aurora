@@ -108,14 +108,12 @@ class ServicoSync {
     return Sincronizador(db, RemotoSupabase(cliente), usuarioId: usuario.id);
   }
 
-  /// Imagens do Shape, depois das linhas. Uma falha aqui não derruba o resto:
-  /// tenta de novo na próxima rodada.
+  /// Imagens das fotos, depois das linhas (envios e exclusões pendentes; nada
+  /// é baixado aqui). Uma falha não derruba o resto: tenta de novo depois.
   Future<void> _sincronizarFotos(Sincronizador s) async {
-    final cliente = nuvem;
-    if (cliente == null) return;
     try {
-      final r = await SincronizadorFotos(ShapeRepo(s.db), ArmazemSupabase(cliente, s.usuarioId)).sincronizar();
-      if (r.enviadas + r.baixadas > 0) debugPrint('Shape: ${r.enviadas} fotos enviadas, ${r.baixadas} baixadas');
+      final r = await SincronizadorFotos(ShapeRepo(s.db)).sincronizar();
+      if (r.enviadas + r.apagadas > 0) debugPrint('Fotos: ${r.enviadas} enviadas, ${r.apagadas} apagadas da nuvem');
     } catch (e) {
       debugPrint('Shape: sincronização das fotos falhou: $e');
     }
