@@ -44,12 +44,16 @@ class Folha extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     final teclado = MediaQuery.viewInsetsOf(context).bottom;
+    // Barra de navegação do Android (tela de borda a borda) ou faixa do iPhone.
+    // O useSafeArea da folha só cuida do topo e das laterais; com o teclado
+    // aberto este valor vira 0, porque o teclado já cobre a barra.
+    final barra = MediaQuery.paddingOf(context).bottom;
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.9),
       child: Padding(
         padding: EdgeInsets.only(bottom: teclado),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+          padding: EdgeInsets.fromLTRB(20, 10, 20, 24 + barra),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
