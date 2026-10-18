@@ -325,6 +325,37 @@ void main() {
       await tester.runAsync(outro.fechar);
     });
 
+    testWidgets('Shape: escolher onde guardar perto das fotos', (tester) async {
+      await tester.runAsync(
+        () => pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400)),
+      );
+      await abrirTela(tester);
+      for (var i = 0; i < 20 && find.text('Na nuvem').evaluate().isEmpty; i++) {
+        await assentar(tester);
+      }
+      expect(find.text('ONDE GUARDAR AS FOTOS'), findsOneWidget);
+      expect(find.textContaining('se perdem se o app for desinstalado'), findsOneWidget);
+
+      await tester.runAsync(() async {
+        await tester.tap(find.text('Na nuvem'));
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await assentar(tester);
+      expect(find.text('Enviar as fotos que já estão aqui?'), findsOneWidget);
+      await tester.runAsync(() async {
+        await tester.tap(find.text('Enviar 1 foto'));
+        for (var i = 0; i < 60 && nuvem.inteiras.isEmpty; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      });
+      await assentar(tester);
+      expect(nuvem.inteiras, hasLength(1));
+      expect(await tester.runAsync(pc.cofre.modo), ModoFotos.nuvem);
+      expect(find.textContaining('aparecem nos seus outros aparelhos'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    });
+
     testWidgets('foto trocada no mesmo arquivo não mostra a versão antiga da memória', (tester) async {
       await tester.runAsync(
         () => pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400)),

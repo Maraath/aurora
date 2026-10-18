@@ -12,6 +12,7 @@ import '../../core/tema.dart';
 import '../../data/banco.dart';
 import '../../data/shape_repo.dart';
 import '../componentes.dart';
+import '../conta/fotos_config.dart';
 import '../em_breve.dart';
 import '../formulario.dart';
 import 'comparar_shape.dart';
@@ -72,7 +73,7 @@ class _ShapePageState extends State<ShapePage> {
         const TituloPagina('Shape'),
         const SizedBox(height: 4),
         Text(
-          'Fotos de frente, costas e lado para ver a evolução. Onde elas ficam você escolhe em Conta › Fotos.',
+          'Fotos de frente, costas e lado para ver a evolução. Você escolhe abaixo onde elas ficam.',
           style: manrope(13, cor: c.muted, altura: 1.4),
         ),
         const SizedBox(height: 18),
@@ -90,6 +91,17 @@ class _ShapePageState extends State<ShapePage> {
               ),
               const SizedBox(height: 14),
               _TrioFotos(repo: _repo!, checkin: deHoje, aoTocar: (a) => _tocarVaga(deHoje, a), grande: true),
+              const SizedBox(height: 18),
+              Divider(color: c.line, height: 1),
+              const SizedBox(height: 14),
+              // Onde as fotos ficam, perto de onde elas entram (o mesmo de Conta › Fotos).
+              Row(children: [
+                Icon(Icons.lock_outline_rounded, size: 15, color: c.muted),
+                const SizedBox(width: 6),
+                Text('ONDE GUARDAR AS FOTOS', style: rotulo(c.muted)),
+              ]),
+              const SizedBox(height: 10),
+              SeletorModoFotos(repo: _repo!, compacto: true),
             ],
           ),
         ),
