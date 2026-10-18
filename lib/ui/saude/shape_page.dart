@@ -335,7 +335,7 @@ class VagaFoto extends StatelessWidget {
                   : Stack(
                       fit: StackFit.expand,
                       children: [
-                        ImagemShape(repo: repo, foto: foto!, miniatura: true, larguraCache: compacta ? 240 : 480),
+                        ImagemShape(repo: repo, foto: foto!, miniatura: compacta, larguraCache: compacta ? 240 : 480),
                         Positioned(
                           left: 6,
                           top: 6,
@@ -361,10 +361,12 @@ class VagaFoto extends StatelessWidget {
   }
 }
 
-/// A imagem da foto, cortada para preencher (cover). [miniatura] em listas e
-/// grades; a inteira só quando a pessoa abre a foto. Vem da cópia do aparelho
+/// A imagem da foto, cortada para preencher (cover). [miniatura] no histórico e
+/// em grades pequenas; a inteira nas vagas grandes e quando a pessoa abre a foto (a
+/// miniatura de 300 px fica borrada ampliada). Vem da cópia do aparelho
 /// ou, se está na nuvem, é baixada uma vez e guardada. Sem imagem: "Foto
-/// guardada em outro aparelho" (não foi para a nuvem) ou "Sem conexão".
+/// guardada em outro aparelho" (não foi para a nuvem), "Entre na sua conta" ou
+/// "Sem conexão".
 class ImagemShape extends StatefulWidget {
   const ImagemShape({super.key, required this.repo, required this.foto, this.miniatura = false, this.larguraCache});
   final ShapeRepo repo;
@@ -395,6 +397,7 @@ class _ImagemShapeState extends State<ImagemShape> {
   Widget build(BuildContext context) {
     final c = context.cores;
     final emOutro = !widget.foto.naNuvem;
+    final semConta = widget.repo.cofre.armazem == null;
     final aviso = LayoutBuilder(
       builder: (context, box) {
         final pequeno = box.maxWidth < 120;
@@ -407,7 +410,11 @@ class _ImagemShapeState extends State<ImagemShape> {
                 color: c.muted, size: pequeno ? 20 : 30),
             const SizedBox(height: 6),
             Text(
-              emOutro ? 'Foto guardada em outro aparelho' : 'Sem conexão para baixar a foto',
+              emOutro
+                  ? 'Foto guardada em outro aparelho'
+                  : semConta
+                      ? 'Entre na sua conta para ver a foto'
+                      : 'Sem conexão para baixar a foto',
               textAlign: TextAlign.center,
               style: manrope(pequeno ? 9.5 : 12, peso: FontWeight.w600, cor: c.muted, altura: 1.25),
             ),
@@ -421,17 +428,34 @@ class _ImagemShapeState extends State<ImagemShape> {
         final f = snap.data;
         if (f == null) return snap.connectionState == ConnectionState.done ? aviso : const SizedBox();
         final dpr = MediaQuery.devicePixelRatioOf(context);
-        return Image.file(
-          f,
-          key: ValueKey('${widget.foto.id}|${widget.foto.hash}|${widget.miniatura}'),
+        return Image(
+          image: ResizeImage.resizeIfNeeded(
+            widget.larguraCache == null ? null : (widget.larguraCache! * dpr).round(),
+            null,
+            _ArquivoVersionado(f, widget.foto.hash ?? ''),
+          ),
           fit: BoxFit.cover,
-          cacheWidth: widget.larguraCache == null ? null : (widget.larguraCache! * dpr).round(),
           gaplessPlayback: true,
           errorBuilder: (_, _, _) => aviso,
         );
       },
     );
   }
+}
+
+/// Arquivo de foto com a versão (hash) na chave do cache de imagens: a foto
+/// trocada fica no mesmo caminho (`<id>.webp`), e o FileImage comum, que só
+/// compara o caminho, continuaria mostrando a versão antiga da memória.
+class _ArquivoVersionado extends FileImage {
+  const _ArquivoVersionado(super.file, this.versao);
+  final String versao;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _ArquivoVersionado && other.file.path == file.path && other.versao == versao && other.scale == scale;
+
+  @override
+  int get hashCode => Object.hash(file.path, versao, scale);
 }
 
 class _FolhaOrigem extends StatelessWidget {

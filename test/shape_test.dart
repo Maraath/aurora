@@ -325,6 +325,30 @@ void main() {
       await tester.runAsync(outro.fechar);
     });
 
+    testWidgets('foto trocada no mesmo arquivo não mostra a versão antiga da memória', (tester) async {
+      await tester.runAsync(
+        () => pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400)),
+      );
+      await abrirTela(tester);
+      Future<void> esperarImagem() async {
+        for (var i = 0; i < 20 && find.byType(Image).evaluate().isEmpty; i++) {
+          await assentar(tester);
+        }
+      }
+
+      ImageProvider chave() => (tester.widget<Image>(find.byType(Image).first).image as ResizeImage).imageProvider;
+      await esperarImagem();
+      final antes = chave();
+      await tester.runAsync(
+        () => pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 320, altura: 400)),
+      );
+      await assentar(tester);
+      await assentar(tester);
+      expect((chave() as FileImage).file.path, (antes as FileImage).file.path); // mesmo arquivo
+      expect(chave(), isNot(antes)); // chave nova: o cache de imagens não reaproveita a antiga
+      await tester.pumpWidget(const SizedBox());
+    });
+
     testWidgets('enviar foto e comparar duas datas', (tester) async {
       final passado = hojeSP().subtract(const Duration(days: 40));
       await tester.runAsync(() async {
