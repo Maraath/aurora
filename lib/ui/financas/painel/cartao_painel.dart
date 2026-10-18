@@ -32,18 +32,28 @@ class CartaoPainel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (titulo != null) ...[
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(titulo!, style: sora(16)),
-                  if (subtitulo != null) ...[
-                    const SizedBox(height: 2),
-                    Text(subtitulo!, style: manrope(12, cor: c.muted)),
-                  ],
-                ]),
-              ),
-              ?acao,
-            ]),
+            LayoutBuilder(builder: (context, box) {
+              final cabecalho = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(titulo!, style: sora(16)),
+                if (subtitulo != null) ...[
+                  const SizedBox(height: 2),
+                  Text(subtitulo!, style: manrope(12, cor: c.muted)),
+                ],
+              ]);
+              // Cartão estreito: a ação (ex.: seletor de tipo) desce para a
+              // linha de baixo, em vez de espremer o título.
+              if (acao != null && box.maxWidth < 420) {
+                return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  cabecalho,
+                  const SizedBox(height: 10),
+                  Align(alignment: Alignment.centerLeft, child: acao),
+                ]);
+              }
+              return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Expanded(child: cabecalho),
+                ?acao,
+              ]);
+            }),
             const SizedBox(height: 16),
           ],
           child,

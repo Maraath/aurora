@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gráficos de Finanças</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080716; --surface:rgba(16,15,40,.62); --surface2:#18173A; --line:rgba(255,255,255,.09);
+    --text:#EEF0FB; --muted:#A3A6C8; --accent:#5CF0B0; --accentFill:#3EDB9A; --violeta:#9D8CFF;
+    --teal:#42E3C8; --warn:#F5C35B; --bad:#E77BFF; --gradIni:#3EDB9A; --gradFim:#7E7BFF;
+    --c1:#5CF0B0; --c2:#9D8CFF; --c3:#42E3C8; --c4:#F5C35B; --c5:#E77BFF; --c6:#6FA8FF;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif;
+    background-image:radial-gradient(1200px 500px at 10% -10%,rgba(62,219,154,.10),transparent 60%),
+      radial-gradient(900px 500px at 95% -5%,rgba(157,140,255,.12),transparent 60%);}
+  .estrelas{position:fixed;inset:0;pointer-events:none;background-image:
+    radial-gradient(1px 1px at 12% 18%,#fff8,transparent),radial-gradient(1px 1px at 72% 12%,#fff6,transparent),
+    radial-gradient(1.5px 1.5px at 40% 70%,#fff7,transparent),radial-gradient(1px 1px at 88% 60%,#fff5,transparent),
+    radial-gradient(1px 1px at 25% 88%,#fff6,transparent),radial-gradient(1.2px 1.2px at 60% 35%,#fff5,transparent);}
+  main{position:relative;max-width:1080px;margin:0 auto;padding:36px 20px 80px}
+  h1{font-family:Sora;font-weight:700;font-size:30px;margin:0 0 6px}
+  h2{font-family:Sora;font-weight:600;font-size:21px;margin:44px 0 6px}
+  .sub{color:var(--muted);line-height:1.55;max-width:760px;margin:0}
+  .rotulo{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--accent);text-transform:uppercase}
+  .grade{display:grid;gap:16px;margin-top:18px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .cartao{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;
+    backdrop-filter:blur(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  .cab{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
+  .cab .t{font-family:Sora;font-weight:600;font-size:16px}
+  .cab .s{color:var(--muted);font-size:12px;margin-top:2px}
+  .cab .esp{flex:1}
+  .tipos{display:flex;gap:4px;background:rgba(24,23,58,.7);border:1px solid var(--line);border-radius:12px;padding:3px}
+  .tipos span{width:30px;height:28px;border-radius:9px;display:grid;place-items:center;color:var(--muted);font-size:14px}
+  .tipos span.on{background:rgba(92,240,176,.16);color:var(--accent);box-shadow:inset 0 0 0 1px rgba(92,240,176,.35)}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--muted);
+    border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+  .chip.on{color:var(--text);border-color:rgba(92,240,176,.4);background:rgba(92,240,176,.10)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .mini{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:6px}
+  .mini figure{margin:0;background:rgba(24,23,58,.55);border:1px solid var(--line);border-radius:14px;padding:10px 6px 8px;text-align:center}
+  .mini figure.on{border-color:rgba(92,240,176,.5);background:rgba(92,240,176,.07)}
+  .mini figcaption{font-size:11.5px;font-weight:700;color:var(--muted);margin-top:6px}
+  .mini figure.on figcaption{color:var(--accent)}
+  .leg{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:12px;color:var(--muted);margin-top:10px}
+  .leg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .nota{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:10px}
+  .tag{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--violeta);border:1px solid rgba(157,140,255,.35);
+    border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:2px}
+  .lista{display:grid;gap:8px}
+  .item{display:flex;align-items:center;gap:12px;background:rgba(24,23,58,.55);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .item .alca{color:var(--muted);letter-spacing:-2px}
+  .item .n{flex:1;font-weight:700;font-size:14px}
+  .item .tp{font-size:12px;color:var(--muted)}
+  .sw{width:34px;height:20px;border-radius:999px;background:rgba(92,240,176,.85);position:relative}
+  .sw:after{content:"";position:absolute;right:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#06061A}
+  .sw.off{background:rgba(255,255,255,.14)} .sw.off:after{left:3px;right:auto;background:#A3A6C8}
+  .tabela{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+  .tabela td,.tabela th{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+  .tabela th{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  svg text{font-family:Manrope;fill:var(--muted);font-size:10px}
+  @media (max-width:640px){.mini{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="estrelas"></div>
+<main>
+  <div class="rotulo">Conceito · Finanças</div>
+  <h1>Gráficos mais completos, do jeito que você quiser ver</h1>
+  <p class="sub">Três ideias, com o visual do Aurora:
+    <b>1)</b> cada gráfico ganha um seletor de tipo; <b>2)</b> gráficos novos que respondem perguntas que hoje o app não responde;
+    <b>3)</b> um “Personalizar painel” para ligar, desligar e reordenar os cartões. Valores abaixo são ilustrativos.</p>
+
+  <!-- 1. SELETOR DE TIPO -->
+  <h2>1 · Escolher o tipo de gráfico em cada cartão</h2>
+  <p class="sub">Um seletor pequeno no canto de cada cartão mostra só os tipos que fazem sentido para aquele dado. A escolha fica salva neste aparelho.</p>
+
+  <div class="grade g2">
+    <div class="cartao">
+      <div class="cab"><div><div class="t">Despesas por categoria</div><div class="s">Para onde foi o dinheiro em outubro</div></div><div class="esp"></div>
+        <div class="tipos" title="Tipo de gráfico"><span class="on">◔</span><span>◕</span><span>☰</span><span>▦</span><span>✦</span></div></div>
+      <div class="mini">
+        <figure class="on">
+          <svg viewBox="0 0 80 80" width="100%"><g transform="translate(40 40)" fill="none" stroke-width="12">
+            <circle r="26" stroke="var(--c1)" stroke-dasharray="57 163"/>
+            <circle r="26" stroke="var(--c2)" stroke-dasharray="36 163" stroke-dashoffset="-59"/>
+            <circle r="26" stroke="var(--c3)" stroke-dasharray="28 163" stroke-dashoffset="-97"/>
+            <circle r="26" stroke="var(--c4)" stroke-dasharray="20 163" stroke-dashoffset="-127"/>
+            <circle r="26" stroke="var(--c5)" stroke-dasharray="12 163" stroke-dashoffset="-149"/></g>
+            <text x="40" y="44" text-anchor="middle" style="fill:var(--text);font-weight:800">R$2,4k</text></svg>
+          <figcaption>Rosca</figcaption></figure>
+        <figure>
+          <svg viewBox="0 0 80 80" width="100%"><g transform="translate(40 40)">
+            <path d="M0 0 L0 -30 A30 30 0 0 1 28.5 9.3 Z" fill="var(--c1)"/>
+            <path d="M0 0 L28.5 9.3 A30 30 0 0 1 -6 29.4 Z" fill="var(--c2)"/>
+            <path d="M0 0 L-6 29.4 A30 30 0 0 1 -29 -7.7 Z" fill="var(--c3)"/>
+            <path d="M0 0 L-29 -7.7 A30 30 0 0 1 -15 -26 Z" fill="var(--c4)"/>
+            <path d="M0 0 L-15 -26 A30 30 0 0 1 0 -30 Z" fill="var(--c5)"/></g></svg>
+          <figcaption>Pizza</figcaption></figure>
+        <figure>
+          <svg viewBox="0 0 80 80" width="100%"><g>
+            <rect x="8" y="12" width="60" height="9" rx="4" fill="var(--c1)"/>
+            <rect x="8" y="26" width="42" height="9" rx="4" fill="var(--c2)"/>
+            <rect x="8" y="40" width="32" height="9" rx="4" fill="var(--c3)"/>
+            <rect x="8" y="54" width="22" height="9" rx="4" fill="var(--c4)"/></g></svg>
+          <figcaption>Barras</figcaption></figure>
+        <figure>
+          <svg viewBox="0 0 80 80" width="100%"><g>
+            <rect x="6" y="8" width="38" height="64" rx="6" fill="var(--c1)"/>
+            <rect x="47" y="8" width="27" height="34" rx="6" fill="var(--c2)"/>
+            <rect x="47" y="45" width="15" height="27" rx="6" fill="var(--c3)"/>
+            <rect x="65" y="45" width="9" height="27" rx="4" fill="var(--c4)"/></g></svg>
+          <figcaption>Blocos</figcaption></figure>
+        <figure>
+          <svg viewBox="0 0 80 80" width="100%"><g transform="translate(40 42)" fill="none" stroke="rgba(255,255,255,.12)">
+            <polygon points="0,-30 28.5,-9.3 17.6,24.3 -17.6,24.3 -28.5,-9.3"/>
+            <polygon points="0,-15 14,-4.6 8.8,12 -8.8,12 -14,-4.6"/>
+            <polygon points="0,-27 20,-6.5 8,11 -13,18 -24,-7.8" fill="rgba(92,240,176,.25)" stroke="var(--accent)"/></g></svg>
+          <figcaption>Radar (roda)</figcaption></figure>
+      </div>
+      <div class="leg"><span><i style="background:var(--c1)"></i>Mercado 35%</span><span><i style="background:var(--c2)"></i>Moradia 22%</span><span><i style="background:var(--c3)"></i>Transporte 17%</span><span><i style="background:var(--c4)"></i>Lazer 12%</span><span><i style="background:var(--c5)"></i>Outros</span></div>
+      <p class="nota">Tocar numa fatia ou barra filtra o extrato por aquela categoria. O radar compara este mês (verde) com a média dos últimos 3.</p>
+    </div>
+
+    <div class="cartao">
+      <div class="cab"><div><div class="t">Fluxo de caixa</div><div class="s">Recebido × gasto · últimos 6 meses</div></div><div class="esp"></div>
+        <div class="tipos"><span class="on">▥</span><span>⟋</span><span>◭</span><span>┼</span></div></div>
+      <div class="mini" style="grid-template-columns:repeat(4,1fr)">
+        <figure class="on"><svg viewBox="0 0 80 80" width="100%"><g>
+          <rect x="8" y="30" width="6" height="40" rx="2" fill="var(--c1)"/><rect x="15" y="38" width="6" height="32" rx="2" fill="var(--c2)"/>
+          <rect x="29" y="24" width="6" height="46" rx="2" fill="var(--c1)"/><rect x="36" y="34" width="6" height="36" rx="2" fill="var(--c2)"/>
+          <rect x="50" y="28" width="6" height="42" rx="2" fill="var(--c1)"/><rect x="57" y="20" width="6" height="50" rx="2" fill="var(--c2)"/></g></svg>
+          <figcaption>Barras</figcaption></figure>
+        <figure><svg viewBox="0 0 80 80" width="100%"><g fill="none" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="6,40 20,30 34,34 48,22 62,28 74,18" stroke="var(--c1)"/>
+          <polyline points="6,50 20,46 34,52 48,40 62,36 74,42" stroke="var(--c2)"/></g></svg>
+          <figcaption>Linhas</figcaption></figure>
+        <figure><svg viewBox="0 0 80 80" width="100%"><g>
+          <path d="M6 40 L20 30 L34 34 L48 22 L62 28 L74 18 L74 72 L6 72Z" fill="rgba(92,240,176,.28)" stroke="var(--c1)" stroke-width="2"/>
+          <path d="M6 52 L20 48 L34 54 L48 42 L62 38 L74 44 L74 72 L6 72Z" fill="rgba(157,140,255,.30)" stroke="var(--c2)" stroke-width="2"/></g></svg>
+          <figcaption>Área</figcaption></figure>
+        <figure><svg viewBox="0 0 80 80" width="100%"><g stroke-width="1.5">
+          <line x1="12" y1="16" x2="12" y2="58" stroke="var(--c1)"/><rect x="8" y="24" width="8" height="24" rx="1.5" fill="var(--c1)"/>
+          <line x1="28" y1="22" x2="28" y2="64" stroke="var(--bad)"/><rect x="24" y="30" width="8" height="22" rx="1.5" fill="var(--bad)"/>
+          <line x1="44" y1="18" x2="44" y2="52" stroke="var(--c1)"/><rect x="40" y="24" width="8" height="20" rx="1.5" fill="var(--c1)"/>
+          <line x1="60" y1="12" x2="60" y2="48" stroke="var(--c1)"/><rect x="56" y="18" width="8" height="22" rx="1.5" fill="var(--c1)"/></g></svg>
+          <figcaption>Velas</figcaption></figure>
+      </div>
+      <p class="nota"><b>Velas</b> é o gráfico “financeiro”: cada vela é um mês do seu saldo — abre com o saldo do dia 1, fecha com o do último dia, e o pavio mostra o maior e o menor saldo do mês. Verde = terminou acima de onde começou; magenta = abaixo.</p>
+    </div>
+  </div>
+
+  <div class="cartao" style="margin-top:16px">
+    <div class="rotulo" style="color:var(--muted)">Que tipos cada cartão aceita</div>
+    <table class="tabela">
+      <tr><th>Cartão</th><th>Tipos</th><th>Padrão</th></tr>
+      <tr><td>Despesas por categoria</td><td>Rosca · Pizza · Barras · Blocos · Radar</td><td>Rosca</td></tr>
+      <tr><td>Fluxo de caixa (mês a mês)</td><td>Barras · Linhas · Área · Velas</td><td>Barras</td></tr>
+      <tr><td>Gasto por dia</td><td>Barras · Linha acumulada</td><td>Barras</td></tr>
+      <tr><td>Saldo / trajetória</td><td>Linha com projeção · Área · Velas</td><td>Linha com projeção</td></tr>
+      <tr><td>Categorias no tempo</td><td>Áreas empilhadas · Linhas · Barras empilhadas</td><td>Áreas empilhadas</td></tr>
+      <tr><td>Fixo × parcelas × variável</td><td>Barras empilhadas · Rosca</td><td>Barras empilhadas</td></tr>
+    </table>
+  </div>
+
+  <!-- 2. GRÁFICOS NOVOS -->
+  <h2>2 · Gráficos novos</h2>
+  <p class="sub">Perguntas que o Aurora ainda não responde: de onde veio e para onde foi, como o mês vai terminar, em que dias você gasta mais e como o saldo deve andar.</p>
+
+  <div class="grade g2">
+    <div class="cartao">
+      <div class="cab"><div><div class="t">Fluxo do dinheiro no mês<span class="tag">NOVO</span></div><div class="s">De onde veio → para onde foi</div></div><div class="esp"></div>
+        <span class="chip on">Só o que já aconteceu</span></div>
+      <svg viewBox="0 0 440 200" width="100%">
+        <rect x="10" y="20" width="10" height="110" rx="4" fill="var(--c1)"/><text x="26" y="72">Salário  R$ 5.200</text>
+        <rect x="10" y="138" width="10" height="40" rx="4" fill="var(--c3)"/><text x="26" y="162">Freela  R$ 1.400</text>
+        <path d="M20 20 C 220 20, 220 14, 410 14 L410 70 C 220 70, 220 76, 20 76Z" fill="rgba(92,240,176,.22)"/>
+        <path d="M20 76 C 220 76, 220 74, 410 74 L410 108 C 220 108, 220 110, 20 110Z" fill="rgba(92,240,176,.16)"/>
+        <path d="M20 110 C 220 110, 220 112, 410 112 L410 132 C 220 132, 220 130, 20 130Z" fill="rgba(92,240,176,.12)"/>
+        <path d="M20 138 C 220 138, 220 136, 410 136 L410 150 C 220 150, 220 152, 20 152Z" fill="rgba(66,227,200,.20)"/>
+        <path d="M20 152 C 220 152, 220 154, 410 154 L410 186 C 220 186, 220 178, 20 178Z" fill="rgba(66,227,200,.28)"/>
+        <rect x="410" y="14" width="10" height="56" rx="4" fill="var(--c2)"/><text x="404" y="44" text-anchor="end" style="fill:var(--text)">Moradia</text>
+        <rect x="410" y="74" width="10" height="34" rx="4" fill="var(--c4)"/><text x="404" y="94" text-anchor="end" style="fill:var(--text)">Mercado</text>
+        <rect x="410" y="112" width="10" height="38" rx="4" fill="var(--c5)"/><text x="404" y="134" text-anchor="end" style="fill:var(--text)">Outros</text>
+        <rect x="410" y="154" width="10" height="32" rx="4" fill="var(--accent)"/><text x="404" y="174" text-anchor="end" style="fill:var(--accent);font-weight:800">Sobra do mês</text>
+      </svg>
+      <p class="nota">Toque numa faixa para filtrar o extrato. A chave alterna entre “só o que já aconteceu” e “mês inteiro, com o que está agendado”.</p>
+    </div>
+
+    <div class="cartao">
+      <div class="cab"><div><div class="t">Gasto por dia e projeção<span class="tag">NOVO</span></div><div class="s">Como o mês deve terminar</div></div><div class="esp"></div>
+        <div class="tipos"><span class="on">▥</span><span>⟋</span></div></div>
+      <svg viewBox="0 0 440 180" width="100%">
+        <line x1="10" y1="80" x2="430" y2="80" stroke="var(--warn)" stroke-dasharray="4 4"/><text x="430" y="74" text-anchor="end" style="fill:var(--warn)">média R$ 78/dia</text>
+        <g fill="var(--c2)">
+          <rect x="14" y="110" width="9" height="50" rx="2"/><rect x="28" y="90" width="9" height="70" rx="2"/><rect x="42" y="130" width="9" height="30" rx="2"/>
+          <rect x="56" y="60" width="9" height="100" rx="2"/><rect x="70" y="120" width="9" height="40" rx="2"/><rect x="84" y="100" width="9" height="60" rx="2"/>
+          <rect x="98" y="40" width="9" height="120" rx="2"/><rect x="112" y="115" width="9" height="45" rx="2"/><rect x="126" y="95" width="9" height="65" rx="2"/>
+          <rect x="140" y="125" width="9" height="35" rx="2"/><rect x="154" y="70" width="9" height="90" rx="2"/><rect x="168" y="105" width="9" height="55" rx="2"/>
+          <rect x="182" y="88" width="9" height="72" rx="2"/><rect x="196" y="118" width="9" height="42" rx="2"/><rect x="210" y="98" width="9" height="62" rx="2"/>
+          <rect x="224" y="78" width="9" height="82" rx="2"/><rect x="238" y="108" width="9" height="52" rx="2"/><rect x="252" y="92" width="9" height="68" rx="2"/></g>
+        <g fill="rgba(157,140,255,.22)" stroke="rgba(157,140,255,.5)" stroke-dasharray="3 3">
+          <rect x="266" y="96" width="9" height="64" rx="2"/><rect x="280" y="96" width="9" height="64" rx="2"/><rect x="294" y="96" width="9" height="64" rx="2"/>
+          <rect x="308" y="96" width="9" height="64" rx="2"/><rect x="322" y="96" width="9" height="64" rx="2"/><rect x="336" y="96" width="9" height="64" rx="2"/>
+          <rect x="350" y="96" width="9" height="64" rx="2"/><rect x="364" y="96" width="9" height="64" rx="2"/><rect x="378" y="96" width="9" height="64" rx="2"/>
+          <rect x="392" y="96" width="9" height="64" rx="2"/><rect x="406" y="96" width="9" height="64" rx="2"/><rect x="420" y="96" width="9" height="64" rx="2"/></g>
+        <text x="14" y="176">1</text><text x="252" y="176" style="fill:var(--text)">hoje</text><text x="420" y="176">31</text>
+      </svg>
+      <div class="leg"><span><i style="background:var(--c2)"></i>Gasto até hoje R$ 1.410</span><span><i style="background:rgba(157,140,255,.35)"></i>Previsto até o fim R$ 2.380</span><span style="color:var(--accent)">Sobra prevista R$ 4.220</span></div>
+    </div>
+
+    <div class="cartao">
+      <div class="cab"><div><div class="t">Mapa de calor do gasto<span class="tag">NOVO</span></div><div class="s">Em que dias o dinheiro sai mais</div></div></div>
+      <svg viewBox="0 0 440 150" width="100%" id="calor"></svg>
+      <p class="nota">Cada quadrado é um dia; quanto mais forte, mais gasto. Embaixo, uma leitura automática: “Sábado e domingo custam em média 2,1× um dia útil”.</p>
+    </div>
+
+    <div class="cartao">
+      <div class="cab"><div><div class="t">Trajetória do saldo<span class="tag">NOVO</span></div><div class="s">Últimos 6 meses e projeção para os próximos 6</div></div><div class="esp"></div>
+        <div class="tipos"><span class="on">⟋</span><span>◭</span><span>┼</span></div></div>
+      <svg viewBox="0 0 440 170" width="100%">
+        <path d="M220 70 C 280 60, 340 40, 430 20 L430 110 C 340 100, 280 92, 220 70Z" fill="rgba(157,140,255,.16)"/>
+        <polyline fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" points="10,130 55,118 100,124 145,98 190,86 220,70"/>
+        <polyline fill="none" stroke="var(--violeta)" stroke-width="2.5" stroke-dasharray="6 5" points="220,70 280,62 340,52 430,46"/>
+        <circle cx="220" cy="70" r="5" fill="var(--accent)"/><text x="226" y="62" style="fill:var(--text);font-weight:800">hoje R$ 8.940</text>
+        <text x="430" y="16" text-anchor="end">se o mês for bom</text><text x="430" y="124" text-anchor="end">se o mês for ruim</text>
+        <text x="10" y="160">mai</text><text x="220" y="160">out</text><text x="420" y="160">abr</text>
+      </svg>
+      <p class="nota">A faixa usa o melhor e o pior mês dos últimos 6 para mostrar até onde o saldo pode ir.</p>
+    </div>
+
+    <div class="cartao">
+      <div class="cab"><div><div class="t">Categorias no tempo<span class="tag">NOVO</span></div><div class="s">Como cada categoria cresceu ou caiu</div></div><div class="esp"></div>
+        <div class="tipos"><span class="on">◭</span><span>⟋</span><span>▥</span></div></div>
+      <svg viewBox="0 0 440 160" width="100%">
+        <path d="M10 140 L10 100 C 80 96, 150 90, 220 92 C 290 94, 360 84, 430 80 L430 140Z" fill="rgba(92,240,176,.55)"/>
+        <path d="M10 100 C 80 96, 150 90, 220 92 C 290 94, 360 84, 430 80 L430 56 C 360 60, 290 66, 220 64 C 150 62, 80 72, 10 76Z" fill="rgba(157,140,255,.55)"/>
+        <path d="M10 76 C 80 72, 150 62, 220 64 C 290 66, 360 60, 430 56 L430 40 C 360 42, 290 34, 220 44 C 150 52, 80 56, 10 60Z" fill="rgba(66,227,200,.5)"/>
+        <path d="M10 60 C 80 56, 150 52, 220 44 C 290 34, 360 42, 430 40 L430 26 C 360 30, 290 20, 220 30 C 150 40, 80 44, 10 48Z" fill="rgba(245,195,91,.5)"/>
+      </svg>
+      <div class="chips" style="margin-top:8px"><span class="chip on">Mercado</span><span class="chip on">Moradia</span><span class="chip on">Transporte</span><span class="chip on">Lazer</span><span class="chip">Outros</span></div>
+    </div>
+
+    <div class="cartao">
+      <div class="cab"><div><div class="t">Fixo × parcelas × variável<span class="tag">NOVO</span></div><div class="s">Quanto do gasto já nasce decidido</div></div></div>
+      <div class="chips"><span class="chip on"><i style="width:8px;height:8px;border-radius:2px;background:var(--muted)"></i>Fixo</span><span class="chip on"><i style="width:8px;height:8px;border-radius:2px;background:var(--violeta)"></i>Parcelas</span><span class="chip on"><i style="width:8px;height:8px;border-radius:2px;background:var(--accent)"></i>Variável</span></div>
+      <svg viewBox="0 0 440 130" width="100%"><g id="rigidez"></g></svg>
+      <p class="nota">As chaves ligam e desligam cada parte. Leitura: “62% do seu gasto de outubro já estava comprometido antes do mês começar”.</p>
+    </div>
+  </div>
+
+  <!-- 3. PERSONALIZAR -->
+  <h2>3 · Personalizar o painel</h2>
+  <p class="sub">Um botão “Personalizar” no topo do Resumo e da Análise abre esta folha: ligue, desligue, arraste para reordenar e escolha o tipo padrão de cada cartão.</p>
+  <div class="grade g2">
+    <div class="cartao">
+      <div class="cab"><div><div class="t">Personalizar painel</div><div class="s">Finanças › Resumo</div></div></div>
+      <div class="lista">
+        <div class="item"><span class="alca">⋮⋮</span><span class="n">Saldo, receitas e despesas</span><span class="tp">cartões</span><span class="sw"></span></div>
+        <div class="item"><span class="alca">⋮⋮</span><span class="n">Fluxo do dinheiro no mês</span><span class="tp">fluxo</span><span class="sw"></span></div>
+        <div class="item"><span class="alca">⋮⋮</span><span class="n">Despesas por categoria</span><span class="tp">Rosca ▾</span><span class="sw"></span></div>
+        <div class="item"><span class="alca">⋮⋮</span><span class="n">Gasto por dia e projeção</span><span class="tp">Barras ▾</span><span class="sw"></span></div>
+        <div class="item"><span class="alca">⋮⋮</span><span class="n">Fluxo de caixa</span><span class="tp">Velas ▾</span><span class="sw"></span></div>
+        <div class="item"><span class="alca">⋮⋮</span><span class="n">Transações recentes</span><span class="tp">lista</span><span class="sw off"></span></div>
+      </div>
+      <p class="nota">Vale para este aparelho. “Restaurar padrão” volta à ordem original.</p>
+    </div>
+    <div class="cartao">
+      <div class="rotulo" style="color:var(--muted)">Onde cada cartão fica</div>
+      <table class="tabela">
+        <tr><th>Resumo (o mês)</th><th>Análise (vários meses)</th></tr>
+        <tr><td>Saldo, receitas e despesas</td><td>Trajetória do saldo</td></tr>
+        <tr><td>Fluxo do dinheiro no mês</td><td>Categorias no tempo</td></tr>
+        <tr><td>Despesas por categoria</td><td>Mapa de calor do gasto</td></tr>
+        <tr><td>Gasto por dia e projeção</td><td>Fixo × parcelas × variável</td></tr>
+        <tr><td>Fluxo de caixa</td><td>Leituras do período (frases automáticas)</td></tr>
+        <tr><td>Transações recentes</td><td>Período: 3, 6 ou 12 meses</td></tr>
+      </table>
+      <p class="nota">Tudo funciona offline, com os dados do aparelho; nada novo vai para o servidor. Os gráficos usam o fl_chart que o app já tem, mais dois desenhados à mão (fluxo e mapa de calor). Respeitam “reduzir movimento”.</p>
+    </div>
+  </div>
+</main>
+<script>
+  // Mapa de calor: 5 semanas × 7 dias, intensidade ilustrativa.
+  const calor=document.getElementById('calor');const dias=['seg','ter','qua','qui','sex','sáb','dom'];
+  const v=[.2,.3,.25,.4,.5,.9,.8, .15,.35,.2,.3,.6,1,.7, .25,.2,.3,.35,.55,.85,.9, .1,.25,.2,.45,.5,.95,.6, .3,.2,.15,.3,.4,.7,.75];
+  let h='';dias.forEach((d,i)=>{h+=`<text x="10" y="${22+i*18}">${d}</text>`});
+  for(let s=0;s<5;s++)for(let d=0;d<7;d++){const a=v[s*7+d];h+=`<rect x="${48+s*76}" y="${12+d*18}" width="70" height="14" rx="4" fill="rgba(231,123,255,${(.08+a*.8).toFixed(2)})"/>`}
+  calor.innerHTML=h;
+  // Rigidez: barras empilhadas por mês.
+  const rg=document.getElementById('rigidez');const meses=['mai','jun','jul','ago','set','out'];let r='';
+  meses.forEach((m,i)=>{const x=20+i*70,f=[38,40,40,42,44,46][i],p=[14,18,22,22,20,18][i],va=[44,30,36,40,28,40][i];let y=110;
+    [[f,'rgba(163,166,200,.55)'],[p,'rgba(157,140,255,.75)'],[va,'rgba(92,240,176,.75)']].forEach(([hh,c])=>{y-=hh;r+=`<rect x="${x}" y="${y}" width="44" height="${hh-2}" rx="4" fill="${c}"/>`});
+    r+=`<text x="${x+22}" y="124" text-anchor="middle">${m}</text>`});
+  rg.innerHTML=r;
+</script>
+</body>
+</html>

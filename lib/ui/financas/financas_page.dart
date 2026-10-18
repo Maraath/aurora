@@ -8,13 +8,19 @@ import '../../core/tema.dart';
 import '../../data/banco.dart';
 import '../../data/analise_financas.dart';
 import '../../data/financas_repo.dart';
+import '../../data/graficos_financas.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import 'form_conta.dart';
 import 'form_lancamento.dart';
+import 'graficos/cartao_categorias.dart';
+import 'graficos/cartao_fluxo_caixa.dart';
+import 'graficos/cartao_fluxo_dinheiro.dart';
+import 'graficos/cartao_gasto_dia.dart';
+import 'graficos/cartoes_analise.dart';
+import 'graficos/config.dart';
+import 'graficos/personalizar.dart';
 import 'painel/cartoes_resumo.dart';
-import 'painel/grafico_categorias.dart';
-import 'painel/grafico_fluxo.dart';
 import 'painel/transacoes.dart';
 
 enum _Vista {
@@ -39,9 +45,13 @@ class FinancasPage extends StatefulWidget {
 class _FinancasPageState extends State<FinancasPage> {
   FinancasRepo? _repo;
   Stream<QuadroFinancas>? _quadro;
+  PreferenciasPainel? _prefs;
   final _hoje = hojeSP();
   late DateTime _mes = DateTime(_hoje.year, _hoje.month, 1);
   _Vista _vista = _Vista.resumo;
+
+  /// Meses usados nos gráficos da Análise (3, 6 ou 12).
+  int _periodo = 6;
 
   @override
   void didChangeDependencies() {
@@ -50,7 +60,15 @@ class _FinancasPageState extends State<FinancasPage> {
     if (_repo?.db != db) {
       _repo = FinancasRepo(db);
       _quadro = _repo!.observarQuadro();
+      _prefs?.dispose();
+      _prefs = PreferenciasPainel(db);
     }
+  }
+
+  @override
+  void dispose() {
+    _prefs?.dispose();
+    super.dispose();
   }
 
   @override
@@ -61,7 +79,7 @@ class _FinancasPageState extends State<FinancasPage> {
         if (snap.hasError) return Text('Não consegui ler as finanças: ${snap.error}');
         final q = snap.data;
         if (q == null) return const SizedBox(height: 200);
-        return _conteudo(context, q);
+        return ListenableBuilder(listenable: _prefs!, builder: (context, _) => _conteudo(context, q));
       },
     );
   }
@@ -106,6 +124,7 @@ class _FinancasPageState extends State<FinancasPage> {
               quadro: q,
               mes: mes,
               hoje: _hoje,
+              prefs: _prefs!,
               aoPagar: (o) => _repo!.pagar(o, !o.paga),
               aoEditar: (t) => _lancar(q, t),
               aoVerExtrato: () => setState(() => _vista = _Vista.extrato),
@@ -114,7 +133,14 @@ class _FinancasPageState extends State<FinancasPage> {
           _Vista.fixas => _Fixas(quadro: q, aoEditar: (t) => _lancar(q, t)),
           _Vista.parceladas => _Parceladas(quadro: q, aoEditar: (t) => _lancar(q, t)),
           _Vista.contas => _Contas(quadro: q),
-          _Vista.analise => _Analise(quadro: q, mes: _mes, hoje: _hoje),
+          _Vista.analise => _Analise(
+              quadro: q,
+              mes: _mes,
+              hoje: _hoje,
+              prefs: _prefs!,
+              periodo: _periodo,
+              aoMudarPeriodo: (p) => setState(() => _periodo = p),
+            ),
         },
       ],
     );
@@ -158,13 +184,15 @@ class _SeletorMes extends StatelessWidget {
 
 // ---------------------------------------------------------------- Resumo
 
-/// Painel do mês: cartões de resumo, contas do mês, despesas por categoria,
-/// fluxo de caixa e as últimas transações.
+/// Painel do mês, montado com os cartões ligados em Personalizar e na ordem
+/// escolhida: resumo, contas do mês, fluxo do dinheiro, categorias, gasto por
+/// dia, fluxo de caixa e últimas transações.
 class _Resumo extends StatelessWidget {
   const _Resumo({
     required this.quadro,
     required this.mes,
     required this.hoje,
+    required this.prefs,
     required this.aoPagar,
     required this.aoEditar,
     required this.aoVerExtrato,
@@ -173,83 +201,162 @@ class _Resumo extends StatelessWidget {
   final QuadroFinancas quadro;
   final MesFinancas mes;
   final DateTime hoje;
+  final PreferenciasPainel prefs;
   final ValueChanged<Ocorrencia> aoPagar;
   final ValueChanged<Transacao> aoEditar;
   final VoidCallback aoVerExtrato;
 
   @override
   Widget build(BuildContext context) {
-    final c = context.cores;
+    final config = prefs.config;
     final painel = painelDoMes(quadro, mes.mes);
     final faltaReceber = mes.aReceber.where((o) => !o.paga).fold(0, (s, o) => s + o.valorCentavos);
-    final categorias = GraficoCategorias(categorias: painel.categorias);
-    final fluxo = GraficoFluxo(meses: quadro.serie(mes.mes), mesEscolhido: mes.mes);
+
+    Widget? cartao(CartaoFin c) => switch (c) {
+          CartaoFin.resumo => CartoesResumo(painel: painel),
+          CartaoFin.contas => mes.aPagar.isEmpty && mes.aReceber.isEmpty ? null : _contas(context, faltaReceber),
+          CartaoFin.fluxoDinheiro => CartaoFluxoDinheiro(
+              fato: fluxoDoDinheiro(quadro, mes.mes),
+              comPrevistos: fluxoDoDinheiro(quadro, mes.mes, comPrevistos: true),
+            ),
+          CartaoFin.categorias => CartaoCategorias(
+              categorias: painel.categorias,
+              comparacao: compararComMedia(quadro, mes.mes),
+              tipo: config.tipoDe(c)!,
+              aoEscolherTipo: (t) => prefs.escolherTipo(c, t),
+            ),
+          CartaoFin.gastoDia => CartaoGastoDia(
+              dados: gastoPorDia(quadro, mes.mes, hoje),
+              receitasCentavos: painel.receitasCentavos + faltaReceber,
+              tipo: config.tipoDe(c)!,
+              aoEscolherTipo: (t) => prefs.escolherTipo(c, t),
+            ),
+          CartaoFin.fluxoCaixa => CartaoFluxoCaixa(
+              meses: quadro.serie(mes.mes),
+              velas: config.tipoDe(c) == TipoGrafico.velas ? velasDoSaldo(quadro, mes.mes, hoje) : const [],
+              mesEscolhido: mes.mes,
+              tipo: config.tipoDe(c)!,
+              aoEscolherTipo: (t) => prefs.escolherTipo(c, t),
+            ),
+          CartaoFin.recentes => TransacoesRecentes(
+              movimentos: painel.recentes,
+              hoje: hoje,
+              nomesContas: {for (final conta in quadro.contas) conta.id: conta.nome},
+              contaPrincipalId: quadro.contaPrincipalId,
+              aoVerTudo: aoVerExtrato,
+              aoEditar: aoEditar,
+            ),
+          _ => null,
+        };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        CartoesResumo(painel: painel),
-        if (mes.aPagar.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          TituloSecao(
-            'Contas a pagar',
-            direita: Text(reais(mes.faltaPagarCentavos), style: manrope(13, peso: FontWeight.w700)),
-          ),
-          for (final o in mes.aPagar)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _LinhaConta(
-                ocorrencia: o,
-                hoje: hoje,
-                aoPagar: () => aoPagar(o),
-                aoEditar: () => aoEditar(o.transacao),
-              ),
-            ),
-        ],
-        if (mes.aReceber.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          TituloSecao(
-            'A receber',
-            direita: Text(reais(faltaReceber), style: manrope(13, peso: FontWeight.w700, cor: c.teal)),
-          ),
-          for (final o in mes.aReceber)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _LinhaConta(
-                ocorrencia: o,
-                hoje: hoje,
-                aoPagar: () => aoPagar(o),
-                aoEditar: () => aoEditar(o.transacao),
-              ),
-            ),
-        ],
-        const SizedBox(height: 24),
-        // Largo: os dois gráficos lado a lado; estreito: um embaixo do outro.
-        LayoutBuilder(builder: (context, box) {
-          if (box.maxWidth >= 700) {
-            return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(child: categorias),
-              const SizedBox(width: 16),
-              Expanded(child: fluxo),
-            ]);
-          }
-          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            categorias,
-            const SizedBox(height: 16),
-            fluxo,
-          ]);
-        }),
-        const SizedBox(height: 16),
-        TransacoesRecentes(
-          movimentos: painel.recentes,
-          hoje: hoje,
-          nomesContas: {for (final conta in quadro.contas) conta.id: conta.nome},
-          contaPrincipalId: quadro.contaPrincipalId,
-          aoVerTudo: aoVerExtrato,
-          aoEditar: aoEditar,
-        ),
+        _BotaoPersonalizar(aoTocar: () => abrirPersonalizar(context, prefs, PainelFin.resumo)),
+        _Grade(itens: [
+          for (final c in config.visiveis(PainelFin.resumo))
+            if (cartao(c) case final w?) (c, w),
+        ]),
       ],
     );
+  }
+
+  Widget _contas(BuildContext context, int faltaReceber) {
+    final c = context.cores;
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      if (mes.aPagar.isNotEmpty) ...[
+        TituloSecao(
+          'Contas a pagar',
+          direita: Text(reais(mes.faltaPagarCentavos), style: manrope(13, peso: FontWeight.w700)),
+        ),
+        for (final o in mes.aPagar)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _LinhaConta(
+              ocorrencia: o,
+              hoje: hoje,
+              aoPagar: () => aoPagar(o),
+              aoEditar: () => aoEditar(o.transacao),
+            ),
+          ),
+      ],
+      if (mes.aReceber.isNotEmpty) ...[
+        if (mes.aPagar.isNotEmpty) const SizedBox(height: 8),
+        TituloSecao(
+          'A receber',
+          direita: Text(reais(faltaReceber), style: manrope(13, peso: FontWeight.w700, cor: c.teal)),
+        ),
+        for (final o in mes.aReceber)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _LinhaConta(
+              ocorrencia: o,
+              hoje: hoje,
+              aoPagar: () => aoPagar(o),
+              aoEditar: () => aoEditar(o.transacao),
+            ),
+          ),
+      ],
+    ]);
+  }
+}
+
+/// "Personalizar" no topo dos painéis de Resumo e Análise.
+class _BotaoPersonalizar extends StatelessWidget {
+  const _BotaoPersonalizar({required this.aoTocar});
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: TextButton.icon(
+          onPressed: aoTocar,
+          icon: Icon(Icons.tune_rounded, size: 18, color: c.accent),
+          label: Text('Personalizar', style: manrope(13, peso: FontWeight.w700, cor: c.accent)),
+        ),
+      ),
+    );
+  }
+}
+
+/// Os cartões um embaixo do outro; em tela larga, dois cartões seguidos de
+/// meia largura dividem a linha.
+class _Grade extends StatelessWidget {
+  const _Grade({required this.itens});
+  final List<(CartaoFin, Widget)> itens;
+
+  static const _vao = 16.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, box) {
+      final largo = box.maxWidth >= 700;
+      final linhas = <Widget>[];
+      for (var i = 0; i < itens.length; i++) {
+        final (cartao, w) = itens[i];
+        if (largo && cartao.meia && i + 1 < itens.length && itens[i + 1].$1.meia) {
+          // Sem IntrinsicHeight: os gráficos usam LayoutBuilder, que não mede altura intrínseca.
+          linhas.add(Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(child: w),
+            const SizedBox(width: _vao),
+            Expanded(child: itens[i + 1].$2),
+          ]));
+          i++;
+        } else {
+          linhas.add(w);
+        }
+      }
+      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        for (var i = 0; i < linhas.length; i++) ...[
+          if (i > 0) const SizedBox(height: _vao),
+          linhas[i],
+        ],
+      ]);
+    });
   }
 }
 
@@ -744,110 +851,172 @@ class _Parceladas extends StatelessWidget {
 
 // ---------------------------------------------------------------- Análise
 
+/// Análise: o gasto do mês e gráficos de vários meses ([periodo]), montados
+/// com os cartões ligados em Personalizar e na ordem escolhida.
 class _Analise extends StatelessWidget {
-  const _Analise({required this.quadro, required this.mes, required this.hoje});
+  const _Analise({
+    required this.quadro,
+    required this.mes,
+    required this.hoje,
+    required this.prefs,
+    required this.periodo,
+    required this.aoMudarPeriodo,
+  });
+
   final QuadroFinancas quadro;
   final DateTime mes;
   final DateTime hoje;
+  final PreferenciasPainel prefs;
+  final int periodo;
+  final ValueChanged<int> aoMudarPeriodo;
 
   @override
   Widget build(BuildContext context) {
-    final c = context.cores;
+    final config = prefs.config;
     final a = analisarMes(quadro, mes, hoje);
-    final v = a.variacao;
-    final maior = a.categorias.isEmpty ? 1 : a.gastoCentavos;
+    final fimDoMes = DateTime(mes.year, mes.month + 1, 0);
+    final serie = quadro.serie(mes, meses: periodo);
+    final calor = mapaDeCalor(quadro, fimDoMes, hoje);
+    final rigidezMeses = rigidez(quadro, mes, meses: periodo);
+    final velas = velasDoSaldo(quadro, mes, hoje, meses: periodo);
+
+    Widget? cartao(CartaoFin c) => switch (c) {
+          CartaoFin.gastoMes => _gastoMes(context, a),
+          CartaoFin.leituras => CartaoLeituras(
+              frases: leiturasDoPeriodo(serie: serie, calor: calor, rigidezMeses: rigidezMeses, nomeMes: mesAno),
+              periodo: periodo,
+              aoMudarPeriodo: aoMudarPeriodo,
+            ),
+          CartaoFin.trajetoria => CartaoTrajetoria(
+              velas: velas,
+              projecao: projetarSaldo(velas.last.fechamento, serie),
+              tipo: config.tipoDe(c)!,
+              aoEscolherTipo: (t) => prefs.escolherTipo(c, t),
+            ),
+          CartaoFin.categoriasTempo => CartaoCategoriasTempo(
+              dados: categoriasNoTempo(quadro, mes, meses: periodo),
+              tipo: config.tipoDe(c)!,
+              aoEscolherTipo: (t) => prefs.escolherTipo(c, t),
+            ),
+          CartaoFin.mapaCalor => CartaoMapaCalor(mapa: calor),
+          CartaoFin.rigidez => CartaoRigidez(
+              meses: rigidezMeses,
+              tipo: config.tipoDe(c)!,
+              aoEscolherTipo: (t) => prefs.escolherTipo(c, t),
+            ),
+          CartaoFin.paraOndeFoi => _paraOndeFoi(context, a),
+          CartaoFin.maiores => a.maiores.isEmpty ? null : _maiores(context, a),
+          _ => null,
+        };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Cartao(
+        _BotaoPersonalizar(aoTocar: () => abrirPersonalizar(context, prefs, PainelFin.analise)),
+        _Grade(itens: [
+          for (final c in config.visiveis(PainelFin.analise))
+            if (cartao(c) case final w?) (c, w),
+        ]),
+      ],
+    );
+  }
+
+  Widget _gastoMes(BuildContext context, AnaliseMes a) {
+    final c = context.cores;
+    final v = a.variacao;
+    return Cartao(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Gasto no mês', style: manrope(12, peso: FontWeight.w600, cor: c.muted)),
+          const SizedBox(height: 2),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(reais(a.gastoCentavos), style: sora(30)),
+          ),
+          if (v != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              v.abs() < 0.005
+                  ? 'igual ao mês anterior'
+                  : '${(v.abs() * 100).round()}% ${v > 0 ? 'a mais' : 'a menos'} que o mês anterior '
+                      '(${reais(a.gastoAnteriorCentavos)})',
+              style: manrope(13, peso: FontWeight.w600, cor: v > 0 ? c.bad : c.teal),
+            ),
+          ],
+          const SizedBox(height: 14),
+          Row(children: [
+            Expanded(child: _Caixa('Média por dia', a.mediaDiaCentavos, c.surface2, c.text)),
+            if (a.projecaoCentavos != null) ...[
+              const SizedBox(width: 10),
+              Expanded(child: _Caixa('Projeção do mês', a.projecaoCentavos!, c.accentSoft, c.violeta)),
+            ],
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _paraOndeFoi(BuildContext context, AnaliseMes a) {
+    final c = context.cores;
+    final maior = a.categorias.isEmpty ? 1 : a.gastoCentavos;
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      const TituloSecao('Para onde foi'),
+      if (a.categorias.isEmpty) const Vazio('Nenhum gasto pago neste mês.'),
+      for (final cat in a.categorias)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Gasto no mês', style: manrope(12, peso: FontWeight.w600, cor: c.muted)),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(reais(a.gastoCentavos), style: sora(30)),
-              ),
-              if (v != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  v.abs() < 0.005
-                      ? 'igual ao mês anterior'
-                      : '${(v.abs() * 100).round()}% ${v > 0 ? 'a mais' : 'a menos'} que o mês anterior '
-                          '(${reais(a.gastoAnteriorCentavos)})',
-                  style: manrope(13, peso: FontWeight.w600, cor: v > 0 ? c.bad : c.teal),
-                ),
-              ],
-              const SizedBox(height: 14),
               Row(children: [
-                Expanded(child: _Caixa('Média por dia', a.mediaDiaCentavos, c.surface2, c.text)),
-                if (a.projecaoCentavos != null) ...[
-                  const SizedBox(width: 10),
-                  Expanded(child: _Caixa('Projeção do mês', a.projecaoCentavos!, c.accentSoft, c.violeta)),
-                ],
+                Expanded(child: Text(cat.atual.nome, style: manrope(14))),
+                if (cat.anteriorCentavos > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Text(
+                      _delta(cat.atual.centavos, cat.anteriorCentavos),
+                      style: manrope(12,
+                          peso: FontWeight.w700, cor: cat.atual.centavos > cat.anteriorCentavos ? c.bad : c.teal),
+                    ),
+                  ),
+                Text(reais(cat.atual.centavos), style: manrope(14, peso: FontWeight.w700)),
               ]),
+              const SizedBox(height: 6),
+              BarraProgresso(fracao: cat.atual.centavos / maior, cor: c.accent),
             ],
           ),
         ),
-        const SizedBox(height: 18),
-        const TituloSecao('Para onde foi'),
-        if (a.categorias.isEmpty) const Vazio('Nenhum gasto pago neste mês.'),
-        for (final cat in a.categorias)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(children: [
-                  Expanded(child: Text(cat.atual.nome, style: manrope(14))),
-                  if (cat.anteriorCentavos > 0)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: Text(
-                        _delta(cat.atual.centavos, cat.anteriorCentavos),
-                        style: manrope(12,
-                            peso: FontWeight.w700,
-                            cor: cat.atual.centavos > cat.anteriorCentavos ? c.bad : c.teal),
-                      ),
-                    ),
-                  Text(reais(cat.atual.centavos), style: manrope(14, peso: FontWeight.w700)),
-                ]),
-                const SizedBox(height: 6),
-                BarraProgresso(fracao: cat.atual.centavos / maior, cor: c.accent),
-              ],
-            ),
-          ),
-        if (a.maiores.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          const TituloSecao('Maiores gastos'),
-          Cartao(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Column(children: [
-              for (var i = 0; i < a.maiores.length; i++) ...[
-                if (i > 0) Divider(height: 1, color: c.line),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Row(children: [
-                    Expanded(
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(a.maiores[i].nome,
-                            maxLines: 1, overflow: TextOverflow.ellipsis, style: manrope(14, peso: FontWeight.w600)),
-                        Text('${a.maiores[i].categoria} · ${diaMesCurto(a.maiores[i].dia)}',
-                            style: manrope(12, cor: c.muted)),
-                      ]),
-                    ),
-                    Text(reais(a.maiores[i].valorCentavos), style: manrope(14, peso: FontWeight.w700)),
+    ]);
+  }
+
+  Widget _maiores(BuildContext context, AnaliseMes a) {
+    final c = context.cores;
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      const TituloSecao('Maiores gastos'),
+      Cartao(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Column(children: [
+          for (var i = 0; i < a.maiores.length; i++) ...[
+            if (i > 0) Divider(height: 1, color: c.line),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(children: [
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(a.maiores[i].nome,
+                        maxLines: 1, overflow: TextOverflow.ellipsis, style: manrope(14, peso: FontWeight.w600)),
+                    Text('${a.maiores[i].categoria} · ${diaMesCurto(a.maiores[i].dia)}', style: manrope(12, cor: c.muted)),
                   ]),
                 ),
-              ],
-            ]),
-          ),
-        ],
-      ],
-    );
+                Text(reais(a.maiores[i].valorCentavos), style: manrope(14, peso: FontWeight.w700)),
+              ]),
+            ),
+          ],
+        ]),
+      ),
+    ]);
   }
 
   /// "+12%" / "−8%" em relação ao mês anterior.
