@@ -15,6 +15,7 @@ import '../bloqueio_ui.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import '../formulario.dart';
+import 'legal_page.dart';
 
 /// Conta na nuvem. Opcional: sem conta, o app funciona offline como sempre.
 class ContaPage extends StatefulWidget {
@@ -210,6 +211,8 @@ class _ContaPageState extends State<ContaPage> {
         SecaoBloqueio(db: AuroraEscopo.de(context).db),
         const SizedBox(height: 28),
         _Versao(),
+        const SizedBox(height: 10),
+        const LinksLegais(),
       ],
     );
   }
@@ -243,6 +246,19 @@ class _ContaPageState extends State<ContaPage> {
         Align(
           alignment: Alignment.centerLeft,
           child: BotaoPilula(texto: 'Sair da conta', principal: false, aoTocar: _sair),
+        ),
+        const SizedBox(height: 6),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: _ocupado
+              ? const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5)),
+                )
+              : TextButton(
+                  onPressed: () => _excluirConta(usuario),
+                  child: Text('Excluir conta', style: manrope(13, peso: FontWeight.w600, cor: c.bad)),
+                ),
         ),
         if (_erro != null) ...[
           const SizedBox(height: 10),
@@ -299,6 +315,20 @@ class _ContaPageState extends State<ContaPage> {
           BotaoPilula(texto: 'Sincronizar agora', principal: false, aoTocar: ServicoSync.instancia.sincronizar),
       ],
     );
+  }
+
+  Future<void> _excluirConta(User usuario) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => const _ConfirmarExclusao(),
+    );
+    final cliente = nuvem;
+    if (ok != true || cliente == null) return;
+    await _executar(() async {
+      await excluirConta(cliente);
+      await sairDoGoogle();
+      _aviso = 'Conta excluída. Os dados deste aparelho continuam aqui, só offline.';
+    });
   }
 
   Future<void> _usarNuvem() async {
@@ -411,6 +441,8 @@ class _ContaPageState extends State<ContaPage> {
         ),
         const SizedBox(height: 16),
         _BotaoGoogle(ocupado: _ocupado, aoTocar: _google),
+        const SizedBox(height: 10),
+        const AvisoAceite(prefixo: 'Ao continuar com o Google ou criar uma conta, você concorda com os '),
         const SizedBox(height: 16),
         Row(children: [
           Expanded(child: Divider(color: c.line)),
@@ -468,6 +500,68 @@ class _ContaPageState extends State<ContaPage> {
           const SizedBox(height: 12),
           Text(_erro!, style: manrope(13, peso: FontWeight.w600, cor: c.bad, altura: 1.4)),
         ],
+      ],
+    );
+  }
+}
+
+/// Confirmação de excluir a conta: diz o que some e pede para digitar EXCLUIR.
+class _ConfirmarExclusao extends StatefulWidget {
+  const _ConfirmarExclusao();
+
+  @override
+  State<_ConfirmarExclusao> createState() => _ConfirmarExclusaoState();
+}
+
+class _ConfirmarExclusaoState extends State<_ConfirmarExclusao> {
+  final _texto = TextEditingController();
+
+  @override
+  void dispose() {
+    _texto.dispose();
+    super.dispose();
+  }
+
+  bool get _liberado => _texto.text.trim().toUpperCase() == 'EXCLUIR';
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return AlertDialog(
+      backgroundColor: c.surface,
+      title: Text('Excluir a conta?', style: sora(18)),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Isto apaga para sempre, da nuvem: o seu login, todos os dados sincronizados '
+              '(tarefas, hábitos, finanças, treinos, medidas, alimentação, metas, projetos, '
+              'automações e a conversa do assistente) e as fotos do Shape. Não tem como desfazer.',
+              style: manrope(14, cor: c.text, altura: 1.5),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Os dados deste aparelho continuam aqui e o app segue funcionando offline. Para '
+              'apagá-los também, desinstale o app.',
+              style: manrope(13, cor: c.muted, altura: 1.5),
+            ),
+            const SizedBox(height: 14),
+            Campo(
+              rotulo: 'Digite EXCLUIR para confirmar',
+              child: CampoTexto(controle: _texto, dica: 'EXCLUIR', aoMudar: (_) => setState(() {})),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+        TextButton(
+          onPressed: _liberado ? () => Navigator.pop(context, true) : null,
+          child: Text('Excluir para sempre',
+              style: TextStyle(color: _liberado ? c.bad : c.muted, fontWeight: FontWeight.w700)),
+        ),
       ],
     );
   }

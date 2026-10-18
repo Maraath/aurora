@@ -1,7 +1,7 @@
 name: aurora
 description: "Aurora: tarefas, hábitos, treino, finanças e metas num app só."
 publish_to: 'none'
-version: 1.3.1+14
+version: 1.4.0+15
 
 environment:
   sdk: ^3.13.5
@@ -46,6 +46,11 @@ flutter:
     - assets/exercicios.json
     # Ícone do app (gerado por tool/icone/gerar.ps1 a partir de tool/icone/aurora.svg).
     - assets/icone/aurora.png
+    # Política de privacidade e termos de uso (lidos em lib/ui/conta/legal_page.dart).
+    - assets/legal/
+    # Licenças das fontes (SIL OFL), mostradas em Conta › Licenças.
+    - assets/fonts/OFL-Sora.txt
+    - assets/fonts/OFL-Manrope.txt
   fonts:
     - family: Sora
       fonts:

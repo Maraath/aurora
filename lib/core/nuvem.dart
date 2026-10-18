@@ -40,6 +40,32 @@ SupabaseClient? get nuvem {
   }
 }
 
+/// Erro com a mensagem já pronta para a pessoa.
+class ErroConta implements Exception {
+  const ErroConta(this.mensagem);
+  final String mensagem;
+}
+
+/// Exclui a conta de quem está logado (Edge Function "excluir-conta"): fotos,
+/// dados da nuvem e o login. Depois sai da sessão. Os dados deste aparelho
+/// ficam; o app segue funcionando offline.
+Future<void> excluirConta(SupabaseClient cliente) async {
+  try {
+    await cliente.functions.invoke('excluir-conta');
+  } on FunctionException catch (e) {
+    final detalhes = e.details;
+    throw ErroConta(detalhes is Map && detalhes['erro'] is String
+        ? detalhes['erro'] as String
+        : 'Não deu para excluir a conta (erro ${e.status}).');
+  }
+  try {
+    await cliente.auth.signOut();
+  } catch (_) {
+    // A conta já não existe; o que importa é limpar a sessão local.
+    await cliente.auth.signOut(scope: SignOutScope.local);
+  }
+}
+
 /// Traduz os erros mais comuns do login para português.
 String mensagemDeErro(Object e) {
   if (e is AuthException) {
@@ -60,6 +86,7 @@ String mensagemDeErro(Object e) {
     if (m.contains('invalid') && m.contains('email')) return 'Esse e-mail não parece válido.';
     return e.message;
   }
+  if (e is ErroConta) return e.mensagem;
   final t = e.toString().toLowerCase();
   if (t.contains('socket') || t.contains('failed host lookup') || t.contains('clientexception')) {
     return 'Sem conexão com a internet.';

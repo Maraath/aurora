@@ -5,7 +5,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../core/comandos.dart' show normalizar;
 
 /// Fonte do catálogo, mostrada no app.
-const fonteTaco = 'Tabela Brasileira de Composição de Alimentos (TACO), 4ª ed., NEPA/Unicamp';
+const fonteTaco = 'Tabela Brasileira de Composição de Alimentos (TACO), 4ª ed., NEPA/Unicamp, 2011';
 
 /// Um alimento da TACO (valores por 100 g).
 class ItemCatalogo {
