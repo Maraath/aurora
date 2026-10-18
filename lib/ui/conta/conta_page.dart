@@ -15,7 +15,6 @@ import '../bloqueio_ui.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import '../formulario.dart';
-import 'legal_page.dart';
 
 /// Conta na nuvem. Opcional: sem conta, o app funciona offline como sempre.
 class ContaPage extends StatefulWidget {
@@ -211,8 +210,6 @@ class _ContaPageState extends State<ContaPage> {
         SecaoBloqueio(db: AuroraEscopo.de(context).db),
         const SizedBox(height: 28),
         _Versao(),
-        const SizedBox(height: 10),
-        const LinksLegais(),
       ],
     );
   }
@@ -441,8 +438,6 @@ class _ContaPageState extends State<ContaPage> {
         ),
         const SizedBox(height: 16),
         _BotaoGoogle(ocupado: _ocupado, aoTocar: _google),
-        const SizedBox(height: 10),
-        const AvisoAceite(prefixo: 'Ao continuar com o Google ou criar uma conta, você concorda com os '),
         const SizedBox(height: 16),
         Row(children: [
           Expanded(child: Divider(color: c.line)),

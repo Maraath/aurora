@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../core/tema.dart';
 import 'ceu_estrelado.dart';
 import 'componentes.dart';
-import 'conta/legal_page.dart';
 import 'formulario.dart';
 
 /// Primeira abertura num aparelho novo: o app começa vazio. Pede só o nome
@@ -76,8 +75,6 @@ class _BoasVindasPageState extends State<BoasVindasPage> {
                     alignment: Alignment.centerLeft,
                     child: BotaoPilula(texto: 'Entrar na minha conta', principal: false, aoTocar: widget.aoEntrar),
                   ),
-                  const SizedBox(height: 20),
-                  const LinksLegais(),
                 ],
               ),
             ),

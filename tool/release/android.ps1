@@ -18,11 +18,6 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-Location (Resolve-Path "$PSScriptRoot\..\..")
 
-# Política de privacidade e termos citam um e-mail de contato.
-if (Select-String -Path lib\ui\conta\legal_page.dart -Pattern "^const contatoLegal = '';" -Quiet) {
-  throw 'Preencha contatoLegal em lib\ui\conta\legal_page.dart antes de publicar.'
-}
-
 if (-not (Test-Path android\key.properties)) { throw 'Falta android\key.properties (chave de lançamento).' }
 
 $linha = Select-String -Path pubspec.yaml -Pattern '^version:\s*(\d+\.\d+\.\d+)\+(\d+)' | Select-Object -First 1

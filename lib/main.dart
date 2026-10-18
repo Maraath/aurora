@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
@@ -21,12 +19,6 @@ Future<void> main() async {
   Intl.defaultLocale = 'pt_BR';
   await initializeDateFormatting('pt_BR');
   iniciarRelogio();
-  // As fontes vêm no app: a licença delas entra em Conta › Licenças.
-  LicenseRegistry.addLicense(() async* {
-    for (final fonte in ['Sora', 'Manrope']) {
-      yield LicenseEntryWithLineBreaks([fonte], await rootBundle.loadString('assets/fonts/OFL-$fonte.txt'));
-    }
-  });
   await iniciarNuvem();
 
   final db = BancoAurora();
