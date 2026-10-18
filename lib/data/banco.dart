@@ -416,8 +416,11 @@ class BancoAurora extends _$BancoAurora {
           }
           if (de < 9) await m.createTable(automacoes);
           if (de < 10) {
-            await m.createTable(fotosShape);
-            await m.createIndex(fotoShapeDiaAngulo);
+            // Pode já existir: um app mais antigo que abre o banco depois de
+            // um mais novo volta o número da versão sem desfazer as tabelas.
+            await m.createTable(fotosShape); // CREATE TABLE IF NOT EXISTS
+            await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS foto_shape_dia_angulo '
+                'ON fotos_shape (dia, angulo)');
           }
         },
         beforeOpen: (detalhes) async {
