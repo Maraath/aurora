@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/tema.dart';
+import 'vidro.dart';
 
 /// Cartão padrão: superfície com borda fina e cantos arredondados.
 class Cartao extends StatelessWidget {
@@ -28,8 +29,34 @@ class Cartao extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
+    final cantos = BorderRadius.circular(raio);
+    final toque = Material(
+      type: MaterialType.transparency,
+      shape: RoundedRectangleBorder(borderRadius: cantos),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: aoTocar,
+        child: Padding(padding: padding, child: child),
+      ),
+    );
+
+    if (Theme.of(context).brightness == Brightness.dark) {
+      // Cartão sobre o céu: vidro com desfoque. Cartão dentro de outro cartão
+      // (sem sombra): só transparência, para não empilhar desfoques.
+      if (sombra) return Vidro(raio: cantos, cor: cor, borda: borda, child: toque);
+      final base = cor ?? c.surface2;
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: base.a < 1 ? base : base.withValues(alpha: 0.35),
+          borderRadius: cantos,
+          border: borda ? Border.all(color: Colors.white.withValues(alpha: 0.07)) : null,
+        ),
+        child: toque,
+      );
+    }
+
     final forma = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(raio),
+      borderRadius: cantos,
       side: borda ? BorderSide(color: c.line) : BorderSide.none,
     );
     return DecoratedBox(
@@ -156,9 +183,8 @@ class Segmentos<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    return Container(
+    final trilho = Padding(
       padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(14)),
       child: LayoutBuilder(builder: (context, box) {
         final larguras = [for (final o in opcoes) _largura(context, rotulo(o)) + 28];
         final cabe = larguras.fold<double>(0, (s, l) => s + l) <= box.maxWidth;
@@ -174,6 +200,11 @@ class Segmentos<T> extends StatelessWidget {
         );
       }),
     );
+    final cantos = BorderRadius.circular(14);
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return Vidro(raio: cantos, cor: c.surface2, child: trilho);
+    }
+    return DecoratedBox(decoration: BoxDecoration(color: c.surface2, borderRadius: cantos), child: trilho);
   }
 
   double _largura(BuildContext context, String texto) {
@@ -222,13 +253,9 @@ class Contador extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    return Container(
+    final cantos = BorderRadius.circular(14);
+    final conteudo = Padding(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: fundo ?? c.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: fundo == null ? Border.all(color: c.line) : null,
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -240,6 +267,21 @@ class Contador extends StatelessWidget {
               overflow: TextOverflow.ellipsis),
         ],
       ),
+    );
+    if (Theme.of(context).brightness == Brightness.dark) {
+      // Vidro com a cor do contador por cima (magenta, verde...), como vidro tingido.
+      return Vidro(
+        raio: cantos,
+        child: fundo == null ? conteudo : ColoredBox(color: fundo!, child: conteudo),
+      );
+    }
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: fundo ?? c.surface,
+        borderRadius: cantos,
+        border: fundo == null ? Border.all(color: c.line) : null,
+      ),
+      child: conteudo,
     );
   }
 }

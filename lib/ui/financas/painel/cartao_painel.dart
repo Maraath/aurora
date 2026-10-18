@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/tema.dart';
+import '../../vidro.dart';
 
 /// Cartão do painel de Finanças: cantos arredondados, borda fina e sombra
 /// suave. Com [titulo], mostra um cabeçalho (e [acao] à direita).
@@ -24,19 +25,8 @@ class CartaoPainel extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     final escuro = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.line),
-        boxShadow: [
-          BoxShadow(
-            color: escuro ? const Color(0x59000000) : const Color(0x140D0B26),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+    final cantos = BorderRadius.circular(20);
+    final conteudo = Padding(
       padding: padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -59,6 +49,16 @@ class CartaoPainel extends StatelessWidget {
           child,
         ],
       ),
+    );
+    if (escuro) return Vidro(raio: cantos, child: conteudo);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: cantos,
+        border: Border.all(color: c.line),
+        boxShadow: const [BoxShadow(color: Color(0x140D0B26), blurRadius: 24, offset: Offset(0, 8))],
+      ),
+      child: conteudo,
     );
   }
 }

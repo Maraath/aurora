@@ -8,6 +8,7 @@ import '../../data/projetos_repo.dart';
 import '../../data/tarefas_repo.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
+import '../vidro.dart';
 import '../tarefas/form_tarefa.dart';
 import 'form_projeto.dart';
 
@@ -293,11 +294,14 @@ class _CartaoProjetoState extends State<_CartaoProjeto> {
     };
     final rotinas = p.etapas.where((e) => e.rotina).length;
 
-    return Material(
-      color: c.surface,
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    final cartao = Material(
+      color: escuro ? Colors.transparent : c.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: widget.aberto ? c.accent : c.line, width: widget.aberto ? 1.5 : 1),
+        side: escuro && !widget.aberto
+            ? BorderSide.none
+            : BorderSide(color: widget.aberto ? c.accent : c.line, width: widget.aberto ? 1.5 : 1),
       ),
       clipBehavior: Clip.antiAlias,
       child: Padding(
@@ -383,6 +387,9 @@ class _CartaoProjetoState extends State<_CartaoProjeto> {
         ),
       ),
     );
+    if (!escuro) return cartao;
+    // Vidro por trás; a borda verde de "aberto" fica no Material, por cima.
+    return Vidro(raio: BorderRadius.circular(20), borda: !widget.aberto, child: cartao);
   }
 
   Widget _linhaEtapa(BuildContext context, AuroraCores c, EtapaProjeto e) {

@@ -10,6 +10,7 @@ import '../../core/nuvem.dart';
 import '../../core/tema.dart';
 import '../../data/assistente_repo.dart';
 import '../../data/banco.dart';
+import '../vidro.dart';
 
 /// Chat com o assistente, organizado assim:
 /// conversa rolando no meio, campo de mensagem fixo embaixo, mensagens novas
@@ -737,18 +738,22 @@ class _ContornoAtivoState extends State<ContornoAtivo> {
   Widget build(BuildContext context) {
     final c = context.cores;
     final ativo = widget.foco.hasFocus;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    final cantos = BorderRadius.circular(24);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: ativo ? c.accent.withValues(alpha: .7) : c.line),
+        // No escuro o campo é vidro (abaixo); a borda e o brilho do foco ficam aqui.
+        color: escuro ? null : c.surface,
+        borderRadius: cantos,
+        border: Border.all(
+            color: ativo ? c.accent.withValues(alpha: .7) : (escuro ? Colors.white.withValues(alpha: .1) : c.line)),
         boxShadow: [
-          ...sombraCartao(context),
+          if (!escuro) ...sombraCartao(context),
           if (ativo) BoxShadow(color: c.accent.withValues(alpha: .14), spreadRadius: 3),
         ],
       ),
-      child: widget.child,
+      child: escuro ? Vidro(raio: cantos, borda: false, child: widget.child) : widget.child,
     );
   }
 }

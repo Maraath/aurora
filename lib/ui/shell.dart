@@ -19,6 +19,7 @@ import 'menu_dock.dart';
 import 'metas/metas_page.dart';
 import 'projetos/projetos_page.dart';
 import 'saude/treino_page.dart';
+import 'vidro.dart';
 import 'tarefas/tarefas_page.dart';
 import 'visao/visao_page.dart';
 
@@ -170,7 +171,6 @@ class _ShellState extends State<Shell> {
         aoEntrar: () => _sairDasBoasVindas('', Secao.conta),
       );
     }
-    final c = context.cores;
     final desktop = MediaQuery.sizeOf(context).width >= larguraDesktop;
 
     final cabecalho = _Cabecalho(
@@ -185,7 +185,11 @@ class _ShellState extends State<Shell> {
         child: _pagina(desktop),
       ),
     );
-    final conteudo = SafeArea(
+    // No celular o conteúdo passa por baixo da barra de vidro (extendBody): a
+    // margem de baixo soma a altura da barra, que o Scaffold põe no MediaQuery.
+    Widget conteudo(BuildContext ctx) {
+      final barra = desktop ? 0.0 : MediaQuery.paddingOf(ctx).bottom;
+      return SafeArea(
       bottom: false,
       child: Align(
         alignment: Alignment.topCenter,
@@ -197,7 +201,7 @@ class _ShellState extends State<Shell> {
               ? Padding(
                   padding: desktop
                       ? const EdgeInsets.fromLTRB(Espaco.xl, Espaco.lg, Espaco.xl, Espaco.lg)
-                      : const EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.md),
+                      : EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.md + barra),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -210,27 +214,38 @@ class _ShellState extends State<Shell> {
               : ListView(
                   padding: desktop
                       ? const EdgeInsets.fromLTRB(Espaco.xl, Espaco.lg, Espaco.xl, Espaco.xxl)
-                      : const EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.xl),
+                      : EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.xl + barra),
                   children: [cabecalho, const SizedBox(height: Espaco.lg), pagina],
                 ),
         ),
       ),
     );
+    }
 
+    // Um BackdropGroup para a tela toda: barra e cartões de vidro leem o fundo
+    // uma vez só por quadro.
     if (desktop) {
-      return Scaffold(
-        body: Row(
-          children: [
-            _BarraLateral(atual: _secaoDaBarra(true), ir: _ir),
-            VerticalDivider(width: 1, thickness: 1, color: c.line),
-            Expanded(child: CeuEstrelado(child: conteudo)),
-          ],
+      // O céu fica atrás da janela inteira; o menu é vidro por cima dele.
+      return BackdropGroup(
+        child: Scaffold(
+          body: CeuEstrelado(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _BarraLateral(atual: _secaoDaBarra(true), ir: _ir),
+                Expanded(child: Builder(builder: conteudo)),
+              ],
+            ),
+          ),
         ),
       );
     }
-    return Scaffold(
-      body: CeuEstrelado(child: conteudo),
-      bottomNavigationBar: _BarraInferior(atual: _secaoDaBarra(false), ir: _ir),
+    return BackdropGroup(
+      child: Scaffold(
+        extendBody: true,
+        body: CeuEstrelado(child: Builder(builder: conteudo)),
+        bottomNavigationBar: _BarraInferior(atual: _secaoDaBarra(false), ir: _ir),
+      ),
     );
   }
 }
@@ -367,11 +382,10 @@ class _BarraInferior extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    return Container(
-      decoration: BoxDecoration(
-        color: c.surface,
-        border: Border(top: BorderSide(color: c.line)),
-      ),
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    return Vidro(
+      tipo: TipoVidro.barra,
+      lados: Border(top: BorderSide(color: escuro ? Colors.white.withValues(alpha: 0.09) : c.line)),
       child: SafeArea(
         top: false,
         child: Padding(
@@ -394,7 +408,7 @@ class _BarraInferior extends StatelessWidget {
   }
 }
 
-/// Menu lateral (computador): dock só de ícones. Os ícones
+/// Menu lateral (computador): dock só de ícones flutuando. Os ícones
 /// crescem com mola perto do mouse e o nome aparece ao lado (ver MenuDock).
 class _BarraLateral extends StatelessWidget {
   const _BarraLateral({required this.atual, required this.ir});
@@ -403,7 +417,6 @@ class _BarraLateral extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.cores;
     final itens = <ItemDock>[];
     for (var g = 0; g < _gruposLateral.length; g++) {
       for (var i = 0; i < _gruposLateral[g].length; i++) {
@@ -424,15 +437,21 @@ class _BarraLateral extends StatelessWidget {
       aoTocar: () => ir(_itemConta.secao),
       espacoAntes: 16,
     ));
-    return Container(
+    // Sem painel, fundo nem borda. Logo e ícones flutuam sobre o
+    // céu, numa coluna de 72 px centralizada na vertical. A faixa fica reservada
+    // para o conteúdo não passar por baixo dos ícones em janelas estreitas.
+    return SizedBox(
       width: 72,
-      color: c.surface,
-      padding: const EdgeInsets.symmetric(vertical: 18),
-      child: Column(children: [
-        const LogoAurora(tamanho: 34),
-        const SizedBox(height: 22),
-        MenuDock(itens: itens),
-      ]),
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            const LogoAurora(tamanho: 34),
+            const SizedBox(height: 22),
+            MenuDock(itens: itens),
+          ]),
+        ),
+      ),
     );
   }
 }

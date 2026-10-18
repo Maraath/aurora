@@ -4,22 +4,29 @@ import '../core/formato.dart';
 import '../core/recorrencia.dart';
 import '../core/recorrencia.dart' as rec show diasUteis;
 import '../core/tema.dart';
+import 'vidro.dart';
 
 /// Abre uma folha de formulário (de baixo para cima), como no protótipo.
 Future<T?> abrirFolha<T>(BuildContext context, Widget Function(BuildContext) construtor) {
   final c = context.cores;
+  final escuro = Theme.of(context).brightness == Brightness.dark;
+  const cantos = BorderRadius.vertical(top: Radius.circular(24));
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: c.surface,
+    // No escuro a folha é vidro (pinta o próprio fundo); no claro, sólida.
+    backgroundColor: escuro ? Colors.transparent : c.surface,
+    elevation: 0,
     barrierColor: const Color(0x99020610),
     constraints: const BoxConstraints(maxWidth: 560),
     shape: RoundedRectangleBorder(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      side: BorderSide(color: c.line),
+      borderRadius: cantos,
+      side: escuro ? BorderSide.none : BorderSide(color: c.line),
     ),
-    builder: construtor,
+    builder: escuro
+        ? (ctx) => Vidro(tipo: TipoVidro.folha, raio: cantos, child: construtor(ctx))
+        : construtor,
   );
 }
 

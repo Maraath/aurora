@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../core/tema.dart';
 
@@ -10,13 +13,13 @@ import '../core/tema.dart';
 ///
 /// Pinta o próprio fundo (opaco), então serve de `body` em qualquer Scaffold,
 /// inclusive em telas empurradas por cima de outras. No modo claro é só a cor
-/// `bg`. Cartões, menu e barras continuam sólidos por cima, para o texto ficar
-/// 100% legível; o céu aparece só no respiro entre eles.
+/// `bg`. Cartões, menu e barras ficam por cima como vidro (ver Vidro): o céu
+/// aparece desfocado atrás deles e nítido no respiro entre eles.
 ///
 /// Desempenho: as estrelas fixas são pintadas uma vez (só repintam ao mudar o
-/// tamanho), cada camada fica num RepaintBoundary, e por quadro só se repintam
-/// as ~30 que cintilam, mudando a opacidade. Sem animação com "reduzir
-/// movimento" e nos testes (a cintilação nunca para e travaria o pumpAndSettle).
+/// tamanho), cada camada fica num RepaintBoundary, e a cada atualização (15 por
+/// segundo) só se repintam as ~30 que cintilam, mudando a opacidade. Sem
+/// animação com "reduzir movimento" e nos testes.
 class CeuEstrelado extends StatefulWidget {
   const CeuEstrelado({super.key, required this.child});
 
@@ -28,26 +31,54 @@ class CeuEstrelado extends StatefulWidget {
 
 final _emTeste = Platform.environment.containsKey('FLUTTER_TEST');
 
-class _CeuEstreladoState extends State<CeuEstrelado> with SingleTickerProviderStateMixin {
-  // Um ciclo longo; cada estrela tem a sua fase e velocidade dentro dele.
-  late final _ciclo = AnimationController(vsync: this, duration: const Duration(seconds: 24));
+/// Cintilação a 15 quadros por segundo: cada estrela leva de 6 a 12 s para
+/// piscar, então 15 atualizações por segundo parecem iguais a 60 e custam um
+/// quarto. Isso pesa porque todo vidro (BackdropFilter) da tela é recomposto a
+/// cada atualização do céu. Para quando o app sai da tela.
+const _intervalo = Duration(milliseconds: 66);
+const _cicloMs = 24000;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final animar = !_emTeste &&
-        Theme.of(context).brightness == Brightness.dark &&
-        !(MediaQuery.maybeDisableAnimationsOf(context) ?? false);
-    if (animar && !_ciclo.isAnimating) {
-      _ciclo.repeat();
-    } else if (!animar && _ciclo.isAnimating) {
-      _ciclo.stop();
+class _CeuEstreladoState extends State<CeuEstrelado> {
+  // Um ciclo longo (0 a 1 em 24 s); cada estrela tem a sua fase e velocidade nele.
+  final _fase = ValueNotifier<double>(0);
+  final _relogio = Stopwatch();
+  Timer? _timer;
+  bool _animar = false;
+  late final _vida = AppLifecycleListener(onStateChange: (_) => _ajustar());
+
+  void _ajustar() {
+    final visivel = SchedulerBinding.instance.lifecycleState != AppLifecycleState.hidden &&
+        SchedulerBinding.instance.lifecycleState != AppLifecycleState.paused;
+    if (_animar && visivel && _timer == null) {
+      _relogio.start();
+      _timer = Timer.periodic(_intervalo, (_) => _fase.value = (_relogio.elapsedMilliseconds % _cicloMs) / _cicloMs);
+    } else if ((!_animar || !visivel) && _timer != null) {
+      _timer!.cancel();
+      _timer = null;
+      _relogio.stop();
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    _vida; // começa a ouvir o ciclo de vida do app
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _animar = !_emTeste &&
+        Theme.of(context).brightness == Brightness.dark &&
+        !(MediaQuery.maybeDisableAnimationsOf(context) ?? false);
+    _ajustar();
+  }
+
+  @override
   void dispose() {
-    _ciclo.dispose();
+    _timer?.cancel();
+    _vida.dispose();
+    _fase.dispose();
     super.dispose();
   }
 
@@ -67,7 +98,7 @@ class _CeuEstreladoState extends State<CeuEstrelado> with SingleTickerProviderSt
         ),
         Positioned.fill(
           child: RepaintBoundary(
-            child: CustomPaint(painter: _Cintilantes(_ciclo, _ciclo.isAnimating)),
+            child: CustomPaint(painter: _Cintilantes(_fase, _timer != null)),
           ),
         ),
         widget.child,
@@ -166,7 +197,7 @@ class _CeuFixo extends CustomPainter {
 
 class _Cintilantes extends CustomPainter {
   _Cintilantes(this.ciclo, this.animando) : super(repaint: ciclo);
-  final Animation<double> ciclo;
+  final ValueListenable<double> ciclo;
   final bool animando;
 
   static const _cor = Color(0xFFEDEFF8);
