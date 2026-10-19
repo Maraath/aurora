@@ -108,7 +108,7 @@ void main() {
 
     test('personalizada vai para a IA', () async {
       String? pedidoRecebido;
-      final assistente = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+      final assistente = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
             pedidoRecebido = mensagens.last['content'] as String;
             yield const TextoIa('Sua semana foi boa.');
           });

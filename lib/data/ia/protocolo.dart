@@ -51,13 +51,20 @@ class ErroIa implements Exception {
 
   /// Sem internet: o pedido fica na fila e segue depois.
   final bool semConexao;
+
+  /// O fornecedor da IA recusou por excesso de pedidos no minuto (passa logo).
+  /// O texto vem da Edge Function (`mensagemDeErro` em index.ts). O limite do
+  /// dia ("limite de 60 pedidos à IA hoje") é outro e não entra aqui.
+  bool get limitePorMinuto => mensagem.contains('limite de pedidos por minuto');
   @override
   String toString() => mensagem;
 }
 
 /// Manda a conversa (formato ModelMessage da AI SDK) e o resumo dos dados;
 /// devolve os eventos do stream. Lança [ErroIa].
-typedef TransporteIa = Stream<EventoIa> Function(List<Map<String, Object?>> mensagens, String contexto);
+/// [reserva]: usar o modelo reserva do servidor (o principal bateu no limite).
+typedef TransporteIa = Stream<EventoIa> Function(List<Map<String, Object?>> mensagens, String contexto,
+    {bool reserva});
 
 /// Lê um stream SSE (bytes) e devolve os eventos que interessam ao app.
 /// Pedaços desconhecidos (start, start-step, reasoning…) são ignorados.
@@ -99,7 +106,7 @@ TransporteIa? iaDaNuvem() {
   final cliente = nuvem;
   final sessao = cliente?.auth.currentSession;
   if (cliente == null || sessao == null) return null;
-  return (mensagens, contexto) async* {
+  return (mensagens, contexto, {reserva = false}) async* {
     final http = HttpClient()..connectionTimeout = const Duration(seconds: 20);
     try {
       final HttpClientResponse r;
@@ -110,6 +117,7 @@ TransporteIa? iaDaNuvem() {
           ..set('apikey', supabaseAnonKey)
           ..contentType = ContentType.json
           ..set(HttpHeaders.acceptHeader, 'text/event-stream');
+        if (reserva) pedido.headers.set('x-ia-reserva', '1');
         pedido.add(utf8.encode(jsonEncode({'mensagens': mensagens, 'contexto': contexto})));
         r = await pedido.close().timeout(const Duration(seconds: 30));
       } on SocketException catch (e) {

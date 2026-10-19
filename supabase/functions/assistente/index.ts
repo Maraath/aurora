@@ -111,7 +111,8 @@ Deno.serve(async (req) => {
 
   let escolha;
   try {
-    escolha = escolherModelo();
+    // "x-ia-reserva: 1": o app tenta de novo com o modelo reserva (ver agente.ts).
+    escolha = escolherModelo(req.headers.get("x-ia-reserva") === "1");
   } catch (e) {
     return json({ erro: mensagemDeErro(e) }, 500);
   }
@@ -125,6 +126,9 @@ Deno.serve(async (req) => {
     providerOptions: escolha.providerOptions,
     maxOutputTokens: 4000,
     abortSignal: req.signal,
+    // Uma repetição só: no limite por minuto, repetir na hora gasta a cota do
+    // minuto; quem tenta de novo (com espera ou com o modelo reserva) é o app.
+    maxRetries: 1,
   });
   return resultado.toUIMessageStreamResponse({
     headers: cors,

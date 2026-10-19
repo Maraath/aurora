@@ -92,7 +92,7 @@ void main() {
       final contextos = <String>[];
       final amanha = hojeSP().add(const Duration(days: 1));
       final dataAmanha = '${amanha.year}-${'${amanha.month}'.padLeft(2, '0')}-${'${amanha.day}'.padLeft(2, '0')}';
-      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
             chamadas.add([...mensagens]);
             contextos.add(contexto);
             if (mensagens.last['role'] == 'user') {
@@ -141,7 +141,7 @@ void main() {
     });
 
     test('abrir_tela avisa a Shell e consultar devolve dados do aparelho', () async {
-      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
             if (mensagens.last['role'] == 'user') {
               yield const FerramentaIa(id: 'a', nome: 'abrir_tela', entrada: {'tela': 'shape'});
               yield const FerramentaIa(id: 'b', nome: 'consultar', entrada: {'area': 'habitos', 'periodo_dias': 7});
@@ -161,7 +161,7 @@ void main() {
 
     test('sem conexão: fica na fila, avisa uma vez e responde depois', () async {
       var online = false;
-      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
             if (!online) throw const ErroIa('sem rede', semConexao: true);
             yield const TextoIa('Agora sim.');
           });
@@ -178,7 +178,7 @@ void main() {
     });
 
     test('resposta que cai no meio fica e ganha um aviso', () async {
-      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
             yield const TextoIa('Começando a responder');
             throw const ErroIa('A conexão com a IA caiu no meio da resposta.', semConexao: true);
           });
@@ -190,8 +190,69 @@ void main() {
       expect(await comIa.tamanhoDaFila(), 0);
     });
 
+    group('limite por minuto', () {
+      const cheio = ErroIa('A IA chegou ao limite de pedidos por minuto. Tente de novo em instantes.');
+      final esperas = AssistenteRepo.esperasLimite;
+      setUp(() => AssistenteRepo.esperasLimite = const [Duration.zero, Duration.zero, Duration.zero]);
+      tearDown(() => AssistenteRepo.esperasLimite = esperas);
+
+      test('depois de uma ferramenta: tenta de novo no modelo reserva e termina', () async {
+        final reservas = <bool>[];
+        final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
+              reservas.add(reserva);
+              if (mensagens.last['role'] == 'user') {
+                yield const FerramentaIa(id: 'c', nome: 'consultar', entrada: {'area': 'financas'});
+              } else if (!reserva) {
+                throw cheio;
+              } else {
+                yield const TextoIa('Tudo certo.');
+              }
+            });
+        await comIa.enviar('exclua os lançamentos de internet e netflix');
+        expect(reservas, [false, false, true], reason: 'a volta que bateu no limite vai para a reserva');
+        final conversa = await comIa.carregarConversa();
+        expect(conversa.last.texto, 'Tudo certo.');
+        expect(conversa.where((m) => m.papel == PapelMensagem.sistema), isEmpty);
+      });
+
+      test('limite que não passa: avisa que não terminou e o feito fica', () async {
+        var chamadas = 0;
+        final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
+              chamadas++;
+              if (mensagens.last['role'] == 'user') {
+                yield const FerramentaIa(id: 'c', nome: 'consultar', entrada: {'area': 'tarefas'});
+              } else {
+                throw cheio;
+              }
+            });
+        await comIa.enviar('o que tenho pra hoje?');
+        expect(chamadas, 1 + 1 + AssistenteRepo.esperasLimite.length);
+        expect((await comIa.carregarConversa()).last.texto, startsWith('A IA não conseguiu terminar a resposta'));
+      });
+
+      test('no primeiro pedido também tenta de novo, e o limite do dia não', () async {
+        var chamadas = 0;
+        final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
+              chamadas++;
+              if (chamadas == 1) throw cheio;
+              yield const TextoIa('Oi!');
+            });
+        await comIa.enviar('oi');
+        expect(chamadas, 2);
+        expect((await comIa.carregarConversa()).last.texto, 'Oi!');
+
+        var doDia = 0;
+        final semCota = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
+              doDia++;
+              throw const ErroIa('Você chegou ao limite de 60 pedidos à IA hoje.');
+            });
+        await semCota.enviar('e agora?');
+        expect(doDia, 1);
+      });
+    });
+
     test('limite do dia aparece na conversa', () async {
-      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
             throw const ErroIa('Você chegou ao limite de 60 pedidos à IA hoje.');
           });
       await comIa.enviar('o que acha da minha semana?');
@@ -201,7 +262,7 @@ void main() {
 
     test('com IA, o resumo do dia vai para ela', () async {
       var chamou = false;
-      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
             chamou = true;
             yield const TextoIa('Seu dia está tranquilo.');
           });
@@ -225,7 +286,7 @@ void main() {
             perguntas.add(p);
             return confirmar;
           },
-          ia: () => (mensagens, contexto) async* {
+          ia: () => (mensagens, contexto, {reserva = false}) async* {
                 if (mensagens.last['role'] == 'user') {
                   yield FerramentaIa(id: 'x', nome: ferramenta, entrada: entrada);
                 } else {
@@ -247,7 +308,7 @@ void main() {
             perguntas.add(p);
             return true;
           },
-          ia: () => (mensagens, contexto) async* {
+          ia: () => (mensagens, contexto, {reserva = false}) async* {
                 if (mensagens.last['role'] == 'user') {
                   yield FerramentaIa(id: 'x', nome: 'excluir_registro_shape', entrada: {'tipo': 'medida', 'id': peso.id});
                 } else {

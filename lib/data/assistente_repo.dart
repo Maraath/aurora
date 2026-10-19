@@ -219,12 +219,21 @@ class AssistenteRepo {
   /// chega e, quando a IA pede ferramentas, executa no aparelho e volta com os
   /// resultados até ela terminar. Falso se não deu para falar com a IA (o
   /// pedido continua na fila).
+  /// Esta resposta já passou para o modelo reserva (fica nele até terminar).
+  bool _reserva = false;
+
+  /// Esperas entre as novas tentativas quando a IA bate no limite por minuto:
+  /// a primeira é imediata (já no modelo reserva), as outras esperam a cota voltar.
+  @visibleForTesting
+  static List<Duration> esperasLimite = const [Duration.zero, Duration(seconds: 20), Duration(seconds: 40)];
+
   Future<bool> _responder(TransporteIa ia, MensagemAssistente pedido, {required bool avisarFalha}) async {
     final conversa = await carregarConversa();
     final ate = conversa.indexWhere((m) => m.id == pedido.id);
     final mensagens = mensagensParaIa(conversa.sublist(0, ate + 1));
     final ferramentas = FerramentasIa(db, this);
     var comecou = false;
+    _reserva = false;
 
     for (var volta = 0; volta <= maxVoltasFerramenta; volta++) {
       final contexto = await montarContexto(db);
@@ -245,40 +254,60 @@ class AssistenteRepo {
         }
       }
 
-      try {
-        await for (final evento in ia(mensagens, contexto)) {
+      // Limite por minuto antes de chegar qualquer coisa: tenta de novo sozinho,
+      // primeiro já com o modelo reserva (cota separada) e depois esperando.
+      for (var tentativa = 0;; tentativa++) {
+        try {
+          await for (final evento in ia(mensagens, contexto, reserva: _reserva)) {
+            if (!comecou) {
+              comecou = true;
+              await _tirarDaFila(pedido.id);
+            }
+            switch (evento) {
+              case TextoIa(:final delta):
+                pensando.value = false;
+                etapa.value = null;
+                texto.write(delta);
+                await gravarTexto();
+              case FerramentaIa():
+                chamadas.add(evento);
+              case FimIa():
+                break;
+            }
+          }
+          break;
+        } catch (e) {
+          final erro = e is ErroIa ? e : ErroIa(mensagemDeErro(e), semConexao: true);
+          final nadaChegou = texto.isEmpty && chamadas.isEmpty;
+          if (erro.limitePorMinuto && nadaChegou && tentativa < esperasLimite.length) {
+            _reserva = true;
+            final espera = esperasLimite[tentativa];
+            etapa.value = espera == Duration.zero
+                ? 'A IA está cheia de pedidos; tentando de novo...'
+                : 'A IA está cheia de pedidos; tentando de novo em ${espera.inSeconds} s...';
+            pensando.value = true;
+            await Future<void>.delayed(espera);
+            continue;
+          }
+          if (texto.isNotEmpty) await gravarTexto(forcar: true);
           if (!comecou) {
-            comecou = true;
-            await _tirarDaFila(pedido.id);
+            if (avisarFalha) {
+              await _gravar(
+                  PapelMensagem.sistema,
+                  erro.semConexao
+                      ? 'Sem conexão: o pedido fica na fila e a IA responde quando a internet voltar.'
+                      : erro.mensagem);
+            }
+            return false;
           }
-          switch (evento) {
-            case TextoIa(:final delta):
-              pensando.value = false;
-              etapa.value = null;
-              texto.write(delta);
-              await gravarTexto();
-            case FerramentaIa():
-              chamadas.add(evento);
-            case FimIa():
-              break;
-          }
+          // Caiu depois de começar: o que já foi feito e o que chegou ficam.
+          await _gravar(
+              PapelMensagem.sistema,
+              nadaChegou && volta > 0
+                  ? 'A IA não conseguiu terminar a resposta: ${erro.mensagem} O que ela já fez ficou salvo.'
+                  : 'A resposta parou no meio: ${erro.mensagem}');
+          return true;
         }
-      } catch (e) {
-        final erro = e is ErroIa ? e : ErroIa(mensagemDeErro(e), semConexao: true);
-        if (texto.isNotEmpty) await gravarTexto(forcar: true);
-        if (!comecou) {
-          if (avisarFalha) {
-            await _gravar(
-                PapelMensagem.sistema,
-                erro.semConexao
-                    ? 'Sem conexão: o pedido fica na fila e a IA responde quando a internet voltar.'
-                    : erro.mensagem);
-          }
-          return false;
-        }
-        // Caiu no meio: o que chegou fica, com o aviso do motivo.
-        await _gravar(PapelMensagem.sistema, 'A resposta parou no meio: ${erro.mensagem}');
-        return true;
       }
       if (texto.isNotEmpty) await gravarTexto(forcar: true);
       if (chamadas.isEmpty) return true;

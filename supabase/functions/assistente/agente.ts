@@ -286,7 +286,16 @@ export type Escolha = {
 
 /// Claude quando há ANTHROPIC_API_KEY; senão, Gemini. IA_FORNECEDOR força um
 /// dos dois. Modelos trocáveis por segredo (ANTHROPIC_MODELO, GEMINI_MODELO).
-export function escolherModelo(): Escolha {
+///
+/// [reserva]: o app pede quando o modelo principal bateu no limite por minuto.
+/// Usa o Gemini Lite (GEMINI_MODELO_RESERVA), que no plano gratuito tem cota
+/// própria e bem maior; também serve de reserva para a Claude.
+export function escolherModelo(reserva = false): Escolha {
+  const chaveGemini = Deno.env.get("GEMINI_API_KEY");
+  if (reserva && chaveGemini) {
+    const nome = Deno.env.get("GEMINI_MODELO_RESERVA") ?? "gemini-flash-lite-latest";
+    return { model: createGoogleGenerativeAI({ apiKey: chaveGemini })(nome), nome, temperature: 0.7 };
+  }
   const forcado = (Deno.env.get("IA_FORNECEDOR") ?? "").toLowerCase();
   const chaveClaude = Deno.env.get("ANTHROPIC_API_KEY");
   const usarClaude = forcado === "anthropic" || (forcado !== "gemini" && !!chaveClaude);
