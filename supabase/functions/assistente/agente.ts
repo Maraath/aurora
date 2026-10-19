@@ -284,25 +284,32 @@ export type Escolha = {
   nome: string;
 };
 
-/// Claude quando há ANTHROPIC_API_KEY; senão, Gemini. IA_FORNECEDOR força um
-/// dos dois. Modelos trocáveis por segredo (ANTHROPIC_MODELO, GEMINI_MODELO).
-///
-/// [reserva]: o app pede quando o modelo principal bateu no limite por minuto.
-/// Usa o Gemini Lite (GEMINI_MODELO_RESERVA), que no plano gratuito tem cota
-/// própria e bem maior; também serve de reserva para a Claude.
-export function escolherModelo(reserva = false): Escolha {
-  const chaveGemini = Deno.env.get("GEMINI_API_KEY");
-  if (reserva && chaveGemini) {
-    const nome = Deno.env.get("GEMINI_MODELO_RESERVA") ?? "gemini-flash-lite-latest";
-    return { model: createGoogleGenerativeAI({ apiKey: chaveGemini })(nome), nome, temperature: 0.7 };
-  }
+/// Fila de modelos do Gemini, do preferido ao último recurso. No plano
+/// gratuito cada modelo tem a SUA cota (por minuto e por dia), então quando um
+/// esgota o próximo ainda responde. Cotas vistas no AI Studio em 19/10/2026:
+///   gemini-flash-latest (3.8 Flash)            5/min,  20/dia — o mais esperto
+///   gemini-flash-lite-latest (3.5 Flash Lite) 15/min, 500/dia — o que mais aguenta
+///   gemini-2.5-flash                           5/min,  20/dia
+///   gemini-2.5-flash-lite                     10/min,  20/dia
+/// Trocável sem publicar versão: segredo GEMINI_MODELOS ("a,b,c").
+export const MODELOS_GEMINI_PADRAO = [
+  "gemini-flash-latest",
+  "gemini-flash-lite-latest",
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+];
+
+/// Os modelos a tentar, em ordem: a Claude primeiro quando há
+/// ANTHROPIC_API_KEY (IA_FORNECEDOR força um dos dois), depois a fila do
+/// Gemini. Quando um bate no limite, o index.ts passa para o próximo.
+/// [reserva]: o app já viu o primeiro no limite; começa do segundo.
+export function cadeiaDeModelos(reserva = false): Escolha[] {
+  const cadeia: Escolha[] = [];
   const forcado = (Deno.env.get("IA_FORNECEDOR") ?? "").toLowerCase();
   const chaveClaude = Deno.env.get("ANTHROPIC_API_KEY");
-  const usarClaude = forcado === "anthropic" || (forcado !== "gemini" && !!chaveClaude);
-  if (usarClaude) {
-    if (!chaveClaude) throw new Error("ANTHROPIC_API_KEY não configurada");
+  if (chaveClaude && forcado !== "gemini") {
     const nome = Deno.env.get("ANTHROPIC_MODELO") ?? "claude-sonnet-5-5";
-    return {
+    cadeia.push({
       model: createAnthropic({ apiKey: chaveClaude })(nome),
       nome,
       providerOptions: {
@@ -313,16 +320,18 @@ export function escolherModelo(reserva = false): Escolha {
           fallbacks: "default",
         },
       },
-    };
+    });
   }
-  const chave = Deno.env.get("GEMINI_API_KEY");
-  if (!chave) throw new Error("GEMINI_API_KEY não configurada");
-  const nome = Deno.env.get("GEMINI_MODELO") ?? "gemini-flash-latest";
-  return {
-    model: createGoogleGenerativeAI({ apiKey: chave })(nome),
-    nome,
-    temperature: 0.7,
-  };
+  const chaveGemini = Deno.env.get("GEMINI_API_KEY");
+  if (chaveGemini && forcado !== "anthropic") {
+    const google = createGoogleGenerativeAI({ apiKey: chaveGemini });
+    const nomes = (Deno.env.get("GEMINI_MODELOS") ?? "").split(",").map((n) => n.trim()).filter(Boolean);
+    for (const nome of nomes.length ? nomes : MODELOS_GEMINI_PADRAO) {
+      cadeia.push({ model: google(nome), nome, temperature: 0.7 });
+    }
+  }
+  if (cadeia.length === 0) throw new Error("Nenhuma chave de IA configurada (ANTHROPIC_API_KEY ou GEMINI_API_KEY)");
+  return reserva && cadeia.length > 1 ? cadeia.slice(1) : cadeia;
 }
 
 // -------------------------------------------------------- janela de memória

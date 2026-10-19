@@ -18,25 +18,13 @@
 // volta com resultados de ferramenta é parte da mesma resposta.
 
 import { createClient } from "@supabase/supabase-js";
-import { APICallError, streamText } from "ai";
-import { escolherModelo, esquemaMensagens, ferramentas, janela, PERSONA } from "./agente.ts";
+import { cadeiaDeModelos, type Escolha, esquemaMensagens, janela, PERSONA } from "./agente.ts";
+import { mensagemDeErro, responderComCadeia } from "./cadeia.ts";
 import { cors, json } from "./comum.ts";
 import { type MensagemLegada, responderLegado } from "./legado.ts";
 
 /// Voltas seguidas de ferramenta depois de uma mensagem da pessoa.
 const MAX_VOLTAS_FERRAMENTA = 6;
-
-/// Mensagem para a pessoa a partir de um erro do fornecedor.
-function mensagemDeErro(e: unknown): string {
-  console.error(e);
-  // RetryError guarda o último erro; APICallError tem o status HTTP.
-  const ultimo = (e as { lastError?: unknown })?.lastError ?? e;
-  const status = APICallError.isInstance(ultimo) ? ultimo.statusCode : undefined;
-  if (status === 429) return "A IA chegou ao limite de pedidos por minuto. Tente de novo em instantes.";
-  if (status === 529 || status === 503) return "A IA está sobrecarregada agora. Tente de novo daqui a pouco.";
-  if (status === 401 || status === 403) return "A chave da IA no servidor não foi aceita. Avise o dono do app.";
-  return "A IA não respondeu agora. Tente de novo daqui a pouco.";
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -109,30 +97,13 @@ Deno.serve(async (req) => {
 
   if (legado) return responderLegado(corpo.pedido!.trim().slice(0, 2000), contexto, corpo.historico ?? []);
 
-  let escolha;
+  let cadeia: Escolha[];
   try {
-    // "x-ia-reserva: 1": o app tenta de novo com o modelo reserva (ver agente.ts).
-    escolha = escolherModelo(req.headers.get("x-ia-reserva") === "1");
+    // "x-ia-reserva: 1": o app já viu o primeiro modelo no limite; começa do segundo.
+    cadeia = cadeiaDeModelos(req.headers.get("x-ia-reserva") === "1");
   } catch (e) {
     return json({ erro: mensagemDeErro(e) }, 500);
   }
-
-  const resultado = streamText({
-    model: escolha.model,
-    system: `${PERSONA}\n\nRESUMO DOS DADOS (montado pelo app agora):\n${contexto}`,
-    messages: mensagens!,
-    tools: ferramentas,
-    temperature: escolha.temperature,
-    providerOptions: escolha.providerOptions,
-    maxOutputTokens: 4000,
-    abortSignal: req.signal,
-    // Uma repetição só: no limite por minuto, repetir na hora gasta a cota do
-    // minuto; quem tenta de novo (com espera ou com o modelo reserva) é o app.
-    maxRetries: 1,
-  });
-  return resultado.toUIMessageStreamResponse({
-    headers: cors,
-    sendReasoning: false,
-    onError: mensagemDeErro,
-  });
+  const sistema = `${PERSONA}\n\nRESUMO DOS DADOS (montado pelo app agora):\n${contexto}`;
+  return responderComCadeia(cadeia, sistema, mensagens!, req.signal);
 });

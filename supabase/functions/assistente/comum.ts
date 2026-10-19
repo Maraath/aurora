@@ -14,7 +14,9 @@ export function json(corpo: unknown, status = 200) {
 
 /// Erro que já vem com a mensagem para a pessoa (e o status HTTP a devolver).
 export class ErroParaPessoa extends Error {
-  constructor(mensagem: string, readonly status: number) {
+  readonly status: number;
+  constructor(mensagem: string, status: number) {
     super(mensagem);
+    this.status = status;
   }
 }
