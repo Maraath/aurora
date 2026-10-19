@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/tema.dart';
 import 'data/banco.dart';
 import 'ui/bloqueio_ui.dart';
+import 'ui/janela/moldura_janela.dart';
 import 'ui/shell.dart';
 
 /// Dá acesso ao banco e ao tema em qualquer tela: `AuroraEscopo.de(context)`.
@@ -54,8 +55,9 @@ class AuroraApp extends StatelessWidget {
           supportedLocales: const [Locale('pt', 'BR')],
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
           home: Shell(primeiraVez: primeiraVez),
-          // O bloqueio cobre tudo, inclusive diálogos abertos.
-          builder: (context, filho) => PortaoBloqueio(db: db, child: filho!),
+          // O bloqueio cobre tudo, inclusive diálogos abertos; a moldura da
+          // janela (Windows) fica por cima até do bloqueio.
+          builder: (context, filho) => MolduraJanela(child: PortaoBloqueio(db: db, child: filho!)),
         ),
       ),
     );

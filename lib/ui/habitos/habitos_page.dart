@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../icone_ia.dart';
 import '../../app.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
@@ -116,7 +117,7 @@ class _HabitosPageState extends State<HabitosPage> {
         const SizedBox(height: 10),
         Cartao(
           child: Row(children: [
-            Icon(Icons.auto_awesome_outlined, size: 18, color: c.violeta),
+            IconeIa(size: 18, color: c.violeta),
             const SizedBox(width: 10),
             Expanded(
               child: Text('Seus hábitos rendem mais ${_diasSemana[a.melhorDiaSemana! - 1]} (últimos 60 dias).',

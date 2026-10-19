@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
+import 'icone_ia.dart';
 import '../app.dart';
 import '../core/tema.dart';
 import '../data/assistente_repo.dart';
@@ -74,7 +75,7 @@ const _itensBarra = [
 /// Menu lateral (computador), em grupos: início, rotina, planos.
 const _gruposLateral = [
   [
-    _ItemNav(Secao.assistente, 'Assistente', Icons.auto_awesome_outlined),
+    _ItemNav(Secao.assistente, 'Assistente', iconeIa),
     _ItemNav(Secao.visao, 'Visão', Icons.home_outlined),
   ],
   [
@@ -482,7 +483,7 @@ class _Cabecalho extends StatelessWidget {
         BotaoRedondo(icone: Icons.search_rounded, dica: 'Buscar em tudo', aoTocar: buscar),
         const SizedBox(width: 8),
         BotaoRedondo(
-          icone: Icons.auto_awesome_outlined,
+          icone: iconeIa,
           dica: 'Abrir assistente',
           ativo: assistenteAtivo,
           aoTocar: abrirAssistente,
@@ -599,19 +600,16 @@ class _BarraLateral extends StatelessWidget {
       aoTocar: () => ir(_itemConta.secao),
       espacoAntes: 16,
     ));
-    // Sem painel, fundo nem borda. Logo e ícones flutuam sobre o
-    // céu, numa coluna de 72 px centralizada na vertical. A faixa fica reservada
-    // para o conteúdo não passar por baixo dos ícones em janelas estreitas.
+    // Sem painel, fundo nem borda. Os ícones flutuam sobre o
+    // céu, numa coluna de 72 px centralizada na vertical (sem o logo: o primeiro
+    // item já é o da Aurora, o assistente). A faixa fica reservada para o
+    // conteúdo não passar por baixo dos ícones em janelas estreitas.
     return SizedBox(
       width: 72,
       child: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 18),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const LogoAurora(tamanho: 34),
-            const SizedBox(height: 22),
-            MenuDock(itens: itens),
-          ]),
+          child: MenuDock(itens: itens),
         ),
       ),
     );

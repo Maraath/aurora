@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'icone_ia.dart';
 import '../core/tema.dart';
 import 'vidro.dart';
 
@@ -156,7 +157,7 @@ class BotaoRedondo extends StatelessWidget {
           child: SizedBox(
             width: 44,
             height: 44,
-            child: Icon(icone, size: 20, color: frente, semanticLabel: dica),
+            child: IconeApp(icone, size: 20, color: frente, semanticLabel: dica),
           ),
         ),
       ),

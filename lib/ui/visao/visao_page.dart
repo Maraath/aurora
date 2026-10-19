@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../icone_ia.dart';
 import '../../app.dart';
 import '../../core/formato.dart';
 import '../../core/relogio.dart';
@@ -350,7 +351,7 @@ class _Insights extends StatelessWidget {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(9)),
-                child: Icon(Icons.auto_awesome_outlined, size: 15, color: c.violeta),
+                child: IconeIa(size: 15, color: c.violeta),
               ),
               const SizedBox(width: Espaco.md - 4),
               Expanded(

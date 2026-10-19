@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../icone_ia.dart';
 import '../../app.dart';
 import '../../core/formato.dart';
 import '../../core/relogio.dart';
@@ -233,7 +234,7 @@ class _TarefasPageState extends State<TarefasPage> {
         const SizedBox(height: 18),
         Cartao(
           child: Row(children: [
-            Icon(Icons.auto_awesome_outlined, size: 18, color: c.violeta),
+            IconeIa(size: 18, color: c.violeta),
             const SizedBox(width: 10),
             Expanded(
               child: Text(

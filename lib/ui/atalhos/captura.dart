@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../icone_ia.dart';
 import '../../app.dart';
 import '../../core/comandos.dart';
 import '../../core/formato.dart';
@@ -225,7 +226,7 @@ class _PainelCapturaState extends State<PainelCaptura> {
             if (cmd == null)
               _Pilula(
                 texto: 'Perguntar à Aurora',
-                icone: Icons.auto_awesome_outlined,
+                icone: iconeIa,
                 aoTocar: () => widget.aoPerguntar(_texto.text.trim()),
               ),
             _Pilula(
@@ -275,7 +276,7 @@ class _Pilula extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(icone, size: 15, color: cor),
+            IconeApp(icone, size: 15, color: cor),
             const SizedBox(width: 6),
             Text(texto, style: manrope(12, peso: FontWeight.w700, cor: cor)),
           ]),

@@ -9,6 +9,7 @@ import '../../core/comandos.dart' show normalizar;
 import '../../core/tema.dart';
 import '../../data/busca.dart';
 import '../vidro.dart';
+import '../icone_ia.dart';
 
 /// Área do app que aparece em "Ir para" (busca vazia ou que casa com o nome).
 class AtalhoArea {
@@ -231,7 +232,7 @@ class _BuscaState extends State<_Busca> {
       }
     }
     itens.add(_Item(grupo: 'AÇÕES', icone: Icons.add_circle_outline_rounded, titulo: 'Nova tarefa “$t”', acao: () => _executar(() => widget.aoNovaTarefa(t))));
-    itens.add(_Item(icone: Icons.auto_awesome_outlined, titulo: 'Perguntar à Aurora: “$t”', acao: () => _executar(() => widget.aoPerguntar(t))));
+    itens.add(_Item(icone: iconeIa, titulo: 'Perguntar à Aurora: “$t”', acao: () => _executar(() => widget.aoPerguntar(t))));
     return itens;
   }
 
@@ -413,7 +414,7 @@ class _Linha extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             child: Row(children: [
-              Icon(item.icone, size: 20, color: ativo ? c.accent : c.muted),
+              IconeApp(item.icone, size: 20, color: ativo ? c.accent : c.muted),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

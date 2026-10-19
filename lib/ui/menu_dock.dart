@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../core/tema.dart';
+import 'icone_ia.dart';
 
 /// Um item do dock lateral.
 class ItemDock {
@@ -332,7 +333,7 @@ class _MenuDockState extends State<MenuDock> with SingleTickerProviderStateMixin
                 child: Center(
                   child: Opacity(
                     opacity: tinta.clamp(0.0, 1.0),
-                    child: Icon(item.icone, size: 21 * (1 + (_escalaMax - 1) * m * _icone), color: corIcone),
+                    child: IconeApp(item.icone, size: 21 * (1 + (_escalaMax - 1) * m * _icone), color: corIcone),
                   ),
                 ),
               ),

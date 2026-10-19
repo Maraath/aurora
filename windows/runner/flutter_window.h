@@ -2,7 +2,9 @@
 #define RUNNER_FLUTTER_WINDOW_H_
 
 #include <flutter/dart_project.h>
+#include <flutter/encodable_value.h>
 #include <flutter/flutter_view_controller.h>
+#include <flutter/method_channel.h>
 
 #include <memory>
 
@@ -15,6 +17,10 @@ class FlutterWindow : public Win32Window {
   explicit FlutterWindow(const flutter::DartProject& project);
   virtual ~FlutterWindow();
 
+  // Moldura própria: diz ao Windows o que há em |ponto| (tela) na faixa de
+  // cima. HTCLIENT = é do Flutter.
+  LRESULT RegiaoDaMoldura(POINT ponto) const;
+
  protected:
   // Win32Window:
   bool OnCreate() override;
@@ -23,11 +29,24 @@ class FlutterWindow : public Win32Window {
                          LPARAM const lparam) noexcept override;
 
  private:
+  // Canal "aurora/janela": botões, tema e estado da janela.
+  void ConfigurarCanal();
+  void Avisar(const char* metodo, flutter::EncodableValue valor);
+  void MudarEstadoMax(int estado);
+  void AplicarTema();
+
   // The project to run.
   flutter::DartProject project_;
 
   // The Flutter instance hosted by this window.
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
+
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> canal_;
+
+  // Botão maximizar (desenhado pelo Flutter, tratado aqui): 0 normal,
+  // 1 mouse em cima, 2 apertado.
+  int estado_max_ = 0;
+  bool tema_escuro_ = true;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_
