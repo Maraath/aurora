@@ -20,6 +20,7 @@ import '../lembretes_repo.dart';
 import '../metas_repo.dart';
 import '../projetos_repo.dart';
 import '../saude_repo.dart';
+import '../shape_repo.dart';
 import '../tarefas_repo.dart';
 
 /// Resultado de uma ferramenta: o texto que volta para a IA e, quando a
@@ -67,6 +68,8 @@ class FerramentasIa {
             refeicao: e['refeicao'] as String?,
           )),
         'criar_treino' => _treino(e),
+        'excluir_registro_shape' => _excluirShape(e),
+        'atualizar_metas' => e['alvo'] == 'dieta' ? _metaDieta(e) : _metaApp(e),
         'consultar' => Future.value(ResultadoFerramenta(
             await consultar(db, '${e['area']}', dias: (_numero(e['periodo_dias']) ?? 30).round()))),
         'buscar' => _buscar(_texto(e, 'termo')),
@@ -148,6 +151,113 @@ class FerramentasIa {
     final texto = 'Criei o $nome${foco == null || foco.isEmpty ? '' : ' ($foco)'} com ${itens.length} '
         '${itens.length == 1 ? 'exercício' : 'exercícios'}, $quando. Está em Saúde › Treino › Ficha.';
     return ResultadoFerramenta(texto, aviso: Resposta(texto, itemTipo: 'treino', itemId: id));
+  }
+
+  // ------------------------------------------------------------- exclusão
+
+  /// Pergunta mostrada à pessoa antes de excluir (o AssistenteRepo pede a
+  /// confirmação). Nula se o registro não existe.
+  Future<String?> perguntaDeExclusao(String nome, Map<String, Object?> e) async {
+    if (nome != 'excluir_registro_shape') return null;
+    final id = '${e['id']}';
+    if (e['tipo'] == 'foto') {
+      final f = await (db.select(db.fotosShape)..where((x) => x.id.equals(id) & x.apagadoEm.isNull()))
+          .getSingleOrNull();
+      if (f == null) return null;
+      final angulo = AnguloShape.de(f.angulo)?.rotulo.toLowerCase() ?? f.angulo;
+      return 'Excluir a foto de $angulo do dia ${diaMesLongo(DateTime.parse(f.dia))}? A foto não volta depois.';
+    }
+    final m = await (db.select(db.medidas)..where((x) => x.id.equals(id) & x.apagadoEm.isNull())).getSingleOrNull();
+    if (m == null) return null;
+    return 'Excluir a medida ${m.tipo} ${numero(m.valor)} ${m.unidade} do dia ${diaMesLongo(DateTime.parse(m.dia))}?';
+  }
+
+  /// Executa a exclusão (a confirmação já foi dada).
+  Future<ResultadoFerramenta> _excluirShape(Map<String, Object?> e) async {
+    final id = _texto(e, 'id');
+    if (e['tipo'] == 'foto') {
+      final f = await (db.select(db.fotosShape)..where((x) => x.id.equals(id) & x.apagadoEm.isNull()))
+          .getSingleOrNull();
+      if (f == null) return const ResultadoFerramenta('Essa foto não existe mais.', erro: true);
+      // Apaga aqui e, se estava na nuvem, do balde também (ou fica pendente sem internet).
+      await ShapeRepo(db).apagarFoto(f);
+      final angulo = AnguloShape.de(f.angulo)?.rotulo.toLowerCase() ?? f.angulo;
+      final texto = 'Excluí a foto de $angulo do dia ${diaMesLongo(DateTime.parse(f.dia))}.';
+      return ResultadoFerramenta(texto, aviso: Resposta(texto));
+    }
+    final m = await (db.select(db.medidas)..where((x) => x.id.equals(id) & x.apagadoEm.isNull())).getSingleOrNull();
+    if (m == null) return const ResultadoFerramenta('Essa medida não existe mais.', erro: true);
+    await SaudeRepo(db).excluirMedida(m.id);
+    final texto = 'Excluí a medida ${m.tipo} ${numero(m.valor)} ${m.unidade} do dia ${diaMesLongo(DateTime.parse(m.dia))}.';
+    return ResultadoFerramenta(texto, aviso: Resposta(texto, itemTipo: 'medida_excluida', itemId: m.id));
+  }
+
+  // ---------------------------------------------------------------- metas
+
+  /// Calorias e macros do dia de treino e/ou de descanso. Só muda o que veio;
+  /// "Desfazer" volta os valores de antes.
+  Future<ResultadoFerramenta> _metaDieta(Map<String, Object?> e) async {
+    final repo = AlimentacaoRepo(db);
+    final tipos = switch (e['dia']) {
+      'treino' => [TipoDia.treino],
+      'descanso' => [TipoDia.descanso],
+      _ => TipoDia.values,
+    };
+    final kcal = _numero(e['kcal']), p = _numero(e['proteina']), c = _numero(e['carboidrato']), g = _numero(e['gordura']);
+    if ([kcal, p, c, g].every((x) => x == null)) {
+      return const ResultadoFerramenta('Diga quais valores mudar (kcal, proteína, carboidrato ou gordura).', erro: true);
+    }
+    final antes = <String>[];
+    for (final t in tipos) {
+      final a = await repo.alvo(t);
+      antes.add(a == null ? '${t.name}:-' : '${t.name}:${a.kcal}:${a.proteina}:${a.carboidrato}:${a.gordura}');
+      if (a == null && kcal == null) {
+        return ResultadoFerramenta('Ainda não há meta de dieta para o dia de ${t.name}: diga também as calorias.',
+            erro: true);
+      }
+      await repo.salvarAlvo(t, Nutrientes(kcal ?? a!.kcal, p ?? a?.proteina ?? 0, c ?? a?.carboidrato ?? 0, g ?? a?.gordura ?? 0));
+    }
+    String n(double? v, String u) => v == null ? '' : '${numero(v.roundToDouble())} $u';
+    final mudou = [n(kcal, 'kcal'), if (p != null) 'proteína ${n(p, 'g')}', if (c != null) 'carboidrato ${n(c, 'g')}', if (g != null) 'gordura ${n(g, 'g')}']
+        .where((x) => x.isNotEmpty)
+        .join(', ');
+    final dias = tipos.length == 2 ? 'dias de treino e de descanso' : 'dia de ${tipos.single.name}';
+    final texto = 'Meta de dieta atualizada ($dias): $mudou.';
+    return ResultadoFerramenta(texto, aviso: Resposta(texto, itemTipo: 'alvo_dieta', itemId: antes.join(';')));
+  }
+
+  /// Uma meta do app pelo nome: valor atual, alvo e/ou data.
+  Future<ResultadoFerramenta> _metaApp(Map<String, Object?> e) async {
+    final nome = _texto(e, 'nome_meta');
+    final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
+    final alvo = normalizar(nome);
+    final meta = metas.where((m) => normalizar(m.nome) == alvo).firstOrNull ??
+        metas.where((m) => normalizar(m.nome).contains(alvo) || alvo.contains(normalizar(m.nome))).firstOrNull;
+    if (meta == null) {
+      return ResultadoFerramenta(
+          'Não achei a meta "$nome". As metas são: ${metas.map((m) => m.nome).join(', ')}.',
+          erro: true);
+    }
+    final atual = _numero(e['valor_atual']), valorAlvo = _numero(e['valor_alvo']), data = _data(e['data_alvo']);
+    if (atual == null && valorAlvo == null && data == null) {
+      return const ResultadoFerramenta('Diga o que mudar na meta: valor atual, alvo ou data.', erro: true);
+    }
+    await MetasRepo(db).salvar(
+      MetasCompanion(
+        valorAtual: atual == null ? const Value.absent() : Value(atual),
+        valorAlvo: valorAlvo == null ? const Value.absent() : Value(valorAlvo),
+        dataAlvo: data == null ? const Value.absent() : Value(instanteSP(data, 12)),
+      ),
+      id: meta.id,
+    );
+    final partes = [
+      if (atual != null) 'agora em ${valorMeta(atual, meta.unidade)}',
+      if (valorAlvo != null) 'alvo ${valorMeta(valorAlvo, meta.unidade)}',
+      if (data != null) 'até ${diaMesLongo(data)}',
+    ];
+    final texto = 'Meta “${meta.nome}” atualizada: ${partes.join(', ')}.';
+    final antes = '${meta.id}|${meta.valorAtual}|${meta.valorAlvo}|${meta.dataAlvo?.toIso8601String() ?? ''}';
+    return ResultadoFerramenta(texto, aviso: Resposta(texto, itemTipo: 'meta', itemId: antes));
   }
 
   Future<ResultadoFerramenta> _buscar(String termo) async {
@@ -272,8 +382,20 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
       for (final tipo in s.tiposMedida) {
         final lista = s.medidas[tipo]!.where((m) => !DateTime.parse(m.dia).isBefore(desde)).toList();
         final ultima = s.ultima(tipo)!;
-        l.add('$tipo: última ${numero(ultima.valor)} ${ultima.unidade} (${diaMesCurto(DateTime.parse(ultima.dia))})'
-            '${lista.length < 2 ? '' : '; no período: ${lista.map((m) => '${diaMesCurto(DateTime.parse(m.dia))} ${numero(m.valor)}').join(', ')}'}.');
+        l.add('$tipo: última ${numero(ultima.valor)} ${ultima.unidade} (${diaMesCurto(DateTime.parse(ultima.dia))}).');
+        for (final m in lista.reversed.take(30)) {
+          l.add('  - ${diaMesCurto(DateTime.parse(m.dia))} ${numero(m.valor)} ${m.unidade} (id ${m.id})');
+        }
+      }
+
+    case 'shape':
+      final fotos = (await ShapeRepo(db).fotosAtivas())
+          .where((f) => !DateTime.parse(f.dia).isBefore(desde))
+          .toList();
+      l.add(fotos.isEmpty ? 'Nenhuma foto de Shape no período.' : 'Fotos de evolução (Shape):');
+      for (final f in fotos.take(60)) {
+        l.add('- ${diaMesLongo(DateTime.parse(f.dia))} (${f.dia}), ${AnguloShape.de(f.angulo)?.rotulo ?? f.angulo}'
+            '${f.naNuvem ? ', na nuvem' : ''} (id ${f.id})');
       }
 
     case 'alimentacao':

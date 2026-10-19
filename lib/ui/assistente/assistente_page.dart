@@ -187,6 +187,15 @@ class _AssistentePageState extends State<AssistentePage> {
               _Sugestoes(aoEscolher: _enviar),
               const SizedBox(height: Espaco.sm + 4),
             ],
+            ValueListenableBuilder<PedidoConfirmacao?>(
+              valueListenable: AssistenteRepo.confirmacao,
+              builder: (_, pedido, _) => pedido == null
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.only(bottom: Espaco.sm + 4),
+                      child: _CartaoConfirmacao(pedido: pedido),
+                    ),
+            ),
             _Compositor(
               controle: _texto,
               foco: _foco,
@@ -239,6 +248,43 @@ class _Cabecalho extends StatelessWidget {
           icon: Icon(Icons.delete_sweep_outlined, color: c.muted),
         ),
     ]);
+  }
+}
+
+/// A IA quer excluir algo: a pessoa confirma aqui (a IA espera a resposta).
+class _CartaoConfirmacao extends StatelessWidget {
+  const _CartaoConfirmacao({required this.pedido});
+  final PedidoConfirmacao pedido;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 10, 10),
+      decoration: BoxDecoration(
+        color: c.bad.withValues(alpha: .08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.bad.withValues(alpha: .4)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.delete_outline_rounded, size: 20, color: c.bad),
+          const SizedBox(width: 10),
+          Expanded(child: Text(pedido.pergunta, style: manrope(14, peso: FontWeight.w600, cor: c.text, altura: 1.4))),
+        ]),
+        const SizedBox(height: 8),
+        Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          TextButton(onPressed: () => pedido.responder(false), child: const Text('Cancelar')),
+          const SizedBox(width: 6),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(backgroundColor: c.bad, foregroundColor: c.noAccent),
+            onPressed: () => pedido.responder(true),
+            icon: const Icon(Icons.delete_outline_rounded, size: 18),
+            label: const Text('Excluir'),
+          ),
+        ]),
+      ]),
+    );
   }
 }
 
@@ -715,9 +761,15 @@ class _PensandoState extends State<_Pensando> with SingleTickerProviderStateMixi
       child: Row(children: [
         const _Orbe(tamanho: 28, pulsando: true),
         const SizedBox(width: Espaco.sm),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: Text(_frases[_frase], key: ValueKey(_frase), style: manrope(14, peso: FontWeight.w500, cor: c.muted)),
+        // Rodando uma ferramenta, mostra a etapa ("Atualizando seus dados...").
+        ValueListenableBuilder<String?>(
+          valueListenable: AssistenteRepo.etapa,
+          builder: (context, etapa, _) => AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: Text(etapa ?? _frases[_frase],
+                key: ValueKey(etapa ?? _frase),
+                style: manrope(14, peso: FontWeight.w500, cor: etapa == null ? c.muted : c.accent)),
+          ),
         ),
         const SizedBox(width: 8),
         AnimatedBuilder(

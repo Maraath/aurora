@@ -38,7 +38,11 @@ class AtalhosFlutuantes extends StatefulWidget {
     required this.aoBuscar,
     required this.aoAbrirAssistente,
     this.controle,
+    this.assistenteNaTela,
   });
+
+  /// Verdadeiro quando a área Assistente está aberta (ela mesma mostra os avisos).
+  final bool Function()? assistenteNaTela;
 
   final VoidCallback aoBuscar;
 
@@ -64,6 +68,7 @@ class _AtalhosFlutuantesState extends State<AtalhosFlutuantes> {
     super.initState();
     widget.controle?._estado = this;
     HardwareKeyboard.instance.addHandler(_tecla);
+    AssistenteRepo.confirmacao.addListener(_mostrarConfirmacao);
   }
 
   @override
@@ -98,12 +103,21 @@ class _AtalhosFlutuantesState extends State<AtalhosFlutuantes> {
   @override
   void dispose() {
     HardwareKeyboard.instance.removeHandler(_tecla);
+    AssistenteRepo.confirmacao.removeListener(_mostrarConfirmacao);
     _conversa?.cancel();
     if (widget.controle?._estado == this) widget.controle?._estado = null;
     super.dispose();
   }
 
   bool get _naFrente => ModalRoute.of(context)?.isCurrent ?? true;
+
+  /// A IA pediu para excluir algo: abre o mini chat para o cartão aparecer
+  /// (a menos que a área Assistente já esteja na tela, que mostra o cartão).
+  void _mostrarConfirmacao() {
+    if (AssistenteRepo.confirmacao.value == null || !mounted || _painel == _Painel.chat) return;
+    if (widget.assistenteNaTela?.call() ?? false) return;
+    setState(() => _painel = _Painel.chat);
+  }
 
   /// Teclado: Ctrl+K busca, Esc fecha o painel, e as letras do menu +.
   bool _tecla(KeyEvent e) {

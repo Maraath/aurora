@@ -389,6 +389,7 @@ class _ShellState extends State<Shell> {
                           controle: _atalhos,
                           aoBuscar: _buscar,
                           aoAbrirAssistente: () => _ir(Secao.assistente),
+                          assistenteNaTela: () => _secao == Secao.assistente,
                         ),
                       ),
                     ]),

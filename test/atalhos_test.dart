@@ -1,6 +1,7 @@
 import 'package:aurora/app.dart';
 import 'package:aurora/core/comandos.dart';
 import 'package:aurora/core/relogio.dart';
+import 'package:aurora/data/assistente_repo.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/busca.dart';
 import 'package:aurora/data/exemplo.dart';
@@ -161,6 +162,25 @@ void main() {
       await assentar(t);
       expect(find.text('Assistente'), findsWidgets);
       expect(find.byTooltip('Abrir o Assistente em tela cheia'), findsNothing);
+      await t.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('exclusão pedida pela IA abre o mini chat com o cartão de confirmação', (t) async {
+      await abrir(t, const Size(1280, 900));
+      final resposta = AssistenteRepo.confirmarNaConversa('Excluir a medida Peso 74 kg do dia 3 de outubro?');
+      await assentar(t);
+      expect(find.text('Excluir a medida Peso 74 kg do dia 3 de outubro?'), findsOneWidget);
+      expect(find.byTooltip('Abrir o Assistente em tela cheia'), findsOneWidget, reason: 'abriu o mini chat');
+      await t.tap(find.text('Excluir'));
+      await assentar(t);
+      expect(await resposta, isTrue);
+      expect(find.text('Excluir a medida Peso 74 kg do dia 3 de outubro?'), findsNothing);
+
+      final cancelada = AssistenteRepo.confirmarNaConversa('Excluir a foto de frente?');
+      await assentar(t);
+      await t.tap(find.text('Cancelar'));
+      await assentar(t);
+      expect(await cancelada, isFalse);
       await t.pumpWidget(const SizedBox());
     });
 

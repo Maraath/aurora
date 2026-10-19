@@ -32,11 +32,19 @@ Como responder:
   Nunca invente dados; se faltar informação, consulte ou pergunte.
 - Lembre do que já foi dito nesta conversa e continue de onde parou.
 
-Ferramentas:
-- Para CRIAR ou REGISTRAR algo (gasto, receita, tarefa, lembrete, hábito feito, medida, refeição,
-  treino), use a ferramenta certa. Só diga que fez depois do resultado da ferramenta; se ela
-  falhar, explique o motivo que veio no resultado.
+Ferramentas (você age de verdade nos dados do app, não só conversa):
+- Sempre que a pessoa pedir para CRIAR, REGISTRAR, MUDAR ou EXCLUIR algo, use a ferramenta certa
+  na hora, sem mandar ela fazer manualmente: gasto, receita, tarefa, lembrete, hábito feito, medida,
+  refeição, treino ("criar_treino"), metas de dieta ou metas do app ("atualizar_metas") e registros do
+  Shape ("excluir_registro_shape"). Só diga que fez depois do resultado da ferramenta; se ela falhar,
+  explique o motivo que veio no resultado.
+- Datas relativas ("amanhã", "segunda", "mês passado") se resolvem pela data de hoje do resumo.
+  Treino "para amanhã" = treino com o dia da semana de amanhã.
 - Pedido ambíguo que mexe em dados (falta valor, dia ou nome)? Pergunte antes de criar.
+- EXCLUSÃO: primeiro descubra o registro exato com "consultar" (área "shape" para fotos, "medidas"
+  para medidas; os ids vêm lá). Diga em uma frase o que vai excluir e chame a ferramenta: o app
+  mostra à pessoa um botão de confirmação antes de apagar. Se o resultado disser que ela cancelou,
+  não insista. Se houver mais de um registro possível, pergunte qual antes.
 - Para responder sobre a vida dela além do resumo, use "consultar" ou "buscar".
 - Quando ela quiser VER uma parte do app ("mostre minhas fotos do shape", "abre minhas finanças"),
   use "abrir_tela".
@@ -102,8 +110,9 @@ export const ferramentas = {
   }),
   criar_treino: tool({
     description:
-      "Cria um treino novo na ficha, com exercícios, séries, repetições e carga inicial. " +
-      "Confirme os dias da semana com a pessoa se ela não disser.",
+      "Cria um treino novo na ficha, com exercícios, séries, repetições e carga inicial. Para um dia " +
+      "específico (ex.: 'para amanhã'), coloque o dia da semana dele em 'dias'. Sem dia dito, pergunte. " +
+      "Monte os exercícios com bom senso de treino se a pessoa não listar.",
     inputSchema: z.object({
       nome: z.string().min(1).describe("Ex.: Treino C"),
       foco: z.string().optional().describe("Ex.: Pernas e glúteos"),
@@ -116,10 +125,38 @@ export const ferramentas = {
       })).min(1).max(15),
     }),
   }),
+  excluir_registro_shape: tool({
+    description:
+      "Exclui uma foto do Shape ou uma medida corporal. Use o id que veio de 'consultar' (área 'shape' " +
+      "ou 'medidas'). O app pede a confirmação da pessoa antes de apagar.",
+    inputSchema: z.object({
+      tipo: z.enum(["foto", "medida"]),
+      id: z.string().min(1),
+    }),
+  }),
+  atualizar_metas: tool({
+    description:
+      "Muda metas. alvo 'dieta': calorias e macros do dia (de treino, de descanso ou os dois); só os " +
+      "campos informados mudam. alvo 'meta': uma meta do app pelo nome (ex.: Reserva de emergência, " +
+      "Shape 80kg), mudando o valor atual, o alvo e/ou a data.",
+    inputSchema: z.object({
+      alvo: z.enum(["dieta", "meta"]),
+      dia: z.enum(["treino", "descanso", "ambos"]).optional().describe("Só para dieta; padrão ambos"),
+      kcal: z.number().positive().optional(),
+      proteina: z.number().min(0).optional().describe("Gramas por dia"),
+      carboidrato: z.number().min(0).optional().describe("Gramas por dia"),
+      gordura: z.number().min(0).optional().describe("Gramas por dia"),
+      nome_meta: z.string().optional().describe("Só para meta: o nome dela"),
+      valor_atual: z.number().optional(),
+      valor_alvo: z.number().optional(),
+      data_alvo: data.optional(),
+    }),
+  }),
   consultar: tool({
     description:
       "Lê dados detalhados do app (além do resumo). Use para responder perguntas sobre a rotina, " +
-      "evolução ou histórico da pessoa.",
+      "evolução ou histórico da pessoa, e para achar o id de um registro antes de excluir " +
+      "('shape' lista as fotos de evolução; 'medidas' lista as medidas, com ids).",
     inputSchema: z.object({
       area: z.enum([
         "tarefas",
@@ -131,6 +168,7 @@ export const ferramentas = {
         "metas",
         "projetos",
         "lembretes",
+        "shape",
       ]),
       periodo_dias: z.number().int().min(1).max(365).optional().describe("Quantos dias para trás; padrão 30"),
     }),

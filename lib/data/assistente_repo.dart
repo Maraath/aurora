@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 
@@ -14,6 +16,7 @@ import 'habitos_repo.dart';
 import 'ia/ferramentas_ia.dart';
 import 'ia/protocolo.dart';
 import 'lembretes_repo.dart';
+import 'metas_repo.dart';
 import 'observar.dart';
 import 'saude_repo.dart';
 import 'tarefas_repo.dart';
@@ -80,13 +83,58 @@ List<Map<String, Object?>> mensagensParaIa(List<MensagemAssistente> conversa,
 /// a resposta chegando aos poucos (stream) e executa no aparelho as
 /// ferramentas que a IA pedir. Comandos rápidos ("gastei 35 no mercado")
 /// continuam saindo na hora, sem IA e sem internet.
+/// Exclusão esperando a pessoa responder (cartão com "Excluir" e "Cancelar"
+/// na conversa). A IA nunca apaga nada sem esse sim.
+class PedidoConfirmacao {
+  PedidoConfirmacao(this.pergunta);
+  final String pergunta;
+  final _resposta = Completer<bool>();
+  Future<bool> get resposta => _resposta.future;
+  void responder(bool sim) {
+    if (!_resposta.isCompleted) _resposta.complete(sim);
+  }
+}
+
+/// Ferramentas que apagam dados: só rodam depois do sim da pessoa.
+const ferramentasDeExclusao = {'excluir_registro_shape'};
+
+/// O que aparece no indicador enquanto a ferramenta roda.
+String etapaDaFerramenta(String nome) => switch (nome) {
+      'consultar' || 'buscar' => 'Consultando seus dados...',
+      'abrir_tela' => 'Abrindo a tela...',
+      _ when ferramentasDeExclusao.contains(nome) => 'Excluindo...',
+      _ => 'Atualizando seus dados...',
+    };
+
 class AssistenteRepo {
-  AssistenteRepo(this.db, {TransporteIa? Function()? ia, Future<CatalogoTaco> Function()? catalogo})
+  AssistenteRepo(this.db,
+      {TransporteIa? Function()? ia,
+      Future<CatalogoTaco> Function()? catalogo,
+      Future<bool> Function(String pergunta)? confirmar})
       : _ia = ia ?? iaDaNuvem,
-        _catalogoTaco = catalogo ?? CatalogoTaco.carregar;
+        _catalogoTaco = catalogo ?? CatalogoTaco.carregar,
+        _confirmar = confirmar ?? confirmarNaConversa;
   final BancoAurora db;
   final TransporteIa? Function() _ia;
   final Future<CatalogoTaco> Function() _catalogoTaco;
+  final Future<bool> Function(String pergunta) _confirmar;
+
+  /// Etapa do momento ("Atualizando seus dados..."); nula = só pensando.
+  static final etapa = ValueNotifier<String?>(null);
+
+  /// Exclusão esperando o sim da pessoa (a tela mostra o cartão).
+  static final confirmacao = ValueNotifier<PedidoConfirmacao?>(null);
+
+  /// Mostra o cartão e espera a resposta; sem resposta em 3 min, cancela.
+  static Future<bool> confirmarNaConversa(String pergunta) async {
+    final pedido = PedidoConfirmacao(pergunta);
+    confirmacao.value = pedido;
+    try {
+      return await pedido.resposta.timeout(const Duration(minutes: 3), onTimeout: () => false);
+    } finally {
+      if (confirmacao.value == pedido) confirmacao.value = null;
+    }
+  }
 
   /// Verdadeiro enquanto a IA está respondendo (para a tela mostrar).
   static final pensando = ValueNotifier<bool>(false);
@@ -163,6 +211,7 @@ class AssistenteRepo {
     } finally {
       _processando = false;
       pensando.value = false;
+      etapa.value = null;
     }
   }
 
@@ -205,6 +254,7 @@ class AssistenteRepo {
           switch (evento) {
             case TextoIa(:final delta):
               pensando.value = false;
+              etapa.value = null;
               texto.write(delta);
               await gravarTexto();
             case FerramentaIa():
@@ -241,7 +291,24 @@ class AssistenteRepo {
       }
       final resultados = <Map<String, Object?>>[];
       for (final c in chamadas) {
-        final r = await ferramentas.executar(c.nome, c.entrada);
+        final ResultadoFerramenta r;
+        if (ferramentasDeExclusao.contains(c.nome)) {
+          // Exclusão: a pessoa confirma num cartão antes de qualquer coisa sumir.
+          final pergunta = await ferramentas.perguntaDeExclusao(c.nome, c.entrada);
+          etapa.value = null;
+          pensando.value = false;
+          final sim = pergunta != null && await _confirmar(pergunta);
+          pensando.value = true;
+          etapa.value = sim ? etapaDaFerramenta(c.nome) : null;
+          r = pergunta == null
+              ? const ResultadoFerramenta('Esse registro não existe (o id não confere). Consulte de novo.', erro: true)
+              : sim
+                  ? await ferramentas.executar(c.nome, c.entrada)
+                  : const ResultadoFerramenta('A pessoa cancelou a exclusão. Nada foi apagado.');
+        } else {
+          etapa.value = etapaDaFerramenta(c.nome);
+          r = await ferramentas.executar(c.nome, c.entrada);
+        }
         final aviso = r.aviso;
         if (aviso != null) {
           await _gravar(PapelMensagem.aurora, aviso.texto, itemTipo: aviso.itemTipo, itemId: aviso.itemId);
@@ -499,6 +566,33 @@ class AssistenteRepo {
         await SaudeRepo(db).excluirMedida(id);
       case 'treino':
         await SaudeRepo(db).excluirTreino(id);
+      case 'medida_excluida':
+        await (db.update(db.medidas)..where((x) => x.id.equals(id)))
+            .write(MedidasCompanion(apagadoEm: const Value(null), atualizadoEm: Value(DateTime.now())));
+      case 'alvo_dieta':
+        // "treino:kcal:p:c:g;descanso:-" → volta cada dia ao que era (ou apaga).
+        final alimentacao = AlimentacaoRepo(db);
+        for (final parte in id.split(';')) {
+          final [tipo, ...v] = parte.split(':');
+          final t = TipoDia.values.byName(tipo);
+          if (v.first == '-') {
+            await (db.update(db.alvosDieta)..where((a) => a.tipoDia.equals(tipo))).write(
+                AlvosDietaCompanion(apagadoEm: Value(DateTime.now()), atualizadoEm: Value(DateTime.now())));
+          } else {
+            final n = v.map(double.parse).toList();
+            await alimentacao.salvarAlvo(t, Nutrientes(n[0], n[1], n[2], n[3]));
+          }
+        }
+      case 'meta':
+        final [metaId, atual, alvo, data] = id.split('|');
+        await MetasRepo(db).salvar(
+          MetasCompanion(
+            valorAtual: Value(double.parse(atual)),
+            valorAlvo: Value(double.parse(alvo)),
+            dataAlvo: Value(data.isEmpty ? null : DateTime.parse(data)),
+          ),
+          id: metaId,
+        );
       case 'alimentacao':
         await AlimentacaoRepo(db).excluirRegistro(id);
     }

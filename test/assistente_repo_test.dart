@@ -3,8 +3,10 @@ import 'package:aurora/data/assistente_repo.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/data/financas_repo.dart';
+import 'package:aurora/data/alimentacao_repo.dart';
 import 'package:aurora/data/habitos_repo.dart';
-import 'package:aurora/data/ia/ferramentas_ia.dart' show telaPedidaPelaIa;
+import 'package:aurora/data/ia/ferramentas_ia.dart' show consultar, telaPedidaPelaIa;
+import 'package:aurora/data/metas_repo.dart';
 import 'package:aurora/data/saude_repo.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -206,6 +208,110 @@ void main() {
       await comIa.enviar('Resumo do meu dia');
       expect(chamou, isTrue);
       expect((await comIa.carregarConversa()).last.texto, 'Seu dia está tranquilo.');
+    });
+  });
+
+  group('agente: alterar e excluir', () {
+    /// IA de teste: na primeira volta pede [ferramenta]; na segunda devolve o
+    /// resultado como texto (para o teste ler) e guarda a etapa mostrada.
+    (AssistenteRepo, List<String?>) agente(String ferramenta, Map<String, Object?> entrada, {bool confirmar = true}) {
+      final etapas = <String?>[];
+      final perguntas = <String>[];
+      final repo = AssistenteRepo(db,
+          confirmar: (p) async {
+            perguntas.add(p);
+            return confirmar;
+          },
+          ia: () => (mensagens, contexto) async* {
+                if (mensagens.last['role'] == 'user') {
+                  yield FerramentaIa(id: 'x', nome: ferramenta, entrada: entrada);
+                } else {
+                  etapas.add(AssistenteRepo.etapa.value);
+                  final r = ((mensagens.last['content'] as List).single as Map)['output'] as Map;
+                  yield TextoIa('${r['type']}|${r['value']}');
+                }
+              });
+      return (repo, etapas);
+    }
+
+    test('excluir medida: pede confirmação, apaga e dá para desfazer', () async {
+      final saude = SaudeRepo(db);
+      final peso = (await saude.carregar()).medidas['Peso']!.first;
+      final perguntas = <String>[];
+      final etapas = <String?>[];
+      final repo = AssistenteRepo(db,
+          confirmar: (p) async {
+            perguntas.add(p);
+            return true;
+          },
+          ia: () => (mensagens, contexto) async* {
+                if (mensagens.last['role'] == 'user') {
+                  yield FerramentaIa(id: 'x', nome: 'excluir_registro_shape', entrada: {'tipo': 'medida', 'id': peso.id});
+                } else {
+                  etapas.add(AssistenteRepo.etapa.value);
+                  yield const TextoIa('Pronto.');
+                }
+              });
+      await repo.enviar('apaga meu peso mais antigo');
+      expect(perguntas.single, contains('Excluir a medida Peso'));
+      expect(etapas.single, 'Excluindo...');
+      expect((await saude.carregar()).medidas['Peso']!.any((m) => m.id == peso.id), isFalse);
+      final aviso = (await repo.carregarConversa()).firstWhere((m) => m.itemTipo == 'medida_excluida');
+      await repo.desfazer(aviso);
+      expect((await saude.carregar()).medidas['Peso']!.any((m) => m.id == peso.id), isTrue);
+    });
+
+    test('excluir cancelado: nada some e a IA fica sabendo', () async {
+      final saude = SaudeRepo(db);
+      final peso = (await saude.carregar()).medidas['Peso']!.first;
+      final (repo, _) = agente('excluir_registro_shape', {'tipo': 'medida', 'id': peso.id}, confirmar: false);
+      await repo.enviar('apaga meu peso mais antigo');
+      expect((await saude.carregar()).medidas['Peso']!.any((m) => m.id == peso.id), isTrue);
+      expect((await repo.carregarConversa()).last.texto, contains('cancelou'));
+    });
+
+    test('excluir com id que não existe não pergunta nada', () async {
+      final (repo, _) = agente('excluir_registro_shape', {'tipo': 'foto', 'id': 'nao-existe'});
+      await repo.enviar('apaga minha foto');
+      expect((await repo.carregarConversa()).last.texto, startsWith('error-text|'));
+    });
+
+    test('meta de dieta muda só o que veio e desfazer volta', () async {
+      final alimentacao = AlimentacaoRepo(db);
+      final antes = await alimentacao.alvo(TipoDia.treino);
+      final (repo, _) = agente('atualizar_metas', {'alvo': 'dieta', 'kcal': 2500});
+      await repo.enviar('muda minha meta de calorias para 2500');
+      for (final t in TipoDia.values) {
+        expect((await alimentacao.alvo(t))!.kcal, 2500);
+      }
+      expect((await alimentacao.alvo(TipoDia.treino))!.proteina, antes?.proteina ?? 0, reason: 'proteína não mudou');
+      final aviso = (await repo.carregarConversa()).firstWhere((m) => m.itemTipo == 'alvo_dieta');
+      await repo.desfazer(aviso);
+      expect((await alimentacao.alvo(TipoDia.treino))?.kcal, antes?.kcal);
+    });
+
+    test('meta do app pelo nome, com desfazer', () async {
+      final metas = MetasRepo(db);
+      final shape = (await metas.carregar()).firstWhere((p) => p.meta.nome.contains('Shape')).meta;
+      final (repo, _) = agente('atualizar_metas', {'alvo': 'meta', 'nome_meta': 'shape 80', 'valor_atual': 77});
+      await repo.enviar('atualiza minha meta de shape para 77');
+      expect((await metas.carregar()).firstWhere((p) => p.meta.id == shape.id).meta.valorAtual, 77);
+      final aviso = (await repo.carregarConversa()).firstWhere((m) => m.itemTipo == 'meta');
+      await repo.desfazer(aviso);
+      expect((await metas.carregar()).firstWhere((p) => p.meta.id == shape.id).meta.valorAtual, shape.valorAtual);
+    });
+
+    test('meta que não existe volta como erro com a lista', () async {
+      final (repo, _) = agente('atualizar_metas', {'alvo': 'meta', 'nome_meta': 'viagem ao japão', 'valor_atual': 1});
+      await repo.enviar('atualiza a meta da viagem');
+      expect((await repo.carregarConversa()).last.texto, allOf(startsWith('error-text|'), contains('As metas são')));
+    });
+
+    test('consultar medidas traz os ids para excluir', () async {
+      final texto = await consultar(db, 'medidas', dias: 60);
+      final peso = (await SaudeRepo(db).carregar()).medidas['Peso']!.first;
+      expect(texto, contains('(id ${peso.id})'));
+      expect(await consultar(db, 'shape'), contains('Nenhuma foto'));
     });
   });
 
