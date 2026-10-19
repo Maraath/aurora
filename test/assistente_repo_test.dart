@@ -8,6 +8,7 @@ import 'package:aurora/data/habitos_repo.dart';
 import 'package:aurora/data/ia/ferramentas_ia.dart' show consultar, telaPedidaPelaIa;
 import 'package:aurora/data/metas_repo.dart';
 import 'package:aurora/data/saude_repo.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -537,6 +538,88 @@ void main() {
       await r.enviar('apaga o gasto');
       expect(perguntas, isEmpty);
       expect(await ultimoTexto(r), startsWith('error-text|'));
+    });
+
+    group('conta fixa já paga', () {
+      /// "Netflix" de R$ 50 todo mês, vencendo hoje e já paga (como no app).
+      Future<Transacao> netflix() async {
+        final financas = FinancasRepo(db);
+        final hoje = hojeSP();
+        final venc = instanteSP(hoje, 9);
+        final id = await financas.salvar(
+          TransacoesCompanion.insert(
+            descricao: 'Netflix',
+            valorCentavos: 5000,
+            tipo: TipoTransacao.saida,
+            data: venc,
+            vencimento: Value(venc),
+            categoria: const Value('Lazer'),
+            regraRepeticao: Value('FREQ=MONTHLY;BYMONTHDAY=${hoje.day}'),
+            contaId: Value((await financas.carregar()).contaPrincipalId),
+          ),
+          pagarPrimeira: true,
+        );
+        return (db.select(db.transacoes)..where((t) => t.id.equals(id))).getSingle();
+      }
+
+      Future<int> saldo() async => (await FinancasRepo(db).carregar()).saldoCentavos;
+      Future<int> pagos(String id) async => (await FinancasRepo(db).pagamentosDe(id)).length;
+
+      test('excluir só encerra, diz isso e não finge excluir de novo', () async {
+        final t = await netflix();
+        final antes = await saldo();
+        var (r, _) = agente('excluir_item', {'tipo': 'lancamento', 'id': t.id});
+        await r.enviar('exclui a netflix');
+        expect(perguntas.single, allOf(startsWith('Encerrar o gasto “Netflix”'), contains('continua no extrato')));
+        expect(await ultimoTexto(r), allOf(contains('Encerrei'), contains('continua no extrato')));
+        expect((await saldo(), await pagos(t.id)), (antes, 1), reason: 'o pagamento fica');
+
+        perguntas.clear();
+        (r, _) = agente('excluir_item', {'tipo': 'lancamento', 'id': t.id});
+        await r.enviar('exclui a netflix de novo');
+        expect(perguntas, isEmpty, reason: 'não há o que excluir: nem pergunta');
+        expect(await ultimoTexto(r), allOf(startsWith('error-text|'), contains('já está encerrada'), contains('apagar_pagos')));
+      });
+
+      test('apagar_pagos apaga a conta e os pagamentos; desfazer traz tudo', () async {
+        final t = await netflix();
+        final antes = await saldo();
+        final (r, _) = agente('excluir_item', {'tipo': 'lancamento', 'id': t.id, 'apagar_pagos': true});
+        await r.enviar('apaga netflix e os pagamentos, era teste');
+        expect(perguntas.single, allOf(startsWith('Apagar de vez o gasto “Netflix”'), contains('R\$ 50,00')));
+        expect(await saldo(), antes + 5000);
+        expect(await pagos(t.id), 0);
+        final x = await (db.select(db.transacoes)..where((x) => x.id.equals(t.id))).getSingle();
+        expect(x.apagadoEm, isNotNull);
+        expect(await ultimoTexto(r), contains('Apaguei de vez'));
+
+        await r.desfazer(await avisoDesfazer(r));
+        expect((await saldo(), await pagos(t.id)), (antes, 1));
+      });
+
+      test('marcar_pagamento desfaz o pagamento do mês e a conta continua', () async {
+        final t = await netflix();
+        final antes = await saldo();
+        final (r, _) = agente('marcar_pagamento', {'id': t.id, 'pago': false});
+        await r.enviar('desfaz o pagamento da netflix');
+        expect(perguntas, isEmpty);
+        expect(await saldo(), antes + 5000);
+        expect(await pagos(t.id), 0);
+        expect(await ultimoTexto(r), contains('Desfiz o pagamento de “Netflix”'));
+        final x = await (db.select(db.transacoes)..where((x) => x.id.equals(t.id))).getSingle();
+        expect((x.apagadoEm, x.regraRepeticao), (null, t.regraRepeticao));
+
+        final aviso = (await r.carregarConversa()).lastWhere((m) => m.itemTipo == 'pagamento');
+        await r.desfazer(aviso);
+        expect((await saldo(), await pagos(t.id)), (antes, 1));
+      });
+
+      test('consultar financas mostra a fixa com o id e o que foi pago', () async {
+        final t = await netflix();
+        final texto = await consultar(db, 'financas');
+        expect(texto, allOf(contains('Contas fixas e parceladas'), contains('Netflix'), contains('pagas: R\$ 50,00'),
+            contains('(id ${t.id})')));
+      });
     });
 
     test('buscar e consultar devolvem os ids', () async {

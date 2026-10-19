@@ -444,24 +444,44 @@ class FinancasRepo {
   Future<void> excluir(Transacao t) => db.transaction(() async {
         final agora = DateTime.now();
         final regra = Regra.ler(t.regraRepeticao);
-        final pagos = regra == null
-            ? const <PagamentoTransacao>[]
-            : await (db.select(db.pagamentosTransacao)
-                  ..where((p) => p.transacaoId.equals(t.id) & p.apagadoEm.isNull()))
-                .get();
+        final pagos = regra == null ? const <PagamentoTransacao>[] : await pagamentosDe(t.id);
         if (regra != null && pagos.isNotEmpty) {
-          var fim = hojeSP().subtract(const Duration(days: 1));
-          for (final p in pagos) {
-            final v = DateTime.parse(p.vencimento);
-            if (v.isAfter(fim)) fim = v;
-          }
-          await (db.update(db.transacoes)..where((x) => x.id.equals(t.id))).write(
-              TransacoesCompanion(
-                  regraRepeticao: Value(regra.encerradaEm(fim).rrule), atualizadoEm: Value(agora)));
+          await (db.update(db.transacoes)..where((x) => x.id.equals(t.id))).write(TransacoesCompanion(
+              regraRepeticao: Value(regra.encerradaEm(fimAoEncerrar(pagos)).rrule), atualizadoEm: Value(agora)));
           return;
         }
         await (db.update(db.transacoes)..where((x) => x.id.equals(t.id)))
             .write(TransacoesCompanion(apagadoEm: Value(agora), atualizadoEm: Value(agora)));
+      });
+
+  /// Pagamentos que valem de uma recorrente ou parcelada (do mais antigo ao mais novo).
+  Future<List<PagamentoTransacao>> pagamentosDe(String transacaoId) => (db.select(db.pagamentosTransacao)
+        ..where((p) => p.transacaoId.equals(transacaoId) & p.apagadoEm.isNull())
+        ..orderBy([(p) => OrderingTerm(expression: p.vencimento)]))
+      .get();
+
+  /// Até quando a regra vai ao ser encerrada: ontem ou o último vencimento
+  /// pago, o que vier depois (o que já foi pago continua no extrato).
+  static DateTime fimAoEncerrar(List<PagamentoTransacao> pagos) {
+    var fim = hojeSP().subtract(const Duration(days: 1));
+    for (final p in pagos) {
+      final v = DateTime.parse(p.vencimento);
+      if (v.isAfter(fim)) fim = v;
+    }
+    return fim;
+  }
+
+  /// Apaga de vez, COM os pagamentos já feitos (lançada por engano ou teste):
+  /// some das fixas, do extrato e dos saldos. Devolve os ids dos pagamentos
+  /// apagados (para desfazer).
+  Future<List<String>> apagarComPagamentos(Transacao t) => db.transaction(() async {
+        final agora = DateTime.now();
+        final pagos = await pagamentosDe(t.id);
+        await (db.update(db.pagamentosTransacao)..where((p) => p.transacaoId.equals(t.id) & p.apagadoEm.isNull()))
+            .write(PagamentosTransacaoCompanion(apagadoEm: Value(agora), atualizadoEm: Value(agora)));
+        await (db.update(db.transacoes)..where((x) => x.id.equals(t.id)))
+            .write(TransacoesCompanion(apagadoEm: Value(agora), atualizadoEm: Value(agora)));
+        return [for (final p in pagos) p.id];
       });
 
   Future<String> salvarConta(ContasFinanceirasCompanion dados, {String? id}) async {

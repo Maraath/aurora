@@ -321,7 +321,12 @@ class AssistenteRepo {
       final resultados = <Map<String, Object?>>[];
       for (final c in chamadas) {
         final ResultadoFerramenta r;
-        if (ferramentasDeExclusao.contains(c.nome)) {
+        final nadaAExcluir =
+            ferramentasDeExclusao.contains(c.nome) ? await ferramentas.semNadaAExcluir(c.nome, c.entrada) : null;
+        if (nadaAExcluir != null) {
+          // Excluir não mudaria nada: a IA fica sabendo, sem perguntar à pessoa.
+          r = nadaAExcluir;
+        } else if (ferramentasDeExclusao.contains(c.nome)) {
           // Exclusão: a pessoa confirma num cartão antes de qualquer coisa sumir.
           final pergunta = await ferramentas.perguntaDeExclusao(c.nome, c.entrada);
           etapa.value = null;
@@ -627,6 +632,8 @@ class AssistenteRepo {
       case 'restaurar':
         // Edição ou exclusão feita pela IA: a linha volta a ser como era.
         await restaurar(db, id);
+      case 'pagamento':
+        await desfazerPagamento(db, id);
     }
     await (db.update(db.mensagensAssistente)..where((x) => x.id.equals(m.id)))
         .write(MensagensAssistenteCompanion(desfeita: const Value(true), atualizadoEm: Value(DateTime.now())));

@@ -37,7 +37,8 @@ Ferramentas (você age de verdade nos dados do app, não só conversa):
   na hora, sem mandar ela fazer manualmente: gasto, receita, tarefa, lembrete, hábito feito, medida,
   refeição, treino ("criar_treino"), metas de dieta ou metas do app ("atualizar_metas"), edições
   ("editar_lancamento", "editar_tarefa", "editar_lembrete", "editar_treino"), exclusões de lançamento,
-  tarefa, lembrete ou treino ("excluir_item") e registros do Shape ("excluir_registro_shape"). Nunca
+  tarefa, lembrete ou treino ("excluir_item"), pagamento de conta ("marcar_pagamento") e registros do
+  Shape ("excluir_registro_shape"). Nunca
   diga para ela tocar no item e editar ou excluir: você faz. Só diga que fez depois do resultado da
   ferramenta; se ela falhar, explique o motivo que veio no resultado.
 - Datas relativas ("amanhã", "segunda", "mês passado") se resolvem pela data de hoje do resumo.
@@ -49,6 +50,16 @@ Ferramentas (você age de verdade nos dados do app, não só conversa):
   Na edição, mande só os campos que mudam; a pessoa pode desfazer pela conversa.
 - EXCLUSÃO: diga em uma frase o que vai excluir e chame a ferramenta: o app mostra à pessoa um botão
   de confirmação antes de apagar. Se o resultado disser que ela cancelou, não insista.
+- CONTAS FIXAS e PARCELADAS (Netflix, internet, aluguel, parcelas): cada uma é UM lançamento que se
+  repete; o que já foi pago fica guardado como pagamento de cada mês ("consultar" financas mostra as
+  pagas). Escolha pelo que a pessoa quer:
+  • parar as próximas e manter o que já pagou → "excluir_item" (encerra);
+  • sumir com tudo, inclusive o já pago ("era teste", "lancei errado", "apaga os pagamentos") →
+    "excluir_item" com "apagar_pagos": true;
+  • só desfazer o pagamento de um mês e manter a conta → "marcar_pagamento" com "pago": false
+    ("marcar_pagamento" com true marca como paga).
+  Se não der para saber qual das três, pergunte. Conte o que aconteceu com as palavras do resultado
+  (encerrou ≠ apagou).
 - Para responder sobre a vida dela além do resumo, use "consultar" ou "buscar".
 - Quando ela quiser VER uma parte do app ("mostre minhas fotos do shape", "abre minhas finanças"),
   use "abrir_tela".
@@ -200,10 +211,25 @@ export const ferramentas = {
   excluir_item: tool({
     description:
       "Exclui um lançamento, uma tarefa, um lembrete ou um treino da ficha. Use o id que veio de " +
-      "'buscar' ou 'consultar'. O app pede a confirmação da pessoa antes de apagar.",
+      "'buscar' ou 'consultar'. O app pede a confirmação da pessoa antes de apagar. Lançamento que " +
+      "repete e já tem pagamentos: sem 'apagar_pagos' é só ENCERRADO (as próximas somem, o pago fica).",
     inputSchema: z.object({
       tipo: z.enum(["lancamento", "tarefa", "lembrete", "treino"]),
       id: z.string().min(1),
+      apagar_pagos: z.boolean().optional().describe(
+        "Só para lançamento que repete: true apaga de vez, com os pagamentos já feitos (teste, lançado errado)",
+      ),
+    }),
+  }),
+  marcar_pagamento: tool({
+    description:
+      "Marca como paga (pago true) ou desfaz o pagamento (pago false) de uma conta: a única com vencimento " +
+      "ou um mês de uma conta fixa/parcelada. A conta continua existindo. Sem 'vencimento', desfaz o último " +
+      "pagamento feito ou paga a conta em aberto mais antiga.",
+    inputSchema: z.object({
+      id: z.string().min(1),
+      pago: z.boolean(),
+      vencimento: data.optional().describe("Dia do vencimento do mês a mudar"),
     }),
   }),
   atualizar_metas: tool({

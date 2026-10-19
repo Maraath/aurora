@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../core/comandos.dart';
 import '../../core/formato.dart';
+import '../../core/recorrencia.dart';
 import '../../core/relogio.dart';
 import '../alimentacao_repo.dart';
 import '../assistente_repo.dart';
@@ -75,6 +76,7 @@ class FerramentasIa {
         'editar_lembrete' => _editarLembrete(e),
         'editar_treino' => _editarTreino(e),
         'excluir_item' => _excluirItem(e),
+        'marcar_pagamento' => _marcarPagamento(e),
         'excluir_registro_shape' => _excluirShape(e),
         'atualizar_metas' => e['alvo'] == 'dieta' ? _metaDieta(e) : _metaApp(e),
         'consultar' => Future.value(ResultadoFerramenta(
@@ -363,6 +365,53 @@ class FerramentasIa {
         extra: itens == null ? const {} : {'itens': [for (final i in antes) i.id]});
   }
 
+  /// Paga ou desfaz o pagamento de uma conta: a única com vencimento ou uma
+  /// ocorrência de fixa/parcelada (a do [vencimento]; sem ele, a última paga
+  /// para desfazer e a mais antiga em aberto para pagar). A conta continua.
+  Future<ResultadoFerramenta> _marcarPagamento(Map<String, Object?> e) async {
+    final t = await _transacao(_texto(e, 'id'));
+    if (t == null) return const ResultadoFerramenta(_naoAchei, erro: true);
+    if (e['pago'] is! bool) return const ResultadoFerramenta('Diga se é para marcar como paga (true) ou não (false).', erro: true);
+    final pago = e['pago'] as bool;
+    final repo = FinancasRepo(db);
+    final q = await repo.carregar();
+    final hoje = hojeSP();
+    final dia = _data(e['vencimento']);
+    final Ocorrencia? o;
+    if (t.regraRepeticao == null) {
+      if (t.vencimento == null) {
+        return const ResultadoFerramenta(
+            'Esse lançamento é um gasto ou receita direto, não uma conta com vencimento: não há pagamento para '
+            'marcar. Para tirá-lo do extrato, use excluir_item.',
+            erro: true);
+      }
+      o = Ocorrencia(transacao: t, vencimento: dataSP(t.vencimento!), pagoEm: t.pagoEm);
+    } else {
+      final lista = q.ocorrencias(t, inicioDaRegra(t), hoje.add(const Duration(days: 62))).toList();
+      o = dia != null
+          ? lista.where((x) => x.vencimento == dia).firstOrNull
+          : (pago ? lista.where((x) => !x.paga).firstOrNull : lista.where((x) => x.paga).lastOrNull);
+    }
+    if (o == null) {
+      return ResultadoFerramenta(
+          dia != null
+              ? '“${t.descricao}” não vence em ${diaMesLongo(dia)}.'
+              : (pago ? '“${t.descricao}” não tem conta em aberto.' : '“${t.descricao}” não tem nenhum pagamento feito.'),
+          erro: true);
+    }
+    final quando = diaMesLongo(o.vencimento);
+    if (o.paga == pago) {
+      return ResultadoFerramenta('“${o.nome}” de $quando já estava ${pago ? 'paga' : 'em aberto'}; nada mudou.');
+    }
+    await repo.pagar(o, pago);
+    final texto = pago
+        ? 'Marquei “${o.nome}” de $quando como paga (${reais(o.valorCentavos)}). O saldo já foi atualizado.'
+        : 'Desfiz o pagamento de “${o.nome}” de $quando (${reais(o.valorCentavos)}): saiu do extrato e voltou '
+            'para as contas a pagar.';
+    return ResultadoFerramenta(texto,
+        aviso: Resposta(texto, itemTipo: 'pagamento', itemId: '${t.id}|${chaveData(o.vencimento)}|${pago ? 0 : 1}'));
+  }
+
   /// Confirmação com "Desfazer" que devolve [linha] (como era) à [tabela].
   ResultadoFerramenta _comDesfazer(String texto, String tabela, Map<String, dynamic> linha,
       {Map<String, Object?> extra = const {}}) {
@@ -371,6 +420,22 @@ class FerramentasIa {
   }
 
   // ------------------------------------------------------------- exclusão
+
+  /// Exclusão que não mudaria nada: a resposta vai direto para a IA, sem
+  /// perguntar à pessoa. Hoje, encerrar de novo uma conta fixa já encerrada.
+  Future<ResultadoFerramenta?> semNadaAExcluir(String nome, Map<String, Object?> e) async {
+    if (nome != 'excluir_item' || e['tipo'] != 'lancamento' || e['apagar_pagos'] == true) return null;
+    final t = await _transacao('${e['id']}');
+    if (t == null) return null;
+    final pagos = await FinancasRepo(db).pagamentosDe(t.id);
+    final regra = Regra.ler(t.regraRepeticao);
+    if (regra?.fim == null || pagos.isEmpty || regra!.fim!.isAfter(FinancasRepo.fimAoEncerrar(pagos))) return null;
+    return ResultadoFerramenta(
+        '“${t.descricao}” já está encerrada: não gera mais contas. O que continua aparecendo são os pagamentos já '
+        'feitos (${_listaPagos(pagos)}). Para tirar também esses, chame excluir_item com apagar_pagos true '
+        '(apaga de vez) ou marcar_pagamento com pago false (só desfaz o pagamento).',
+        erro: true);
+  }
 
   /// Pergunta mostrada à pessoa antes de excluir (o AssistenteRepo pede a
   /// confirmação). Nula se o registro não existe.
@@ -381,9 +446,18 @@ class FerramentasIa {
         case 'lancamento':
           final t = await _transacao(id);
           if (t == null) return null;
-          return t.regraRepeticao == null
-              ? 'Excluir ${_rotuloLancamento(t)} do dia ${diaMesLongo(dataSP(t.data))}?'
-              : 'Excluir ${_rotuloLancamento(t)}, que repete? As próximas somem; as já pagas ficam no histórico.';
+          if (t.regraRepeticao == null) {
+            return 'Excluir ${_rotuloLancamento(t)} do dia ${diaMesLongo(dataSP(t.data))}? '
+                'Sai das contas e do extrato.';
+          }
+          final pagos = await FinancasRepo(db).pagamentosDe(t.id);
+          if (e['apagar_pagos'] == true || pagos.isEmpty) {
+            return 'Apagar de vez ${_rotuloLancamento(t)}, que repete'
+                '${pagos.isEmpty ? '' : ', com ${_quantosPagos(pagos)} (${_listaPagos(pagos)})'}? '
+                'Some das contas fixas, do extrato e do saldo.';
+          }
+          return 'Encerrar ${_rotuloLancamento(t)}, que repete? As próximas deixam de aparecer; '
+              '${_quantosPagos(pagos)} (${_listaPagos(pagos)}) continua${pagos.length == 1 ? '' : 'm'} no extrato.';
         case 'tarefa':
           final t = await _tarefa(id);
           if (t == null) return null;
@@ -422,9 +496,27 @@ class FerramentasIa {
       case 'lancamento':
         final t = await _transacao(id);
         if (t == null) break;
-        await FinancasRepo(db).excluir(t);
-        return _comDesfazer('Excluí ${_rotuloLancamento(t)}. O saldo em Finanças já foi atualizado.', 'transacoes',
-            t.toJson());
+        final repo = FinancasRepo(db);
+        final pagos = t.regraRepeticao == null ? const <PagamentoTransacao>[] : await repo.pagamentosDe(t.id);
+        if (pagos.isNotEmpty && e['apagar_pagos'] != true) {
+          // Conta fixa ou parcelada já paga: só encerra (como o "Encerrar" de Finanças).
+          await repo.excluir(t);
+          return _comDesfazer(
+              'Encerrei ${_rotuloLancamento(t)}: as próximas não aparecem mais. ${_capitalizar(_quantosPagos(pagos))} '
+              '(${_listaPagos(pagos)}) continua${pagos.length == 1 ? '' : 'm'} no extrato; se era teste, peça para '
+              'apagar de vez.',
+              'transacoes',
+              t.toJson());
+        }
+        final apagados = pagos.isEmpty ? const <String>[] : await repo.apagarComPagamentos(t);
+        if (pagos.isEmpty) await repo.excluir(t);
+        return _comDesfazer(
+            '${pagos.isEmpty ? 'Excluí' : 'Apaguei de vez'} ${_rotuloLancamento(t)}'
+            '${pagos.isEmpty ? '' : ' e ${_quantosPagos(pagos)} (${_listaPagos(pagos)})'}. '
+            'O saldo em Finanças já foi atualizado.',
+            'transacoes',
+            t.toJson(),
+            extra: apagados.isEmpty ? const {} : {'pagamentos': apagados});
       case 'tarefa':
         final t = await _tarefa(id);
         if (t == null) break;
@@ -540,6 +632,7 @@ class FerramentasIa {
     return ResultadoFerramenta([
       for (final x in r)
         '- ${x.titulo} (${x.detalhe}${x.direita == null ? '' : ', ${x.direita}'})'
+            '${switch (x.item) { Transacao(regraRepeticao: final String r) => ', ${_rotuloRegra(r)}', _ => '' }}'
             '${_idDe(x.item) == null ? '' : ' (id ${_idDe(x.item)})'}',
     ].join('\n'));
   }
@@ -615,12 +708,38 @@ List<({String nome, int series, int repeticoes, double? cargaInicial})> _exercic
         ),
     ];
 
+/// "conta fixa, todo mês" ou "conta fixa encerrada".
+String _rotuloRegra(String rrule) {
+  final r = Regra.ler(rrule);
+  if (r == null) return 'repete';
+  return r.fim == null ? 'repete ${r.descricao.toLowerCase()}' : 'repetia, encerrada em ${diaMesCurto(r.fim!)}';
+}
+
+/// "1 pagamento já feito" / "2 pagamentos já feitos".
+String _quantosPagos(List<PagamentoTransacao> pagos) =>
+    pagos.length == 1 ? 'o pagamento já feito' : 'os ${pagos.length} pagamentos já feitos';
+
+/// "R$ 50,00 de 18 out, R$ 50,00 de 18 set" (os mais novos primeiro).
+String _listaPagos(List<PagamentoTransacao> pagos) {
+  final lista = pagos.reversed.take(4).map((p) => '${reais(p.valorCentavos)} de ${diaMesCurto(DateTime.parse(p.vencimento))}');
+  return '${lista.join(', ')}${pagos.length > 4 ? ' e mais ${pagos.length - 4}' : ''}';
+}
+
 /// "o gasto “Educação” de R$ 200,00".
 String _rotuloLancamento(Transacao t) {
   final tipo = t.contaDestinoId != null
       ? 'a transferência'
       : (t.tipo == TipoTransacao.entrada ? 'a receita' : 'o gasto');
   return '$tipo “${t.descricao}” de ${reais(t.valorCentavos)}';
+}
+
+/// "Desfazer" de `marcar_pagamento`: "transacaoId|aaaa-mm-dd|1" volta a ocorrência
+/// a paga (1) ou em aberto (0).
+Future<void> desfazerPagamento(BancoAurora db, String itemId) async {
+  final [id, venc, antes] = itemId.split('|');
+  final t = await (db.select(db.transacoes)..where((x) => x.id.equals(id))).getSingleOrNull();
+  if (t == null) return;
+  await FinancasRepo(db).pagar(Ocorrencia(transacao: t, vencimento: DateTime.parse(venc)), antes == '1');
 }
 
 /// "Desfazer" de uma edição ou exclusão feita pela IA: grava de volta a linha
@@ -632,6 +751,12 @@ Future<void> restaurar(BancoAurora db, String json) async {
   switch (e['tabela']) {
     case 'transacoes':
       await db.update(db.transacoes).replace(Transacao.fromJson(linha).copyWith(atualizadoEm: agora));
+      // Apagada de vez: os pagamentos voltam junto.
+      final pagamentos = (e['pagamentos'] as List?)?.cast<String>();
+      if (pagamentos != null) {
+        await (db.update(db.pagamentosTransacao)..where((p) => p.id.isIn(pagamentos)))
+            .write(PagamentosTransacaoCompanion(apagadoEm: const Value(null), atualizadoEm: Value(agora)));
+      }
     case 'tarefas':
       // Pelo repositório, para o lembrete ligado à tarefa voltar junto.
       final t = Tarefa.fromJson(linha);
@@ -698,14 +823,27 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
             '${r.categorias.isEmpty ? '' : '; por categoria: ${r.categorias.take(8).map((c) => '${c.nome} ${reais(c.centavos)}').join(', ')}'}.');
       }
       final recentes = await (db.select(db.transacoes)
-            ..where((t) => t.apagadoEm.isNull() & t.pagoEm.isNotNull())
+            ..where((t) => t.apagadoEm.isNull() & t.pagoEm.isNotNull() & t.regraRepeticao.isNull())
             ..orderBy([(t) => OrderingTerm.desc(t.data)])
             ..limit(25))
           .get();
-      l.add('Lançamentos recentes:');
+      l.add('Lançamentos únicos recentes:');
       for (final t in recentes.where((t) => !dataSP(t.data).isBefore(desde))) {
         l.add('- ${diaMesCurto(dataSP(t.data))} ${t.descricao}${t.categoria == null ? '' : ' (${t.categoria})'}: '
             '${t.tipo == TipoTransacao.entrada ? '+' : '−'}${reais(t.valorCentavos)} (id ${t.id})');
+      }
+      // Contas fixas e parceladas: uma linha (o id) gera todas as ocorrências;
+      // o que foi pago fica nos pagamentos de cada vencimento.
+      final regras = q.transacoes.where((t) => t.regraRepeticao != null).toList()
+        ..sort((a, b) => a.descricao.compareTo(b.descricao));
+      if (regras.isNotEmpty) l.add('Contas fixas e parceladas (cada uma é UM lançamento que se repete):');
+      for (final t in regras) {
+        final regra = Regra.ler(t.regraRepeticao)!;
+        final pagos = (q.pagamentos[t.id]?.values.toList() ?? [])..sort((a, b) => a.vencimento.compareTo(b.vencimento));
+        l.add('- ${t.descricao}: ${t.tipo == TipoTransacao.entrada ? '+' : '−'}${reais(t.valorCentavos)} '
+            '${regra.descricao.toLowerCase()}'
+            '${regra.fim == null ? '' : ', encerrada (última em ${diaMesCurto(regra.fim!)})'}'
+            '; ${pagos.isEmpty ? 'nenhuma paga' : 'pagas: ${_listaPagos(pagos)}'} (id ${t.id})');
       }
 
     case 'treino':
