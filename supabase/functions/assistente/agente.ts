@@ -282,6 +282,8 @@ export type Escolha = {
   temperature?: number;
   providerOptions?: Record<string, Record<string, JSONValue>>;
   nome: string;
+  /// Modelo sem ferramentas (Gemma): só conversa, recebe a conversa em texto.
+  semFerramentas?: boolean;
 };
 
 /// Fila de modelos do Gemini, do preferido ao último recurso. No plano
@@ -291,12 +293,15 @@ export type Escolha = {
 ///   gemini-flash-lite-latest (3.5 Flash Lite) 15/min, 500/dia — o que mais aguenta
 ///   gemini-2.5-flash                           5/min,  20/dia
 ///   gemini-2.5-flash-lite                     10/min,  20/dia
-/// Trocável sem publicar versão: segredo GEMINI_MODELOS ("a,b,c").
+///   gemma-3-27b-it (modelo aberto)            último recurso: sem ferramentas, só conversa
+/// O "Antigravity" do AI Studio é a cota do app de agentes do Google, não um
+/// modelo chamável pela API. Trocável sem publicar versão: segredo GEMINI_MODELOS ("a,b,c").
 export const MODELOS_GEMINI_PADRAO = [
   "gemini-flash-latest",
   "gemini-flash-lite-latest",
   "gemini-2.5-flash",
   "gemini-2.5-flash-lite",
+  "gemma-3-27b-it",
 ];
 
 /// Os modelos a tentar, em ordem: a Claude primeiro quando há
@@ -327,7 +332,7 @@ export function cadeiaDeModelos(reserva = false): Escolha[] {
     const google = createGoogleGenerativeAI({ apiKey: chaveGemini });
     const nomes = (Deno.env.get("GEMINI_MODELOS") ?? "").split(",").map((n) => n.trim()).filter(Boolean);
     for (const nome of nomes.length ? nomes : MODELOS_GEMINI_PADRAO) {
-      cadeia.push({ model: google(nome), nome, temperature: 0.7 });
+      cadeia.push({ model: google(nome), nome, temperature: 0.7, semFerramentas: nome.startsWith("gemma-") });
     }
   }
   if (cadeia.length === 0) throw new Error("Nenhuma chave de IA configurada (ANTHROPIC_API_KEY ou GEMINI_API_KEY)");

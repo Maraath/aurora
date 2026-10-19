@@ -47,3 +47,30 @@ chamados.length = 0;
 r = await responderComCadeia([{ model: modelo("a", 400), nome: "a" }, { model: modelo("b"), nome: "b" }], "s", msgs, sinal);
 corpo = await r.text();
 console.log("3:", chamados.join(">"), chamados.length === 1 && corpo.includes('"error"') ? "OK" : "FALHOU\n" + corpo);
+
+// 4) último recurso sem ferramentas (Gemma): recebe a conversa só em texto e nenhuma ferramenta.
+let visto: { tools?: unknown[]; prompt: { role: string; content: unknown }[] } | undefined;
+const gemma = {
+  specificationVersion: "v4", provider: "mock", modelId: "gemma", supportedUrls: {},
+  async doGenerate() { throw new Error("no"); },
+  async doStream(opcoes: never) {
+    visto = opcoes;
+    const partes = [
+      { type: "stream-start", warnings: [] },
+      { type: "text-start", id: "t" }, { type: "text-delta", id: "t", delta: "só conversa" }, { type: "text-end", id: "t" },
+      { type: "finish", usage, finishReason: { unified: "stop", raw: "stop" } },
+    ];
+    return { stream: new ReadableStream({ start(c) { partes.forEach((p) => c.enqueue(p)); c.close(); } }) };
+  },
+} as never;
+const comFerramenta = [
+  { role: "user" as const, content: "apaga o netflix" },
+  { role: "assistant" as const, content: [{ type: "tool-call" as const, toolCallId: "c", toolName: "consultar", input: {} }] },
+  { role: "tool" as const, content: [{ type: "tool-result" as const, toolCallId: "c", toolName: "consultar", output: { type: "text" as const, value: "Netflix R$ 50" } }] },
+];
+r = await responderComCadeia(
+  [{ model: modelo("flash", 429), nome: "flash" }, { model: gemma, nome: "gemma-3-27b-it", semFerramentas: true }],
+  "s", comFerramenta, sinal);
+corpo = await r.text();
+const semTool = !visto!.tools?.length && !JSON.stringify(visto!.prompt).includes("tool-call");
+console.log("4:", corpo.includes("só conversa") && semTool && JSON.stringify(visto!.prompt).includes("Netflix R$ 50") ? "OK" : "FALHOU\n" + JSON.stringify(visto));

@@ -45,13 +45,46 @@ type Inicio = {
 
 /// Pede ao modelo e lê só o começo: até o primeiro pedaço de verdade (texto,
 /// ferramenta, fim) ou um erro. "start"/"start-step" não contam.
+/// Para o modelo de último recurso, que não usa ferramentas.
+const AVISO_SEM_FERRAMENTAS = `AGORA VOCÊ ESTÁ SEM AS FERRAMENTAS (os outros modelos estão ocupados).
+Converse normalmente com o que está no resumo e na conversa. Se a pessoa pedir para criar, mudar ou
+excluir algo, diga com gentileza que agora não dá para mexer nos dados e que ela pode pedir de novo
+em alguns minutos. Nunca diga que fez uma ação.`;
+
+/// A conversa só em texto (para modelo sem ferramentas): chamadas de
+/// ferramenta somem e os resultados viram uma nota; papéis seguidos se juntam.
+export function emTexto(mensagens: ModelMessage[]): ModelMessage[] {
+  const saida: { role: "user" | "assistant"; content: string }[] = [];
+  const somar = (role: "user" | "assistant", texto: string) => {
+    if (!texto.trim()) return;
+    const ultima = saida[saida.length - 1];
+    if (ultima?.role === role) ultima.content += `\n${texto}`;
+    else saida.push({ role, content: texto });
+  };
+  for (const m of mensagens) {
+    if (m.role === "user" || m.role === "assistant") {
+      const texto = typeof m.content === "string"
+        ? m.content
+        : m.content.map((p) => (p.type === "text" ? p.text : "")).join("");
+      somar(m.role, texto);
+    } else if (m.role === "tool") {
+      const notas = m.content.map((p) =>
+        p.type === "tool-result" && "value" in p.output ? `(${p.toolName}: ${String(p.output.value)})` : ""
+      );
+      somar("assistant", notas.join("\n"));
+    }
+  }
+  return saida;
+}
+
 async function comecar(escolha: Escolha, sistema: string, mensagens: ModelMessage[], sinal: AbortSignal): Promise<Inicio> {
   let erro: unknown;
+  const semFerramentas = escolha.semFerramentas ?? false;
   const resultado = streamText({
     model: escolha.model,
-    system: sistema,
-    messages: mensagens,
-    tools: ferramentas,
+    system: semFerramentas ? `${sistema}\n\n${AVISO_SEM_FERRAMENTAS}` : sistema,
+    messages: semFerramentas ? emTexto(mensagens) : mensagens,
+    tools: semFerramentas ? undefined : ferramentas,
     temperature: escolha.temperature,
     providerOptions: escolha.providerOptions,
     maxOutputTokens: 4000,
