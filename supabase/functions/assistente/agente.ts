@@ -288,21 +288,32 @@ export type Escolha = {
 
 /// Fila de modelos do Gemini, do preferido ao último recurso. No plano
 /// gratuito cada modelo tem a SUA cota (por minuto e por dia), então quando um
-/// esgota o próximo ainda responde. Cotas vistas no AI Studio em 19/10/2026:
-///   gemini-flash-latest (3.8 Flash)            5/min,  20/dia — o mais esperto
-///   gemini-flash-lite-latest (3.5 Flash Lite) 15/min, 500/dia — o que mais aguenta
-///   gemini-2.5-flash                           5/min,  20/dia
-///   gemini-2.5-flash-lite                     10/min,  20/dia
-///   gemma-3-27b-it (modelo aberto)            último recurso: sem ferramentas, só conversa
-/// O "Antigravity" do AI Studio é a cota do app de agentes do Google, não um
-/// modelo chamável pela API. Trocável sem publicar versão: segredo GEMINI_MODELOS ("a,b,c").
+/// esgota o próximo ainda responde. Todos testados com a chave do app em
+/// 19/10/2026 (respondem e chamam ferramenta); cotas do AI Studio quando vistas:
+///   gemini-3.8-flash          5/min,  20/dia — o mais esperto
+///   gemini-3.7-flash / 3.6 / 3.5 / 3-flash-preview — Flash anteriores, cota própria
+///   gemini-3.5-flash-lite    15/min, 500/dia — o que mais aguenta
+///   gemini-3.1-flash-lite (e -preview)
+///   gemma-4-26b-a4b-it        modelo aberto, mais lento (~6 s), chama ferramenta
+/// Fora: 2.5 Flash/Lite/Pro (404 para contas novas), Pro/Omni/Argon (sem cota
+/// gratuita), Antigravity (só pela Interactions API) e os apelidos *-latest
+/// (dividem a cota com o modelo que apontam). Trocável sem publicar versão:
+/// segredo GEMINI_MODELOS ("a,b,c").
 export const MODELOS_GEMINI_PADRAO = [
-  "gemini-flash-latest",
-  "gemini-flash-lite-latest",
-  "gemini-2.5-flash",
-  "gemini-2.5-flash-lite",
-  "gemma-3-27b-it",
+  "gemini-3.8-flash",
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-3-flash-preview",
+  "gemini-3.5-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-3.1-flash-lite-preview",
+  "gemma-4-26b-a4b-it",
 ];
+
+/// Modelos que respondem mas não aceitam ferramentas: entram só para conversar
+/// (recebem a conversa em texto, ver `emTexto` em cadeia.ts).
+export const MODELOS_SEM_FERRAMENTAS = new Set<string>(["gemma-3-27b-it"]);
 
 /// Os modelos a tentar, em ordem: a Claude primeiro quando há
 /// ANTHROPIC_API_KEY (IA_FORNECEDOR força um dos dois), depois a fila do
@@ -332,7 +343,7 @@ export function cadeiaDeModelos(reserva = false): Escolha[] {
     const google = createGoogleGenerativeAI({ apiKey: chaveGemini });
     const nomes = (Deno.env.get("GEMINI_MODELOS") ?? "").split(",").map((n) => n.trim()).filter(Boolean);
     for (const nome of nomes.length ? nomes : MODELOS_GEMINI_PADRAO) {
-      cadeia.push({ model: google(nome), nome, temperature: 0.7, semFerramentas: nome.startsWith("gemma-") });
+      cadeia.push({ model: google(nome), nome, temperature: 0.7, semFerramentas: MODELOS_SEM_FERRAMENTAS.has(nome) });
     }
   }
   if (cadeia.length === 0) throw new Error("Nenhuma chave de IA configurada (ANTHROPIC_API_KEY ou GEMINI_API_KEY)");
