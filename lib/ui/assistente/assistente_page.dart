@@ -18,7 +18,13 @@ import '../vidro.dart';
 /// poucos e um indicador "pensando" com orbe pulsando e texto que alterna.
 /// Cores e fontes do Aurora.
 class AssistentePage extends StatefulWidget {
-  const AssistentePage({super.key});
+  const AssistentePage({super.key, this.compacto = false, this.aoExpandir, this.aoFechar});
+
+  /// Mini chat (janela flutuante do canto): cabeçalho pequeno com expandir e
+  /// fechar, e letras um pouco menores. A conversa é a mesma da área Assistente.
+  final bool compacto;
+  final VoidCallback? aoExpandir;
+  final VoidCallback? aoFechar;
 
   @override
   State<AssistentePage> createState() => _AssistentePageState();
@@ -122,18 +128,27 @@ class _AssistentePageState extends State<AssistentePage> {
           _irAoFim();
         }
         final fila = conversa.where((m) => m.naFila).length;
-        return Column(
+        final corpo = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Cabecalho(
-              conectada: _conectada,
-              fila: fila,
-              aoLimpar: conversa.isEmpty ? null : _limpar,
-            ),
-            const SizedBox(height: Espaco.md),
+            if (widget.compacto)
+              _CabecalhoMini(
+                conectada: _conectada,
+                fila: fila,
+                aoLimpar: conversa.isEmpty ? null : _limpar,
+                aoExpandir: widget.aoExpandir,
+                aoFechar: widget.aoFechar,
+              )
+            else
+              _Cabecalho(
+                conectada: _conectada,
+                fila: fila,
+                aoLimpar: conversa.isEmpty ? null : _limpar,
+              ),
+            SizedBox(height: widget.compacto ? Espaco.sm : Espaco.md),
             Expanded(
               child: conversa.isEmpty
-                  ? _Boasvindas(nome: _nome, conectada: _conectada, aoEscolher: _enviar)
+                  ? _Boasvindas(nome: _nome, conectada: _conectada, aoEscolher: _enviar, compacto: widget.compacto)
                   : ListView.builder(
                       controller: _rolagem,
                       padding: const EdgeInsets.only(top: Espaco.sm, bottom: Espaco.lg),
@@ -172,8 +187,20 @@ class _AssistentePageState extends State<AssistentePage> {
               _Sugestoes(aoEscolher: _enviar),
               const SizedBox(height: Espaco.sm + 4),
             ],
-            _Compositor(controle: _texto, foco: _foco, aoEnviar: _enviar, aoMudar: () => setState(() {})),
+            _Compositor(
+              controle: _texto,
+              foco: _foco,
+              aoEnviar: _enviar,
+              aoMudar: () => setState(() {}),
+              autofocus: widget.compacto,
+            ),
           ],
+        );
+        if (!widget.compacto) return corpo;
+        // Na janela pequena, letras 8% menores (as medidas seguem as da área).
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(.92)),
+          child: corpo,
         );
       },
     );
@@ -215,12 +242,60 @@ class _Cabecalho extends StatelessWidget {
   }
 }
 
+/// Cabeçalho do mini chat: orbe, nome, estado e os botões de limpar, abrir em
+/// tela cheia e fechar.
+class _CabecalhoMini extends StatelessWidget {
+  const _CabecalhoMini({
+    required this.conectada,
+    required this.fila,
+    this.aoLimpar,
+    this.aoExpandir,
+    this.aoFechar,
+  });
+  final bool conectada;
+  final int fila;
+  final VoidCallback? aoLimpar, aoExpandir, aoFechar;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    Widget botao(IconData icone, String dica, VoidCallback? acao) => IconButton(
+          tooltip: dica,
+          onPressed: acao,
+          visualDensity: VisualDensity.compact,
+          icon: Icon(icone, size: 19, color: c.muted),
+        );
+    return Row(children: [
+      ValueListenableBuilder<bool>(
+        valueListenable: AssistenteRepo.pensando,
+        builder: (_, pensando, _) => _Orbe(tamanho: 30, pulsando: pensando),
+      ),
+      const SizedBox(width: 10),
+      Expanded(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Aurora', style: sora(15)),
+          Text(
+            (conectada ? 'IA conectada' : 'Comandos rápidos, sem IA') + (fila == 0 ? '' : ' · $fila na fila'),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: manrope(11, peso: FontWeight.w500, cor: conectada ? c.teal : c.warn),
+          ),
+        ]),
+      ),
+      if (aoLimpar != null) botao(Icons.delete_sweep_outlined, 'Limpar conversa', aoLimpar),
+      if (aoExpandir != null) botao(Icons.open_in_full_rounded, 'Abrir o Assistente em tela cheia', aoExpandir),
+      if (aoFechar != null) botao(Icons.close_rounded, 'Fechar', aoFechar),
+    ]);
+  }
+}
+
 /// Conversa vazia: saudação no centro e sugestões para começar.
 class _Boasvindas extends StatelessWidget {
-  const _Boasvindas({required this.nome, required this.conectada, required this.aoEscolher});
+  const _Boasvindas({required this.nome, required this.conectada, required this.aoEscolher, this.compacto = false});
   final String nome;
   final bool conectada;
   final ValueChanged<String> aoEscolher;
+  final bool compacto;
 
   @override
   Widget build(BuildContext context) {
@@ -230,10 +305,10 @@ class _Boasvindas extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const _Orbe(tamanho: 56, pulsando: true),
-            const SizedBox(height: Espaco.lg),
+            _Orbe(tamanho: compacto ? 40 : 56, pulsando: true),
+            SizedBox(height: compacto ? Espaco.md : Espaco.lg),
             Text(nome.isEmpty ? 'Como posso ajudar?' : 'Oi, $nome. Como posso ajudar?',
-                textAlign: TextAlign.center, style: sora(22)),
+                textAlign: TextAlign.center, style: sora(compacto ? 18 : 22)),
             const SizedBox(height: Espaco.sm),
             Text(
               conectada
@@ -249,7 +324,10 @@ class _Boasvindas extends StatelessWidget {
               alignment: WrapAlignment.center,
               spacing: Espaco.sm,
               runSpacing: Espaco.sm,
-              children: [for (final s in sugestoesAssistente) _Chip(texto: s, aoTocar: () => aoEscolher(s))],
+              children: [
+                for (final s in compacto ? sugestoesAssistente.take(4) : sugestoesAssistente)
+                  _Chip(texto: s, aoTocar: () => aoEscolher(s)),
+              ],
             ),
           ]),
         ),
@@ -635,11 +713,18 @@ class _PensandoState extends State<_Pensando> with SingleTickerProviderStateMixi
 /// Campo de mensagem fixo embaixo: limpo, cresce até 5 linhas; Enter envia e
 /// Shift+Enter quebra a linha; o botão de enviar acende quando há texto.
 class _Compositor extends StatelessWidget {
-  const _Compositor({required this.controle, required this.foco, required this.aoEnviar, required this.aoMudar});
+  const _Compositor({
+    required this.controle,
+    required this.foco,
+    required this.aoEnviar,
+    required this.aoMudar,
+    this.autofocus = false,
+  });
   final TextEditingController controle;
   final FocusNode foco;
   final Future<void> Function([String?]) aoEnviar;
   final VoidCallback aoMudar;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
@@ -661,6 +746,7 @@ class _Compositor extends StatelessWidget {
                 child: TextField(
                   controller: controle,
                   focusNode: foco,
+                  autofocus: autofocus,
                   minLines: 1,
                   maxLines: 5,
                   onChanged: (_) => aoMudar(),

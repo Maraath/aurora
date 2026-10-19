@@ -1,10 +1,24 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
 import '../app.dart';
 import '../core/tema.dart';
+import '../data/assistente_repo.dart';
+import '../data/banco.dart';
+import '../data/busca.dart';
 import '../data/exemplo.dart';
+import '../data/financas_repo.dart';
+import '../data/tarefas_repo.dart';
+import 'atalhos/atalhos_flutuantes.dart';
+import 'atalhos/busca_ui.dart';
 import 'componentes.dart';
 import 'alimentacao/alimentacao_page.dart';
+import 'financas/form_lancamento.dart';
+import 'habitos/form_habito.dart';
+import 'lembretes/form_lembrete.dart';
+import 'metas/form_meta.dart';
+import 'projetos/form_projeto.dart';
+import 'tarefas/form_tarefa.dart';
 import 'atualizacao_ui.dart';
 import 'boas_vindas_page.dart';
 import 'ceu_estrelado.dart';
@@ -121,6 +135,93 @@ class _ShellState extends State<Shell> {
 
   void _ir(Secao s) => setState(() => _secao = s);
 
+  final _atalhos = ControleAtalhos();
+
+  /// "Ir para" da busca: as áreas e as abas mais procuradas.
+  List<AtalhoArea> get _areasDaBusca => [
+        for (final g in _gruposLateral)
+          for (final i in g) AtalhoArea(i.rotulo, i.icone, () => _ir(i.secao)),
+        AtalhoArea('Alimentação', Icons.restaurant_rounded, () => setState(() {
+              _secao = Secao.saude;
+              _abaSaude = 1;
+            })),
+        for (final s in [SubTreino.medidas, SubTreino.exercicios, SubTreino.shape])
+          AtalhoArea(s.rotulo, s.icone, () => setState(() {
+                _secao = Secao.saude;
+                _abaSaude = 0;
+                _subTreino = s;
+              })),
+        AtalhoArea('Automações', Icons.bolt_rounded, () => setState(() {
+              _secao = Secao.lembretes;
+              _abaLembretes = 1;
+            })),
+        AtalhoArea(_itemConta.rotulo, _itemConta.icone, () => _ir(Secao.conta)),
+      ];
+
+  void _buscar() {
+    final desktop = MediaQuery.sizeOf(context).width >= larguraDesktop;
+    abrirBusca(
+      context,
+      areas: _areasDaBusca,
+      aoAbrir: _abrirResultado,
+      aoPerguntar: (t) async {
+        if (desktop) return _atalhos.perguntar(t);
+        _ir(Secao.assistente);
+        await AssistenteRepo(AuroraEscopo.de(context).db).enviar(t);
+      },
+      aoNovaTarefa: (t) async {
+        await TarefasRepo(AuroraEscopo.de(context).db)
+            .salvar(TarefasCompanion.insert(titulo: t, prazo: const Value(null)), avisar: false);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Criei a tarefa “$t”, sem data.'),
+          behavior: SnackBarBehavior.floating,
+        ));
+      },
+    );
+  }
+
+  /// Resultado escolhido na busca: vai para a área e abre o item para editar.
+  Future<void> _abrirResultado(ResultadoBusca r) async {
+    final db = AuroraEscopo.de(context).db;
+    switch (r.tipo) {
+      case TipoResultado.tarefa:
+        _ir(Secao.tarefas);
+        await abrirFormTarefa(context, tarefa: r.item as Tarefa);
+      case TipoResultado.lembrete:
+        setState(() {
+          _secao = Secao.lembretes;
+          _abaLembretes = 0;
+        });
+        await abrirFormLembrete(context, lembrete: r.item as Lembrete);
+      case TipoResultado.transacao:
+        _ir(Secao.financas);
+        final q = await FinancasRepo(db).carregar();
+        if (!mounted) return;
+        await abrirFormLancamento(context,
+            transacao: r.item as Transacao, contas: q.contas, contaPrincipalId: q.contaPrincipalId);
+      case TipoResultado.categoria:
+        _ir(Secao.financas);
+      case TipoResultado.habito:
+        _ir(Secao.habitos);
+        final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
+        if (!mounted) return;
+        await abrirFormHabito(context, habito: r.item as Habito, metas: metas);
+      case TipoResultado.meta:
+        _ir(Secao.metas);
+        await abrirFormMeta(context, meta: r.item as Meta);
+      case TipoResultado.projeto:
+        _ir(Secao.projetos);
+        await abrirFormProjeto(context, projeto: r.item as Projeto);
+      case TipoResultado.treino || TipoResultado.exercicio:
+        setState(() {
+          _secao = Secao.saude;
+          _abaSaude = 0;
+          _subTreino = r.tipo == TipoResultado.treino ? SubTreino.ficha : SubTreino.exercicios;
+        });
+    }
+  }
+
   /// No celular, as áreas fora da barra de baixo acendem "Mais".
   Secao _secaoDaBarra(bool desktop) {
     if (desktop) return _secao;
@@ -173,11 +274,15 @@ class _ShellState extends State<Shell> {
     }
     final desktop = MediaQuery.sizeOf(context).width >= larguraDesktop;
 
-    final cabecalho = _Cabecalho(
-      mostrarLogo: !desktop,
-      assistenteAtivo: _secao == Secao.assistente,
-      abrirAssistente: () => _ir(Secao.assistente),
-    );
+    // No computador, assistente, tema e busca ficam nos atalhos do canto; o
+    // cabeçalho só existe no celular.
+    final cabecalho = desktop
+        ? null
+        : _Cabecalho(
+            assistenteAtivo: _secao == Secao.assistente,
+            abrirAssistente: () => _ir(Secao.assistente),
+            buscar: _buscar,
+          );
     final pagina = AnimatedSwitcher(
       duration: const Duration(milliseconds: 160),
       child: KeyedSubtree(
@@ -205,8 +310,7 @@ class _ShellState extends State<Shell> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      cabecalho,
-                      const SizedBox(height: Espaco.md),
+                      if (cabecalho != null) ...[cabecalho, const SizedBox(height: Espaco.md)],
                       Expanded(child: pagina),
                     ],
                   ),
@@ -215,7 +319,10 @@ class _ShellState extends State<Shell> {
                   padding: desktop
                       ? const EdgeInsets.fromLTRB(Espaco.xl, Espaco.lg, Espaco.xl, Espaco.xxl)
                       : EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.xl + barra),
-                  children: [cabecalho, const SizedBox(height: Espaco.lg), pagina],
+                  children: [
+                    if (cabecalho != null) ...[cabecalho, const SizedBox(height: Espaco.lg)],
+                    pagina,
+                  ],
                 ),
         ),
       ),
@@ -233,7 +340,25 @@ class _ShellState extends State<Shell> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _BarraLateral(atual: _secaoDaBarra(true), ir: _ir),
-                Expanded(child: Builder(builder: conteudo)),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, box) => Stack(children: [
+                      // Janela estreita: o conteúdo abre espaço à direita para
+                      // não ficar por baixo dos atalhos.
+                      Padding(
+                        padding: EdgeInsets.only(right: box.maxWidth < 1000 ? 76 : 0),
+                        child: Builder(builder: conteudo),
+                      ),
+                      Positioned.fill(
+                        child: AtalhosFlutuantes(
+                          controle: _atalhos,
+                          aoBuscar: _buscar,
+                          aoAbrirAssistente: () => _ir(Secao.assistente),
+                        ),
+                      ),
+                    ]),
+                  ),
+                ),
               ],
             ),
           ),
@@ -296,16 +421,17 @@ class AbasArea extends StatelessWidget {
   }
 }
 
+/// Cabeçalho do celular: logo, busca, assistente e tema.
 class _Cabecalho extends StatelessWidget {
   const _Cabecalho({
-    required this.mostrarLogo,
     required this.assistenteAtivo,
     required this.abrirAssistente,
+    required this.buscar,
   });
 
-  final bool mostrarLogo;
   final bool assistenteAtivo;
   final VoidCallback abrirAssistente;
+  final VoidCallback buscar;
 
   @override
   Widget build(BuildContext context) {
@@ -313,12 +439,12 @@ class _Cabecalho extends StatelessWidget {
     final escuro = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
-        if (mostrarLogo) ...[
-          const LogoAurora(),
-          const SizedBox(width: 10),
-          Text('Aurora', style: sora(18, espaco: 0.7)),
-        ],
+        const LogoAurora(),
+        const SizedBox(width: 10),
+        Text('Aurora', style: sora(18, espaco: 0.7)),
         const Spacer(),
+        BotaoRedondo(icone: Icons.search_rounded, dica: 'Buscar em tudo', aoTocar: buscar),
+        const SizedBox(width: 8),
         BotaoRedondo(
           icone: Icons.auto_awesome_outlined,
           dica: 'Abrir assistente',

@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atalhos flutuantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,300..500,0..1&display=block" rel="stylesheet">
+<style>
+:root{
+  --bg:#080716;--surface:#0F0E26;--surface2:#18173A;--line:#232250;--text:#EEF0FB;--muted:#A3A6C8;
+  --accent:#5CF0B0;--accentFill:#3EDB9A;--gradIni:#3EDB9A;--gradFim:#7E7BFF;--noAccent:#06061A;
+  --violeta:#9D8CFF;--teal:#42E3C8;--warn:#F5C35B;--bad:#E77BFF;
+  --vidro:rgba(24,23,58,.55);--borda:rgba(255,255,255,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1280px;height:800px;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:Manrope,sans-serif;font-size:14px;position:relative}
+.ms{font-family:'Material Symbols Rounded';font-weight:400;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 400,'opsz' 24}
+canvas#ceu{position:absolute;inset:0}
+.brilho{position:absolute;left:0;right:0;top:-120px;height:360px;background:radial-gradient(60% 60% at 30% 40%,rgba(62,219,154,.10),transparent 70%),radial-gradient(50% 60% at 70% 30%,rgba(126,123,255,.10),transparent 70%)}
+/* menu lateral */
+.lado{position:absolute;left:0;top:0;bottom:0;width:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--muted)}
+.lado .ativo{color:var(--accent);position:relative}
+.lado .ativo::before{content:'';position:absolute;left:-26px;top:2px;width:3px;height:18px;border-radius:2px;background:var(--accent)}
+.lado .sep{width:18px;height:1px;background:var(--line)}
+/* conteúdo */
+.pag{position:absolute;left:150px;top:36px;width:900px}
+.sobre{font-size:11px;letter-spacing:2px;color:var(--muted);font-weight:700}
+h1{font-family:Sora;font-size:28px;font-weight:600;margin:6px 0 4px}
+.sub{color:var(--muted)}
+.cartao{background:rgba(15,14,38,.42);border:1px solid var(--borda);border-radius:20px;padding:18px;backdrop-filter:blur(2px)}
+.grade{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-top:22px}
+.cartao h3{font-family:Sora;font-size:16px;font-weight:600;margin-bottom:12px}
+.linha{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.05)}
+.linha:first-of-type{border-top:0}
+.bola{width:18px;height:18px;border-radius:50%;border:2px solid var(--line)}
+.bola.ok{background:var(--teal);border-color:var(--teal)}
+.tag{margin-left:auto;font-size:12px;color:var(--muted)}
+.barra{height:8px;border-radius:6px;background:var(--surface2);overflow:hidden;margin-top:6px}
+.barra i{display:block;height:100%;background:linear-gradient(90deg,var(--gradIni),var(--gradFim))}
+/* dock flutuante */
+.dock{position:absolute;right:28px;bottom:28px;display:flex;flex-direction:column;gap:12px;align-items:center;z-index:5}
+.bt{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--vidro);border:1px solid var(--borda);backdrop-filter:blur(10px) saturate(1.4);color:var(--muted);box-shadow:0 6px 20px rgba(0,0,0,.35);position:relative}
+.bt.on{color:var(--accent);border-color:rgba(92,240,176,.45);background:rgba(62,219,154,.12)}
+.bt.mais{width:52px;height:52px;background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:var(--noAccent);border:0;box-shadow:0 8px 28px rgba(126,123,255,.35)}
+.bt.mais .ms{font-size:26px;font-variation-settings:'wght' 500}
+.bt.mais.on .ms{transform:rotate(45deg)}
+.ponto{position:absolute;top:1px;right:1px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--bg)}
+.dica{position:absolute;right:56px;top:50%;transform:translateY(-50%);background:var(--surface2);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;white-space:nowrap}
+.dica kbd{font-family:Manrope;color:var(--muted);margin-left:6px;font-size:11px}
+/* painéis */
+.painel{position:absolute;background:rgba(15,14,38,.80);border:1px solid var(--borda);border-radius:20px;backdrop-filter:blur(14px) saturate(1.4);box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:6}
+.menuMais{right:92px;bottom:28px;width:290px;padding:8px}
+.op{display:flex;gap:12px;align-items:center;padding:10px;border-radius:14px}
+.op.foco{background:rgba(255,255,255,.05)}
+.ic{width:36px;height:36px;border-radius:11px;display:grid;place-items:center}
+.op b{display:block;font-size:14px}
+.op small{color:var(--muted);font-size:12px}
+.op .atalho{margin-left:auto;color:var(--muted);font-size:11px;border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+.captura{right:92px;bottom:28px;width:420px;padding:16px}
+/* busca */
+.veu{position:absolute;inset:0;background:rgba(4,4,14,.55);z-index:5}
+.busca{left:50%;top:90px;transform:translateX(-50%);width:640px;padding:0;overflow:hidden}
+.campo{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line);font-size:16px}
+.campo .cursor{display:inline-block;width:2px;height:18px;background:var(--accent);vertical-align:middle;margin-left:1px}
+.campo .esc{margin-left:auto;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+.filtros{display:flex;gap:6px;padding:10px 18px 4px}
+.chip{font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.chip.on{color:var(--accent);background:rgba(62,219,154,.12);border-color:rgba(92,240,176,.45)}
+.grupo{padding:8px 10px 6px}
+.grupo h4{font-size:11px;letter-spacing:1.5px;color:var(--muted);font-weight:700;padding:6px 8px}
+.res{display:flex;align-items:center;gap:12px;padding:9px 8px;border-radius:12px}
+.res.foco{background:rgba(92,240,176,.08);outline:1px solid rgba(92,240,176,.25)}
+.res .ms{color:var(--muted)}
+.res em{font-style:normal;color:var(--accent);font-weight:700}
+.res small{display:block;color:var(--muted);font-size:12px}
+.res .dir{margin-left:auto;color:var(--muted);font-size:12px;text-align:right}
+.rodape{display:flex;gap:16px;padding:10px 18px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+.rodape kbd{font-family:Manrope;border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-right:4px}
+/* chat */
+.chat{right:92px;bottom:28px;width:380px;height:540px;display:flex;flex-direction:column;overflow:hidden}
+.topo{display:flex;align-items:center;gap:10px;padding:14px 14px 12px;border-bottom:1px solid var(--line)}
+.orbe{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#bfffe4,var(--accentFill) 40%,var(--gradFim) 90%);box-shadow:0 0 18px rgba(92,240,176,.45)}
+.topo b{font-family:Sora;font-size:15px}
+.topo small{display:block;color:var(--muted);font-size:11px}
+.topo .acoes{margin-left:auto;display:flex;gap:4px;color:var(--muted)}
+.topo .acoes span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px}
+.msgs{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.m{max-width:84%;padding:10px 12px;border-radius:14px;line-height:1.45;font-size:13px}
+.m.eu{align-self:flex-end;background:linear-gradient(135deg,rgba(62,219,154,.22),rgba(126,123,255,.22));border:1px solid rgba(126,123,255,.3)}
+.m.ela{align-self:flex-start;background:var(--surface2);border:1px solid var(--line)}
+.feito{display:flex;gap:8px;align-items:center;margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(66,227,200,.10);color:var(--teal);font-weight:700;font-size:12px}
+.sug{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 10px}
+.entrada{margin:0 12px 12px;display:flex;align-items:center;gap:8px;padding:8px 8px 8px 14px;border-radius:14px;background:rgba(24,23,58,.7);border:1px solid var(--line);color:var(--muted)}
+.enviar{margin-left:auto;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:var(--noAccent)}
+/* legenda do conceito */
+.nota{position:absolute;left:150px;bottom:24px;width:560px;z-index:7;background:rgba(92,240,176,.08);border:1px dashed rgba(92,240,176,.45);border-radius:14px;padding:12px 14px;font-size:12.5px;line-height:1.5;color:#cfeee0}
+.nota b{color:var(--accent)}
+</style>
+</head>
+<body>
+<canvas id="ceu" width="1280" height="800"></canvas>
+<div class="brilho"></div>
+
+<nav class="lado">
+  <span class="ms">auto_awesome</span><span class="ms ativo">home</span><div class="sep"></div>
+  <span class="ms">check_circle</span><span class="ms">repeat</span><span class="ms">monitor_heart</span><span class="ms">notifications</span><div class="sep"></div>
+  <span class="ms">flag</span><span class="ms">folder</span><span class="ms">account_balance_wallet</span>
+  <span style="height:40px"></span><span class="ms">person</span>
+</nav>
+
+<main class="pag">
+  <div class="sobre">DOMINGO, 18 DE OUTUBRO · BOA NOITE, MARAATH</div>
+  <h1>3 de 5 tarefas em aberto</h1>
+  <div class="sub">2 hábitos para hoje · 1 conta vence amanhã</div>
+  <div class="grade">
+    <div class="cartao">
+      <h3>Em foco</h3>
+      <div class="linha"><span class="bola ok"></span>Treino de pernas<span class="tag">07:00</span></div>
+      <div class="linha"><span class="bola"></span>Revisar orçamento de novembro<span class="tag">hoje</span></div>
+      <div class="linha"><span class="bola"></span>Ligar para o dentista<span class="tag">hoje</span></div>
+      <div class="linha"><span class="bola"></span>Estudar Flutter (1h)<span class="tag">20:00</span></div>
+    </div>
+    <div class="cartao">
+      <h3>Semana</h3>
+      <div class="sub" style="font-size:12px">Hábitos</div><div class="barra"><i style="width:72%"></i></div>
+      <div class="sub" style="font-size:12px;margin-top:14px">Tarefas</div><div class="barra"><i style="width:58%"></i></div>
+      <div class="sub" style="font-size:12px;margin-top:14px">Orçamento usado</div><div class="barra"><i style="width:41%"></i></div>
+    </div>
+  </div>
+</main>
+
+<!-- dock -->
+<div class="dock">
+  <div class="bt" id="bBusca"><span class="ms">search</span></div>
+  <div class="bt" id="bTema"><span class="ms">contrast</span></div>
+  <div class="bt" id="bChat"><span class="ms">chat_bubble</span><span class="ponto" id="ponto"></span></div>
+  <div class="bt mais" id="bMais"><span class="ms">add</span></div>
+</div>
+
+<!-- estados -->
+<div id="estFechado" hidden>
+  <div class="dica" style="position:absolute;right:84px;bottom:217px;top:auto;transform:none">Buscar em tudo<kbd>Ctrl K</kbd></div>
+  <div class="nota"><b>Fechado.</b> Quatro botões flutuam no canto inferior direito, por cima de todas as telas:
+    <b>Buscar</b> (Ctrl+K), <b>Tema</b> claro/escuro, <b>Mini chat</b> com a Aurora (ponto verde = resposta nova) e
+    <b>+ Ação rápida</b>. Os dois botões do topo (assistente e tema) saem de lá e vêm para cá. O nome aparece ao passar o mouse.</div>
+</div>
+
+<div id="estMais" hidden>
+  <div class="painel menuMais">
+    <div class="op foco"><div class="ic" style="background:rgba(92,240,176,.14);color:var(--accent)"><span class="ms">bolt</span></div><div><b>Captura rápida</b><small>escreva, a Aurora organiza</small></div><span class="atalho">Q</span></div>
+    <div class="op"><div class="ic" style="background:rgba(126,123,255,.16);color:var(--violeta)"><span class="ms">task_alt</span></div><div><b>Nova tarefa</b><small>criar aqui mesmo</small></div><span class="atalho">T</span></div>
+    <div class="op"><div class="ic" style="background:rgba(66,227,200,.14);color:var(--teal)"><span class="ms">attach_money</span></div><div><b>Novo lançamento</b><small>gasto ou receita</small></div><span class="atalho">L</span></div>
+    <div class="op"><div class="ic" style="background:rgba(245,195,91,.14);color:var(--warn)"><span class="ms">notifications</span></div><div><b>Novo lembrete</b><small>com hora para avisar</small></div><span class="atalho">R</span></div>
+    <div class="op"><div class="ic" style="background:rgba(231,123,255,.14);color:var(--bad)"><span class="ms">repeat</span></div><div><b>Marcar hábito</b><small>feito hoje</small></div><span class="atalho">H</span></div>
+  </div>
+  <div class="nota"><b>Ação rápida (+).</b> Abre um menu com os formulários que já existem, sem sair da tela atual.
+    "Captura rápida" é uma linha de texto: <i>"gastei 35 no mercado"</i>, <i>"lembrar de pagar a luz sexta"</i> — usa os
+    mesmos comandos do assistente (funcionam sem internet). Letras à direita = atalho de teclado com o menu aberto.</div>
+</div>
+
+<div id="estCaptura" hidden>
+  <div class="painel captura">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div class="ic" style="background:rgba(92,240,176,.14);color:var(--accent)"><span class="ms">bolt</span></div><b style="font-family:Sora">Captura rápida</b><span class="ms" style="margin-left:auto;color:var(--muted)">close</span></div>
+    <div class="entrada" style="margin:0;color:var(--text)">gastei 42,90 no mercado com o cartão<span class="cursor" style="display:inline-block;width:2px;height:16px;background:var(--accent)"></span><span class="enviar"><span class="ms">arrow_upward</span></span></div>
+    <div style="margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--line);font-size:13px">
+      <div style="color:var(--muted);font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:6px">A AURORA ENTENDEU</div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ms" style="color:var(--teal)">shopping_cart</span>Despesa · <b>R$ 42,90</b> · Mercado · Cartão · hoje</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end"><span class="chip">Editar no formulário</span><span class="chip on">Enter para salvar</span></div>
+  </div>
+  <div class="nota"><b>Captura rápida.</b> Mostra o que vai ser criado antes de salvar. Se a frase não for um comando
+    conhecido, oferece "Perguntar à Aurora" (vai para o mini chat) ou "Salvar como tarefa".</div>
+</div>
+
+<div id="estBusca" hidden>
+  <div class="veu"></div>
+  <div class="painel busca">
+    <div class="campo"><span class="ms" style="color:var(--accent)">search</span>mercado<span class="cursor"></span><span class="esc">Esc</span></div>
+    <div class="filtros"><span class="chip on">Tudo</span><span class="chip">Tarefas</span><span class="chip">Finanças</span><span class="chip">Hábitos</span><span class="chip">Lembretes</span><span class="chip">Metas e projetos</span></div>
+    <div class="grupo"><h4>FINANÇAS</h4>
+      <div class="res foco"><span class="ms">shopping_cart</span><div><em>Mercado</em> — Atacadão<small>Despesa · 17 out · Conta corrente</small></div><div class="dir">− R$ 214,09</div></div>
+      <div class="res"><span class="ms">category</span><div>Categoria <em>Mercado</em><small>R$ 462,96 em outubro · 16% do gasto</small></div><div class="dir">abrir análise</div></div>
+    </div>
+    <div class="grupo"><h4>TAREFAS E LEMBRETES</h4>
+      <div class="res"><span class="ms">task_alt</span><div>Fazer lista do <em>mercado</em><small>Tarefa · amanhã</small></div></div>
+      <div class="res"><span class="ms">notifications</span><div>Ir ao <em>mercado</em> no sábado<small>Lembrete · sáb, 09:00</small></div></div>
+    </div>
+    <div class="grupo" style="padding-bottom:10px"><h4>AÇÕES</h4>
+      <div class="res"><span class="ms">add_circle</span><div>Novo lançamento em <em>Mercado</em></div></div>
+      <div class="res"><span class="ms">auto_awesome</span><div>Perguntar à Aurora: "quanto gastei com <em>mercado</em>?"</div></div>
+    </div>
+    <div class="rodape"><span><kbd>↑</kbd><kbd>↓</kbd>navegar</span><span><kbd>Enter</kbd>abrir</span><span><kbd>Esc</kbd>fechar</span></div>
+  </div>
+  <div class="nota" style="z-index:7"><b>Busca (Ctrl+K).</b> Procura em tudo do banco local (funciona sem internet): tarefas,
+    hábitos, lançamentos, categorias, lembretes, metas, projetos, exercícios e alimentos. Sem texto, mostra atalhos para as
+    áreas e as últimas buscas. Enter abre o item na área certa, já destacado.</div>
+</div>
+
+<div id="estChat" hidden>
+  <div class="painel chat">
+    <div class="topo"><div class="orbe"></div><div><b>Aurora</b><small>online · 54 de 60 perguntas hoje</small></div>
+      <div class="acoes"><span class="ms">open_in_full</span><span class="ms">close</span></div></div>
+    <div class="msgs">
+      <div class="m eu">quanto ainda posso gastar esse mês?</div>
+      <div class="m ela">Você gastou <b>R$ 2.909,99</b> de outubro e ainda tem <b>R$ 222,80</b> em contas para pagar.
+        No ritmo atual, sobram cerca de <b>R$ 857</b> no fim do mês — dá uns <b>R$ 65 por dia</b> até o dia 31.</div>
+      <div class="m eu">anota que paguei o spotify</div>
+      <div class="m ela">Pronto!<div class="feito"><span class="ms" style="font-size:18px">check_circle</span>Spotify · R$ 12,90 marcado como pago</div></div>
+    </div>
+    <div class="sug"><span class="chip">Resumo do dia</span><span class="chip">Hábitos da semana</span><span class="chip">O que vence amanhã?</span></div>
+    <div class="entrada">Pergunte ou peça algo…<span class="enviar"><span class="ms">arrow_upward</span></span></div>
+  </div>
+  <div class="nota"><b>Mini chat.</b> A mesma conversa da área Assistente, numa janela pequena que não tira você da tela.
+    <span class="ms" style="font-size:14px;vertical-align:-2px">open_in_full</span> abre o Assistente em tela cheia. Mantém
+    o "Pensando…" com a orbe, a resposta digitada aos poucos e o limite diário. Sem internet, os comandos rápidos
+    continuam funcionando.</div>
+</div>
+
+<script>
+// céu estrelado
+const c=document.getElementById('ceu').getContext('2d');let s=11;const r=()=>(s=(s*16807)%2147483647)/2147483647;
+for(let i=0;i<260;i++){const x=r()*1280,y=r()*800,t=r();c.globalAlpha=.25+t*.6;c.fillStyle=t>.93?'#c9ffe9':'#fff';c.beginPath();c.arc(x,y,t>.9?1.4:.8,0,7);c.fill()}
+const e=(new URLSearchParams(location.search).get('e'))||'fechado';
+const mapa={fechado:'estFechado',mais:'estMais',captura:'estCaptura',busca:'estBusca',chat:'estChat'};
+document.getElementById(mapa[e]).hidden=false;
+if(e==='mais'||e==='captura')document.getElementById('bMais').classList.add('on');
+if(e==='busca')document.getElementById('bBusca').classList.add('on');
+if(e==='chat'){document.getElementById('bChat').classList.add('on');document.getElementById('ponto').remove()}
+</script>
+</body>
+</html>
