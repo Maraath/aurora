@@ -87,3 +87,51 @@ const diario = '{"error":{"details":[{"quotaId":"GenerateRequestsPerDayPerProjec
 await (await responderComCadeia([e("c6-dia", 429, { corpo: diario }), e("c6-b")], "s", msgs, sinal)).text();
 await (await responderComCadeia([e("c6-dia", 429, { corpo: diario }), e("c6-b")], "s", msgs, sinal)).text();
 console.log("6:", chamados.join(">"), ok(chamados.join(">") === "c6-dia>c6-b>c6-b", ""));
+
+// 7) enquanto procura um modelo livre, a resposta já saiu e leva sinais de vida.
+chamados.length = 0;
+config.tempoParaComecarMs = 400;
+config.sinalDeVidaMs = 100;
+r = await responderComCadeia([e("c7-lento", undefined, { demora: 5000 }), e("c7-b")], "s", msgs, sinal);
+corpo = await r.text();
+console.log("7:", chamados.join(">"), ok(corpo.includes('"data-espera"') && corpo.includes("oi de c7-b"), corpo));
+
+// 8) sobrecarregado (503) ou lento: na próxima volta nem tenta de novo.
+chamados.length = 0;
+await (await responderComCadeia([e("c8-cheio", 503), e("c8-lento", undefined, { demora: 5000 }), e("c8-b")], "s", msgs, sinal)).text();
+await (await responderComCadeia([e("c8-cheio", 503), e("c8-lento", undefined, { demora: 5000 }), e("c8-b")], "s", msgs, sinal)).text();
+console.log("8:", chamados.join(">"), ok(chamados.join(">") === "c8-cheio>c8-lento>c8-b>c8-b", ""));
+
+// 9) passou do tempo total: para de tentar e avisa o app com um erro.
+chamados.length = 0;
+config.tempoTotalMs = 300;
+r = await responderComCadeia([e("c9-a", undefined, { demora: 5000 }), e("c9-b")], "s", msgs, sinal);
+corpo = await r.text();
+console.log("9:", chamados.join(">"), ok(chamados.join(">") === "c9-a" && corpo.includes('"error"'), corpo));
+config.tempoParaComecarMs = 20_000;
+config.sinalDeVidaMs = 10_000;
+config.tempoTotalMs = 100_000;
+
+// 10) modelo lento sem dar erro: depois de escalonarMs o próximo é chamado junto
+// e fica o primeiro que começar (o lento é cancelado).
+chamados.length = 0;
+config.escalonarMs = 200;
+r = await responderComCadeia([e("c10-lento", undefined, { demora: 5000 }), e("c10-b")], "s", msgs, sinal);
+corpo = await r.text();
+console.log("10:", chamados.join(">"), ok(corpo.includes("oi de c10-b") && !corpo.includes("c10-lento"), corpo));
+
+// 11) um lento correndo e o chamado junto falha (503): o seguinte entra na hora.
+chamados.length = 0;
+const t11 = Date.now();
+r = await responderComCadeia([e("c11-lento", undefined, { demora: 5000 }), e("c11-cheio", 503), e("c11-c")], "s", msgs, sinal);
+corpo = await r.text();
+console.log("11:", chamados.join(">"), ok(corpo.includes("oi de c11-c") && Date.now() - t11 < 1000, corpo));
+config.escalonarMs = 6_000;
+
+// 12) quem perdeu a corrida por lentidão fica de fora na próxima volta.
+chamados.length = 0;
+config.escalonarMs = 200;
+await (await responderComCadeia([e("c12-lento", undefined, { demora: 5000 }), e("c12-b")], "s", msgs, sinal)).text();
+await (await responderComCadeia([e("c12-lento", undefined, { demora: 5000 }), e("c12-b")], "s", msgs, sinal)).text();
+console.log("12:", chamados.join(">"), ok(chamados.join(">") === "c12-lento>c12-b>c12-b", ""));
+config.escalonarMs = 6_000;
