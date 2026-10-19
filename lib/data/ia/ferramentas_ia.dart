@@ -4,6 +4,8 @@
 /// de bater com os de lá.
 library;
 
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 
@@ -68,6 +70,11 @@ class FerramentasIa {
             refeicao: e['refeicao'] as String?,
           )),
         'criar_treino' => _treino(e),
+        'editar_lancamento' => _editarLancamento(e),
+        'editar_tarefa' => _editarTarefa(e),
+        'editar_lembrete' => _editarLembrete(e),
+        'editar_treino' => _editarTreino(e),
+        'excluir_item' => _excluirItem(e),
         'excluir_registro_shape' => _excluirShape(e),
         'atualizar_metas' => e['alvo'] == 'dieta' ? _metaDieta(e) : _metaApp(e),
         'consultar' => Future.value(ResultadoFerramenta(
@@ -123,17 +130,8 @@ class FerramentasIa {
   }
 
   Future<ResultadoFerramenta> _treino(Map<String, Object?> e) async {
-    const bits = {'seg': 1, 'ter': 2, 'qua': 4, 'qui': 8, 'sex': 16, 'sab': 32, 'dom': 64};
-    final dias = (e['dias'] as List? ?? const []).fold<int>(0, (s, d) => s | (bits['$d'] ?? 0));
-    final itens = [
-      for (final x in (e['exercicios'] as List? ?? const []).cast<Map<String, Object?>>())
-        (
-          nome: _capitalizar(_texto(x, 'nome')),
-          series: _numero(x['series'])!.round(),
-          repeticoes: _numero(x['repeticoes'])!.round(),
-          cargaInicial: _numero(x['carga']),
-        ),
-    ];
+    final dias = _diasSemana(e['dias']);
+    final itens = _exercicios(e['exercicios']);
     if (itens.isEmpty) return const ResultadoFerramenta('O treino precisa de pelo menos um exercício.', erro: true);
     final nome = _capitalizar(_texto(e, 'nome'));
     final foco = (e['foco'] as String?)?.trim();
@@ -145,12 +143,231 @@ class FerramentasIa {
       ),
       itens,
     );
-    final quando = dias == 0
-        ? 'sem dia fixo'
-        : [for (final d in bits.entries) if (dias & d.value != 0) d.key].join(', ');
     final texto = 'Criei o $nome${foco == null || foco.isEmpty ? '' : ' ($foco)'} com ${itens.length} '
-        '${itens.length == 1 ? 'exercício' : 'exercícios'}, $quando. Está em Saúde › Treino › Ficha.';
+        '${itens.length == 1 ? 'exercício' : 'exercícios'}, ${_rotuloDias(dias)}. Está em Saúde › Treino › Ficha.';
     return ResultadoFerramenta(texto, aviso: Resposta(texto, itemTipo: 'treino', itemId: id));
+  }
+
+  // --------------------------------------------------------------- edição
+  //
+  // Cada edição guarda a linha de antes (JSON) no itemId da confirmação, com
+  // o tipo 'restaurar': "Desfazer" grava aquela linha de volta (`restaurar`).
+
+  Future<Transacao?> _transacao(String id) =>
+      (db.select(db.transacoes)..where((x) => x.id.equals(id) & x.apagadoEm.isNull())).getSingleOrNull();
+  Future<Tarefa?> _tarefa(String id) =>
+      (db.select(db.tarefas)..where((x) => x.id.equals(id) & x.apagadoEm.isNull())).getSingleOrNull();
+  Future<Lembrete?> _lembreteDe(String id) =>
+      (db.select(db.lembretes)..where((x) => x.id.equals(id) & x.apagadoEm.isNull())).getSingleOrNull();
+  Future<Treino?> _treinoDe(String id) =>
+      (db.select(db.treinos)..where((x) => x.id.equals(id) & x.apagadoEm.isNull())).getSingleOrNull();
+
+  static const _naoAchei = 'Não achei esse registro (o id não confere ou ele foi excluído). '
+      'Procure de novo com "buscar" ou "consultar".';
+
+  Future<ResultadoFerramenta> _editarLancamento(Map<String, Object?> e) async {
+    final t = await _transacao(_texto(e, 'id'));
+    if (t == null) return const ResultadoFerramenta(_naoAchei, erro: true);
+    final valor = _numero(e['valor']);
+    final descricao = (e['descricao'] as String?)?.trim();
+    final categoria = (e['categoria'] as String?)?.trim();
+    final dia = _data(e['data']);
+    final tipo = switch (e['tipo']) {
+      'gasto' => TipoTransacao.saida,
+      'receita' => TipoTransacao.entrada,
+      _ => null,
+    };
+    if (valor == null && (descricao == null || descricao.isEmpty) && (categoria == null || categoria.isEmpty) &&
+        dia == null && tipo == null) {
+      return const ResultadoFerramenta('Diga o que mudar no lançamento: valor, descrição, categoria, data ou tipo.',
+          erro: true);
+    }
+    if (dia != null && t.regraRepeticao != null) {
+      return const ResultadoFerramenta(
+          'Esse lançamento repete (conta fixa ou parcelado): a data dele não muda por aqui. '
+          'Valor, descrição e categoria podem mudar.',
+          erro: true);
+    }
+    var dados = TransacoesCompanion(
+      valorCentavos: valor == null ? const Value.absent() : Value((valor * 100).round()),
+      descricao: descricao == null || descricao.isEmpty ? const Value.absent() : Value(_capitalizar(descricao)),
+      categoria: categoria == null || categoria.isEmpty ? const Value.absent() : Value(_capitalizar(categoria)),
+      tipo: tipo == null ? const Value.absent() : Value(tipo),
+    );
+    if (dia != null) {
+      // Como no formulário: pago muda a data e o pagamento; a pagar, o vencimento.
+      dados = t.pagoEm != null
+          ? dados.copyWith(data: Value(_instante(dia)), pagoEm: Value(_instante(dia)))
+          : dados.copyWith(data: Value(instanteSP(dia, 9)), vencimento: Value(instanteSP(dia, 9)));
+    }
+    await FinancasRepo(db).salvar(dados, id: t.id);
+    final partes = [
+      if (tipo != null && tipo != t.tipo) tipo == TipoTransacao.entrada ? 'agora é receita' : 'agora é gasto',
+      if (valor != null) 'valor ${reais((valor * 100).round())}',
+      if (descricao != null && descricao.isNotEmpty) 'descrição “${_capitalizar(descricao)}”',
+      if (categoria != null && categoria.isNotEmpty) 'categoria ${_capitalizar(categoria)}',
+      if (dia != null) 'dia ${diaMesLongo(dia)}',
+    ];
+    final texto = 'Atualizei o lançamento “${t.descricao}”: ${partes.join(', ')}.'
+        '${t.regraRepeticao != null && (valor != null || descricao != null) ? ' Vale para todas as ocorrências.' : ''}';
+    return _comDesfazer(texto, 'transacoes', t.toJson());
+  }
+
+  Future<ResultadoFerramenta> _editarTarefa(Map<String, Object?> e) async {
+    final t = await _tarefa(_texto(e, 'id'));
+    if (t == null) return const ResultadoFerramenta(_naoAchei, erro: true);
+    final titulo = (e['titulo'] as String?)?.trim();
+    final dia = _data(e['data']);
+    final hora = _hora(e['hora']);
+    final semPrazo = e['sem_prazo'] == true;
+    final concluida = e['concluida'] is bool ? e['concluida'] as bool : null;
+    if ((titulo == null || titulo.isEmpty) && dia == null && hora == null && !semPrazo && concluida == null) {
+      return const ResultadoFerramenta('Diga o que mudar na tarefa: título, data, hora, tirar o prazo ou concluir.',
+          erro: true);
+    }
+    if (concluida != null && t.regraRepeticao != null) {
+      return const ResultadoFerramenta(
+          'Essa tarefa repete: cada dia é concluído na lista de Tarefas, não pela tarefa toda. '
+          'Título, data e hora podem mudar.',
+          erro: true);
+    }
+    final antes = t.prazo == null ? null : emSP(t.prazo!);
+    if (hora != null && dia == null && antes == null) {
+      return const ResultadoFerramenta('A tarefa não tem data: diga o dia também.', erro: true);
+    }
+    var dados = t.toCompanion(false);
+    if (titulo != null && titulo.isNotEmpty) dados = dados.copyWith(titulo: Value(_capitalizar(titulo)));
+    if (semPrazo) {
+      dados = dados.copyWith(prazo: const Value(null), prazoTemHora: const Value(false));
+    } else if (dia != null || hora != null) {
+      final d = dia ?? DateTime(antes!.year, antes.month, antes.day);
+      final temHora = hora != null || (t.prazoTemHora && antes != null);
+      final (h, m) = hora ?? (temHora ? (antes!.hour, antes.minute) : (0, 0));
+      dados = dados.copyWith(prazo: Value(instanteSP(d, h, m)), prazoTemHora: Value(temHora));
+    }
+    if (concluida != null) dados = dados.copyWith(feitaEm: Value(concluida ? DateTime.now() : null));
+    final repo = TarefasRepo(db);
+    final avisar = await repo.temLembrete(t.id);
+    await repo.salvar(dados, id: t.id, avisar: avisar);
+
+    final hoje = hojeSP();
+    final novoPrazo = dados.prazo.value == null ? null : emSP(dados.prazo.value!);
+    final partes = [
+      if (titulo != null && titulo.isNotEmpty) 'título “${_capitalizar(titulo)}”',
+      if (semPrazo) 'sem prazo',
+      if (!semPrazo && novoPrazo != null && (dia != null || hora != null))
+        'prazo ${diaRelativo(DateTime(novoPrazo.year, novoPrazo.month, novoPrazo.day), hoje)}'
+            '${dados.prazoTemHora.value ? ' às ${horaDe(novoPrazo.hour, novoPrazo.minute)}' : ''}',
+      if (concluida == true) 'marcada como feita',
+      if (concluida == false) 'reaberta',
+    ];
+    return _comDesfazer('Atualizei a tarefa “${t.titulo}”: ${partes.join(', ')}.', 'tarefas', t.toJson(),
+        extra: {'avisar': avisar});
+  }
+
+  Future<ResultadoFerramenta> _editarLembrete(Map<String, Object?> e) async {
+    final l = await _lembreteDe(_texto(e, 'id'));
+    if (l == null) return const ResultadoFerramenta(_naoAchei, erro: true);
+    if (l.itemTipo == 'tarefa' || l.itemTipo == 'habito') {
+      return ResultadoFerramenta(
+          'Esse lembrete é o aviso de ${l.itemTipo == 'tarefa' ? 'uma tarefa' : 'um hábito'}: '
+          'mude a ${l.itemTipo == 'tarefa' ? 'tarefa (editar_tarefa)' : 'hora do hábito na tela de Hábitos'}.',
+          erro: true);
+    }
+    final texto = (e['texto'] as String?)?.trim();
+    var dia = _data(e['data']);
+    final hora = _hora(e['hora']);
+    final repeticao = (e['repeticao'] as String?)?.trim();
+    final ativo = e['ativo'] is bool ? e['ativo'] as bool : null;
+    if ((texto == null || texto.isEmpty) && dia == null && hora == null && repeticao == null && ativo == null) {
+      return const ResultadoFerramenta('Diga o que mudar no lembrete: texto, dia, hora, repetição ou o aviso.',
+          erro: true);
+    }
+    final quando = emSP(l.quando);
+    final (h, m) = hora ?? (quando.hour, quando.minute);
+    var regra = const Value<String?>.absent();
+    String? descricaoRegra;
+    if (repeticao != null && repeticao.isNotEmpty) {
+      final r = normalizar(repeticao);
+      if (r.contains('nao repet') || r.contains('sem repet') || r == 'nenhuma' || r == 'uma vez') {
+        regra = const Value(null);
+        descricaoRegra = 'sem repetição';
+      } else {
+        // A repetição em português passa pelo mesmo interpretador dos comandos.
+        final agora = agoraSP();
+        final c = interpretar('me lembra de ${texto ?? l.texto} $repeticao às ${horaDe(h, m)}',
+            hoje: dataSP(agora), agora: agora);
+        if (c is! CmdLembrete || c.regra == null) {
+          return ResultadoFerramenta(
+              'Não entendi a repetição "$repeticao". Use algo como "todo dia", "toda segunda e quarta" ou "todo dia 10".',
+              erro: true);
+        }
+        regra = Value(c.regra!.rrule);
+        descricaoRegra = c.regra!.descricao.toLowerCase();
+        dia ??= c.dia;
+      }
+    }
+    final novoDia = dia ?? DateTime(quando.year, quando.month, quando.day);
+    await LembretesRepo(db).salvar(
+      LembretesCompanion(
+        texto: texto == null || texto.isEmpty ? const Value.absent() : Value(_capitalizar(texto)),
+        quando: dia == null && hora == null ? const Value.absent() : Value(instanteSP(novoDia, h, m)),
+        regraRepeticao: regra,
+        ativo: ativo == null ? const Value.absent() : Value(ativo),
+      ),
+      id: l.id,
+    );
+    final partes = [
+      if (texto != null && texto.isNotEmpty) 'texto “${_capitalizar(texto)}”',
+      if (dia != null || hora != null) '${rotuloDiaLembrete(novoDia, hojeSP())} às ${horaDe(h, m)}',
+      ?descricaoRegra,
+      if (ativo == true) 'aviso ligado',
+      if (ativo == false) 'aviso desligado',
+    ];
+    return _comDesfazer('Atualizei o lembrete “${l.texto}”: ${partes.join(', ')}.', 'lembretes', l.toJson());
+  }
+
+  Future<ResultadoFerramenta> _editarTreino(Map<String, Object?> e) async {
+    final t = await _treinoDe(_texto(e, 'id'));
+    if (t == null) return const ResultadoFerramenta(_naoAchei, erro: true);
+    final nome = (e['nome'] as String?)?.trim();
+    final foco = (e['foco'] as String?)?.trim();
+    final dias = e['dias'] is List ? _diasSemana(e['dias']) : null;
+    final itens = e['exercicios'] is List ? _exercicios(e['exercicios']) : null;
+    if ((nome == null || nome.isEmpty) && foco == null && dias == null && itens == null) {
+      return const ResultadoFerramenta('Diga o que mudar no treino: nome, foco, dias ou exercícios.', erro: true);
+    }
+    if (itens != null && itens.isEmpty) {
+      return const ResultadoFerramenta('O treino precisa de pelo menos um exercício.', erro: true);
+    }
+    final dados = TreinosCompanion(
+      nome: nome == null || nome.isEmpty ? const Value.absent() : Value(_capitalizar(nome)),
+      foco: foco == null ? const Value.absent() : Value(foco.isEmpty ? null : foco),
+      diasSemana: dias == null ? const Value.absent() : Value(dias),
+    );
+    // Os exercícios de antes, para "Desfazer" trazer a lista de volta.
+    final antes = await (db.select(db.itensTreino)..where((i) => i.treinoId.equals(t.id) & i.apagadoEm.isNull())).get();
+    if (itens == null) {
+      await (db.update(db.treinos)..where((x) => x.id.equals(t.id)))
+          .write(dados.copyWith(atualizadoEm: Value(DateTime.now())));
+    } else {
+      await SaudeRepo(db).salvarTreino(dados, itens, id: t.id);
+    }
+    final partes = [
+      if (nome != null && nome.isNotEmpty) 'nome ${_capitalizar(nome)}',
+      if (foco != null) foco.isEmpty ? 'sem foco' : 'foco $foco',
+      if (dias != null) _rotuloDias(dias),
+      if (itens != null) '${itens.length} ${itens.length == 1 ? 'exercício' : 'exercícios'} (${itens.map((x) => x.nome).join(', ')})',
+    ];
+    return _comDesfazer('Atualizei o ${t.nome}: ${partes.join('; ')}.', 'treinos', t.toJson(),
+        extra: itens == null ? const {} : {'itens': [for (final i in antes) i.id]});
+  }
+
+  /// Confirmação com "Desfazer" que devolve [linha] (como era) à [tabela].
+  ResultadoFerramenta _comDesfazer(String texto, String tabela, Map<String, dynamic> linha,
+      {Map<String, Object?> extra = const {}}) {
+    final antes = jsonEncode({'tabela': tabela, 'linha': linha, ...extra});
+    return ResultadoFerramenta(texto, aviso: Resposta(texto, itemTipo: 'restaurar', itemId: antes));
   }
 
   // ------------------------------------------------------------- exclusão
@@ -158,8 +375,33 @@ class FerramentasIa {
   /// Pergunta mostrada à pessoa antes de excluir (o AssistenteRepo pede a
   /// confirmação). Nula se o registro não existe.
   Future<String?> perguntaDeExclusao(String nome, Map<String, Object?> e) async {
-    if (nome != 'excluir_registro_shape') return null;
     final id = '${e['id']}';
+    if (nome == 'excluir_item') {
+      switch (e['tipo']) {
+        case 'lancamento':
+          final t = await _transacao(id);
+          if (t == null) return null;
+          return t.regraRepeticao == null
+              ? 'Excluir ${_rotuloLancamento(t)} do dia ${diaMesLongo(dataSP(t.data))}?'
+              : 'Excluir ${_rotuloLancamento(t)}, que repete? As próximas somem; as já pagas ficam no histórico.';
+        case 'tarefa':
+          final t = await _tarefa(id);
+          if (t == null) return null;
+          return 'Excluir a tarefa “${t.titulo}”${t.regraRepeticao == null ? '' : ' e todas as repetições dela'}?';
+        case 'lembrete':
+          final l = await _lembreteDe(id);
+          if (l == null) return null;
+          final q = l.quando.toLocal();
+          return 'Excluir o lembrete “${l.texto}” (${rotuloDiaLembrete(dataSP(q), hojeSP())}, ${hora(q)}'
+              '${l.regraRepeticao == null ? '' : ', repete'})?';
+        case 'treino':
+          final t = await _treinoDe(id);
+          if (t == null) return null;
+          return 'Excluir o ${t.nome} da ficha? As sessões já feitas continuam no histórico.';
+      }
+      return null;
+    }
+    if (nome != 'excluir_registro_shape') return null;
     if (e['tipo'] == 'foto') {
       final f = await (db.select(db.fotosShape)..where((x) => x.id.equals(id) & x.apagadoEm.isNull()))
           .getSingleOrNull();
@@ -170,6 +412,38 @@ class FerramentasIa {
     final m = await (db.select(db.medidas)..where((x) => x.id.equals(id) & x.apagadoEm.isNull())).getSingleOrNull();
     if (m == null) return null;
     return 'Excluir a medida ${m.tipo} ${numero(m.valor)} ${m.unidade} do dia ${diaMesLongo(DateTime.parse(m.dia))}?';
+  }
+
+  /// Exclui lançamento, tarefa, lembrete ou treino (a confirmação já foi dada).
+  /// "Desfazer" traz a linha de volta como era.
+  Future<ResultadoFerramenta> _excluirItem(Map<String, Object?> e) async {
+    final id = _texto(e, 'id');
+    switch (e['tipo']) {
+      case 'lancamento':
+        final t = await _transacao(id);
+        if (t == null) break;
+        await FinancasRepo(db).excluir(t);
+        return _comDesfazer('Excluí ${_rotuloLancamento(t)}. O saldo em Finanças já foi atualizado.', 'transacoes',
+            t.toJson());
+      case 'tarefa':
+        final t = await _tarefa(id);
+        if (t == null) break;
+        final repo = TarefasRepo(db);
+        final avisar = await repo.temLembrete(t.id);
+        await repo.excluir(t.id);
+        return _comDesfazer('Excluí a tarefa “${t.titulo}”.', 'tarefas', t.toJson(), extra: {'avisar': avisar});
+      case 'lembrete':
+        final l = await _lembreteDe(id);
+        if (l == null) break;
+        await LembretesRepo(db).excluir(l.id);
+        return _comDesfazer('Excluí o lembrete “${l.texto}”.', 'lembretes', l.toJson());
+      case 'treino':
+        final t = await _treinoDe(id);
+        if (t == null) break;
+        await SaudeRepo(db).excluirTreino(t.id);
+        return _comDesfazer('Excluí o ${t.nome} da ficha.', 'treinos', t.toJson());
+    }
+    return const ResultadoFerramenta(_naoAchei, erro: true);
   }
 
   /// Executa a exclusão (a confirmação já foi dada).
@@ -264,9 +538,25 @@ class FerramentasIa {
     final r = await buscarTudo(db, termo, porGrupo: 6);
     if (r.isEmpty) return ResultadoFerramenta('Nada encontrado para "$termo".');
     return ResultadoFerramenta([
-      for (final x in r) '- ${x.titulo} (${x.detalhe}${x.direita == null ? '' : ', ${x.direita}'})',
+      for (final x in r)
+        '- ${x.titulo} (${x.detalhe}${x.direita == null ? '' : ', ${x.direita}'})'
+            '${_idDe(x.item) == null ? '' : ' (id ${_idDe(x.item)})'}',
     ].join('\n'));
   }
+
+  /// Id da linha achada pela busca (categorias não têm).
+  static String? _idDe(Object? item) => switch (item) {
+        Tarefa(:final id) ||
+        Lembrete(:final id) ||
+        Transacao(:final id) ||
+        Habito(:final id) ||
+        Meta(:final id) ||
+        Projeto(:final id) ||
+        Treino(:final id) ||
+        Exercicio(:final id) =>
+          id,
+        _ => null,
+      };
 
   Future<ResultadoFerramenta> _abrirTela(String tela) async {
     telaPedidaPelaIa.value = null; // pedir a mesma tela de novo também avisa
@@ -305,6 +595,64 @@ DateTime? _data(Object? v) {
 
 String _capitalizar(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
+/// Hoje = agora; outro dia = meio-dia (como nos comandos rápidos).
+DateTime _instante(DateTime dia) => dia == hojeSP() ? DateTime.now() : instanteSP(dia, 12);
+
+const _bitsDias = {'seg': 1, 'ter': 2, 'qua': 4, 'qui': 8, 'sex': 16, 'sab': 32, 'dom': 64};
+
+int _diasSemana(Object? v) => (v as List? ?? const []).fold<int>(0, (s, d) => s | (_bitsDias['$d'] ?? 0));
+
+String _rotuloDias(int dias) =>
+    dias == 0 ? 'sem dia fixo' : [for (final d in _bitsDias.entries) if (dias & d.value != 0) d.key].join(', ');
+
+List<({String nome, int series, int repeticoes, double? cargaInicial})> _exercicios(Object? v) => [
+      for (final x in (v as List? ?? const []).cast<Map<String, Object?>>())
+        (
+          nome: _capitalizar(_texto(x, 'nome')),
+          series: _numero(x['series'])!.round(),
+          repeticoes: _numero(x['repeticoes'])!.round(),
+          cargaInicial: _numero(x['carga']),
+        ),
+    ];
+
+/// "o gasto “Educação” de R$ 200,00".
+String _rotuloLancamento(Transacao t) {
+  final tipo = t.contaDestinoId != null
+      ? 'a transferência'
+      : (t.tipo == TipoTransacao.entrada ? 'a receita' : 'o gasto');
+  return '$tipo “${t.descricao}” de ${reais(t.valorCentavos)}';
+}
+
+/// "Desfazer" de uma edição ou exclusão feita pela IA: grava de volta a linha
+/// como era (o itemId 'restaurar' é o JSON de `_comDesfazer`).
+Future<void> restaurar(BancoAurora db, String json) async {
+  final e = jsonDecode(json) as Map<String, dynamic>;
+  final linha = e['linha'] as Map<String, dynamic>;
+  final agora = DateTime.now();
+  switch (e['tabela']) {
+    case 'transacoes':
+      await db.update(db.transacoes).replace(Transacao.fromJson(linha).copyWith(atualizadoEm: agora));
+    case 'tarefas':
+      // Pelo repositório, para o lembrete ligado à tarefa voltar junto.
+      final t = Tarefa.fromJson(linha);
+      await TarefasRepo(db).salvar(t.toCompanion(false), id: t.id, avisar: e['avisar'] == true);
+    case 'lembretes':
+      await db.update(db.lembretes).replace(Lembrete.fromJson(linha).copyWith(atualizadoEm: agora));
+    case 'treinos':
+      final t = Treino.fromJson(linha);
+      await db.transaction(() async {
+        await db.update(db.treinos).replace(t.copyWith(atualizadoEm: agora));
+        final itens = (e['itens'] as List?)?.cast<String>();
+        if (itens == null) return;
+        // A lista de exercícios mudou: apaga a nova e traz a antiga de volta.
+        await (db.update(db.itensTreino)..where((i) => i.treinoId.equals(t.id) & i.apagadoEm.isNull() & i.id.isNotIn(itens)))
+            .write(ItensTreinoCompanion(apagadoEm: Value(agora), atualizadoEm: Value(agora)));
+        await (db.update(db.itensTreino)..where((i) => i.id.isIn(itens)))
+            .write(ItensTreinoCompanion(apagadoEm: const Value(null), atualizadoEm: Value(agora)));
+      });
+  }
+}
+
 // ------------------------------------------------------------------ consulta
 
 /// Dados detalhados de uma área, em texto, para a ferramenta "consultar".
@@ -321,7 +669,7 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
       for (final o in q.pendentes.take(40)) {
         final h = o.horario;
         l.add('- ${o.tarefa.titulo}: ${o.dia == null ? 'sem data' : diaRelativo(o.dia!, hoje)}'
-            '${h == null ? '' : ' ${horaDe(h.hora, h.minuto)}'}${o.atrasada ? ', atrasada' : ''}');
+            '${h == null ? '' : ' ${horaDe(h.hora, h.minuto)}'}${o.atrasada ? ', atrasada' : ''} (id ${o.tarefa.id})');
       }
       final feitas = q.tarefas.where((t) => t.feitaEm != null && !dataSP(t.feitaEm!).isBefore(desde)).toList();
       l.add('Tarefas únicas concluídas no período: ${feitas.length}'
@@ -357,14 +705,15 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
       l.add('Lançamentos recentes:');
       for (final t in recentes.where((t) => !dataSP(t.data).isBefore(desde))) {
         l.add('- ${diaMesCurto(dataSP(t.data))} ${t.descricao}${t.categoria == null ? '' : ' (${t.categoria})'}: '
-            '${t.tipo == TipoTransacao.entrada ? '+' : '−'}${reais(t.valorCentavos)}');
+            '${t.tipo == TipoTransacao.entrada ? '+' : '−'}${reais(t.valorCentavos)} (id ${t.id})');
       }
 
     case 'treino':
       final s = await SaudeRepo(db).carregar();
       if (s.treinos.isEmpty) l.add('Nenhum treino na ficha.');
       for (final t in s.treinos) {
-        l.add('${t.titulo}${t.ultimaVez == null ? '' : ', feito por último em ${diaMesCurto(t.ultimaVez!)}'}:');
+        l.add('${t.titulo} (${_rotuloDias(t.treino.diasSemana)})'
+            '${t.ultimaVez == null ? '' : ', feito por último em ${diaMesCurto(t.ultimaVez!)}'} (id ${t.treino.id}):');
         for (final x in t.exercicios) {
           l.add('  - ${x.exercicio.nome}: ${x.plano}, carga sugerida ${x.sugestao.texto}');
         }
@@ -434,7 +783,7 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
       if (q.todos.isEmpty) l.add('Nenhum lembrete.');
       for (final x in q.proximos.take(30)) {
         final p = x.proxima!.toLocal();
-        l.add('- ${x.lembrete.texto}: ${rotuloDiaLembrete(dataSP(p), hoje)} ${hora(p)}${x.recorrente ? ' (repete)' : ''}');
+        l.add('- ${x.lembrete.texto}: ${rotuloDiaLembrete(dataSP(p), hoje)} ${hora(p)}${x.recorrente ? ' (repete)' : ''} (id ${x.lembrete.id})');
       }
 
     default:

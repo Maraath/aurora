@@ -96,7 +96,7 @@ class PedidoConfirmacao {
 }
 
 /// Ferramentas que apagam dados: só rodam depois do sim da pessoa.
-const ferramentasDeExclusao = {'excluir_registro_shape'};
+const ferramentasDeExclusao = {'excluir_registro_shape', 'excluir_item'};
 
 /// O que aparece no indicador enquanto a ferramenta roda.
 String etapaDaFerramenta(String nome) => switch (nome) {
@@ -595,6 +595,9 @@ class AssistenteRepo {
         );
       case 'alimentacao':
         await AlimentacaoRepo(db).excluirRegistro(id);
+      case 'restaurar':
+        // Edição ou exclusão feita pela IA: a linha volta a ser como era.
+        await restaurar(db, id);
     }
     await (db.update(db.mensagensAssistente)..where((x) => x.id.equals(m.id)))
         .write(MensagensAssistenteCompanion(desfeita: const Value(true), atualizadoEm: Value(DateTime.now())));

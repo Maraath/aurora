@@ -212,11 +212,14 @@ void main() {
   });
 
   group('agente: alterar e excluir', () {
+    /// Perguntas de confirmação feitas pelo agente de teste.
+    final perguntas = <String>[];
+    setUp(perguntas.clear);
+
     /// IA de teste: na primeira volta pede [ferramenta]; na segunda devolve o
     /// resultado como texto (para o teste ler) e guarda a etapa mostrada.
     (AssistenteRepo, List<String?>) agente(String ferramenta, Map<String, Object?> entrada, {bool confirmar = true}) {
       final etapas = <String?>[];
-      final perguntas = <String>[];
       final repo = AssistenteRepo(db,
           confirmar: (p) async {
             perguntas.add(p);
@@ -312,6 +315,183 @@ void main() {
       final peso = (await SaudeRepo(db).carregar()).medidas['Peso']!.first;
       expect(texto, contains('(id ${peso.id})'));
       expect(await consultar(db, 'shape'), contains('Nenhuma foto'));
+    });
+
+    String dataIso(DateTime d) => '${d.year}-${'${d.month}'.padLeft(2, '0')}-${'${d.day}'.padLeft(2, '0')}';
+    Future<String> ultimoTexto(AssistenteRepo r) async => (await r.carregarConversa()).last.texto;
+    Future<MensagemAssistente> avisoDesfazer(AssistenteRepo r) async =>
+        (await r.carregarConversa()).lastWhere((m) => m.itemTipo == 'restaurar');
+
+    /// Gasto de R$ 200 em Educação, registrado como pela conversa.
+    Future<Transacao> gastoEducacao() async {
+      await repo.enviar('gastei 200 na educação');
+      return (db.select(db.transacoes)..where((t) => t.valorCentavos.equals(20000))).getSingle();
+    }
+
+    test('editar lançamento: só muda o que veio, com desfazer', () async {
+      final t = await gastoEducacao();
+      final saldo = (await FinancasRepo(db).carregar()).saldoCentavos;
+      final (r, etapas) = agente('editar_lancamento', {'id': t.id, 'valor': 150, 'categoria': 'cursos'});
+      await r.enviar('na verdade o gasto de educação foi 150, categoria cursos');
+      var depois = await (db.select(db.transacoes)..where((x) => x.id.equals(t.id))).getSingle();
+      expect(depois.valorCentavos, 15000);
+      expect(depois.categoria, 'Cursos');
+      expect(depois.descricao, t.descricao, reason: 'descrição não veio');
+      expect(etapas.single, 'Atualizando seus dados...');
+      expect(perguntas, isEmpty, reason: 'editar não pede confirmação');
+      expect((await FinancasRepo(db).carregar()).saldoCentavos, saldo + 5000);
+
+      await r.desfazer(await avisoDesfazer(r));
+      depois = await (db.select(db.transacoes)..where((x) => x.id.equals(t.id))).getSingle();
+      expect((depois.valorCentavos, depois.categoria), (20000, t.categoria));
+      expect((await FinancasRepo(db).carregar()).saldoCentavos, saldo);
+    });
+
+    test('excluir lançamento: confirma, apaga e desfazer traz de volta', () async {
+      final t = await gastoEducacao();
+      final saldo = (await FinancasRepo(db).carregar()).saldoCentavos;
+      final (r, etapas) = agente('excluir_item', {'tipo': 'lancamento', 'id': t.id});
+      await r.enviar('exclui o gasto de educação');
+      expect(perguntas.single, allOf(contains('Excluir o gasto'), contains('R\$ 200,00')));
+      expect(etapas.single, 'Excluindo...');
+      expect((await FinancasRepo(db).carregar()).saldoCentavos, saldo + 20000);
+      expect(await ultimoTexto(r), startsWith('text|Excluí o gasto'));
+
+      await r.desfazer(await avisoDesfazer(r));
+      expect((await FinancasRepo(db).carregar()).saldoCentavos, saldo);
+    });
+
+    test('excluir lançamento cancelado não apaga', () async {
+      final t = await gastoEducacao();
+      final (r, _) = agente('excluir_item', {'tipo': 'lancamento', 'id': t.id}, confirmar: false);
+      await r.enviar('exclui o gasto de educação');
+      final x = await (db.select(db.transacoes)..where((x) => x.id.equals(t.id))).getSingle();
+      expect(x.apagadoEm, isNull);
+      expect(await ultimoTexto(r), contains('cancelou'));
+    });
+
+    test('editar tarefa: título, prazo com hora e concluir; desfazer volta tudo', () async {
+      final t = await (db.select(db.tarefas)..where((x) => x.titulo.equals('Testes Estágios'))).getSingle();
+      final amanha = hojeSP().add(const Duration(days: 1));
+      final (r, _) = agente('editar_tarefa',
+          {'id': t.id, 'titulo': 'testes do estágio', 'data': dataIso(amanha), 'hora': '15:00', 'concluida': true});
+      await r.enviar('muda a tarefa');
+      var x = await (db.select(db.tarefas)..where((x) => x.id.equals(t.id))).getSingle();
+      expect(x.titulo, 'Testes do estágio');
+      expect(dataSP(x.prazo!), amanha);
+      expect(emSP(x.prazo!).hour, 15);
+      expect(x.prazoTemHora, isTrue);
+      expect(x.feitaEm, isNotNull);
+      expect(await ultimoTexto(r), allOf(contains('amanhã às 15:00'), contains('marcada como feita')));
+
+      await r.desfazer(await avisoDesfazer(r));
+      x = await (db.select(db.tarefas)..where((x) => x.id.equals(t.id))).getSingle();
+      expect((x.titulo, x.prazo, x.prazoTemHora, x.feitaEm), (t.titulo, t.prazo, t.prazoTemHora, null));
+    });
+
+    test('tarefa: excluir com confirmação e desfazer', () async {
+      final t = await (db.select(db.tarefas)..where((x) => x.titulo.equals('Testes Estágios'))).getSingle();
+      final (r, _) = agente('excluir_item', {'tipo': 'tarefa', 'id': t.id});
+      await r.enviar('apaga a tarefa testes estágios');
+      expect(perguntas.single, 'Excluir a tarefa “Testes Estágios”?');
+      Future<DateTime?> apagada() async =>
+          (await (db.select(db.tarefas)..where((x) => x.id.equals(t.id))).getSingle()).apagadoEm;
+      expect(await apagada(), isNotNull);
+      await r.desfazer(await avisoDesfazer(r));
+      expect(await apagada(), isNull);
+    });
+
+    test('editar lembrete: hora e repetição; desfazer volta', () async {
+      final l = await (db.select(db.lembretes)..where((x) => x.texto.equals('Entregar documentos do estágio')))
+          .getSingle();
+      final (r, _) = agente('editar_lembrete', {'id': l.id, 'hora': '16:30', 'repeticao': 'toda terça'});
+      await r.enviar('muda o lembrete dos documentos');
+      var x = await (db.select(db.lembretes)..where((x) => x.id.equals(l.id))).getSingle();
+      expect(emSP(x.quando).hour, 16);
+      expect(emSP(x.quando).minute, 30);
+      expect(x.regraRepeticao, contains('BYDAY=TU'));
+      expect(x.texto, l.texto);
+
+      await r.desfazer(await avisoDesfazer(r));
+      x = await (db.select(db.lembretes)..where((x) => x.id.equals(l.id))).getSingle();
+      expect((x.quando, x.regraRepeticao), (l.quando, null));
+    });
+
+    test('lembrete: excluir com confirmação; repetição que não entende volta erro', () async {
+      final l = await (db.select(db.lembretes)..where((x) => x.texto.equals('Entregar documentos do estágio')))
+          .getSingle();
+      var (r, _) = agente('editar_lembrete', {'id': l.id, 'repeticao': 'quando der vontade'});
+      await r.enviar('muda o lembrete');
+      expect(await ultimoTexto(r), allOf(startsWith('error-text|'), contains('Não entendi a repetição')));
+
+      (r, _) = agente('excluir_item', {'tipo': 'lembrete', 'id': l.id});
+      await r.enviar('apaga o lembrete dos documentos');
+      expect(perguntas.single, startsWith('Excluir o lembrete “Entregar documentos do estágio”'));
+      final x = await (db.select(db.lembretes)..where((x) => x.id.equals(l.id))).getSingle();
+      expect(x.apagadoEm, isNotNull);
+    });
+
+    test('editar treino troca exercícios e dias; desfazer traz a lista antiga', () async {
+      final saude = SaudeRepo(db);
+      final antes = (await saude.carregar()).treinos.firstWhere((t) => t.treino.nome == 'Treino A');
+      final nomesAntes = antes.exercicios.map((x) => x.exercicio.nome).toList();
+      final (r, _) = agente('editar_treino', {
+        'id': antes.treino.id,
+        'dias': ['ter', 'sex'],
+        'exercicios': [
+          {'nome': 'supino inclinado', 'series': 4, 'repeticoes': 8, 'carga': 30},
+          {'nome': 'tríceps corda', 'series': 3, 'repeticoes': 12},
+        ],
+      });
+      await r.enviar('troca o treino A');
+      var t = (await saude.carregar()).treinos.firstWhere((t) => t.treino.id == antes.treino.id);
+      expect(t.exercicios.map((x) => x.exercicio.nome), ['Supino inclinado', 'Tríceps corda']);
+      expect(t.exercicios.first.item.series, 4);
+      expect(t.treino.diasSemana, 2 | 16);
+      expect(t.treino.foco, antes.treino.foco, reason: 'foco não veio');
+
+      await r.desfazer(await avisoDesfazer(r));
+      t = (await saude.carregar()).treinos.firstWhere((t) => t.treino.id == antes.treino.id);
+      expect(t.exercicios.map((x) => x.exercicio.nome), nomesAntes);
+      expect(t.treino.diasSemana, antes.treino.diasSemana);
+    });
+
+    test('treino: excluir com confirmação e desfazer', () async {
+      final saude = SaudeRepo(db);
+      final a = (await saude.carregar()).treinos.firstWhere((t) => t.treino.nome == 'Treino A').treino;
+      final (r, _) = agente('excluir_item', {'tipo': 'treino', 'id': a.id});
+      await r.enviar('apaga o treino A');
+      expect(perguntas.single, contains('Excluir o Treino A da ficha'));
+      expect((await saude.carregar()).treinos.any((t) => t.treino.id == a.id), isFalse);
+      await r.desfazer(await avisoDesfazer(r));
+      expect((await saude.carregar()).treinos.any((t) => t.treino.id == a.id), isTrue);
+    });
+
+    test('id que não existe: editar volta erro e excluir nem pergunta', () async {
+      var (r, _) = agente('editar_tarefa', {'id': 'nao-existe', 'titulo': 'x'});
+      await r.enviar('muda a tarefa');
+      expect(await ultimoTexto(r), allOf(startsWith('error-text|'), contains('Não achei')));
+
+      (r, _) = agente('excluir_item', {'tipo': 'lancamento', 'id': 'nao-existe'});
+      await r.enviar('apaga o gasto');
+      expect(perguntas, isEmpty);
+      expect(await ultimoTexto(r), startsWith('error-text|'));
+    });
+
+    test('buscar e consultar devolvem os ids', () async {
+      final t = await gastoEducacao();
+      final tarefa = await (db.select(db.tarefas)..where((x) => x.titulo.equals('Testes Estágios'))).getSingle();
+      final lembrete = await (db.select(db.lembretes)..where((x) => x.texto.equals('Academia'))).getSingle();
+      final treino = await (db.select(db.treinos)..where((x) => x.nome.equals('Treino B'))).getSingle();
+
+      final (r, _) = agente('buscar', {'termo': 'educação'});
+      await r.enviar('acha o gasto de educação');
+      expect(await ultimoTexto(r), contains('(id ${t.id})'));
+
+      expect(await consultar(db, 'financas'), contains('(id ${t.id})'));
+      expect(await consultar(db, 'tarefas'), contains('(id ${tarefa.id})'));
+      expect(await consultar(db, 'lembretes'), contains('(id ${lembrete.id})'));
+      expect(await consultar(db, 'treino'), contains('(id ${treino.id})'));
     });
   });
 

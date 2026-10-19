@@ -35,16 +35,20 @@ Como responder:
 Ferramentas (você age de verdade nos dados do app, não só conversa):
 - Sempre que a pessoa pedir para CRIAR, REGISTRAR, MUDAR ou EXCLUIR algo, use a ferramenta certa
   na hora, sem mandar ela fazer manualmente: gasto, receita, tarefa, lembrete, hábito feito, medida,
-  refeição, treino ("criar_treino"), metas de dieta ou metas do app ("atualizar_metas") e registros do
-  Shape ("excluir_registro_shape"). Só diga que fez depois do resultado da ferramenta; se ela falhar,
-  explique o motivo que veio no resultado.
+  refeição, treino ("criar_treino"), metas de dieta ou metas do app ("atualizar_metas"), edições
+  ("editar_lancamento", "editar_tarefa", "editar_lembrete", "editar_treino"), exclusões de lançamento,
+  tarefa, lembrete ou treino ("excluir_item") e registros do Shape ("excluir_registro_shape"). Nunca
+  diga para ela tocar no item e editar ou excluir: você faz. Só diga que fez depois do resultado da
+  ferramenta; se ela falhar, explique o motivo que veio no resultado.
 - Datas relativas ("amanhã", "segunda", "mês passado") se resolvem pela data de hoje do resumo.
   Treino "para amanhã" = treino com o dia da semana de amanhã.
 - Pedido ambíguo que mexe em dados (falta valor, dia ou nome)? Pergunte antes de criar.
-- EXCLUSÃO: primeiro descubra o registro exato com "consultar" (área "shape" para fotos, "medidas"
-  para medidas; os ids vêm lá). Diga em uma frase o que vai excluir e chame a ferramenta: o app
-  mostra à pessoa um botão de confirmação antes de apagar. Se o resultado disser que ela cancelou,
-  não insista. Se houver mais de um registro possível, pergunte qual antes.
+- EDIÇÃO e EXCLUSÃO precisam do id do registro: ache com "buscar" (pelo nome) ou "consultar" (área
+  "financas", "tarefas", "lembretes", "treino", "shape" ou "medidas"); os ids vêm no resultado, como
+  "(id ...)". Nunca invente um id. Se houver mais de um registro possível, pergunte qual antes.
+  Na edição, mande só os campos que mudam; a pessoa pode desfazer pela conversa.
+- EXCLUSÃO: diga em uma frase o que vai excluir e chame a ferramenta: o app mostra à pessoa um botão
+  de confirmação antes de apagar. Se o resultado disser que ela cancelou, não insista.
 - Para responder sobre a vida dela além do resumo, use "consultar" ou "buscar".
 - Quando ela quiser VER uma parte do app ("mostre minhas fotos do shape", "abre minhas finanças"),
   use "abrir_tela".
@@ -134,6 +138,74 @@ export const ferramentas = {
       id: z.string().min(1),
     }),
   }),
+  editar_lancamento: tool({
+    description:
+      "Muda um gasto ou receita já registrado (id vindo de 'buscar' ou 'consultar' financas). Só os " +
+      "campos informados mudam. Num lançamento que repete (conta fixa, parcelado), valor, descrição e " +
+      "categoria valem para todas as ocorrências e a data não muda por aqui.",
+    inputSchema: z.object({
+      id: z.string().min(1),
+      tipo: z.enum(["gasto", "receita"]).optional(),
+      valor: z.number().positive().optional().describe("Valor em reais, ex.: 35.9"),
+      descricao: z.string().min(1).optional(),
+      categoria: z.string().min(1).optional(),
+      data: data.optional().describe("Novo dia do lançamento"),
+    }),
+  }),
+  editar_tarefa: tool({
+    description:
+      "Muda uma tarefa (id vindo de 'buscar' ou 'consultar' tarefas): título, prazo, hora, tirar o prazo " +
+      "ou marcar como feita/não feita. Só os campos informados mudam.",
+    inputSchema: z.object({
+      id: z.string().min(1),
+      titulo: z.string().min(1).optional(),
+      data: data.optional().describe("Novo dia do prazo"),
+      hora: hora.optional().describe("Nova hora do prazo"),
+      sem_prazo: z.boolean().optional().describe("true tira a data da tarefa"),
+      concluida: z.boolean().optional().describe("true marca como feita; false reabre"),
+    }),
+  }),
+  editar_lembrete: tool({
+    description:
+      "Muda um lembrete (id vindo de 'buscar' ou 'consultar' lembretes): texto, dia, hora, repetição em " +
+      "português ('todo dia', 'toda terça'; 'não repete' tira a repetição) ou liga/desliga o aviso. " +
+      "Só os campos informados mudam.",
+    inputSchema: z.object({
+      id: z.string().min(1),
+      texto: z.string().min(1).optional(),
+      data: data.optional(),
+      hora: hora.optional(),
+      repeticao: z.string().optional(),
+      ativo: z.boolean().optional().describe("false silencia o lembrete sem apagar"),
+    }),
+  }),
+  editar_treino: tool({
+    description:
+      "Muda um treino da ficha (id vindo de 'consultar' treino ou 'buscar'): nome, foco, dias e/ou a " +
+      "lista de exercícios. 'exercicios' SUBSTITUI a lista inteira: para mudar um só, mande todos, " +
+      "com o que mudou (veja a lista atual em 'consultar' treino). 'dias' também substitui.",
+    inputSchema: z.object({
+      id: z.string().min(1),
+      nome: z.string().min(1).optional(),
+      foco: z.string().optional(),
+      dias: z.array(z.enum(["seg", "ter", "qua", "qui", "sex", "sab", "dom"])).optional(),
+      exercicios: z.array(z.object({
+        nome: z.string().min(1),
+        series: z.number().int().min(1).max(10),
+        repeticoes: z.number().int().min(1).max(50),
+        carga: z.number().min(0).optional().describe("Carga inicial em kg"),
+      })).min(1).max(15).optional(),
+    }),
+  }),
+  excluir_item: tool({
+    description:
+      "Exclui um lançamento, uma tarefa, um lembrete ou um treino da ficha. Use o id que veio de " +
+      "'buscar' ou 'consultar'. O app pede a confirmação da pessoa antes de apagar.",
+    inputSchema: z.object({
+      tipo: z.enum(["lancamento", "tarefa", "lembrete", "treino"]),
+      id: z.string().min(1),
+    }),
+  }),
   atualizar_metas: tool({
     description:
       "Muda metas. alvo 'dieta': calorias e macros do dia (de treino, de descanso ou os dois); só os " +
@@ -155,8 +227,8 @@ export const ferramentas = {
   consultar: tool({
     description:
       "Lê dados detalhados do app (além do resumo). Use para responder perguntas sobre a rotina, " +
-      "evolução ou histórico da pessoa, e para achar o id de um registro antes de excluir " +
-      "('shape' lista as fotos de evolução; 'medidas' lista as medidas, com ids).",
+      "evolução ou histórico da pessoa, e para achar o id de um registro antes de editar ou excluir " +
+      "(tarefas, lançamentos, lembretes, treinos, medidas e fotos do 'shape' vêm com ids).",
     inputSchema: z.object({
       area: z.enum([
         "tarefas",
@@ -174,7 +246,9 @@ export const ferramentas = {
     }),
   }),
   buscar: tool({
-    description: "Procura um termo em tudo do app (tarefas, lançamentos, hábitos, lembretes, metas, treinos).",
+    description:
+      "Procura um termo em tudo do app (tarefas, lançamentos, hábitos, lembretes, metas, treinos). " +
+      "Cada resultado vem com o id, para editar ou excluir.",
     inputSchema: z.object({ termo: z.string().min(2) }),
   }),
   abrir_tela: tool({
