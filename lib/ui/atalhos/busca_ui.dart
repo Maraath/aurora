@@ -32,6 +32,18 @@ IconData iconeDoResultado(TipoResultado t) => switch (t) {
       TipoResultado.treino => Icons.list_alt_rounded,
     };
 
+String _tituloNavegando(TipoResultado t) => switch (t) {
+      TipoResultado.tarefa => 'TAREFAS PENDENTES',
+      TipoResultado.lembrete => 'LEMBRETES',
+      TipoResultado.categoria => 'CATEGORIAS MAIS USADAS',
+      TipoResultado.transacao => 'LANÇAMENTOS RECENTES',
+      TipoResultado.habito => 'HÁBITOS',
+      TipoResultado.meta => 'METAS',
+      TipoResultado.projeto => 'PROJETOS',
+      TipoResultado.treino => 'TREINOS',
+      TipoResultado.exercicio => 'EXERCÍCIOS',
+    };
+
 /// Busca em tudo (Ctrl+K): caixa no topo da tela, por cima de um véu escuro.
 /// Setas escolhem, Enter abre, Esc fecha.
 Future<void> abrirBusca(
@@ -134,7 +146,9 @@ class _BuscaState extends State<_Busca> {
 
   Future<void> _buscar() async {
     final pedido = ++_pedido;
-    final r = await buscarTudo(AuroraEscopo.de(context).db, _texto.text, porGrupo: _filtro == null ? 4 : 12);
+    final navegar = _texto.text.trim().length < 2;
+    final r = await buscarTudo(AuroraEscopo.de(context).db, _texto.text,
+        grupo: _filtro, porGrupo: _filtro == null ? 4 : (navegar ? 8 : 12));
     if (!mounted || pedido != _pedido) return;
     setState(() {
       _resultados = r;
@@ -159,6 +173,22 @@ class _BuscaState extends State<_Busca> {
   List<_Item> _itens() {
     final t = _texto.text.trim();
     final itens = <_Item>[];
+    // Filtro escolhido e nada escrito: lista o que há nesse grupo.
+    if (t.length < 2 && _filtro != null) {
+      TipoResultado? anterior;
+      for (final r in _resultados.where((r) => r.tipo.grupo == _filtro)) {
+        itens.add(_Item(
+          grupo: r.tipo == anterior ? null : _tituloNavegando(r.tipo),
+          icone: iconeDoResultado(r.tipo),
+          titulo: r.titulo,
+          detalhe: r.detalhe,
+          direita: r.direita,
+          acao: () => _executar(() => widget.aoAbrir(r)),
+        ));
+        anterior = r.tipo;
+      }
+      return itens;
+    }
     if (t.length < 2) {
       for (var i = 0; i < _recentes.length; i++) {
         final r = _recentes[i];
@@ -264,10 +294,10 @@ class _BuscaState extends State<_Busca> {
       Divider(height: 1, color: c.line),
       SizedBox(
         height: 46,
-        child: ListView(
+        child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-          children: [
+          child: Row(children: [
             for (final g in [null, ...GrupoBusca.values])
               Padding(
                 padding: const EdgeInsets.only(right: 6),
@@ -280,7 +310,7 @@ class _BuscaState extends State<_Busca> {
                   },
                 ),
               ),
-          ],
+          ]),
         ),
       ),
       Flexible(
@@ -413,15 +443,21 @@ class _Filtro extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    return Material(
-      color: ativo ? c.accentSoft : Colors.transparent,
-      shape: StadiumBorder(side: BorderSide(color: ativo ? c.accent.withValues(alpha: .45) : c.line)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: aoTocar,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-          child: Text(texto, style: manrope(12, peso: FontWeight.w700, cor: ativo ? c.accent : c.muted)),
+    return Semantics(
+      button: true,
+      selected: ativo,
+      label: 'Filtro: $texto',
+      excludeSemantics: true,
+      child: Material(
+        color: ativo ? c.accentSoft : Colors.transparent,
+        shape: StadiumBorder(side: BorderSide(color: ativo ? c.accent.withValues(alpha: .45) : c.line)),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: aoTocar,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+            child: Text(texto, style: manrope(12, peso: FontWeight.w700, cor: ativo ? c.accent : c.muted)),
+          ),
         ),
       ),
     );

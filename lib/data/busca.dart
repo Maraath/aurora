@@ -82,42 +82,124 @@ int? _pontuar(String texto, String termo) {
 }
 
 /// Procura [termo] e devolve no máximo [porGrupo] resultados de cada grupo,
-/// já ordenados (melhor primeiro, depois o mais recente).
+/// já ordenados (melhor primeiro, depois o mais recente). Com [grupo], só
+/// esse grupo; com [grupo] e sem termo, lista o que há nele para navegar
+/// (tarefas pendentes por prazo, lançamentos mais recentes, categorias mais
+/// usadas, o resto por nome).
 Future<List<ResultadoBusca>> buscarTudo(BancoAurora db, String termo,
-    {int porGrupo = 5, DateTime? hoje}) async {
-  if (termo.trim().length < 2) return const [];
+    {int porGrupo = 5, DateTime? hoje, GrupoBusca? grupo}) async {
+  final navegar = termo.trim().length < 2;
+  if (navegar && grupo == null) return const [];
   final dia = hoje ?? hojeSP();
   final r = <ResultadoBusca>[];
+  bool quer(GrupoBusca g) => grupo == null || grupo == g;
 
   void add(TipoResultado tipo, String titulo, String detalhe, Object? item,
       {String? direita, int extra = 0, String? tambem}) {
-    final p = _pontuar(titulo, termo) ?? (tambem == null ? null : _pontuar(tambem, termo));
+    // Navegando, a ordem de chegada é a ordem da lista.
+    final p = navegar
+        ? 1000000 - r.length
+        : (_pontuar(titulo, termo) ?? (tambem == null ? null : _pontuar(tambem, termo)));
     if (p == null) return;
     r.add(ResultadoBusca(
-        tipo: tipo, titulo: titulo, detalhe: detalhe, item: item, direita: direita, pontos: p + extra));
+        tipo: tipo, titulo: titulo, detalhe: detalhe, item: item, direita: direita, pontos: p + (navegar ? 0 : extra)));
   }
 
-  for (final t in await (db.select(db.tarefas)..where((x) => x.apagadoEm.isNull())).get()) {
-    final quando = t.prazo == null ? 'sem data' : diaRelativo(dataSP(t.prazo!), dia);
-    add(TipoResultado.tarefa, t.titulo, t.feitaEm != null ? 'Tarefa · feita' : 'Tarefa · $quando', t,
-        extra: t.feitaEm == null ? 20 : 0, tambem: t.notas);
-  }
-  for (final l in await (db.select(db.lembretes)..where((x) => x.apagadoEm.isNull())).get()) {
-    final q = l.quando.toLocal();
-    add(TipoResultado.lembrete, l.texto, 'Lembrete · ${rotuloDiaLembrete(dataSP(q), dia)}, ${hora(q)}', l);
+  int porNome(String a, String b) => normalizar(a).compareTo(normalizar(b));
+
+  if (quer(GrupoBusca.tarefas)) {
+    var tarefas = await (db.select(db.tarefas)..where((x) => x.apagadoEm.isNull())).get();
+    if (navegar) {
+      // Só as pendentes, das com prazo mais perto às sem data.
+      tarefas = tarefas.where((t) => t.feitaEm == null).toList()
+        ..sort((a, b) => (a.prazo ?? DateTime(9999)).compareTo(b.prazo ?? DateTime(9999)));
+    }
+    for (final t in tarefas) {
+      final quando = t.prazo == null ? 'sem data' : diaRelativo(dataSP(t.prazo!), dia);
+      add(TipoResultado.tarefa, t.titulo, t.feitaEm != null ? 'Tarefa · feita' : 'Tarefa · $quando', t,
+          extra: t.feitaEm == null ? 20 : 0, tambem: t.notas);
+    }
+    final lembretes = await (db.select(db.lembretes)
+          ..where((x) => x.apagadoEm.isNull())
+          ..orderBy([(x) => OrderingTerm.asc(x.quando)]))
+        .get();
+    for (final l in lembretes) {
+      final q = l.quando.toLocal();
+      add(TipoResultado.lembrete, l.texto, 'Lembrete · ${rotuloDiaLembrete(dataSP(q), dia)}, ${hora(q)}', l);
+    }
   }
 
-  // Lançamentos: do mais recente ao mais antigo (o desempate fica com a data).
+  if (quer(GrupoBusca.financas)) await _financas(db, add, navegar);
+
+  if (quer(GrupoBusca.habitos)) {
+    final habitos = await (db.select(db.habitos)..where((x) => x.apagadoEm.isNull())).get()
+      ..sort((a, b) => porNome(a.nome, b.nome));
+    for (final h in habitos) {
+      add(TipoResultado.habito, h.nome, 'Hábito${h.horario == null ? '' : ' · ${h.horario}'}', h);
+    }
+  }
+  if (quer(GrupoBusca.planos)) {
+    final metas = await (db.select(db.metas)..where((x) => x.apagadoEm.isNull())).get()
+      ..sort((a, b) => porNome(a.nome, b.nome));
+    for (final m in metas) {
+      add(TipoResultado.meta, m.nome, m.status == 'ativa' ? 'Meta' : 'Meta · ${m.status}', m);
+    }
+    final projetos = await (db.select(db.projetos)..where((x) => x.apagadoEm.isNull())).get()
+      ..sort((a, b) => porNome(a.nome, b.nome));
+    for (final p in projetos) {
+      add(TipoResultado.projeto, p.nome, p.status == 'ativo' ? 'Projeto' : 'Projeto · arquivado', p);
+    }
+  }
+  if (quer(GrupoBusca.saude)) {
+    final treinos = await (db.select(db.treinos)..where((x) => x.apagadoEm.isNull())).get()
+      ..sort((a, b) => porNome(a.nome, b.nome));
+    for (final t in treinos) {
+      add(TipoResultado.treino, t.nome, 'Treino', t);
+    }
+    final exercicios = await (db.select(db.exercicios)..where((x) => x.apagadoEm.isNull())).get()
+      ..sort((a, b) => porNome(a.nome, b.nome));
+    for (final e in exercicios) {
+      add(TipoResultado.exercicio, e.nome, 'Exercício', e);
+    }
+  }
+
+  r.sort((a, b) => b.pontos.compareTo(a.pontos));
+  // Navegando, o limite vale por tipo (tarefas não escondem os lembretes).
+  final porTipo = <Object, int>{};
+  return [
+    for (final x in r)
+      if ((porTipo[navegar ? x.tipo : x.tipo.grupo] = (porTipo[navegar ? x.tipo : x.tipo.grupo] ?? 0) + 1) <= porGrupo) x,
+  ];
+}
+
+typedef _Adicionar = void Function(TipoResultado tipo, String titulo, String detalhe, Object? item,
+    {String? direita, int extra, String? tambem});
+
+/// Lançamentos (do mais recente ao mais antigo) e categorias (as mais usadas
+/// primeiro). Navegando, mostra as categorias antes dos lançamentos.
+Future<void> _financas(BancoAurora db, _Adicionar add, bool navegar) async {
   final transacoes = await (db.select(db.transacoes)
         ..where((x) => x.apagadoEm.isNull() & x.contaDestinoId.isNull())
         ..orderBy([(x) => OrderingTerm.desc(x.data)]))
       .get();
   final contas = {for (final c in await db.select(db.contasFinanceiras).get()) c.id: c.nome};
   final categorias = <String, int>{};
+  for (final t in transacoes) {
+    final cat = t.categoria;
+    if (cat != null && cat.isNotEmpty) categorias[cat] = (categorias[cat] ?? 0) + 1;
+  }
+  void addCategorias() {
+    final lista = categorias.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    for (final e in lista) {
+      add(TipoResultado.categoria, e.key,
+          'Categoria · ${e.value} ${e.value == 1 ? 'lançamento' : 'lançamentos'}', e.key, extra: 30);
+    }
+  }
+
+  if (navegar) addCategorias();
   for (var i = 0; i < transacoes.length; i++) {
     final t = transacoes[i];
     final cat = t.categoria;
-    if (cat != null && cat.isNotEmpty) categorias[cat] = (categorias[cat] ?? 0) + 1;
     final entrada = t.tipo == TipoTransacao.entrada;
     final partes = [
       entrada ? 'Receita' : 'Despesa',
@@ -131,31 +213,5 @@ Future<List<ResultadoBusca>> buscarTudo(BancoAurora db, String termo,
         extra: (50 - i).clamp(0, 50) ~/ 10,
         tambem: cat);
   }
-  for (final e in categorias.entries) {
-    add(TipoResultado.categoria, e.key,
-        'Categoria · ${e.value} ${e.value == 1 ? 'lançamento' : 'lançamentos'}', e.key, extra: 30);
-  }
-
-  for (final h in await (db.select(db.habitos)..where((x) => x.apagadoEm.isNull())).get()) {
-    add(TipoResultado.habito, h.nome, 'Hábito${h.horario == null ? '' : ' · ${h.horario}'}', h);
-  }
-  for (final m in await (db.select(db.metas)..where((x) => x.apagadoEm.isNull())).get()) {
-    add(TipoResultado.meta, m.nome, m.status == 'ativa' ? 'Meta' : 'Meta · ${m.status}', m);
-  }
-  for (final p in await (db.select(db.projetos)..where((x) => x.apagadoEm.isNull())).get()) {
-    add(TipoResultado.projeto, p.nome, p.status == 'ativo' ? 'Projeto' : 'Projeto · arquivado', p);
-  }
-  for (final t in await (db.select(db.treinos)..where((x) => x.apagadoEm.isNull())).get()) {
-    add(TipoResultado.treino, t.nome, 'Treino', t);
-  }
-  for (final e in await (db.select(db.exercicios)..where((x) => x.apagadoEm.isNull())).get()) {
-    add(TipoResultado.exercicio, e.nome, 'Exercício', e);
-  }
-
-  r.sort((a, b) => b.pontos.compareTo(a.pontos));
-  final porTipo = <GrupoBusca, int>{};
-  return [
-    for (final x in r)
-      if ((porTipo[x.tipo.grupo] = (porTipo[x.tipo.grupo] ?? 0) + 1) <= porGrupo) x,
-  ];
+  if (!navegar) addCategorias();
 }

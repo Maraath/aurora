@@ -40,6 +40,23 @@ void main() {
     expect(trechoEncontrado('Fórmula Mágica', 'magi'), (8, 12));
   });
 
+  test('busca: filtro sem texto lista o grupo para navegar', () async {
+    expect(await buscarTudo(db, ''), isEmpty, reason: 'sem filtro e sem texto, nada');
+    final saude = await buscarTudo(db, '', grupo: GrupoBusca.saude, porGrupo: 50);
+    expect(saude.map((x) => x.titulo), containsAll(['Treino A', 'Treino B', 'Supino reto']));
+    expect(saude.every((x) => x.tipo.grupo == GrupoBusca.saude), isTrue);
+    final tarefas = await buscarTudo(db, '', grupo: GrupoBusca.tarefas, porGrupo: 50);
+    expect(tarefas.where((x) => x.tipo == TipoResultado.tarefa).every((x) => (x.item as Tarefa).feitaEm == null), isTrue,
+        reason: 'só as pendentes');
+    final fin = await buscarTudo(db, '', grupo: GrupoBusca.financas, porGrupo: 3);
+    expect(fin.where((x) => x.tipo == TipoResultado.categoria).length, inInclusiveRange(1, 3), reason: 'limite por tipo');
+    expect(fin.where((x) => x.tipo == TipoResultado.transacao), hasLength(3));
+    // Filtro com texto: só o grupo escolhido.
+    final soSaude = await buscarTudo(db, 'tr', grupo: GrupoBusca.saude);
+    expect(soSaude, isNotEmpty);
+    expect(soSaude.every((x) => x.tipo.grupo == GrupoBusca.saude), isTrue);
+  });
+
   test('busca: no máximo N por grupo', () async {
     final r = await buscarTudo(db, 'e', porGrupo: 2);
     expect(r, isEmpty, reason: 'uma letra só');
@@ -110,6 +127,17 @@ void main() {
       await t.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
       await assentar(t);
       expect(find.text('IR PARA'), findsOneWidget, reason: 'sem texto, mostra as áreas');
+      // Filtro sem texto: lista o grupo.
+      await t.ensureVisible(find.bySemanticsLabel('Filtro: Saúde'));
+      await t.tap(find.bySemanticsLabel('Filtro: Saúde'));
+      await assentar(t);
+      expect(find.text('TREINOS'), findsOneWidget);
+      expect(find.text('Treino A'), findsOneWidget);
+      expect(find.text('IR PARA'), findsNothing);
+      await t.ensureVisible(find.bySemanticsLabel('Filtro: Tudo'));
+      await t.tap(find.bySemanticsLabel('Filtro: Tudo'));
+      await assentar(t);
+      expect(find.text('IR PARA'), findsOneWidget);
       await t.enterText(find.byType(TextField).last, 'formula');
       await assentar(t);
       expect(find.text('TAREFAS E LEMBRETES'), findsOneWidget);
