@@ -108,9 +108,9 @@ void main() {
 
     test('personalizada vai para a IA', () async {
       String? pedidoRecebido;
-      final assistente = AssistenteRepo(db, ia: () => ({required pedido, required contexto, required historico}) async {
-            pedidoRecebido = pedido;
-            return const RespostaIa('Sua semana foi boa.', []);
+      final assistente = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+            pedidoRecebido = mensagens.last['content'] as String;
+            yield const TextoIa('Sua semana foi boa.');
           });
       await repo.salvar(AutomacoesCompanion.insert(
         nome: 'Semana de treino',

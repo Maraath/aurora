@@ -1,143 +1,41 @@
-// Aurora · assistente com IA.
+// Aurora · assistente com IA (Edge Function).
 //
-// O app manda o pedido, um resumo dos dados (montado no próprio aparelho) e o
-// fim da conversa. A função confere quem está logado, aplica o limite diário,
-// chama a IA e devolve:
-//   { resposta: string, comandos: string[] }
-// "comandos" são frases no formato dos comandos rápidos do app ("gastei 35 no
-// mercado", "me lembra de X amanhã às 10h"); o APP executa cada uma, com o
-// mesmo interpretador que funciona offline.
+// Formato novo (app 1.9+): o app manda { mensagens, contexto }:
+//   mensagens: a conversa no formato ModelMessage da AI SDK (pessoa, Aurora e
+//              resultados de ferramentas), já recortada pelo app;
+//   contexto:  resumo dos dados montado no aparelho agora.
+// A resposta é um stream SSE no protocolo de UI da Vercel AI SDK (o mesmo que o
+// useChat consome): "text-delta" com pedaços do texto, "tool-input-available"
+// quando a IA quer usar uma ferramenta, "error" e "finish". O app executa as
+// ferramentas no banco local e chama de novo com os resultados (ver agente.ts).
 //
-// Fornecedor trocável por segredo: IA_FORNECEDOR = "gemini" (padrão) ou
-// "anthropic". Chaves só em segredos: GEMINI_API_KEY / ANTHROPIC_API_KEY.
+// Formato antigo ({ pedido, contexto, historico } → JSON): ver legado.ts.
+//
+// Modelo: Claude (ANTHROPIC_API_KEY) ou Gemini (GEMINI_API_KEY), ver agente.ts.
 // Limite diário por pessoa: LIMITE_DIARIO (padrão 60). Limite diário somando
 // todas as contas: LIMITE_GERAL_DIARIO (padrão 300); e-mails em
-// IA_SEM_LIMITE_GERAL ficam fora dele (o dono).
+// IA_SEM_LIMITE_GERAL ficam fora dele (o dono). Só conta pedido da pessoa: a
+// volta com resultados de ferramenta é parte da mesma resposta.
 
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
+import { APICallError, streamText } from "ai";
+import { escolherModelo, esquemaMensagens, ferramentas, janela, PERSONA } from "./agente.ts";
+import { cors, json } from "./comum.ts";
+import { type MensagemLegada, responderLegado } from "./legado.ts";
 
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+/// Voltas seguidas de ferramenta depois de uma mensagem da pessoa.
+const MAX_VOLTAS_FERRAMENTA = 6;
 
-type Mensagem = { papel: "eu" | "aurora"; texto: string };
-
-const INSTRUCOES = `Você é a Aurora, assistente pessoal dentro de um app de rotina
-(tarefas, hábitos, treino, finanças, metas e lembretes). Fale português do Brasil,
-de forma direta e calorosa, em no máximo 4 frases curtas, sem markdown.
-
-Use o RESUMO DOS DADOS para responder sobre a vida da pessoa. Não invente números
-que não estejam lá; se faltar informação, diga.
-
-Quando a pessoa pedir para CRIAR ou REGISTRAR algo, não diga que criou: coloque em
-"comandos" frases exatamente neste formato (o app executa):
-- "gastei 35,90 no mercado" | "gastei 50 no restaurante ontem" | "recebi 500 do freela"
-- "me lembra de ligar pro dentista amanhã às 10h" | "me lembra de pagar a luz todo dia 10"
-  | "me lembra de ir à academia toda segunda e quarta às 19h"
-- "tarefa: revisar currículo" | "adiciona tarefa de mandar e-mail amanhã às 14h"
-- "fiz o cardio" (nome do hábito) | "pesei 74,5" | "braço 37,5 cm"
-- "comi 200 g de frango no almoço" | "comi 2 ovos no café" | "bebi 300 ml de leite no jantar"
-  (use o nome de um dos "Alimentos cadastrados"; refeições: café, almoço, lanche, jantar, ceia)
-Na "resposta", diga em uma frase o que vai ser feito. Sem pedido de ação, "comandos" = [].
-
-Responda SOMENTE com JSON: {"resposta": "...", "comandos": ["..."]}`;
-
-function json(corpo: unknown, status = 200) {
-  return new Response(JSON.stringify(corpo), {
-    status,
-    headers: { ...cors, "Content-Type": "application/json" },
-  });
-}
-
-/// Erro que já vem com a mensagem para a pessoa (e o status HTTP a devolver).
-class ErroParaPessoa extends Error {
-  constructor(mensagem: string, readonly status: number) {
-    super(mensagem);
-  }
-}
-
-async function chamarGemini(sistema: string, historico: Mensagem[], pedido: string) {
-  const chave = Deno.env.get("GEMINI_API_KEY");
-  if (!chave) throw new Error("GEMINI_API_KEY não configurada");
-  // Lite e sem "raciocínio": responde em poucos segundos, o que basta para
-  // falar dos dados do app e montar comandos.
-  const modelo = Deno.env.get("GEMINI_MODELO") ?? "gemini-flash-lite-latest";
-  const pedir = (semRaciocinio: boolean) =>
-    fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": chave },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: sistema }] },
-        contents: [
-          ...historico.map((m) => ({
-            role: m.papel === "eu" ? "user" : "model",
-            parts: [{ text: m.texto }],
-          })),
-          { role: "user", parts: [{ text: pedido }] },
-        ],
-        generationConfig: {
-          responseMimeType: "application/json",
-          temperature: 0.4,
-          ...(semRaciocinio ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
-        },
-      }),
-      signal: AbortSignal.timeout(40_000),
-    });
-
-  let r = await pedir(true);
-  // Modelo que não aceita desligar o raciocínio: tenta de novo sem a opção.
-  if (r.status === 400) r = await pedir(false);
-  if (r.status === 429) {
-    throw new ErroParaPessoa(
-      "A IA gratuita chegou ao limite de pedidos por minuto. Tente de novo em instantes.",
-      429,
-    );
-  }
-  if (!r.ok) throw new Error(`Gemini ${r.status}: ${(await r.text()).slice(0, 300)}`);
-  const dados = await r.json();
-  return dados?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? "").join("") ?? "";
-}
-
-async function chamarAnthropic(sistema: string, historico: Mensagem[], pedido: string) {
-  const chave = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!chave) throw new Error("ANTHROPIC_API_KEY não configurada");
-  const modelo = Deno.env.get("ANTHROPIC_MODELO") ?? "claude-haiku-5-5";
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": chave,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: modelo,
-      max_tokens: 800,
-      system: sistema,
-      messages: [
-        ...historico.map((m) => ({ role: m.papel === "eu" ? "user" : "assistant", content: m.texto })),
-        { role: "user", content: pedido },
-      ],
-    }),
-  });
-  if (!r.ok) throw new Error(`Anthropic ${r.status}: ${(await r.text()).slice(0, 300)}`);
-  const dados = await r.json();
-  return (dados?.content ?? []).map((b: { text?: string }) => b.text ?? "").join("");
-}
-
-/// Tira o JSON da resposta (alguns modelos cercam com ```json).
-function lerResposta(texto: string): { resposta: string; comandos: string[] } {
-  const inicio = texto.indexOf("{");
-  const fim = texto.lastIndexOf("}");
-  try {
-    const o = JSON.parse(texto.slice(inicio, fim + 1));
-    return {
-      resposta: String(o.resposta ?? "").trim(),
-      comandos: Array.isArray(o.comandos) ? o.comandos.map(String).slice(0, 5) : [],
-    };
-  } catch {
-    return { resposta: texto.trim(), comandos: [] };
-  }
+/// Mensagem para a pessoa a partir de um erro do fornecedor.
+function mensagemDeErro(e: unknown): string {
+  console.error(e);
+  // RetryError guarda o último erro; APICallError tem o status HTTP.
+  const ultimo = (e as { lastError?: unknown })?.lastError ?? e;
+  const status = APICallError.isInstance(ultimo) ? ultimo.statusCode : undefined;
+  if (status === 429) return "A IA chegou ao limite de pedidos por minuto. Tente de novo em instantes.";
+  if (status === 529 || status === 503) return "A IA está sobrecarregada agora. Tente de novo daqui a pouco.";
+  if (status === 401 || status === 403) return "A chave da IA no servidor não foi aceita. Avise o dono do app.";
+  return "A IA não respondeu agora. Tente de novo daqui a pouco.";
 }
 
 Deno.serve(async (req) => {
@@ -152,14 +50,33 @@ Deno.serve(async (req) => {
   const { data: { user } } = await comoUsuario.auth.getUser();
   if (!user) return json({ erro: "Entre na sua conta para usar a IA." }, 401);
 
-  let corpo: { pedido?: string; contexto?: string; historico?: Mensagem[] };
+  let corpo: { pedido?: string; contexto?: string; historico?: MensagemLegada[]; mensagens?: unknown };
   try {
     corpo = await req.json();
   } catch {
     return json({ erro: "Pedido inválido." }, 400);
   }
-  const pedido = (corpo.pedido ?? "").trim().slice(0, 2000);
-  if (!pedido) return json({ erro: "Pedido vazio." }, 400);
+  const contexto = String(corpo.contexto ?? "").slice(0, 16000);
+  const legado = typeof corpo.pedido === "string";
+
+  // Conversa (formato novo) ou pedido (legado).
+  let mensagens;
+  let daPessoa: boolean;
+  if (legado) {
+    if (!corpo.pedido!.trim()) return json({ erro: "Pedido vazio." }, 400);
+    daPessoa = true;
+  } else {
+    const lida = esquemaMensagens.safeParse(corpo.mensagens);
+    if (!lida.success) return json({ erro: "Conversa inválida." }, 400);
+    mensagens = janela(lida.data);
+    if (mensagens.length === 0) return json({ erro: "Conversa vazia." }, 400);
+    const ultima = mensagens[mensagens.length - 1];
+    daPessoa = ultima.role === "user";
+    const voltas = mensagens.length - 1 - mensagens.findLastIndex((m) => m.role === "user");
+    if (!daPessoa && (ultima.role !== "tool" || voltas > MAX_VOLTAS_FERRAMENTA * 2)) {
+      return json({ erro: "Conversa inválida." }, 400);
+    }
+  }
 
   // Limite diário por pessoa (a tabela só é gravada com a chave de serviço).
   const servico = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -168,40 +85,50 @@ Deno.serve(async (req) => {
   const { data: uso } = await servico
     .from("uso_ia").select("pedidos").eq("user_id", user.id).eq("dia", hoje).maybeSingle();
   const usados = uso?.pedidos ?? 0;
-  if (usados >= limite) {
-    return json({ erro: `Você chegou ao limite de ${limite} pedidos à IA hoje. Amanhã libera de novo.` }, 429);
-  }
-
-  // Limite de todas as contas juntas: criar contas novas não esgota a cota da
-  // IA. Quem está em IA_SEM_LIMITE_GERAL (e-mails separados por vírgula) passa.
-  const limiteGeral = Number(Deno.env.get("LIMITE_GERAL_DIARIO") ?? "300");
-  const livres = (Deno.env.get("IA_SEM_LIMITE_GERAL") ?? "")
-    .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
-  if (!livres.includes((user.email ?? "").toLowerCase())) {
-    const { data: hojeTodos } = await servico.from("uso_ia").select("pedidos").eq("dia", hoje);
-    const total = (hojeTodos ?? []).reduce((s, l) => s + (l.pedidos ?? 0), 0);
-    if (total >= limiteGeral) {
-      return json({ erro: "A IA chegou ao limite do dia para todos. Amanhã libera de novo." }, 429);
+  if (daPessoa) {
+    if (usados >= limite) {
+      return json({ erro: `Você chegou ao limite de ${limite} pedidos à IA hoje. Amanhã libera de novo.` }, 429);
     }
+    // Limite de todas as contas juntas: criar contas novas não esgota a cota da
+    // IA. Quem está em IA_SEM_LIMITE_GERAL (e-mails separados por vírgula) passa.
+    const limiteGeral = Number(Deno.env.get("LIMITE_GERAL_DIARIO") ?? "300");
+    const livres = (Deno.env.get("IA_SEM_LIMITE_GERAL") ?? "")
+      .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+    if (!livres.includes((user.email ?? "").toLowerCase())) {
+      const { data: hojeTodos } = await servico.from("uso_ia").select("pedidos").eq("dia", hoje);
+      const total = (hojeTodos ?? []).reduce((s, l) => s + (l.pedidos ?? 0), 0);
+      if (total >= limiteGeral) {
+        return json({ erro: "A IA chegou ao limite do dia para todos. Amanhã libera de novo." }, 429);
+      }
+    }
+    await servico.from("uso_ia").upsert({ user_id: user.id, dia: hoje, pedidos: usados + 1 });
+  } else if (usados === 0) {
+    // Volta de ferramenta sem nenhum pedido hoje: não veio de uma conversa real.
+    return json({ erro: "Conversa inválida." }, 400);
   }
-  await servico.from("uso_ia").upsert({ user_id: user.id, dia: hoje, pedidos: usados + 1 });
 
-  const sistema = `${INSTRUCOES}\n\nRESUMO DOS DADOS (feito pelo app agora):\n${(corpo.contexto ?? "").slice(0, 12000)}`;
-  const historico = (corpo.historico ?? [])
-    .filter((m) => (m.papel === "eu" || m.papel === "aurora") && m.texto)
-    .slice(-10);
+  if (legado) return responderLegado(corpo.pedido!.trim().slice(0, 2000), contexto, corpo.historico ?? []);
 
+  let escolha;
   try {
-    const fornecedor = (Deno.env.get("IA_FORNECEDOR") ?? "gemini").toLowerCase();
-    const bruto = fornecedor === "anthropic"
-      ? await chamarAnthropic(sistema, historico, pedido)
-      : await chamarGemini(sistema, historico, pedido);
-    const r = lerResposta(bruto);
-    if (!r.resposta && r.comandos.length === 0) throw new Error("Resposta vazia da IA");
-    return json(r);
+    escolha = escolherModelo();
   } catch (e) {
-    console.error(e);
-    if (e instanceof ErroParaPessoa) return json({ erro: e.message }, e.status);
-    return json({ erro: "A IA não respondeu agora. Tente de novo daqui a pouco." }, 502);
+    return json({ erro: mensagemDeErro(e) }, 500);
   }
+
+  const resultado = streamText({
+    model: escolha.model,
+    system: `${PERSONA}\n\nRESUMO DOS DADOS (montado pelo app agora):\n${contexto}`,
+    messages: mensagens!,
+    tools: ferramentas,
+    temperature: escolha.temperature,
+    providerOptions: escolha.providerOptions,
+    maxOutputTokens: 4000,
+    abortSignal: req.signal,
+  });
+  return resultado.toUIMessageStreamResponse({
+    headers: cors,
+    sendReasoning: false,
+    onError: mensagemDeErro,
+  });
 });

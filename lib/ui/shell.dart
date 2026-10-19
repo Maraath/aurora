@@ -8,6 +8,7 @@ import '../data/banco.dart';
 import '../data/busca.dart';
 import '../data/exemplo.dart';
 import '../data/financas_repo.dart';
+import '../data/ia/ferramentas_ia.dart' show telaPedidaPelaIa;
 import '../data/tarefas_repo.dart';
 import 'atalhos/atalhos_flutuantes.dart';
 import 'atalhos/busca_ui.dart';
@@ -131,6 +132,40 @@ class _ShellState extends State<Shell> {
     super.initState();
     // App instalado no Windows: confere se saiu versão nova.
     WidgetsBinding.instance.addPostFrameCallback((_) => oferecerAtualizacao(context));
+    telaPedidaPelaIa.addListener(_abrirTelaDaIa);
+  }
+
+  @override
+  void dispose() {
+    telaPedidaPelaIa.removeListener(_abrirTelaDaIa);
+    super.dispose();
+  }
+
+  /// A IA pediu para mostrar uma tela ("mostre minhas fotos do shape").
+  void _abrirTelaDaIa() {
+    final tela = telaPedidaPelaIa.value;
+    if (tela == null || !mounted) return;
+    setState(() {
+      switch (tela) {
+        case 'treino' || 'medidas' || 'exercicios' || 'shape':
+          _secao = Secao.saude;
+          _abaSaude = 0;
+          _subTreino = switch (tela) {
+            'medidas' => SubTreino.medidas,
+            'exercicios' => SubTreino.exercicios,
+            'shape' => SubTreino.shape,
+            _ => SubTreino.ficha,
+          };
+        case 'alimentacao':
+          _secao = Secao.saude;
+          _abaSaude = 1;
+        case 'lembretes' || 'automacoes':
+          _secao = Secao.lembretes;
+          _abaLembretes = tela == 'automacoes' ? 1 : 0;
+        default:
+          _secao = Secao.values.firstWhere((s) => s.name == tela, orElse: () => _secao);
+      }
+    });
   }
 
   void _ir(Secao s) => setState(() => _secao = s);

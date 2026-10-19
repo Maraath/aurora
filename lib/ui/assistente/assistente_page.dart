@@ -448,11 +448,17 @@ class _Mensagem extends StatelessWidget {
                   ),
                   child: Text(m.texto, style: manrope(15, cor: c.text, altura: 1.55)),
                 ),
+                // Na fila: só avisa quando a IA não está trabalhando nele agora.
                 if (m.naFila)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6, right: 4),
-                    child: Text('Na fila da IA: vai quando houver internet',
-                        style: manrope(11, peso: FontWeight.w600, cor: c.warn)),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: AssistenteRepo.pensando,
+                    builder: (_, pensando, _) => pensando
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding: const EdgeInsets.only(top: 6, right: 4),
+                            child: Text('Na fila da IA: vai quando houver internet',
+                                style: manrope(11, peso: FontWeight.w600, cor: c.warn)),
+                          ),
                   ),
               ]),
             ),
@@ -496,6 +502,17 @@ class _Mensagem extends StatelessWidget {
   }
 }
 
+/// Trechos entre `**` em negrito (o único markdown que a Aurora usa). Durante a
+/// digitação, um `**` ainda sem par já deixa o resto em negrito até fechar.
+List<TextSpan> comNegrito(String texto) {
+  final partes = texto.split('**');
+  return [
+    for (var i = 0; i < partes.length; i++)
+      if (partes[i].isNotEmpty)
+        TextSpan(text: partes[i], style: i.isOdd ? const TextStyle(fontWeight: FontWeight.w800) : null),
+  ];
+}
+
 /// Texto da resposta escrito aos poucos (2 letras a cada 15 ms), com
 /// cursor piscando enquanto escreve.
 class _TextoDigitado extends StatefulWidget {
@@ -516,17 +533,33 @@ class _TextoDigitadoState extends State<_TextoDigitado> {
   @override
   void initState() {
     super.initState();
-    if (_mostrado < widget.texto.length) {
-      _relogio = Timer.periodic(const Duration(milliseconds: 15), (t) {
-        if (!mounted) return t.cancel();
-        setState(() => _mostrado = math.min(_mostrado + 2, widget.texto.length));
-        if (_mostrado % 40 == 0) widget.aoCrescer();
-        if (_mostrado >= widget.texto.length) {
-          t.cancel();
-          widget.aoCrescer();
-        }
-      });
-    }
+    _escrever();
+  }
+
+  /// A resposta chega aos poucos (stream): quando o texto cresce, a digitação
+  /// continua de onde parou.
+  @override
+  void didUpdateWidget(_TextoDigitado antigo) {
+    super.didUpdateWidget(antigo);
+    if (_mostrado > widget.texto.length) _mostrado = widget.texto.length;
+    if (widget.animar && _relogio?.isActive != true) _escrever();
+    if (!widget.animar) _mostrado = widget.texto.length;
+  }
+
+  void _escrever() {
+    if (_mostrado >= widget.texto.length) return;
+    _relogio?.cancel();
+    _relogio = Timer.periodic(const Duration(milliseconds: 15), (t) {
+      if (!mounted) return t.cancel();
+      // Atrasada demais em relação ao que já chegou? Escreve mais rápido.
+      final falta = widget.texto.length - _mostrado;
+      setState(() => _mostrado = math.min(_mostrado + (falta > 200 ? 8 : 2), widget.texto.length));
+      if (_mostrado % 40 < 8) widget.aoCrescer();
+      if (_mostrado >= widget.texto.length) {
+        t.cancel();
+        widget.aoCrescer();
+      }
+    });
   }
 
   @override
@@ -539,7 +572,7 @@ class _TextoDigitadoState extends State<_TextoDigitado> {
   Widget build(BuildContext context) {
     final escrevendo = _mostrado < widget.texto.length;
     return Text.rich(TextSpan(children: [
-      TextSpan(text: widget.texto.substring(0, _mostrado)),
+      ...comNegrito(widget.texto.substring(0, _mostrado)),
       if (escrevendo) WidgetSpan(alignment: PlaceholderAlignment.middle, child: _Cursor(cor: context.cores.accent)),
     ]), style: widget.estilo);
   }

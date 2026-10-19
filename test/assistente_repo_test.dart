@@ -4,6 +4,7 @@ import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/data/financas_repo.dart';
 import 'package:aurora/data/habitos_repo.dart';
+import 'package:aurora/data/ia/ferramentas_ia.dart' show telaPedidaPelaIa;
 import 'package:aurora/data/saude_repo.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -84,31 +85,83 @@ void main() {
   });
 
   group('com IA', () {
-    test('responde e executa os comandos que propôs', () async {
-      String? contextoRecebido;
-      final comIa = AssistenteRepo(db, ia: () => ({required pedido, required contexto, required historico}) async {
-            contextoRecebido = contexto;
-            return const RespostaIa('Vou anotar o almoço e te lembrar da consulta.',
-                ['gastei 42 no restaurante', 'me lembra de marcar consulta amanhã às 9h', 'frase que não é comando']);
+    test('texto chega aos poucos, ferramentas rodam no aparelho e a IA continua', () async {
+      final chamadas = <List<Map<String, Object?>>>[];
+      final contextos = <String>[];
+      final amanha = hojeSP().add(const Duration(days: 1));
+      final dataAmanha = '${amanha.year}-${'${amanha.month}'.padLeft(2, '0')}-${'${amanha.day}'.padLeft(2, '0')}';
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+            chamadas.add([...mensagens]);
+            contextos.add(contexto);
+            if (mensagens.last['role'] == 'user') {
+              yield const TextoIa('Vou anotar ');
+              yield const TextoIa('o almoço.');
+              yield const FerramentaIa(id: 'c1', nome: 'registrar_lancamento', entrada: {
+                'tipo': 'gasto',
+                'valor': 42,
+                'descricao': 'restaurante',
+              });
+              yield FerramentaIa(id: 'c2', nome: 'criar_lembrete', entrada: {
+                'texto': 'marcar consulta',
+                'data': dataAmanha,
+                'hora': '09:00',
+              });
+              yield const FerramentaIa(id: 'c3', nome: 'marcar_habito', entrada: {'nome': 'Natação'});
+              yield const FimIa('tool-calls');
+            } else {
+              yield const TextoIa('Pronto! Anotei e agendei.');
+              yield const FimIa('stop');
+            }
           });
       await comIa.enviar('almocei fora, deu 42 conto, e preciso marcar consulta amanhã');
+
       final conversa = await comIa.carregarConversa();
       expect(conversa.first.naFila, isFalse);
       expect(conversa.map((m) => m.papel),
-          [PapelMensagem.eu, PapelMensagem.aurora, PapelMensagem.aurora, PapelMensagem.aurora]);
+          [PapelMensagem.eu, PapelMensagem.aurora, PapelMensagem.aurora, PapelMensagem.aurora, PapelMensagem.aurora]);
+      expect(conversa[1].texto, 'Vou anotar o almoço.', reason: 'os pedaços do stream viram uma mensagem só');
       expect(conversa[2].itemTipo, 'transacao');
       expect(conversa[3].itemTipo, 'lembrete');
+      expect(conversa.last.texto, 'Pronto! Anotei e agendei.');
       expect((await FinancasRepo(db).carregar()).mes(hojeSP()).saiuCentavos, 4200);
-      // O resumo é montado antes de executar os comandos da IA.
-      expect(contextoRecebido, contains('saldo em conta R\$ 703,18'));
-      expect(contextoRecebido, contains('Shape 80kg'));
+
+      // Segunda chamada: a conversa + a resposta com as chamadas + os resultados.
+      expect(chamadas, hasLength(2));
+      final volta = chamadas[1];
+      expect(volta[volta.length - 2]['role'], 'assistant');
+      expect((volta[volta.length - 2]['content'] as List).where((p) => (p as Map)['type'] == 'tool-call'), hasLength(3));
+      final resultados = volta.last['content'] as List;
+      expect(volta.last['role'], 'tool');
+      expect(resultados.map((r) => ((r as Map)['output'] as Map)['type']), ['text', 'text', 'error-text'],
+          reason: 'hábito que não existe volta como erro para a IA explicar');
+      expect(contextos.first, contains('saldo em conta R\$ 703,18'));
+      expect(contextos.last, contains('saiu R\$ 42,00'), reason: 'o resumo é refeito depois das ferramentas');
+    });
+
+    test('abrir_tela avisa a Shell e consultar devolve dados do aparelho', () async {
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+            if (mensagens.last['role'] == 'user') {
+              yield const FerramentaIa(id: 'a', nome: 'abrir_tela', entrada: {'tela': 'shape'});
+              yield const FerramentaIa(id: 'b', nome: 'consultar', entrada: {'area': 'habitos', 'periodo_dias': 7});
+            } else {
+              final r = ((mensagens.last['content'] as List)[1] as Map)['output'] as Map;
+              yield TextoIa('${r['value']}');
+            }
+          });
+      String? tela;
+      void ouvir() => tela = telaPedidaPelaIa.value;
+      telaPedidaPelaIa.addListener(ouvir);
+      addTearDown(() => telaPedidaPelaIa.removeListener(ouvir));
+      await comIa.enviar('mostra minhas fotos e como foram meus hábitos');
+      expect(tela, 'shape');
+      expect((await comIa.carregarConversa()).last.texto, contains('Cardio: feito'));
     });
 
     test('sem conexão: fica na fila, avisa uma vez e responde depois', () async {
       var online = false;
-      final comIa = AssistenteRepo(db, ia: () => ({required pedido, required contexto, required historico}) async {
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
             if (!online) throw const ErroIa('sem rede', semConexao: true);
-            return const RespostaIa('Agora sim.', []);
+            yield const TextoIa('Agora sim.');
           });
       await comIa.enviar('me sugere um treino de pernas');
       var conversa = await comIa.carregarConversa();
@@ -122,13 +175,74 @@ void main() {
       expect(conversa.last.texto, 'Agora sim.');
     });
 
+    test('resposta que cai no meio fica e ganha um aviso', () async {
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+            yield const TextoIa('Começando a responder');
+            throw const ErroIa('A conexão com a IA caiu no meio da resposta.', semConexao: true);
+          });
+      await comIa.enviar('me explica progressão de carga');
+      final conversa = await comIa.carregarConversa();
+      expect(conversa[1].texto, 'Começando a responder');
+      expect(conversa.last.papel, PapelMensagem.sistema);
+      expect(conversa.last.texto, contains('parou no meio'));
+      expect(await comIa.tamanhoDaFila(), 0);
+    });
+
     test('limite do dia aparece na conversa', () async {
-      final comIa = AssistenteRepo(db, ia: () => ({required pedido, required contexto, required historico}) async {
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
             throw const ErroIa('Você chegou ao limite de 60 pedidos à IA hoje.');
           });
       await comIa.enviar('o que acha da minha semana?');
       expect((await comIa.carregarConversa()).last.texto, contains('limite de 60'));
       expect(await comIa.tamanhoDaFila(), 1);
+    });
+
+    test('com IA, o resumo do dia vai para ela', () async {
+      var chamou = false;
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto) async* {
+            chamou = true;
+            yield const TextoIa('Seu dia está tranquilo.');
+          });
+      await comIa.enviar('Resumo do meu dia');
+      expect(chamou, isTrue);
+      expect((await comIa.carregarConversa()).last.texto, 'Seu dia está tranquilo.');
+    });
+  });
+
+  group('janela de memória', () {
+    MensagemAssistente m(PapelMensagem p, String texto, {int n = 0}) => MensagemAssistente(
+          id: '$n',
+          criadoEm: DateTime(2026),
+          atualizadoEm: DateTime(2026),
+          papel: p,
+          texto: texto,
+          naFila: false,
+          desfeita: false,
+        );
+
+    test('junta mensagens seguidas, pula avisos e começa na pessoa', () {
+      final r = mensagensParaIa([
+        m(PapelMensagem.aurora, 'Bom dia!'),
+        m(PapelMensagem.eu, 'gastei 10 no café'),
+        m(PapelMensagem.aurora, 'Anotei R\$ 10,00.'),
+        m(PapelMensagem.sistema, 'Desfeito.'),
+        m(PapelMensagem.aurora, 'Mais algo?'),
+        m(PapelMensagem.eu, 'não'),
+      ]);
+      expect(r.map((x) => x['role']), ['user', 'assistant', 'user']);
+      expect(r[1]['content'], 'Anotei R\$ 10,00.\nMais algo?');
+    });
+
+    test('guarda só o fim da conversa dentro do limite', () {
+      final conversa = [
+        for (var i = 0; i < 100; i++) m(i.isEven ? PapelMensagem.eu : PapelMensagem.aurora, 'mensagem $i ${'x' * 100}', n: i),
+      ];
+      final r = mensagensParaIa(conversa, maxCaracteres: 1200);
+      expect(r.length, lessThan(12));
+      expect(r.first['role'], 'user');
+      expect(r.last['content'], startsWith('mensagem 99'));
+      expect(mensagensParaIa(conversa, maxMensagens: 6), hasLength(6));
+      expect(mensagensParaIa(conversa, maxMensagens: 5), hasLength(4), reason: 'corta no limite e começa na pessoa');
     });
   });
 

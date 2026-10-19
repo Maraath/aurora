@@ -1,12 +1,9 @@
-import 'dart:async';
-
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show FunctionException;
 
 import '../core/comandos.dart';
 import '../core/formato.dart';
-import '../core/nuvem.dart';
+import '../core/nuvem.dart' show mensagemDeErro;
 import '../core/relogio.dart';
 import 'alimentacao_repo.dart';
 import 'banco.dart';
@@ -14,11 +11,15 @@ import 'catalogo_taco.dart';
 import 'contexto_ia.dart';
 import 'financas_repo.dart';
 import 'habitos_repo.dart';
+import 'ia/ferramentas_ia.dart';
+import 'ia/protocolo.dart';
 import 'lembretes_repo.dart';
 import 'observar.dart';
 import 'saude_repo.dart';
 import 'tarefas_repo.dart';
 import 'visao_repo.dart';
+
+export 'ia/protocolo.dart' show ErroIa, EventoIa, FerramentaIa, FimIa, TextoIa, TransporteIa, iaDaNuvem;
 
 /// Frases de exemplo mostradas como atalhos na conversa.
 const sugestoesAssistente = [
@@ -37,68 +38,54 @@ class Resposta {
   final String? itemId;
 }
 
-/// O que a IA devolve: a resposta e frases de comando rápido para executar.
-class RespostaIa {
-  const RespostaIa(this.resposta, this.comandos);
-  final String resposta;
-  final List<String> comandos;
-}
+/// Janela de memória: quanto da conversa vai para a IA a cada pedido. As
+/// últimas mensagens até caberem em ~24 mil caracteres (uns 6 mil tokens),
+/// sempre começando numa mensagem da pessoa. A Edge Function corta de novo.
+const maxMensagensIa = 30;
+const maxCaracteresIa = 24000;
 
-/// Falha ao falar com a IA. [mensagem] já vem pronta para mostrar.
-class ErroIa implements Exception {
-  const ErroIa(this.mensagem, {this.semConexao = false});
-  final String mensagem;
-  final bool semConexao;
-  @override
-  String toString() => mensagem;
-}
+/// Quantas voltas de ferramenta uma resposta pode dar (pedir, executar, seguir).
+const maxVoltasFerramenta = 6;
 
-typedef ChamarIa = Future<RespostaIa> Function({
-  required String pedido,
-  required String contexto,
-  required List<MensagemAssistente> historico,
-});
-
-/// Chama a Edge Function "assistente" com a sessão de quem está logado.
-/// Nulo quando não há conta conectada (aí os pedidos esperam na fila).
-ChamarIa? iaDaNuvem() {
-  final cliente = nuvem;
-  if (cliente == null || cliente.auth.currentSession == null) return null;
-  return ({required pedido, required contexto, required historico}) async {
-    try {
-      final r = await cliente.functions.invoke('assistente', body: {
-        'pedido': pedido,
-        'contexto': contexto,
-        'historico': [
-          for (final m in historico)
-            if (m.papel != PapelMensagem.sistema) {'papel': m.papel.name, 'texto': m.texto},
-        ],
-      }).timeout(const Duration(seconds: 45));
-      final dados = r.data as Map<String, dynamic>;
-      return RespostaIa(
-        (dados['resposta'] as String?) ?? '',
-        [for (final c in (dados['comandos'] as List? ?? const [])) '$c'],
-      );
-    } on FunctionException catch (e) {
-      final detalhes = e.details;
-      final erro = detalhes is Map ? detalhes['erro'] as String? : null;
-      throw ErroIa(erro ?? 'A IA não respondeu (erro ${e.status}).');
-    } on TimeoutException {
-      throw const ErroIa('A IA demorou demais para responder. O pedido continua na fila.');
-    } catch (e) {
-      if (e is ErroIa) rethrow;
-      debugPrint('IA: falha $e');
-      throw ErroIa(mensagemDeErro(e), semConexao: true);
+/// A conversa gravada → mensagens no formato ModelMessage da AI SDK.
+/// Avisos do sistema ficam de fora; mensagens seguidas do mesmo papel se
+/// juntam (resposta + confirmação de ação, por exemplo).
+List<Map<String, Object?>> mensagensParaIa(List<MensagemAssistente> conversa,
+    {int maxMensagens = maxMensagensIa, int maxCaracteres = maxCaracteresIa}) {
+  final lista = <({String papel, String texto})>[];
+  for (final m in conversa) {
+    if (m.papel == PapelMensagem.sistema || m.texto.trim().isEmpty) continue;
+    final papel = m.papel == PapelMensagem.eu ? 'user' : 'assistant';
+    final texto = m.desfeita ? '${m.texto} (desfeito depois)' : m.texto;
+    if (lista.isNotEmpty && lista.last.papel == papel) {
+      lista[lista.length - 1] = (papel: papel, texto: '${lista.last.texto}\n${texto.trim()}');
+    } else {
+      lista.add((papel: papel, texto: texto.trim()));
     }
-  };
+  }
+  var inicio = lista.length, total = 0;
+  while (inicio > 0 && lista.length - inicio < maxMensagens) {
+    final t = lista[inicio - 1].texto.length;
+    if (total + t > maxCaracteres && inicio < lista.length) break;
+    total += t;
+    inicio--;
+  }
+  while (inicio < lista.length && lista[inicio].papel != 'user') {
+    inicio++;
+  }
+  return [for (final m in lista.skip(inicio)) {'role': m.papel, 'content': m.texto}];
 }
 
+/// O "useChat" do Aurora: guarda a conversa, manda o histórico para a IA, mostra
+/// a resposta chegando aos poucos (stream) e executa no aparelho as
+/// ferramentas que a IA pedir. Comandos rápidos ("gastei 35 no mercado")
+/// continuam saindo na hora, sem IA e sem internet.
 class AssistenteRepo {
-  AssistenteRepo(this.db, {ChamarIa? Function()? ia, Future<CatalogoTaco> Function()? catalogo})
+  AssistenteRepo(this.db, {TransporteIa? Function()? ia, Future<CatalogoTaco> Function()? catalogo})
       : _ia = ia ?? iaDaNuvem,
         _catalogoTaco = catalogo ?? CatalogoTaco.carregar;
   final BancoAurora db;
-  final ChamarIa? Function() _ia;
+  final TransporteIa? Function() _ia;
   final Future<CatalogoTaco> Function() _catalogoTaco;
 
   /// Verdadeiro enquanto a IA está respondendo (para a tela mostrar).
@@ -126,7 +113,10 @@ class AssistenteRepo {
     if (limpo.isEmpty) return;
     final agora = agoraSP();
     final hoje = dataSP(agora);
-    final comando = interpretar(limpo, hoje: hoje, agora: agora);
+    var comando = interpretar(limpo, hoje: hoje, agora: agora);
+    // Com a IA conectada, os resumos vão para ela: resposta conversada e
+    // personalizada em vez do texto fixo (que continua valendo offline).
+    if ((comando is CmdResumoDia || comando is CmdResumoFinancas) && _ia() != null) comando = null;
 
     await db.transaction(() async {
       await _gravar(PapelMensagem.eu, limpo, naFila: comando == null);
@@ -138,7 +128,7 @@ class AssistenteRepo {
         }
         return;
       }
-      final r = await _executar(comando, hoje, agora);
+      final r = await executarComando(comando, hoje, agora);
       await _gravar(PapelMensagem.aurora, r.texto, itemTipo: r.itemTipo, itemId: r.itemId);
     });
     if (comando == null) await processarFila(avisarFalha: true);
@@ -168,30 +158,7 @@ class AssistenteRepo {
     try {
       final fila = (await carregarConversa()).where((m) => m.naFila).toList();
       for (final pedido in fila) {
-        final conversa = await carregarConversa();
-        final antes = conversa.takeWhile((m) => m.id != pedido.id).toList();
-        final RespostaIa r;
-        final contexto = await montarContexto(db);
-        try {
-          r = await ia(
-            pedido: pedido.texto,
-            contexto: contexto,
-            historico: antes.length > 10 ? antes.sublist(antes.length - 10) : antes,
-          );
-        } on ErroIa catch (e) {
-          if (avisarFalha) {
-            await _gravar(
-                PapelMensagem.sistema,
-                e.semConexao
-                    ? 'Sem conexão: o pedido fica na fila e a IA responde quando a internet voltar.'
-                    : e.mensagem);
-          }
-          return;
-        }
-        await (db.update(db.mensagensAssistente)..where((m) => m.id.equals(pedido.id))).write(
-            MensagensAssistenteCompanion(naFila: const Value(false), atualizadoEm: Value(DateTime.now())));
-        if (r.resposta.isNotEmpty) await _gravar(PapelMensagem.aurora, r.resposta);
-        await _executarDaIa(r.comandos);
+        if (!await _responder(ia, pedido, avisarFalha: avisarFalha)) return;
       }
     } finally {
       _processando = false;
@@ -199,27 +166,120 @@ class AssistenteRepo {
     }
   }
 
-  /// Executa os comandos que a IA propôs com o mesmo interpretador offline.
-  Future<void> _executarDaIa(List<String> comandos) async {
-    for (final texto in comandos) {
-      final agora = agoraSP();
-      final c = interpretar(texto, hoje: dataSP(agora), agora: agora);
-      if (c == null || c is CmdResumoDia || c is CmdResumoFinancas) continue;
-      final r = await _executar(c, dataSP(agora), agora);
-      await _gravar(PapelMensagem.aurora, r.texto, itemTipo: r.itemTipo, itemId: r.itemId);
+  /// Responde um pedido: manda a janela da conversa, grava o texto conforme
+  /// chega e, quando a IA pede ferramentas, executa no aparelho e volta com os
+  /// resultados até ela terminar. Falso se não deu para falar com a IA (o
+  /// pedido continua na fila).
+  Future<bool> _responder(TransporteIa ia, MensagemAssistente pedido, {required bool avisarFalha}) async {
+    final conversa = await carregarConversa();
+    final ate = conversa.indexWhere((m) => m.id == pedido.id);
+    final mensagens = mensagensParaIa(conversa.sublist(0, ate + 1));
+    final ferramentas = FerramentasIa(db, this);
+    var comecou = false;
+
+    for (var volta = 0; volta <= maxVoltasFerramenta; volta++) {
+      final contexto = await montarContexto(db);
+      final texto = StringBuffer();
+      final chamadas = <FerramentaIa>[];
+      String? idResposta;
+      var ultimaGravacao = DateTime(2000);
+
+      Future<void> gravarTexto({bool forcar = false}) async {
+        final agora = DateTime.now();
+        if (!forcar && agora.difference(ultimaGravacao) < const Duration(milliseconds: 60)) return;
+        ultimaGravacao = agora;
+        if (idResposta == null) {
+          idResposta = await _gravar(PapelMensagem.aurora, texto.toString());
+        } else {
+          await (db.update(db.mensagensAssistente)..where((m) => m.id.equals(idResposta!))).write(
+              MensagensAssistenteCompanion(texto: Value(texto.toString()), atualizadoEm: Value(agora)));
+        }
+      }
+
+      try {
+        await for (final evento in ia(mensagens, contexto)) {
+          if (!comecou) {
+            comecou = true;
+            await _tirarDaFila(pedido.id);
+          }
+          switch (evento) {
+            case TextoIa(:final delta):
+              pensando.value = false;
+              texto.write(delta);
+              await gravarTexto();
+            case FerramentaIa():
+              chamadas.add(evento);
+            case FimIa():
+              break;
+          }
+        }
+      } catch (e) {
+        final erro = e is ErroIa ? e : ErroIa(mensagemDeErro(e), semConexao: true);
+        if (texto.isNotEmpty) await gravarTexto(forcar: true);
+        if (!comecou) {
+          if (avisarFalha) {
+            await _gravar(
+                PapelMensagem.sistema,
+                erro.semConexao
+                    ? 'Sem conexão: o pedido fica na fila e a IA responde quando a internet voltar.'
+                    : erro.mensagem);
+          }
+          return false;
+        }
+        // Caiu no meio: o que chegou fica, com o aviso do motivo.
+        await _gravar(PapelMensagem.sistema, 'A resposta parou no meio: ${erro.mensagem}');
+        return true;
+      }
+      if (texto.isNotEmpty) await gravarTexto(forcar: true);
+      if (chamadas.isEmpty) return true;
+
+      // A IA pediu ferramentas: executa aqui e volta com os resultados.
+      pensando.value = true;
+      if (volta == maxVoltasFerramenta) {
+        await _gravar(PapelMensagem.sistema, 'A IA tentou fazer coisas demais de uma vez; parei por aqui.');
+        return true;
+      }
+      final resultados = <Map<String, Object?>>[];
+      for (final c in chamadas) {
+        final r = await ferramentas.executar(c.nome, c.entrada);
+        final aviso = r.aviso;
+        if (aviso != null) {
+          await _gravar(PapelMensagem.aurora, aviso.texto, itemTipo: aviso.itemTipo, itemId: aviso.itemId);
+        }
+        resultados.add({
+          'type': 'tool-result',
+          'toolCallId': c.id,
+          'toolName': c.nome,
+          'output': {'type': r.erro ? 'error-text' : 'text', 'value': r.paraIa},
+        });
+      }
+      mensagens
+        ..add({
+          'role': 'assistant',
+          'content': [
+            if (texto.isNotEmpty) {'type': 'text', 'text': texto.toString()},
+            for (final c in chamadas) {'type': 'tool-call', 'toolCallId': c.id, 'toolName': c.nome, 'input': c.entrada},
+          ],
+        })
+        ..add({'role': 'tool', 'content': resultados});
     }
+    return true;
   }
+
+  Future<void> _tirarDaFila(String id) => (db.update(db.mensagensAssistente)..where((m) => m.id.equals(id)))
+      .write(MensagensAssistenteCompanion(naFila: const Value(false), atualizadoEm: Value(DateTime.now())));
 
   /// A conversa é ordenada por `criadoEm`; o relógio pode repetir o mesmo
   /// instante entre a pergunta e a resposta, então ele só anda para a frente.
   static DateTime _ultimo = DateTime(2000);
 
-  Future<void> _gravar(PapelMensagem papel, String texto,
-      {bool naFila = false, String? itemTipo, String? itemId}) {
+  /// Grava uma mensagem e devolve o id.
+  Future<String> _gravar(PapelMensagem papel, String texto,
+      {bool naFila = false, String? itemTipo, String? itemId}) async {
     var agora = DateTime.now();
     if (!agora.isAfter(_ultimo)) agora = _ultimo.add(const Duration(microseconds: 1));
     _ultimo = agora;
-    return db.into(db.mensagensAssistente).insert(MensagensAssistenteCompanion.insert(
+    final m = await db.into(db.mensagensAssistente).insertReturning(MensagensAssistenteCompanion.insert(
           papel: papel,
           texto: texto,
           naFila: Value(naFila),
@@ -227,9 +287,12 @@ class AssistenteRepo {
           itemId: Value(itemId),
           criadoEm: Value(agora),
         ));
+    return m.id;
   }
 
-  Future<Resposta> _executar(Comando c, DateTime hoje, DateTime agora) async {
+  /// Executa um comando rápido (vindo do texto ou de uma ferramenta da IA) e
+  /// devolve a confirmação.
+  Future<Resposta> executarComando(Comando c, DateTime hoje, DateTime agora) async {
     switch (c) {
       case CmdDinheiro():
         final financas = FinancasRepo(db);
@@ -434,6 +497,8 @@ class AssistenteRepo {
         await HabitosRepo(db).alternar(habitoId, DateTime.parse(dia), false);
       case 'medida':
         await SaudeRepo(db).excluirMedida(id);
+      case 'treino':
+        await SaudeRepo(db).excluirTreino(id);
       case 'alimentacao':
         await AlimentacaoRepo(db).excluirRegistro(id);
     }
