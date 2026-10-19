@@ -295,6 +295,60 @@ class _Surgir extends StatelessWidget {
   }
 }
 
+/// Guarda se o mouse está em cima e se o botão está apertado, para animar.
+/// O aperto dura pelo menos 110 ms, para o toque rápido (celular) também
+/// mostrar a mola. Não intercepta o toque: o InkWell de dentro continua
+/// recebendo o clique.
+class _Reativo extends StatefulWidget {
+  const _Reativo({required this.builder});
+  final Widget Function(BuildContext context, bool emCima, bool apertado) builder;
+
+  @override
+  State<_Reativo> createState() => _ReativoState();
+}
+
+class _ReativoState extends State<_Reativo> {
+  bool _emCima = false, _apertado = false;
+  DateTime _desde = DateTime(2000);
+
+  void _apertar() {
+    _desde = DateTime.now();
+    setState(() => _apertado = true);
+  }
+
+  Future<void> _soltar() async {
+    final falta = const Duration(milliseconds: 110) - DateTime.now().difference(_desde);
+    if (falta > Duration.zero) await Future<void>.delayed(falta);
+    if (mounted) setState(() => _apertado = false);
+  }
+
+  @override
+  Widget build(BuildContext context) => MouseRegion(
+        onEnter: (_) => setState(() => _emCima = true),
+        onExit: (_) => setState(() => _emCima = false),
+        child: Listener(
+          onPointerDown: (_) => _apertar(),
+          onPointerUp: (_) => _soltar(),
+          onPointerCancel: (_) => _soltar(),
+          child: widget.builder(context, _emCima, _apertado),
+        ),
+      );
+}
+
+/// Durações das animações dos atalhos (zero com "reduzir movimento").
+bool _semMovimento(BuildContext context) => MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+
+/// Escala com mola: afunda rápido ao apertar e volta passando um pouco.
+Widget _escala(BuildContext context, {required bool emCima, required bool apertado, required double crescer, required Widget child}) {
+  final parado = _semMovimento(context);
+  return AnimatedScale(
+    scale: parado ? 1 : (apertado ? .9 : (emCima ? crescer : 1)),
+    duration: parado ? Duration.zero : Duration(milliseconds: apertado ? 90 : 260),
+    curve: apertado ? Curves.easeOut : Curves.easeOutBack,
+    child: child,
+  );
+}
+
 class _BotaoDock extends StatelessWidget {
   const _BotaoDock({
     required this.icone,
@@ -312,16 +366,39 @@ class _BotaoDock extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     final escuro = Theme.of(context).brightness == Brightness.dark;
-    final borda = ativo ? c.accent.withValues(alpha: .45) : (escuro ? Colors.white.withValues(alpha: .09) : c.line);
-    final conteudo = Material(
-      color: ativo ? c.accentSoft : (escuro ? Colors.transparent : c.surface),
-      shape: CircleBorder(side: BorderSide(color: borda)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: aoTocar,
-        child: SizedBox(width: 44, height: 44, child: Icon(icone, size: 20, color: ativo ? c.accent : c.muted)),
-      ),
-    );
+    return _Reativo(builder: (context, emCima, apertado) {
+      final aceso = ativo || emCima;
+      final borda = ativo
+          ? c.accent.withValues(alpha: .45)
+          : emCima
+              ? c.accent.withValues(alpha: .3)
+              : (escuro ? Colors.white.withValues(alpha: .09) : c.line);
+      final conteudo = Material(
+        color: ativo ? c.accentSoft : (emCima ? c.accent.withValues(alpha: .07) : (escuro ? Colors.transparent : c.surface)),
+        shape: CircleBorder(side: BorderSide(color: borda)),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: aoTocar,
+          splashColor: c.accent.withValues(alpha: .18),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: AnimatedSlide(
+              // O ícone sobe um tico com o mouse em cima.
+              offset: emCima && !apertado && !_semMovimento(context) ? const Offset(0, -.05) : Offset.zero,
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              child: Icon(icone, size: 20, color: ativo ? c.accent : (aceso ? c.text : c.muted)),
+            ),
+          ),
+        ),
+      );
+      return _escala(context, emCima: emCima, apertado: apertado, crescer: 1.1, child: _corpo(context, conteudo, escuro, emCima));
+    });
+  }
+
+  Widget _corpo(BuildContext context, Widget conteudo, bool escuro, bool emCima) {
+    final c = context.cores;
     return Tooltip(
       message: dica,
       preferBelow: false,
@@ -331,10 +408,15 @@ class _BotaoDock extends StatelessWidget {
         button: true,
         label: dica,
         child: Stack(clipBehavior: Clip.none, children: [
-          DecoratedBox(
-            decoration: const BoxDecoration(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: Color(0x59000000), blurRadius: 20, offset: Offset(0, 6))],
+              boxShadow: [
+                const BoxShadow(color: Color(0x59000000), blurRadius: 20, offset: Offset(0, 6)),
+                // Halo verde suave com o mouse em cima.
+                BoxShadow(color: c.accent.withValues(alpha: emCima ? .22 : 0), blurRadius: 18),
+              ],
             ),
             child: escuro
                 ? Vidro(tipo: TipoVidro.barra, raio: BorderRadius.circular(22), borda: false, child: conteudo)
@@ -368,32 +450,50 @@ class _BotaoMais extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final semAnimar = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    return Tooltip(
-      message: 'Ação rápida',
-      preferBelow: false,
-      child: Semantics(
-        button: true,
-        label: 'Ação rápida',
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: c.gradiente,
-            boxShadow: [BoxShadow(color: c.gradFim.withValues(alpha: .28), blurRadius: 22, offset: const Offset(0, 3))],
-          ),
-          child: Material(
-            type: MaterialType.transparency,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: aoTocar,
-              child: SizedBox(
-                width: 52,
-                height: 52,
-                child: AnimatedRotation(
-                  turns: aberto ? .125 : 0,
-                  duration: semAnimar ? Duration.zero : const Duration(milliseconds: 180),
-                  child: Icon(Icons.add_rounded, size: 28, color: c.noAccent),
+    final semAnimar = _semMovimento(context);
+    return _Reativo(
+      builder: (context, emCima, apertado) => _escala(
+        context,
+        emCima: emCima,
+        apertado: apertado,
+        crescer: 1.08,
+        child: Tooltip(
+          message: 'Ação rápida',
+          preferBelow: false,
+          child: Semantics(
+            button: true,
+            label: 'Ação rápida',
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: c.gradiente,
+                boxShadow: [
+                  BoxShadow(
+                    color: c.gradFim.withValues(alpha: emCima ? .5 : .28),
+                    blurRadius: emCima ? 30 : 22,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Material(
+                type: MaterialType.transparency,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: aoTocar,
+                  splashColor: Colors.white.withValues(alpha: .25),
+                  child: SizedBox(
+                    width: 52,
+                    height: 52,
+                    // Aberto: o + vira x. Com o mouse em cima, dá um giro curto.
+                    child: AnimatedRotation(
+                      turns: (aberto ? .125 : 0) + (emCima && !semAnimar ? .25 : 0),
+                      duration: semAnimar ? Duration.zero : const Duration(milliseconds: 320),
+                      curve: Curves.easeOutBack,
+                      child: Icon(Icons.add_rounded, size: 28, color: c.noAccent),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -447,34 +547,84 @@ class _Opcao extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    return InkWell(
-      onTap: aoTocar,
-      borderRadius: BorderRadius.circular(14),
-      hoverColor: Colors.white.withValues(alpha: .05),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Row(children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(color: cor.withValues(alpha: .14), borderRadius: BorderRadius.circular(11)),
-            child: Icon(icone, size: 19, color: cor),
+    return _Reativo(builder: (context, emCima, apertado) {
+      final parado = _semMovimento(context);
+      final dur = parado ? Duration.zero : const Duration(milliseconds: 200);
+      return AnimatedScale(
+        // Apertar afunda a linha toda um pouco.
+        scale: apertado && !parado ? .97 : 1,
+        duration: parado ? Duration.zero : Duration(milliseconds: apertado ? 90 : 240),
+        curve: apertado ? Curves.easeOut : Curves.easeOutBack,
+        child: AnimatedContainer(
+          duration: dur,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            color: emCima ? cor.withValues(alpha: .07) : Colors.transparent,
+            border: Border.all(color: emCima ? cor.withValues(alpha: .22) : Colors.transparent),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(titulo, style: manrope(14, peso: FontWeight.w700, cor: c.text)),
-              Text(sub, style: manrope(12, cor: c.muted)),
-            ]),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: aoTocar,
+              borderRadius: BorderRadius.circular(14),
+              hoverColor: Colors.transparent,
+              splashColor: cor.withValues(alpha: .16),
+              highlightColor: cor.withValues(alpha: .08),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(children: [
+                  // Ícone cresce e gira de leve; a caixa dele acende na cor da opção.
+                  AnimatedScale(
+                    scale: emCima && !parado ? 1.12 : 1,
+                    duration: parado ? Duration.zero : const Duration(milliseconds: 260),
+                    curve: Curves.easeOutBack,
+                    child: AnimatedRotation(
+                      turns: emCima && !parado ? -.02 : 0,
+                      duration: parado ? Duration.zero : const Duration(milliseconds: 260),
+                      curve: Curves.easeOutBack,
+                      child: AnimatedContainer(
+                        duration: dur,
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: cor.withValues(alpha: emCima ? .24 : .14),
+                          borderRadius: BorderRadius.circular(11),
+                          boxShadow: [BoxShadow(color: cor.withValues(alpha: emCima ? .3 : 0), blurRadius: 14)],
+                        ),
+                        child: Icon(icone, size: 19, color: cor),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    // O texto anda 3 px para a direita.
+                    child: AnimatedSlide(
+                      offset: emCima && !parado ? const Offset(.02, 0) : Offset.zero,
+                      duration: dur,
+                      curve: Curves.easeOut,
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(titulo, style: manrope(14, peso: FontWeight.w700, cor: c.text)),
+                        Text(sub, style: manrope(12, cor: emCima ? c.text.withValues(alpha: .75) : c.muted)),
+                      ]),
+                    ),
+                  ),
+                  AnimatedContainer(
+                    duration: dur,
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      color: emCima ? cor.withValues(alpha: .14) : Colors.transparent,
+                      border: Border.all(color: emCima ? cor.withValues(alpha: .5) : c.line),
+                    ),
+                    child: Text(tecla, style: manrope(11, peso: FontWeight.w700, cor: emCima ? cor : c.muted)),
+                  ),
+                ]),
+              ),
+            ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), border: Border.all(color: c.line)),
-            child: Text(tecla, style: manrope(11, peso: FontWeight.w600, cor: c.muted)),
-          ),
-        ]),
-      ),
-    );
+        ),
+      );
+    });
   }
 }
 

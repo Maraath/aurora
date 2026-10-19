@@ -6,6 +6,7 @@ import 'package:aurora/data/busca.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/ui/atalhos/captura.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -77,6 +78,16 @@ void main() {
       for (final o in ['Captura rápida', 'Nova tarefa', 'Novo lançamento', 'Novo lembrete', 'Marcar hábito']) {
         expect(find.text(o), findsOneWidget);
       }
+      // Mouse por cima: as opções e os botões animam sem quebrar nada.
+      final mouse = await t.createGesture(kind: PointerDeviceKind.mouse);
+      addTearDown(mouse.removePointer);
+      for (final alvo in [find.text('Nova tarefa'), find.bySemanticsLabel('Conversar com a Aurora'), find.bySemanticsLabel('Ação rápida')]) {
+        await mouse.moveTo(t.getCenter(alvo));
+        await assentar(t);
+        expect(t.takeException(), isNull);
+      }
+      await mouse.moveTo(Offset.zero);
+      await assentar(t);
       await t.tap(find.text('Captura rápida'));
       await assentar(t);
       await t.enterText(find.byType(TextField).last, 'gastei 42,90 no padaria teste');
