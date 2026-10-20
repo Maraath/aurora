@@ -135,8 +135,35 @@ class Notificador {
     });
   }
 
+  /// Uma rodada por vez. No Windows o plugin chama o sistema direto em C++
+  /// (FFI) e um erro lá DERRUBA o app (abort(), não vira exceção no Dart): duas
+  /// rodadas cruzadas (a IA grava um lembrete e a sincronização chega junto)
+  /// faziam uma tirar da agenda o aviso que a outra mexia. Pedido no meio de
+  /// uma rodada vira uma rodada nova logo depois.
+  Future<void>? _rodando;
+  bool _deNovo = false;
+
   Future<void> reagendar(BancoAurora db) async {
     if (!_pronto) return;
+    if (_rodando != null) {
+      _deNovo = true;
+      return _rodando;
+    }
+    try {
+      do {
+        _deNovo = false;
+        await (_rodando = _reagendarAgora(db));
+      } while (_deNovo);
+    } finally {
+      _rodando = null;
+    }
+  }
+
+  /// Folga para um aviso: o Windows recusa (e o app cai) horário que já
+  /// passou, e um aviso pode vencer no meio do agendamento.
+  static const _folga = Duration(seconds: 30);
+
+  Future<void> _reagendarAgora(BancoAurora db) async {
     final agora = agoraSP();
     final lembretes = await (db.select(db.lembretes)..where((l) => l.apagadoEm.isNull())).get();
     final tarefas = {
@@ -177,8 +204,12 @@ class Notificador {
 
     try {
       await _plugin.cancelAll();
+      var agendados = 0;
       for (var i = 0; i < avisos.length; i++) {
         final a = avisos[i];
+        // Conferido na hora de agendar (o relógio andou desde o planejamento).
+        if (!a.quando.isAfter(DateTime.now().add(_folga))) continue;
+        agendados++;
         await _plugin.zonedSchedule(
           id: i + 1,
           title: a.titulo,
@@ -200,7 +231,7 @@ class Notificador {
               : AndroidScheduleMode.inexactAllowWhileIdle,
         );
       }
-      debugPrint('Aurora: ${avisos.length} avisos agendados.');
+      debugPrint('Aurora: $agendados avisos agendados.');
     } catch (e) {
       debugPrint('Falha ao agendar avisos: $e');
     }

@@ -68,7 +68,12 @@ typedef TransporteIa = Stream<EventoIa> Function(List<Map<String, Object?>> mens
 
 /// Lê um stream SSE (bytes) e devolve os eventos que interessam ao app.
 /// Pedaços desconhecidos (start, start-step, reasoning…) são ignorados.
+///
+/// Stream que termina SEM o evento "finish" é resposta cortada (a função caiu
+/// ou passou do tempo no meio): vira [ErroIa], em vez de passar por resposta
+/// completa (aparecia só "Pr" e nenhum aviso).
 Stream<EventoIa> lerEventosSse(Stream<List<int>> bytes) async* {
+  var terminou = false;
   await for (final linha in bytes.transform(utf8.decoder).transform(const LineSplitter())) {
     if (!linha.startsWith('data:')) continue;
     final dado = linha.substring(5).trim();
@@ -94,9 +99,11 @@ Stream<EventoIa> lerEventosSse(Stream<List<int>> bytes) async* {
       case 'error':
         throw ErroIa('${json['errorText'] ?? 'A IA não respondeu agora.'}');
       case 'finish':
+        terminou = true;
         yield FimIa(json['finishReason'] as String?);
     }
   }
+  if (!terminou) throw const ErroIa('A conexão com a IA caiu no meio da resposta.', semConexao: true);
 }
 
 /// Transporte de verdade: POST na Edge Function com a sessão de quem está

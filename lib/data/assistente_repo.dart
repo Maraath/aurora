@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
@@ -97,6 +98,10 @@ class PedidoConfirmacao {
 
 /// Ferramentas que apagam dados: só rodam depois do sim da pessoa.
 const ferramentasDeExclusao = {'excluir_registro_shape', 'excluir_item'};
+
+/// Ferramentas que só leem ou navegam: repetir não muda nada, então não entram
+/// na proteção contra ação repetida.
+const ferramentasSoDeLeitura = {'consultar', 'buscar', 'abrir_tela'};
 
 /// O que aparece no indicador enquanto a ferramenta roda.
 String etapaDaFerramenta(String nome) => switch (nome) {
@@ -234,6 +239,10 @@ class AssistenteRepo {
     final ferramentas = FerramentasIa(db, this);
     var comecou = false;
     _reserva = false;
+    // Ações já feitas nesta resposta (ferramenta + entrada). Um modelo da fila
+    // às vezes pede de novo, numa volta seguinte, o que outro já fez (o mesmo
+    // lembrete saía duas vezes): a repetição não roda, só avisa a IA.
+    final feitas = <String, ResultadoFerramenta>{};
 
     for (var volta = 0; volta <= maxVoltasFerramenta; volta++) {
       final contexto = await montarContexto(db);
@@ -321,9 +330,16 @@ class AssistenteRepo {
       final resultados = <Map<String, Object?>>[];
       for (final c in chamadas) {
         final ResultadoFerramenta r;
-        final nadaAExcluir =
-            ferramentasDeExclusao.contains(c.nome) ? await ferramentas.semNadaAExcluir(c.nome, c.entrada) : null;
-        if (nadaAExcluir != null) {
+        final chave = '${c.nome}|${jsonEncode(c.entrada)}';
+        final jaFeita = ferramentasSoDeLeitura.contains(c.nome) ? null : feitas[chave];
+        final nadaAExcluir = jaFeita == null && ferramentasDeExclusao.contains(c.nome)
+            ? await ferramentas.semNadaAExcluir(c.nome, c.entrada)
+            : null;
+        if (jaFeita != null) {
+          r = ResultadoFerramenta(
+              'Isso já foi feito agora há pouco, nesta mesma resposta (resultado: ${jaFeita.paraIa}). '
+              'Não repita a ação: só confirme para a pessoa o que foi feito.');
+        } else if (nadaAExcluir != null) {
           // Excluir não mudaria nada: a IA fica sabendo, sem perguntar à pessoa.
           r = nadaAExcluir;
         } else if (ferramentasDeExclusao.contains(c.nome)) {
@@ -343,6 +359,7 @@ class AssistenteRepo {
           etapa.value = etapaDaFerramenta(c.nome);
           r = await ferramentas.executar(c.nome, c.entrada);
         }
+        if (jaFeita == null && !r.erro) feitas[chave] = r;
         final aviso = r.aviso;
         if (aviso != null) {
           await _gravar(PapelMensagem.aurora, aviso.texto, itemTipo: aviso.itemTipo, itemId: aviso.itemId);

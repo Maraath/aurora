@@ -8,7 +8,7 @@ import 'package:aurora/data/habitos_repo.dart';
 import 'package:aurora/data/ia/ferramentas_ia.dart' show consultar, telaPedidaPelaIa;
 import 'package:aurora/data/metas_repo.dart';
 import 'package:aurora/data/saude_repo.dart';
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -189,6 +189,33 @@ void main() {
       expect(conversa.last.papel, PapelMensagem.sistema);
       expect(conversa.last.texto, contains('parou no meio'));
       expect(await comIa.tamanhoDaFila(), 0);
+    });
+
+    test('a mesma ação pedida de novo na mesma resposta não roda duas vezes', () async {
+      final amanha = hojeSP().add(const Duration(days: 1));
+      final data = '${amanha.year}-${'${amanha.month}'.padLeft(2, '0')}-${'${amanha.day}'.padLeft(2, '0')}';
+      final lembrete = {'texto': 'Levar minha mãe na consulta', 'data': data, 'hora': '09:00'};
+      String? resultadoDaRepeticao;
+      final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
+            final voltas = mensagens.where((m) => m['role'] == 'tool').length;
+            if (voltas < 2) {
+              // Primeira e segunda voltas pedem o MESMO lembrete (modelo diferente na fila).
+              yield FerramentaIa(id: 'c$voltas', nome: 'criar_lembrete', entrada: lembrete);
+            } else {
+              final r = ((mensagens.last['content'] as List).single as Map)['output'] as Map;
+              resultadoDaRepeticao = '${r['value']}';
+              yield const TextoIa('Pronto, lembrete criado.');
+            }
+          });
+      await comIa.enviar('não posso esquecer da consulta da minha mãe amanhã cedo');
+      final lembretes = await (db.select(db.lembretes)
+            ..where((l) => l.texto.equals('Levar minha mãe na consulta') & l.apagadoEm.isNull()))
+          .get();
+      expect(lembretes, hasLength(1));
+      final conversa = await comIa.carregarConversa();
+      expect(conversa.where((m) => m.itemTipo == 'lembrete'), hasLength(1), reason: 'uma confirmação só');
+      expect(resultadoDaRepeticao, contains('já foi feito'));
+      expect(conversa.last.texto, 'Pronto, lembrete criado.');
     });
 
     group('limite por minuto', () {

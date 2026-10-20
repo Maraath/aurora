@@ -60,8 +60,19 @@ void main() {
   });
 
   test('acentos partidos entre pedaços continuam certos', () async {
-    const sse = 'data: {"type":"text-delta","id":"t","delta":"ação é ótima"}\n\n';
+    const sse = 'data: {"type":"text-delta","id":"t","delta":"ação é ótima"}\n\n'
+        'data: {"type":"finish","finishReason":"stop"}\n\n';
     final eventos = await lerEventosSse(_emPedacos(sse, 3)).toList();
-    expect((eventos.single as TextoIa).delta, 'ação é ótima');
+    expect((eventos.first as TextoIa).delta, 'ação é ótima');
+  });
+
+  test('stream que acaba sem "finish" é resposta cortada', () async {
+    const sse = 'data: {"type":"start"}\n\ndata: {"type":"text-delta","id":"t","delta":"Pr"}\n\n';
+    final eventos = <EventoIa>[];
+    await expectLater(
+      lerEventosSse(_emPedacos(sse, 8)).forEach(eventos.add),
+      throwsA(isA<ErroIa>().having((e) => e.mensagem, 'mensagem', contains('caiu no meio'))),
+    );
+    expect((eventos.single as TextoIa).delta, 'Pr', reason: 'o que chegou continua valendo');
   });
 }
