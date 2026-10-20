@@ -53,6 +53,6 @@ Write-Host "Web pronta em build\web (versão $versao-$hash, $($arquivos.Count) a
 if ($Publicar) {
   # Arquivos que o Cloudflare não precisa servir (símbolos de depuração).
   Get-ChildItem $saida -Recurse -File -Include *.symbols, *.map, .last_build_id | Remove-Item -Force
-  npx --yes wrangler@4.151.2 pages deploy $saida --project-name aurora --branch main --commit-dirty=true
+  npx --yes wrangler@4.151.2 pages deploy $saida --project-name aurora --branch Aurora --commit-dirty=true
   if ($LASTEXITCODE -ne 0) { throw 'Envio ao Cloudflare Pages falhou.' }
 }
