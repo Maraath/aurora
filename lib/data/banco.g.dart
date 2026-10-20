@@ -5747,6 +5747,21 @@ class $LembretesTable extends Lembretes
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _despertarMeta = const VerificationMeta(
+    'despertar',
+  );
+  @override
+  late final GeneratedColumn<bool> despertar = GeneratedColumn<bool>(
+    'despertar',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("despertar" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _itemTipoMeta = const VerificationMeta(
     'itemTipo',
   );
@@ -5778,6 +5793,7 @@ class $LembretesTable extends Lembretes
     regraRepeticao,
     notificarAntesMin,
     ativo,
+    despertar,
     itemTipo,
     itemId,
   ];
@@ -5857,6 +5873,12 @@ class $LembretesTable extends Lembretes
         ativo.isAcceptableOrUnknown(data['ativo']!, _ativoMeta),
       );
     }
+    if (data.containsKey('despertar')) {
+      context.handle(
+        _despertarMeta,
+        despertar.isAcceptableOrUnknown(data['despertar']!, _despertarMeta),
+      );
+    }
     if (data.containsKey('item_tipo')) {
       context.handle(
         _itemTipoMeta,
@@ -5914,6 +5936,10 @@ class $LembretesTable extends Lembretes
         DriftSqlType.bool,
         data['${effectivePrefix}ativo'],
       )!,
+      despertar: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}despertar'],
+      )!,
       itemTipo: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}item_tipo'],
@@ -5944,6 +5970,10 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
   /// O sino: desligado, o lembrete continua salvo mas não notifica.
   final bool ativo;
 
+  /// "Me despertar": no Android toca como despertador (tela cheia, som de
+  /// alarme que repete, mesmo no silencioso). Nos outros, aviso comum.
+  final bool despertar;
+
   /// Item ligado (ex.: 'tarefa', 'transacao') e o id dele.
   final String? itemTipo;
   final String? itemId;
@@ -5957,6 +5987,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
     this.regraRepeticao,
     required this.notificarAntesMin,
     required this.ativo,
+    required this.despertar,
     this.itemTipo,
     this.itemId,
   });
@@ -5976,6 +6007,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
     }
     map['notificar_antes_min'] = Variable<int>(notificarAntesMin);
     map['ativo'] = Variable<bool>(ativo);
+    map['despertar'] = Variable<bool>(despertar);
     if (!nullToAbsent || itemTipo != null) {
       map['item_tipo'] = Variable<String>(itemTipo);
     }
@@ -6000,6 +6032,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
           : Value(regraRepeticao),
       notificarAntesMin: Value(notificarAntesMin),
       ativo: Value(ativo),
+      despertar: Value(despertar),
       itemTipo: itemTipo == null && nullToAbsent
           ? const Value.absent()
           : Value(itemTipo),
@@ -6024,6 +6057,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
       regraRepeticao: serializer.fromJson<String?>(json['regraRepeticao']),
       notificarAntesMin: serializer.fromJson<int>(json['notificarAntesMin']),
       ativo: serializer.fromJson<bool>(json['ativo']),
+      despertar: serializer.fromJson<bool>(json['despertar']),
       itemTipo: serializer.fromJson<String?>(json['itemTipo']),
       itemId: serializer.fromJson<String?>(json['itemId']),
     );
@@ -6041,6 +6075,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
       'regraRepeticao': serializer.toJson<String?>(regraRepeticao),
       'notificarAntesMin': serializer.toJson<int>(notificarAntesMin),
       'ativo': serializer.toJson<bool>(ativo),
+      'despertar': serializer.toJson<bool>(despertar),
       'itemTipo': serializer.toJson<String?>(itemTipo),
       'itemId': serializer.toJson<String?>(itemId),
     };
@@ -6056,6 +6091,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
     Value<String?> regraRepeticao = const Value.absent(),
     int? notificarAntesMin,
     bool? ativo,
+    bool? despertar,
     Value<String?> itemTipo = const Value.absent(),
     Value<String?> itemId = const Value.absent(),
   }) => Lembrete(
@@ -6070,6 +6106,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
         : this.regraRepeticao,
     notificarAntesMin: notificarAntesMin ?? this.notificarAntesMin,
     ativo: ativo ?? this.ativo,
+    despertar: despertar ?? this.despertar,
     itemTipo: itemTipo.present ? itemTipo.value : this.itemTipo,
     itemId: itemId.present ? itemId.value : this.itemId,
   );
@@ -6090,6 +6127,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
           ? data.notificarAntesMin.value
           : this.notificarAntesMin,
       ativo: data.ativo.present ? data.ativo.value : this.ativo,
+      despertar: data.despertar.present ? data.despertar.value : this.despertar,
       itemTipo: data.itemTipo.present ? data.itemTipo.value : this.itemTipo,
       itemId: data.itemId.present ? data.itemId.value : this.itemId,
     );
@@ -6107,6 +6145,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
           ..write('regraRepeticao: $regraRepeticao, ')
           ..write('notificarAntesMin: $notificarAntesMin, ')
           ..write('ativo: $ativo, ')
+          ..write('despertar: $despertar, ')
           ..write('itemTipo: $itemTipo, ')
           ..write('itemId: $itemId')
           ..write(')'))
@@ -6124,6 +6163,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
     regraRepeticao,
     notificarAntesMin,
     ativo,
+    despertar,
     itemTipo,
     itemId,
   );
@@ -6140,6 +6180,7 @@ class Lembrete extends DataClass implements Insertable<Lembrete> {
           other.regraRepeticao == this.regraRepeticao &&
           other.notificarAntesMin == this.notificarAntesMin &&
           other.ativo == this.ativo &&
+          other.despertar == this.despertar &&
           other.itemTipo == this.itemTipo &&
           other.itemId == this.itemId);
 }
@@ -6154,6 +6195,7 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
   final Value<String?> regraRepeticao;
   final Value<int> notificarAntesMin;
   final Value<bool> ativo;
+  final Value<bool> despertar;
   final Value<String?> itemTipo;
   final Value<String?> itemId;
   final Value<int> rowid;
@@ -6167,6 +6209,7 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
     this.regraRepeticao = const Value.absent(),
     this.notificarAntesMin = const Value.absent(),
     this.ativo = const Value.absent(),
+    this.despertar = const Value.absent(),
     this.itemTipo = const Value.absent(),
     this.itemId = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -6181,6 +6224,7 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
     this.regraRepeticao = const Value.absent(),
     this.notificarAntesMin = const Value.absent(),
     this.ativo = const Value.absent(),
+    this.despertar = const Value.absent(),
     this.itemTipo = const Value.absent(),
     this.itemId = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -6196,6 +6240,7 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
     Expression<String>? regraRepeticao,
     Expression<int>? notificarAntesMin,
     Expression<bool>? ativo,
+    Expression<bool>? despertar,
     Expression<String>? itemTipo,
     Expression<String>? itemId,
     Expression<int>? rowid,
@@ -6210,6 +6255,7 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
       if (regraRepeticao != null) 'regra_repeticao': regraRepeticao,
       if (notificarAntesMin != null) 'notificar_antes_min': notificarAntesMin,
       if (ativo != null) 'ativo': ativo,
+      if (despertar != null) 'despertar': despertar,
       if (itemTipo != null) 'item_tipo': itemTipo,
       if (itemId != null) 'item_id': itemId,
       if (rowid != null) 'rowid': rowid,
@@ -6226,6 +6272,7 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
     Value<String?>? regraRepeticao,
     Value<int>? notificarAntesMin,
     Value<bool>? ativo,
+    Value<bool>? despertar,
     Value<String?>? itemTipo,
     Value<String?>? itemId,
     Value<int>? rowid,
@@ -6240,6 +6287,7 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
       regraRepeticao: regraRepeticao ?? this.regraRepeticao,
       notificarAntesMin: notificarAntesMin ?? this.notificarAntesMin,
       ativo: ativo ?? this.ativo,
+      despertar: despertar ?? this.despertar,
       itemTipo: itemTipo ?? this.itemTipo,
       itemId: itemId ?? this.itemId,
       rowid: rowid ?? this.rowid,
@@ -6276,6 +6324,9 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
     if (ativo.present) {
       map['ativo'] = Variable<bool>(ativo.value);
     }
+    if (despertar.present) {
+      map['despertar'] = Variable<bool>(despertar.value);
+    }
     if (itemTipo.present) {
       map['item_tipo'] = Variable<String>(itemTipo.value);
     }
@@ -6300,6 +6351,7 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
           ..write('regraRepeticao: $regraRepeticao, ')
           ..write('notificarAntesMin: $notificarAntesMin, ')
           ..write('ativo: $ativo, ')
+          ..write('despertar: $despertar, ')
           ..write('itemTipo: $itemTipo, ')
           ..write('itemId: $itemId, ')
           ..write('rowid: $rowid')
@@ -18279,6 +18331,7 @@ typedef $$LembretesTableCreateCompanionBuilder = LembretesCompanion Function({
   Value<String?> regraRepeticao,
   Value<int> notificarAntesMin,
   Value<bool> ativo,
+  Value<bool> despertar,
   Value<String?> itemTipo,
   Value<String?> itemId,
   Value<int> rowid,
@@ -18293,6 +18346,7 @@ typedef $$LembretesTableUpdateCompanionBuilder = LembretesCompanion Function({
   Value<String?> regraRepeticao,
   Value<int> notificarAntesMin,
   Value<bool> ativo,
+  Value<bool> despertar,
   Value<String?> itemTipo,
   Value<String?> itemId,
   Value<int> rowid,
@@ -18349,6 +18403,11 @@ class $$LembretesTableFilterComposer
 
   ColumnFilters<bool> get ativo => $composableBuilder(
     column: $table.ativo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get despertar => $composableBuilder(
+    column: $table.despertar,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -18417,6 +18476,11 @@ class $$LembretesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get despertar => $composableBuilder(
+    column: $table.despertar,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get itemTipo => $composableBuilder(
     column: $table.itemTipo,
     builder: (column) => ColumnOrderings(column),
@@ -18470,6 +18534,9 @@ class $$LembretesTableAnnotationComposer
   GeneratedColumn<bool> get ativo =>
       $composableBuilder(column: $table.ativo, builder: (column) => column);
 
+  GeneratedColumn<bool> get despertar =>
+      $composableBuilder(column: $table.despertar, builder: (column) => column);
+
   GeneratedColumn<String> get itemTipo =>
       $composableBuilder(column: $table.itemTipo, builder: (column) => column);
 
@@ -18514,6 +18581,7 @@ class $$LembretesTableTableManager
                 Value<String?> regraRepeticao = const Value.absent(),
                 Value<int> notificarAntesMin = const Value.absent(),
                 Value<bool> ativo = const Value.absent(),
+                Value<bool> despertar = const Value.absent(),
                 Value<String?> itemTipo = const Value.absent(),
                 Value<String?> itemId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -18527,6 +18595,7 @@ class $$LembretesTableTableManager
                 regraRepeticao: regraRepeticao,
                 notificarAntesMin: notificarAntesMin,
                 ativo: ativo,
+                despertar: despertar,
                 itemTipo: itemTipo,
                 itemId: itemId,
                 rowid: rowid,
@@ -18542,6 +18611,7 @@ class $$LembretesTableTableManager
                 Value<String?> regraRepeticao = const Value.absent(),
                 Value<int> notificarAntesMin = const Value.absent(),
                 Value<bool> ativo = const Value.absent(),
+                Value<bool> despertar = const Value.absent(),
                 Value<String?> itemTipo = const Value.absent(),
                 Value<String?> itemId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -18555,6 +18625,7 @@ class $$LembretesTableTableManager
                 regraRepeticao: regraRepeticao,
                 notificarAntesMin: notificarAntesMin,
                 ativo: ativo,
+                despertar: despertar,
                 itemTipo: itemTipo,
                 itemId: itemId,
                 rowid: rowid,

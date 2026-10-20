@@ -1,3 +1,4 @@
+import 'package:aurora/core/despertador.dart';
 import 'package:aurora/core/notificacoes.dart';
 import 'package:aurora/core/relogio.dart';
 import 'package:aurora/data/banco.dart';
@@ -171,7 +172,7 @@ void main() {
   group('planejar avisos', () {
     late final agora = diaSP(2026, 10, 16, 10);
     Lembrete lembrete(String texto, DateTime quando,
-            {String? regra, bool ativo = true, String? tipo, String? item}) =>
+            {String? regra, bool ativo = true, String? tipo, String? item, bool despertar = false}) =>
         Lembrete(
           id: texto,
           criadoEm: agora,
@@ -181,6 +182,7 @@ void main() {
           regraRepeticao: regra,
           notificarAntesMin: 0,
           ativo: ativo,
+          despertar: despertar,
           itemTipo: tipo,
           itemId: item,
         );
@@ -205,6 +207,21 @@ void main() {
         lembrete('desligado', diaSP(2026, 10, 17, 9), ativo: false),
       ]);
       expect(avisos.map((a) => a.titulo), ['futuro']);
+    });
+
+    test('"Me despertar" vai junto em cada aviso do lembrete', () {
+      final avisos = planejar([
+        lembrete('acordar', diaSP(2026, 10, 17, 6), regra: 'FREQ=DAILY', despertar: true),
+        lembrete('comum', diaSP(2026, 10, 17, 9)),
+      ]);
+      expect(avisos.where((a) => a.titulo == 'acordar').every((a) => a.despertar), isTrue);
+      expect(avisos.firstWhere((a) => a.titulo == 'comum').despertar, isFalse);
+    });
+
+    test('o despertador guarda o título no aviso e ignora os outros avisos', () {
+      expect(tituloDoDespertador(payloadDespertador('Tomar remédio')), 'Tomar remédio');
+      expect(tituloDoDespertador(null), isNull);
+      expect(tituloDoDespertador('outro'), isNull);
     });
 
     test('diário gera 14 dias, em ordem, e respeita o limite', () {

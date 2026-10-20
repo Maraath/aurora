@@ -172,6 +172,10 @@ class Lembretes extends Table with Sincronizavel {
   /// O sino: desligado, o lembrete continua salvo mas não notifica.
   BoolColumn get ativo => boolean().withDefault(const Constant(true))();
 
+  /// "Me despertar": no Android toca como despertador (tela cheia, som de
+  /// alarme que repete, mesmo no silencioso). Nos outros, aviso comum.
+  BoolColumn get despertar => boolean().withDefault(const Constant(false))();
+
   /// Item ligado (ex.: 'tarefa', 'transacao') e o id dele.
   TextColumn get itemTipo => text().nullable()();
   TextColumn get itemId => text().nullable()();
@@ -393,7 +397,7 @@ class BancoAurora extends _$BancoAurora {
             ));
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -445,6 +449,10 @@ class BancoAurora extends _$BancoAurora {
             // passo anterior já vem com as colunas.
             if (!await _temColuna('fotos_shape', 'hash')) await m.addColumn(fotosShape, fotosShape.hash);
             if (!await _temColuna('fotos_shape', 'na_nuvem')) await m.addColumn(fotosShape, fotosShape.naNuvem);
+          }
+          if (de < 12) {
+            // Idempotente como o passo 11 (o app dev e o instalado dividem o banco).
+            if (!await _temColuna('lembretes', 'despertar')) await m.addColumn(lembretes, lembretes.despertar);
           }
         },
         beforeOpen: (detalhes) async {

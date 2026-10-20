@@ -2,21 +2,28 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show MaterialPageRoute;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../data/automacoes_repo.dart';
 import '../data/banco.dart';
 import '../data/lembretes_repo.dart';
+import 'avisos_push.dart';
+import 'despertador.dart';
+import 'nuvem.dart';
 import 'recorrencia.dart';
 import 'relogio.dart';
 
 /// Um aviso a agendar no aparelho.
 class AvisoPlanejado {
-  const AvisoPlanejado({required this.quando, required this.titulo, required this.corpo});
+  const AvisoPlanejado({required this.quando, required this.titulo, required this.corpo, this.despertar = false});
   final DateTime quando;
   final String titulo;
   final String corpo;
+
+  /// "Me despertar": no Android toca como despertador (lib/core/despertador.dart).
+  final bool despertar;
 }
 
 /// Quais avisos disparam nos próximos [dias], em ordem, no máximo [limite]
@@ -60,6 +67,7 @@ List<AvisoPlanejado> planejarAvisos({
           'habito' => 'Hábito de hoje',
           _ => 'Lembrete',
         },
+        despertar: l.despertar,
       ));
     }
   }
@@ -93,9 +101,21 @@ class Notificador {
   Timer? _espera;
   StreamSubscription<void>? _escuta;
 
+  /// Web (PWA): o navegador não agenda aviso local. A agenda vai para o servidor
+  /// (substituir_avisos), que manda por Web Push na hora (AvisosPush).
+  bool _web = false;
+
   Future<void> iniciar(BancoAurora db) async {
-    // Web (PWA): o plugin não tem versão para navegador; os avisos ficam só nos apps instalados.
-    if (kIsWeb) return;
+    if (kIsWeb) {
+      _web = true;
+      _pronto = true;
+      await reagendar(db);
+      _ouvirMudancas(db);
+      // Ao entrar na conta (ou trocar), a agenda vai para a conta nova.
+      nuvem?.auth.onAuthStateChange.listen((_) => reagendar(db));
+      unawaited(AvisosPush.renovar());
+      return;
+    }
     try {
       _pronto = await _plugin.initialize(
             settings: const InitializationSettings(
@@ -107,14 +127,19 @@ class Notificador {
                 guid: '6f1d6b7e-3c2a-4f0e-9a51-8d2b7c4e1a90',
               ),
             ),
+            onDidReceiveNotificationResponse: _aoResponder,
           ) ??
           false;
-      final android = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android = _android;
       if (android != null) {
         await android.requestNotificationsPermission();
         _exato = await android.canScheduleExactNotifications() ?? false;
       }
+      // O despertador abriu o app (tela cheia com o celular bloqueado, ou
+      // "Adiar" com o app fechado): trata como se tivesse tocado agora.
+      final abertura = await _plugin.getNotificationAppLaunchDetails();
+      final resposta = abertura?.notificationResponse;
+      if ((abertura?.didNotificationLaunchApp ?? false) && resposta != null) _aoResponder(resposta);
     } catch (e) {
       debugPrint('Notificações indisponíveis: $e');
       _pronto = false;
@@ -122,6 +147,87 @@ class Notificador {
     if (!_pronto) return;
 
     await reagendar(db);
+    _ouvirMudancas(db);
+  }
+
+  AndroidFlutterLocalNotificationsPlugin? get _android =>
+      _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+
+  /// Ao ligar "Me despertar": no Android 14+ a tela cheia por cima do bloqueio
+  /// precisa ser liberada nas configurações; e o horário exato, se faltar.
+  Future<void> pedirPermissoesDespertador() async {
+    // Sem o plugin iniciado (web, testes) não há o que pedir.
+    if (!_pronto || _web) return;
+    final android = _android;
+    if (android == null) return;
+    try {
+      await android.requestFullScreenIntentPermission();
+      if (!(await android.canScheduleExactNotifications() ?? false)) {
+        await android.requestExactAlarmsPermission();
+      }
+      _exato = await android.canScheduleExactNotifications() ?? false;
+    } catch (e) {
+      debugPrint('Despertador: permissões ($e)');
+    }
+  }
+
+  /// Toque no aviso, num botão dele ou abertura em tela cheia.
+  void _aoResponder(NotificationResponse r) {
+    final titulo = tituloDoDespertador(r.payload);
+    if (titulo == null) return;
+    final id = r.id;
+    switch (r.actionId) {
+      case 'parar':
+        if (id != null) _plugin.cancel(id: id);
+      case 'adiar':
+        _adiar(titulo, id);
+      default:
+        _abrirDespertador(titulo, id);
+    }
+  }
+
+  /// Mostra a tela do despertador (espera o app terminar de abrir).
+  void _abrirDespertador(String titulo, int? id, [int tentativas = 0]) {
+    final navegador = chaveNavegador.currentState;
+    if (navegador == null) {
+      if (tentativas < 50) {
+        Timer(const Duration(milliseconds: 200), () => _abrirDespertador(titulo, id, tentativas + 1));
+      }
+      return;
+    }
+    navegador.push(MaterialPageRoute<void>(
+      fullscreenDialog: true,
+      builder: (_) => TelaDespertador(
+        titulo: titulo,
+        aoParar: () {
+          if (id != null) _plugin.cancel(id: id);
+        },
+        aoAdiar: () => _adiar(titulo, id),
+      ),
+    ));
+  }
+
+  /// Para o som e toca de novo daqui a [minutosAdiar] minutos.
+  Future<void> _adiar(String titulo, int? id) async {
+    if (id != null) await _plugin.cancel(id: id);
+    final quando = tz.TZDateTime.now(fusoSP).add(const Duration(minutes: minutosAdiar));
+    try {
+      await _plugin.zonedSchedule(
+        id: idAdiadoBase + quando.millisecondsSinceEpoch ~/ 1000 % 90000,
+        title: titulo,
+        body: 'Adiado $minutosAdiar min',
+        scheduledDate: quando,
+        notificationDetails: detalhesDespertador,
+        payload: payloadDespertador(titulo),
+        androidScheduleMode:
+            _exato ? AndroidScheduleMode.alarmClock : AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    } catch (e) {
+      debugPrint('Despertador: falha ao adiar ($e)');
+    }
+  }
+
+  void _ouvirMudancas(BancoAurora db) {
     _escuta = db
         .tableUpdates(TableUpdateQuery.onAllTables([
           db.lembretes,
@@ -160,6 +266,18 @@ class Notificador {
       _rodando = null;
     }
   }
+
+  static const _detalhesComuns = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'lembretes',
+      'Lembretes',
+      channelDescription: 'Lembretes, tarefas e hábitos no horário',
+      importance: Importance.high,
+      priority: Priority.high,
+    ),
+    iOS: DarwinNotificationDetails(),
+    windows: WindowsNotificationDetails(),
+  );
 
   /// Folga para um aviso: o Windows recusa (e o app cai) horário que já
   /// passou, e um aviso pode vencer no meio do agendamento.
@@ -204,33 +322,39 @@ class Notificador {
     ]..sort((a, b) => a.quando.compareTo(b.quando));
     if (avisos.length > 60) avisos.removeRange(60, avisos.length);
 
+    if (_web) return _enviarAgenda(avisos);
     try {
-      await _plugin.cancelAll();
+      final android = _android;
+      if (android != null) {
+        // Android: tira só a agenda antiga; despertadores adiados (ids a partir de
+        // idAdiadoBase) continuam marcados.
+        for (final p in await _plugin.pendingNotificationRequests()) {
+          if (p.id < idAdiadoBase) await _plugin.cancel(id: p.id);
+        }
+      } else {
+        await _plugin.cancelAll();
+      }
       var agendados = 0;
       for (var i = 0; i < avisos.length; i++) {
         final a = avisos[i];
         // Conferido na hora de agendar (o relógio andou desde o planejamento).
         if (!a.quando.isAfter(DateTime.now().add(_folga))) continue;
         agendados++;
+        final despertador = a.despertar && android != null;
         await _plugin.zonedSchedule(
           id: i + 1,
           title: a.titulo,
           body: a.corpo,
           scheduledDate: tz.TZDateTime.from(a.quando, fusoSP),
-          notificationDetails: const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'lembretes',
-              'Lembretes',
-              channelDescription: 'Lembretes, tarefas e hábitos no horário',
-              importance: Importance.high,
-              priority: Priority.high,
-            ),
-            iOS: DarwinNotificationDetails(),
-            windows: WindowsNotificationDetails(),
-          ),
-          androidScheduleMode: _exato
-              ? AndroidScheduleMode.exactAllowWhileIdle
-              : AndroidScheduleMode.inexactAllowWhileIdle,
+          notificationDetails: despertador ? detalhesDespertador : _detalhesComuns,
+          payload: despertador ? payloadDespertador(a.titulo) : null,
+          // alarmClock: o Android trata como despertador de verdade (ícone de
+          // alarme na barra, toca mesmo com a economia de bateria).
+          androidScheduleMode: !_exato
+              ? AndroidScheduleMode.inexactAllowWhileIdle
+              : despertador
+                  ? AndroidScheduleMode.alarmClock
+                  : AndroidScheduleMode.exactAllowWhileIdle,
         );
       }
       debugPrint('Aurora: $agendados avisos agendados.');
@@ -239,9 +363,27 @@ class Notificador {
     }
   }
 
+  /// Web: troca a agenda da conta no servidor. Sem conta não há para quem
+  /// mandar; sem internet, a próxima mudança (ou abertura) manda de novo.
+  Future<void> _enviarAgenda(List<AvisoPlanejado> avisos) async {
+    final cliente = nuvem;
+    if (cliente == null || cliente.auth.currentUser == null) return;
+    try {
+      await cliente.rpc('substituir_avisos', params: {
+        'avisos': [
+          for (final a in avisos)
+            {'quando': a.quando.toUtc().toIso8601String(), 'titulo': a.titulo, 'corpo': a.corpo},
+        ],
+      });
+      debugPrint('Aurora: agenda de ${avisos.length} avisos enviada ao servidor.');
+    } catch (e) {
+      debugPrint('Falha ao enviar a agenda de avisos: $e');
+    }
+  }
+
   /// Mostra um aviso agora (para testar se as notificações aparecem).
   Future<void> testar() async {
-    if (!_pronto) return;
+    if (!_pronto || _web) return;
     await _plugin.show(
       id: 0,
       title: 'Aurora',

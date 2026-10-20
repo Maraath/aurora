@@ -201,6 +201,51 @@
         ` · ${iosNaTelaDeInicio ? 'tela de início' : 'navegador'}`;
     };
 
+    // Avisos por Web Push (lib/core/avisos_push_web.dart). No iPhone só existem com o app na tela
+    // de início (iOS 16.4+), e o pedido de permissão tem de sair de um toque: ativar() chama
+    // requestPermission antes de qualquer outra espera.
+    function chaveEmBytes(base64url) {
+      const b64 = (base64url + '='.repeat((4 - base64url.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+      return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    }
+    async function inscricaoAtual() {
+      const registro = await navigator.serviceWorker.getRegistration();
+      return registro ? registro.pushManager.getSubscription() : null;
+    }
+    window.auroraAvisos = {
+      estado: async function () {
+        const suporta = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+        if (!suporta) return /iPhone|iPad|iPod/.test(navigator.userAgent) && !iosNaTelaDeInicio ? 'instalar' : 'sem-suporte';
+        if (Notification.permission === 'denied') return 'negado';
+        return (await inscricaoAtual()) ? 'ativo' : 'desligado';
+      },
+      ativar: async function (chave) {
+        const permissao = await Notification.requestPermission();
+        if (permissao !== 'granted') return null;
+        const registro = await navigator.serviceWorker.getRegistration();
+        if (!registro) throw new Error('Sem Service Worker (abra pelo endereço publicado).');
+        const inscricao = (await registro.pushManager.getSubscription()) ||
+          (await registro.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: chaveEmBytes(chave) }));
+        return JSON.stringify(inscricao.toJSON());
+      },
+      inscricao: async function () {
+        const inscricao = await inscricaoAtual();
+        return inscricao ? JSON.stringify(inscricao.toJSON()) : null;
+      },
+      desativar: async function () {
+        const inscricao = await inscricaoAtual();
+        if (!inscricao) return null;
+        const json = JSON.stringify(inscricao.toJSON());
+        await inscricao.unsubscribe();
+        return json;
+      },
+      aparelho: function () {
+        const ua = navigator.userAgent;
+        return /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android'
+          : /Windows/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'Mac' : 'Navegador';
+      },
+    };
+
     function ajustarTela() {
       // Avisa o Flutter (lib/core/area_segura_web.dart) para ler o safe-area de novo.
       if (window.auroraAreaMudou) window.auroraAreaMudou();

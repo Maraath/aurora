@@ -59,6 +59,36 @@ self.addEventListener('fetch', (evento) => {
   }
 });
 
+// Avisos por Web Push (Edge Function avisos-push): {titulo, corpo, id}. O iOS exige mostrar uma
+// notificação a cada push recebido, então sempre mostra (mesmo se o JSON vier estranho).
+self.addEventListener('push', (evento) => {
+  let dados = {};
+  try {
+    dados = evento.data ? evento.data.json() : {};
+  } catch (_) {
+    dados = { corpo: evento.data ? evento.data.text() : '' };
+  }
+  evento.waitUntil(self.registration.showNotification(dados.titulo || 'Aurora', {
+    body: dados.corpo || '',
+    icon: 'icons/Icon-192.png',
+    badge: 'icons/Icon-192.png',
+    tag: dados.id ? `aviso-${dados.id}` : undefined,
+    data: { url: './' },
+  }));
+});
+
+// Tocar no aviso abre o Aurora (ou traz para a frente se já estiver aberto).
+self.addEventListener('notificationclick', (evento) => {
+  evento.notification.close();
+  evento.waitUntil((async () => {
+    const abertos = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const cliente of abertos) {
+      if ('focus' in cliente) return cliente.focus();
+    }
+    return self.clients.openWindow('./');
+  })());
+});
+
 // Página: a guardada desta versão (abre na hora e nunca mistura index.html novo com JS velho).
 // A versão nova chega pelo próprio navegador, que confere o sw.js a cada abertura: o SW novo
 // baixa tudo, assume, e a próxima abertura já é a nova. Sem nada guardado, tenta a rede.

@@ -4,6 +4,7 @@ import 'package:aurora/core/tema.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/data/habitos_repo.dart';
+import 'package:aurora/data/lembretes_repo.dart';
 import 'package:aurora/data/alimentacao_repo.dart';
 import 'package:aurora/ui/alimentacao/alimentacao_page.dart';
 import 'package:aurora/ui/alimentacao/form_alvos.dart';
@@ -99,6 +100,28 @@ void main() {
     await abrir(tester, (c) => abrirFormLembrete(c, lembrete: l));
     expect(tester.takeException(), isNull);
     expect(find.text('Editar lembrete'), findsOneWidget);
+  });
+
+  testWidgets('"Me despertar" fica gravado no lembrete', (tester) async {
+    final amanha = agoraSP().add(const Duration(days: 1));
+    await tester.runAsync(() => LembretesRepo(db).salvar(LembretesCompanion(
+          texto: const Value('Acordar'),
+          quando: Value(amanha),
+          regraRepeticao: const Value('FREQ=DAILY'),
+        )));
+    final l = (await tester.runAsync(() => db.select(db.lembretes).getSingle()))!;
+    expect(l.despertar, isFalse);
+    await abrir(tester, (c) => abrirFormLembrete(c, lembrete: l));
+    await tester.ensureVisible(find.text('Me despertar'));
+    await tester.tap(find.byType(Switch).last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Salvar lembrete'));
+    await tester.tap(find.text('Salvar lembrete'));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    final salvo = (await tester.runAsync(() => db.select(db.lembretes).getSingle()))!;
+    expect(salvo.despertar, isTrue);
   });
 
   testWidgets('novo lançamento e edição de recorrente', (tester) async {

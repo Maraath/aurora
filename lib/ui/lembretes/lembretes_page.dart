@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import '../../app.dart';
@@ -8,6 +9,7 @@ import '../../core/tema.dart';
 import '../../data/lembretes_repo.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
+import 'avisos_web.dart';
 import 'form_lembrete.dart';
 
 enum _Vista {
@@ -136,15 +138,20 @@ class _LembretesPageState extends State<LembretesPage> {
           'Tarefas e hábitos com "Me avisar" criam lembretes aqui.',
           style: manrope(12, cor: c.muted, altura: 1.5),
         ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: Notificador.instancia.testar,
-            icon: Icon(Icons.notifications_outlined, size: 18, color: c.accent),
-            label: Text('Testar notificação',
-                style: manrope(13, peso: FontWeight.w700, cor: c.accent)),
+        // Web: os avisos vêm do servidor (Web Push) e precisam ser ativados no aparelho.
+        if (kIsWeb) ...[
+          const SizedBox(height: 14),
+          const CartaoAvisosWeb(),
+        ] else
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: Notificador.instancia.testar,
+              icon: Icon(Icons.notifications_outlined, size: 18, color: c.accent),
+              label: Text('Testar notificação',
+                  style: manrope(13, peso: FontWeight.w700, cor: c.accent)),
+            ),
           ),
-        ),
       ],
     );
   }

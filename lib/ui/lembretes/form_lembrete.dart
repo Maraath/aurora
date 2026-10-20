@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
 import '../../app.dart';
+import '../../core/notificacoes.dart';
 import '../../core/recorrencia.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
@@ -28,6 +29,7 @@ class _FormLembreteState extends State<_FormLembrete> {
   late DateTime? _data;
   late TimeOfDay? _hora;
   late OpcaoRepeticao _repetir;
+  late bool _despertar;
   Regra? _regraAtual;
   String? _erro;
   final _hoje = hojeSP();
@@ -50,6 +52,13 @@ class _FormLembreteState extends State<_FormLembrete> {
     }
     _regraAtual = Regra.ler(l?.regraRepeticao);
     _repetir = OpcaoRepeticao.de(_regraAtual);
+    _despertar = l?.despertar ?? false;
+  }
+
+  Future<void> _mudarDespertar(bool v) async {
+    setState(() => _despertar = v);
+    // Android 14+: tela cheia por cima do bloqueio precisa ser liberada à mão.
+    if (v) await Notificador.instancia.pedirPermissoesDespertador();
   }
 
   @override
@@ -78,6 +87,7 @@ class _FormLembreteState extends State<_FormLembrete> {
         quando: Value(quando),
         regraRepeticao: Value(regra?.rrule),
         ativo: const Value(true),
+        despertar: Value(_despertar),
       ),
       id: widget.lembrete?.id,
     );
@@ -160,6 +170,13 @@ class _FormLembreteState extends State<_FormLembrete> {
               _erro = null;
             }),
           ),
+        ),
+        LinhaInterruptor(
+          titulo: 'Me despertar',
+          detalhe: 'no Android toca como despertador: tela cheia e som de alarme até você parar, '
+              'mesmo no silencioso',
+          valor: _despertar,
+          aoMudar: _mudarDespertar,
         ),
       ],
     );

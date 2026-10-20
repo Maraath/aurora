@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/area_segura.dart';
+import 'core/despertador.dart';
 import 'core/efeitos.dart';
 import 'core/tema.dart';
 import 'data/banco.dart';
@@ -50,6 +51,8 @@ class AuroraApp extends StatelessWidget {
         valueListenable: escuro,
         builder: (context, ehEscuro, _) => MaterialApp(
           title: 'Aurora',
+          // O despertador (Android) abre a tela dele por cima de tudo.
+          navigatorKey: chaveNavegador,
           scrollBehavior: const RolagemAurora(),
           debugShowCheckedModeBanner: false,
           theme: temaAurora(Brightness.light),
