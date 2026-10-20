@@ -28,13 +28,20 @@ void main() {
   test('tarefas: conclusões por dia, semana e prazo', () async {
     final repo = TarefasRepo(db);
     final hoje = hojeSP();
+    // Tarefa de hoje sem hora: só fica atrasada quando o dia acaba. A de
+    // exemplo vence às 21h e, depois disso, o teste não achava nenhuma.
+    await db.into(db.tarefas).insert(TarefasCompanion.insert(
+          titulo: 'Tarefa do teste',
+          prazo: Value(instanteSP(hoje)),
+        ));
     final antes = await repo.carregar();
     final base = analisarTarefas(antes, hoje);
     expect(base.porDia, hasLength(14));
     expect(base.porDia.last.dia, hoje);
 
     // Concluir uma tarefa única com prazo hoje conta na semana e no prazo.
-    final unica = antes.pendentes.firstWhere((o) => !o.recorrente && o.dia == hoje && !o.atrasada);
+    final unica = antes.pendentes.firstWhere((o) => o.tarefa.titulo == 'Tarefa do teste');
+    expect(unica.recorrente || unica.atrasada || unica.dia != hoje, isFalse);
     await repo.alternar(unica, true);
     final a = analisarTarefas(await repo.carregar(), hoje);
     expect(a.porDia.last.feitas, base.porDia.last.feitas + 1);
