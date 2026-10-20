@@ -1,18 +1,19 @@
 # Compila o Aurora para a web (PWA para iPhone/Android pelo navegador).
-#   powershell -File tool\release\web.ps1 [-Publicar] [-SemWasm] [-BaseHref /aurora/]
+#   powershell -File tool\release\web.ps1 [-Publicar] [-Wasm] [-BaseHref /aurora/]
 # Sai em build\web, pronto para subir num servidor HTTPS (o Service Worker exige HTTPS).
 # Depois do build, preenche web/sw.js com a versão e a lista de arquivos a guardar para offline.
 
-param([switch]$Publicar, [switch]$SemWasm, [string]$BaseHref = '/')
+param([switch]$Publicar, [switch]$Wasm, [string]$BaseHref = '/')
 
 $ErrorActionPreference = 'Stop'
 Set-Location (Resolve-Path "$PSScriptRoot\..\..")
 
 # --no-web-resources-cdn: o CanvasKit vai junto (sem ele o app não abre offline, porque viria do gstatic).
-# WebAssembly (skwasm, mais rápido por quadro; iOS 18.2+, Chrome, Firefox): o carregador do Flutter escolhe
-# sozinho e cai no JavaScript (CanvasKit) onde não houver suporte. -SemWasm volta a só JavaScript.
+# Padrão: só JavaScript (CanvasKit), o caminho testado. -Wasm compila também em WebAssembly (skwasm; iOS 18.2+,
+# Chrome, Firefox; o carregador escolhe e cai no JavaScript onde não houver suporte). Voltou a ser opcional em
+# 20/10/2026: o assistente e o login não foram testados nele e a lentidão no XR era o Modo de Pouca Energia.
 $opcoes = @('build', 'web', '--release', '--base-href', $BaseHref, '--no-web-resources-cdn')
-if (-not $SemWasm) { $opcoes += '--wasm' }
+if ($Wasm) { $opcoes += '--wasm' }
 flutter @opcoes
 if ($LASTEXITCODE -ne 0) { throw 'flutter build web falhou.' }
 
@@ -27,8 +28,8 @@ $arquivos = Get-ChildItem $saida -Recurse -File |
   Where-Object {
     $_ -notmatch '\.(map|symbols)$' -and $_ -notmatch '(^|/)[._]' -and
     $_ -notin @('sw.js', 'flutter_service_worker.js') -and
-    ($_ -notlike 'canvaskit/*' -or
-      $_ -in @('canvaskit/canvaskit.js', 'canvaskit/canvaskit.wasm', 'canvaskit/skwasm.js', 'canvaskit/skwasm.wasm'))
+    ($_ -notlike 'canvaskit/*' -or $_ -in @('canvaskit/canvaskit.js', 'canvaskit/canvaskit.wasm') -or
+      ($Wasm -and $_ -in @('canvaskit/skwasm.js', 'canvaskit/skwasm.wasm')))
   } |
   Sort-Object
 
