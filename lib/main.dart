@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
 import 'app.dart';
+import 'core/medir_quadros.dart';
 import 'core/notificacoes.dart';
 import 'core/nuvem.dart';
 import 'core/relogio.dart';
@@ -17,6 +18,7 @@ import 'data/shape_repo.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  iniciarMedidorDeQuadros();
   Intl.defaultLocale = 'pt_BR';
   await initializeDateFormatting('pt_BR');
   iniciarRelogio();

@@ -204,7 +204,10 @@ class _MenuDockState extends State<MenuDock> with SingleTickerProviderStateMixin
     }
 
     setState(() {});
-    if (!mexendo && alvoY == null) _ticker.stop();
+    // Parado (mesmo com o mouse em cima) o ticker desliga: antes ele seguia
+    // pedindo quadro a cada vsync (144 por segundo) só por o mouse estar no
+    // menu. Mexer o mouse ou mudar o foco acorda de novo.
+    if (!mexendo) _ticker.stop();
   }
 
   /// Tamanhos e centros vivos: cada item cresce

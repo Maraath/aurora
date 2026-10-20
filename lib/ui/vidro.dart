@@ -11,8 +11,10 @@ enum TipoVidro {
   /// Barra do celular: a lista passa por baixo, então desfoca bastante.
   barra(desfoque: 10, opacidade: 0.30),
 
-  /// Cartões soltos sobre o céu.
-  cartao(desfoque: 2, opacidade: 0.36),
+  /// Cartões soltos sobre o céu. Sem desfoque (19/10): o de 2 quase não
+  /// aparecia e era o que mais pesava na placa de vídeo, porque cada cartão
+  /// refazia o filtro a cada cintilar do céu e a cada quadro de rolagem.
+  cartao(desfoque: 0, opacidade: 0.36),
 
   /// Folhas que sobem de baixo (formulários).
   folha(desfoque: 10, opacidade: 0.78);

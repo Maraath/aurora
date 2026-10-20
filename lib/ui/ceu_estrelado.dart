@@ -18,7 +18,8 @@ import '../core/tema.dart';
 ///
 /// Desempenho: as estrelas fixas são pintadas uma vez (só repintam ao mudar o
 /// tamanho), cada camada fica num RepaintBoundary, e a cada atualização (15 por
-/// segundo) só se repintam as ~30 que cintilam, mudando a opacidade. Sem
+/// segundo) só se repintam as ~30 que cintilam, mudando a opacidade. Para
+/// enquanto a tela rola e com a janela em segundo plano. Sem
 /// animação com "reduzir movimento" e nos testes.
 class CeuEstrelado extends StatefulWidget {
   const CeuEstrelado({super.key, required this.child});
@@ -46,13 +47,36 @@ class _CeuEstreladoState extends State<CeuEstrelado> {
   bool _animar = false;
   late final _vida = AppLifecycleListener(onStateChange: (_) => _ajustar());
 
+  // Rolando, o céu para de cintilar: cada cintilar refaz os vidros da tela, e
+  // somado aos quadros da rolagem era o que causava as travadinhas. Volta logo
+  // depois que a rolagem para.
+  bool _rolando = false;
+  Timer? _voltar;
+
+  bool _aoRolar(ScrollNotification n) {
+    if (n is ScrollEndNotification) {
+      _voltar?.cancel();
+      _voltar = Timer(const Duration(milliseconds: 400), () {
+        _rolando = false;
+        _ajustar();
+      });
+    } else if (!_rolando) {
+      _voltar?.cancel();
+      _rolando = true;
+      _ajustar();
+    }
+    return false;
+  }
+
   void _ajustar() {
-    final visivel = SchedulerBinding.instance.lifecycleState != AppLifecycleState.hidden &&
-        SchedulerBinding.instance.lifecycleState != AppLifecycleState.paused;
-    if (_animar && visivel && _timer == null) {
+    // Com a janela em segundo plano (inactive no computador) também para.
+    final estado = SchedulerBinding.instance.lifecycleState;
+    final visivel = estado == null || estado == AppLifecycleState.resumed;
+    final ligar = _animar && visivel && !_rolando;
+    if (ligar && _timer == null) {
       _relogio.start();
       _timer = Timer.periodic(_intervalo, (_) => _fase.value = (_relogio.elapsedMilliseconds % _cicloMs) / _cicloMs);
-    } else if ((!_animar || !visivel) && _timer != null) {
+    } else if (!ligar && _timer != null) {
       _timer!.cancel();
       _timer = null;
       _relogio.stop();
@@ -77,6 +101,7 @@ class _CeuEstreladoState extends State<CeuEstrelado> {
   @override
   void dispose() {
     _timer?.cancel();
+    _voltar?.cancel();
     _vida.dispose();
     _fase.dispose();
     super.dispose();
@@ -98,10 +123,10 @@ class _CeuEstreladoState extends State<CeuEstrelado> {
         ),
         Positioned.fill(
           child: RepaintBoundary(
-            child: CustomPaint(painter: _Cintilantes(_fase, _timer != null)),
+            child: CustomPaint(painter: _Cintilantes(_fase, _animar)),
           ),
         ),
-        widget.child,
+        NotificationListener<ScrollNotification>(onNotification: _aoRolar, child: widget.child),
       ],
     );
   }
