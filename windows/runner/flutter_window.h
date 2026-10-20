@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "fala.h"
 #include "win32_window.h"
 
 // A window that does nothing but host a Flutter view.
@@ -42,6 +43,9 @@ class FlutterWindow : public Win32Window {
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
 
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> canal_;
+
+  // Resposta falada (canal "aurora/fala").
+  std::unique_ptr<Fala> fala_;
 
   // Botão maximizar (desenhado pelo Flutter, tratado aqui): 0 normal,
   // 1 mouse em cima, 2 apertado.

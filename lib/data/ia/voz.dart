@@ -132,6 +132,7 @@ enum FaseVoz { parada, ouvindo, entendendo }
 class ComandoDeVoz extends ChangeNotifier {
   ComandoDeVoz({
     required this.aoEntender,
+    this.aoOuvir,
     Gravador Function()? gravador,
     TranscreverIa? Function()? transcrever,
     this.maximo = const Duration(seconds: 60),
@@ -139,6 +140,9 @@ class ComandoDeVoz extends ChangeNotifier {
         _transcrever = transcrever ?? transcricaoDaNuvem;
 
   final Future<void> Function(String texto) aoEntender;
+
+  /// Tocou no microfone para falar (a tela cala a Aurora, se ela estiver falando).
+  final VoidCallback? aoOuvir;
   final Gravador Function() _novoGravador;
   final TranscreverIa? Function() _transcrever;
 
@@ -176,6 +180,7 @@ class ComandoDeVoz extends ChangeNotifier {
 
   Future<void> ouvir() async {
     if (fase != FaseVoz.parada) return;
+    aoOuvir?.call();
     _avisar(null);
     if (_transcrever() == null) {
       _avisar('Para falar com a Aurora, entre na conta (Conta › Conta e sincronização).');

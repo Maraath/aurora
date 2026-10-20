@@ -10,6 +10,7 @@ import '../../core/nuvem.dart';
 import '../../core/tema.dart';
 import '../../data/assistente_repo.dart';
 import '../../data/banco.dart';
+import '../../data/ia/fala.dart';
 import '../../data/ia/voz.dart';
 import '../vidro.dart';
 
@@ -20,7 +21,13 @@ import '../vidro.dart';
 /// Cores e fontes do Aurora.
 class AssistentePage extends StatefulWidget {
   const AssistentePage(
-      {super.key, this.compacto = false, this.aoExpandir, this.aoFechar, this.gravador, this.transcrever});
+      {super.key,
+      this.compacto = false,
+      this.aoExpandir,
+      this.aoFechar,
+      this.gravador,
+      this.transcrever,
+      this.falador});
 
   /// Mini chat (janela flutuante do canto): cabeçalho pequeno com expandir e
   /// fechar, e letras um pouco menores. A conversa é a mesma da área Assistente.
@@ -31,6 +38,9 @@ class AssistentePage extends StatefulWidget {
   /// Microfone e transcrição (os de verdade quando nulos; trocados nos testes).
   final Gravador Function()? gravador;
   final TranscreverIa? Function()? transcrever;
+
+  /// Alto-falante da resposta falada (a voz do aparelho quando nulo).
+  final Falador Function()? falador;
 
   @override
   State<AssistentePage> createState() => _AssistentePageState();
@@ -47,10 +57,18 @@ class _AssistentePageState extends State<AssistentePage> {
 
   /// Comando por voz: o texto entendido vai para a conversa como se digitado.
   late final _voz = ComandoDeVoz(
-    aoEntender: (texto) => _enviar(texto),
+    aoEntender: (texto) => _enviar(texto, true),
+    aoOuvir: () => _fala.parar(),
     gravador: widget.gravador,
     transcrever: widget.transcrever,
   );
+
+  /// Resposta falada: lê a resposta quando o pedido veio por voz (ou sempre,
+  /// conforme Conta › Resposta em voz).
+  late final _fala = FalaDaAurora(falador: widget.falador);
+
+  /// Conta os pedidos: só o último pode falar a resposta.
+  int _pedido = 0;
 
   /// Mensagens que já estavam na tela ao abrir: estas não animam.
   Set<String>? _jaVistas;
@@ -85,19 +103,28 @@ class _AssistentePageState extends State<AssistentePage> {
     AssistenteRepo.pensando.removeListener(_irAoFim);
     _login?.cancel();
     _voz.dispose();
+    _fala.dispose();
     _texto.dispose();
     _foco.dispose();
     _rolagem.dispose();
     super.dispose();
   }
 
-  Future<void> _enviar([String? texto]) async {
+  /// [porVoz]: o pedido veio do microfone (a resposta pode sair falada).
+  Future<void> _enviar([String? texto, bool porVoz = false]) async {
     final t = (texto ?? _texto.text).trim();
     if (t.isEmpty) return;
+    final pedido = ++_pedido;
+    _fala.parar();
     _texto.clear();
     setState(() {});
-    await _repo!.enviar(t);
+    final repo = _repo!;
+    await repo.enviar(t);
+    if (!mounted) return;
     _foco.requestFocus();
+    if (pedido != _pedido || !(await QuandoFalar.ler(repo.db)).deveFalar(porVoz: porVoz)) return;
+    final resposta = respostaDoPedido(await repo.carregarConversa(), t);
+    if (mounted && pedido == _pedido && resposta.isNotEmpty) unawaited(_fala.falar(resposta));
   }
 
   /// Desce até a última mensagem (suave) quando a conversa cresce.
@@ -127,7 +154,10 @@ class _AssistentePageState extends State<AssistentePage> {
         ],
       ),
     );
-    if (ok == true) await _repo!.limparConversa();
+    if (ok == true) {
+      _fala.parar();
+      await _repo!.limparConversa();
+    }
   }
 
   @override
@@ -211,6 +241,7 @@ class _AssistentePageState extends State<AssistentePage> {
                     ),
             ),
             _AvisoVoz(voz: _voz),
+            _Falando(fala: _fala),
             _Compositor(
               controle: _texto,
               foco: _foco,
@@ -1070,6 +1101,45 @@ class _AvisoVoz extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Expanded(child: Text(voz.aviso!, style: manrope(13, cor: c.warn, altura: 1.4))),
+                ]),
+              ),
+      ),
+    );
+  }
+}
+
+/// Enquanto a Aurora lê a resposta: aviso logo acima do campo com "Parar".
+class _Falando extends StatelessWidget {
+  const _Falando({required this.fala});
+  final FalaDaAurora fala;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return ListenableBuilder(
+      listenable: fala,
+      builder: (context, _) => AnimatedSize(
+        duration: const Duration(milliseconds: 180),
+        child: !fala.falando
+            ? const SizedBox(width: double.infinity)
+            : Padding(
+                padding: const EdgeInsets.only(bottom: Espaco.sm, left: 6),
+                child: Row(children: [
+                  Icon(Icons.volume_up_rounded, size: 17, color: c.accent),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text('A Aurora está lendo a resposta',
+                        style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
+                  ),
+                  Tooltip(
+                    message: 'Parar de falar',
+                    child: TextButton.icon(
+                      onPressed: fala.parar,
+                      style: TextButton.styleFrom(visualDensity: VisualDensity.compact, foregroundColor: c.accent),
+                      icon: const Icon(Icons.stop_rounded, size: 18),
+                      label: const Text('Parar'),
+                    ),
+                  ),
                 ]),
               ),
       ),

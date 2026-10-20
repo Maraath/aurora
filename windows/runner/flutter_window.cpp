@@ -74,6 +74,8 @@ bool FlutterWindow::OnCreate() {
   }
   RegisterPlugins(flutter_controller_->engine());
   ConfigurarCanal();
+  fala_ = std::make_unique<Fala>(flutter_controller_->engine()->messenger(),
+                                 GetHandle());
 
   HWND filho = flutter_controller_->view()->GetNativeWindow();
   SetChildContent(filho);
@@ -101,6 +103,7 @@ bool FlutterWindow::OnCreate() {
 
 void FlutterWindow::OnDestroy() {
   g_janela = nullptr;
+  fala_ = nullptr;
   canal_ = nullptr;
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
@@ -213,6 +216,10 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
     case WM_FONTCHANGE:
       flutter_controller_->engine()->ReloadSystemFonts();
       break;
+
+    case Fala::kMensagem:
+      if (fala_) fala_->AoEvento();
+      return 0;
 
     // Sem barra de título: a área do app começa no topo da janela. As bordas
     // dos lados e de baixo ficam com o sistema.

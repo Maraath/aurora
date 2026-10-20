@@ -15,6 +15,7 @@ import '../bloqueio_ui.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import '../formulario.dart';
+import 'fala_config.dart';
 import 'fotos_config.dart';
 
 /// Conta na nuvem. Opcional: sem conta, o app funciona offline como sempre.
@@ -211,6 +212,8 @@ class _ContaPageState extends State<ContaPage> {
         SecaoFotos(db: AuroraEscopo.de(context).db),
         const SizedBox(height: 28),
         SecaoBloqueio(db: AuroraEscopo.de(context).db),
+        const SizedBox(height: 28),
+        SecaoRespostaFalada(db: AuroraEscopo.de(context).db),
         const SizedBox(height: 28),
         _Versao(),
       ],
