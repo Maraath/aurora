@@ -17,6 +17,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as pkg;
+import 'package:supabase_flutter/supabase_flutter.dart' show Session, SupabaseClient;
 
 import '../../core/nuvem.dart';
 
@@ -114,6 +116,10 @@ TransporteIa? iaDaNuvem() {
   final sessao = cliente?.auth.currentSession;
   if (cliente == null || sessao == null) return null;
   return (mensagens, contexto, {reserva = false}) async* {
+    if (kIsWeb) {
+      yield* _pelaWeb(cliente, sessao, mensagens, contexto, reserva: reserva);
+      return;
+    }
     final http = HttpClient()..connectionTimeout = const Duration(seconds: 20);
     try {
       final HttpClientResponse r;
@@ -137,17 +143,7 @@ TransporteIa? iaDaNuvem() {
         throw const ErroIa('A IA demorou demais para responder. O pedido continua na fila.', semConexao: true);
       }
 
-      if (r.statusCode != 200) {
-        final corpo = await r.transform(utf8.decoder).join();
-        String? erro;
-        try {
-          final j = jsonDecode(corpo);
-          if (j is Map && j['erro'] is String) erro = j['erro'] as String;
-        } on FormatException {
-          // corpo não é JSON
-        }
-        throw ErroIa(erro ?? 'A IA não respondeu (erro ${r.statusCode}).');
-      }
+      if (r.statusCode != 200) throw _erroDaResposta(r.statusCode, await r.transform(utf8.decoder).join());
       // Sem nada chegando por 60 s, desiste (a conexão caiu no meio).
       yield* lerEventosSse(r.timeout(const Duration(seconds: 60), onTimeout: (s) {
         s.addError(const ErroIa('A conexão com a IA caiu no meio da resposta.', semConexao: true));
@@ -157,4 +153,49 @@ TransporteIa? iaDaNuvem() {
       http.close(force: true);
     }
   };
+}
+
+/// Navegador (PWA): sem dart:io. O package:http usa o fetch, que entrega o
+/// stream aos poucos como o HttpClient (mesmos prazos e mensagens).
+Stream<EventoIa> _pelaWeb(SupabaseClient cliente, Session sessao, List<Map<String, Object?>> mensagens,
+    String contexto, {required bool reserva}) async* {
+  final rede = pkg.Client();
+  try {
+    final pedido = pkg.Request('POST', Uri.parse('$supabaseUrl/functions/v1/assistente'))
+      ..headers.addAll({
+        'Authorization': 'Bearer ${cliente.auth.currentSession?.accessToken ?? sessao.accessToken}',
+        'apikey': supabaseAnonKey,
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+        if (reserva) 'x-ia-reserva': '1',
+      })
+      ..body = jsonEncode({'mensagens': mensagens, 'contexto': contexto});
+    final pkg.StreamedResponse r;
+    try {
+      r = await rede.send(pedido).timeout(const Duration(seconds: 30));
+    } on pkg.ClientException catch (e) {
+      debugPrint('IA: sem conexão ($e)');
+      throw const ErroIa('Sem conexão com a internet.', semConexao: true);
+    } on TimeoutException {
+      throw const ErroIa('A IA demorou demais para responder. O pedido continua na fila.', semConexao: true);
+    }
+    if (r.statusCode != 200) throw _erroDaResposta(r.statusCode, await r.stream.bytesToString());
+    yield* lerEventosSse(r.stream.timeout(const Duration(seconds: 60), onTimeout: (s) {
+      s.addError(const ErroIa('A conexão com a IA caiu no meio da resposta.', semConexao: true));
+      s.close();
+    }));
+  } finally {
+    rede.close();
+  }
+}
+
+/// Resposta de erro da Edge Function: `{"erro": "..."}` já vem pronta para a pessoa.
+ErroIa _erroDaResposta(int status, String corpo) {
+  try {
+    final j = jsonDecode(corpo);
+    if (j is Map && j['erro'] is String) return ErroIa(j['erro'] as String);
+  } on FormatException {
+    // corpo não é JSON
+  }
+  return ErroIa('A IA não respondeu (erro $status).');
 }

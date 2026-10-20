@@ -49,6 +49,12 @@ const _chavesNaturais = {
   'alvos_dieta': ['tipo_dia'],
 };
 
+/// Chave das tabelas no servidor (migração 20261020120000_chave_por_conta).
+/// Ids de chave natural (automações prontas, medidas, fotos do Shape, alvos da
+/// dieta, TACO) são iguais em todas as contas: com a chave só no id, o envio de
+/// uma conta nova batia na linha de outra pessoa e caía na RLS.
+const chaveNoServidor = 'user_id,id';
+
 /// Posição na fila de mudanças do servidor: (servidor_em, id).
 class Cursor {
   const Cursor(this.servidorEm, this.id);

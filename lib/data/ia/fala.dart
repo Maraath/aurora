@@ -23,7 +23,7 @@ abstract class Falador {
 }
 
 /// A voz de cada sistema: no Windows a do runner, nos outros a do flutter_tts.
-Falador faladorDoAparelho() => Platform.isWindows ? FaladorWindows() : FaladorDoAparelho();
+Falador faladorDoAparelho() => !kIsWeb && Platform.isWindows ? FaladorWindows() : FaladorDoAparelho();
 
 /// Windows: SAPI no runner (`windows/runner/fala.cpp`, canal "aurora/fala").
 /// O flutter_tts fala no Windows, mas avisa o fim fora da thread da

@@ -17,7 +17,7 @@ class RemotoSupabase implements RemotoSync {
 
   @override
   Future<void> enviar(String tabela, List<Map<String, dynamic>> linhas) =>
-      cliente.from(tabela).upsert(linhas, onConflict: 'id');
+      cliente.from(tabela).upsert(linhas, onConflict: chaveNoServidor);
 
   @override
   Future<List<Map<String, dynamic>>> baixar(String tabela, Cursor? depois, int limite) async {

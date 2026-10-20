@@ -94,6 +94,8 @@ class Notificador {
   StreamSubscription<void>? _escuta;
 
   Future<void> iniciar(BancoAurora db) async {
+    // Web (PWA): o plugin não tem versão para navegador; os avisos ficam só nos apps instalados.
+    if (kIsWeb) return;
     try {
       _pronto = await _plugin.initialize(
             settings: const InitializationSettings(

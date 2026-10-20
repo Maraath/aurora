@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../core/efeitos.dart';
 import '../core/tema.dart';
 
 /// Quanto de vidro cada peça leva. Mais desfoque e menos opacidade nas barras
@@ -56,6 +57,20 @@ ui.ImageFilter _filtro(double desfoque) => ui.ImageFilter.compose(
   ),
 );
 
+/// Efeitos leves (aparelho lento): sem desfoque; o que desfocava fica quase
+/// opaco para o que passa por baixo (a lista sob a barra) não confundir a leitura.
+double _opacidade(TipoVidro tipo, {required bool leves}) => leves && tipo.desfoque > 0 ? 0.94 : tipo.opacidade;
+
+/// Cor média de um vidro sobre o céu (sem as estrelas), para pintar o que fica
+/// fora do app e precisa parecer a mesma peça: na web, a faixa de baixo que o
+/// iPhone não deixa o app desenhar continua a barra de baixo.
+Color corDoVidro(BuildContext context, TipoVidro tipo) {
+  final c = context.cores;
+  if (Theme.of(context).brightness != Brightness.dark) return c.surface;
+  final leves = EscopoEfeitos.leves(context);
+  return Color.alphaBlend(c.surface.withValues(alpha: _opacidade(tipo, leves: leves)), c.bg);
+}
+
 /// Vidro do Aurora: desfoca e satura o que está atrás (o céu estrelado), pinta a
 /// superfície da paleta com transparência, uma borda clara fina e um brilho de
 /// 1 px no alto. Só no modo escuro; no claro é a superfície sólida de sempre.
@@ -101,7 +116,9 @@ class Vidro extends StatelessWidget {
       );
     }
 
-    final fundo = base.a < 1 ? base : base.withValues(alpha: tipo.opacidade);
+    final leves = EscopoEfeitos.leves(context);
+    final desfoque = leves ? 0.0 : tipo.desfoque;
+    final fundo = base.a < 1 ? base : base.withValues(alpha: _opacidade(tipo, leves: leves));
     final contorno = Colors.white.withValues(alpha: 0.09);
     final vidro = DecoratedBox(
       decoration: BoxDecoration(
@@ -127,11 +144,11 @@ class Vidro extends StatelessWidget {
         child: child,
       ),
     );
-    if (tipo.desfoque == 0) return ClipRRect(borderRadius: raio, child: vidro);
+    if (desfoque == 0) return ClipRRect(borderRadius: raio, child: vidro);
     return ClipRRect(
       borderRadius: raio,
       child: BackdropFilter.grouped(
-        filter: _filtro(tipo.desfoque),
+        filter: _filtro(desfoque),
         child: vidro,
       ),
     );

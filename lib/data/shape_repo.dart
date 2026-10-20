@@ -149,6 +149,7 @@ class ShapeRepo {
   /// `<suporte>/shape/<arquivo>`) viram WebP de 1080 px com miniatura, e a
   /// pasta antiga some. Nenhuma estava na nuvem nova.
   Future<void> converterFotosAntigas({Future<Directory> Function()? pastaAntiga}) async {
+    if (kIsWeb) return; // fotos antigas só existem nos apps instalados
     final pasta = await (pastaAntiga ?? () async => Directory('${(await getApplicationSupportDirectory()).path}/shape'))();
     if (!await pasta.exists()) return;
     final antigas = await (db.select(db.fotosShape)..where((f) => f.hash.isNull() & f.apagadoEm.isNull())).get();

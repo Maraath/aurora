@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'core/area_segura.dart';
+import 'core/efeitos.dart';
 import 'core/tema.dart';
 import 'data/banco.dart';
 import 'ui/barra_rolagem.dart';
@@ -58,8 +60,11 @@ class AuroraApp extends StatelessWidget {
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
           home: Shell(primeiraVez: primeiraVez),
           // O bloqueio cobre tudo, inclusive diálogos abertos; a moldura da
-          // janela (Windows) fica por cima até do bloqueio.
-          builder: (context, filho) => MolduraJanela(child: PortaoBloqueio(db: db, child: filho!)),
+          // janela (Windows) fica por cima até do bloqueio. Na web, o safe-area
+          // do iPhone entra no MediaQuery (AreaSeguraWeb).
+          builder: (context, filho) => EscopoEfeitos(
+            child: AreaSeguraWeb(child: MolduraJanela(child: PortaoBloqueio(db: db, child: filho!))),
+          ),
         ),
       ),
     );

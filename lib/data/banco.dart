@@ -382,7 +382,15 @@ class BancoAurora extends _$BancoAurora {
   /// `--dart-define=AURORA_BANCO=outro` abre um banco separado (para testar
   /// um aparelho novo sem mexer nos dados de verdade).
   BancoAurora([QueryExecutor? executor])
-      : super(executor ?? driftDatabase(name: const String.fromEnvironment('AURORA_BANCO', defaultValue: 'aurora')));
+      : super(executor ??
+            driftDatabase(
+              name: const String.fromEnvironment('AURORA_BANCO', defaultValue: 'aurora'),
+              // Na web (PWA): SQLite em Wasm, guardado no OPFS/IndexedDB do navegador (web/sqlite3.wasm).
+              web: DriftWebOptions(
+                sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+                driftWorker: Uri.parse('drift_worker.js'),
+              ),
+            ));
 
   @override
   int get schemaVersion => 11;

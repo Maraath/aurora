@@ -9,6 +9,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as rede;
+import 'package:supabase_flutter/supabase_flutter.dart' show SupabaseClient;
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
@@ -48,8 +50,10 @@ class GravadorDoAparelho implements Gravador {
   @override
   Future<String> comecar() async {
     final flac = await _gravador.isEncoderSupported(AudioEncoder.flac);
-    final pasta = await getTemporaryDirectory();
-    _caminho = '${pasta.path}${Platform.pathSeparator}aurora_voz.${flac ? 'flac' : 'wav'}';
+    // Na web o caminho é ignorado: o áudio fica num blob do navegador.
+    _caminho = kIsWeb
+        ? 'aurora_voz'
+        : '${(await getTemporaryDirectory()).path}${Platform.pathSeparator}aurora_voz.${flac ? 'flac' : 'wav'}';
     await _gravador.start(
       RecordConfig(
         encoder: flac ? AudioEncoder.flac : AudioEncoder.wav,
@@ -72,6 +76,11 @@ class GravadorDoAparelho implements Gravador {
   Future<Uint8List?> parar() async {
     final caminho = await _gravador.stop() ?? _caminho;
     if (caminho == null) return null;
+    if (kIsWeb) {
+      // Web: stop() devolve um endereço blob: com o áudio.
+      final resposta = await rede.get(Uri.parse(caminho));
+      return resposta.statusCode == 200 && resposta.bodyBytes.isNotEmpty ? resposta.bodyBytes : null;
+    }
     final arquivo = File(caminho);
     if (!await arquivo.exists()) return null;
     final bytes = await arquivo.readAsBytes();
@@ -95,6 +104,7 @@ TranscreverIa? transcricaoDaNuvem() {
   final cliente = nuvem;
   if (cliente?.auth.currentSession == null) return null;
   return (audio, formato) async {
+    if (kIsWeb) return _transcreverPelaWeb(cliente!, audio, formato);
     final http = HttpClient()..connectionTimeout = const Duration(seconds: 20);
     try {
       final pedido = await http.postUrl(Uri.parse('$supabaseUrl/functions/v1/assistente'));
@@ -123,6 +133,36 @@ TranscreverIa? transcricaoDaNuvem() {
       http.close(force: true);
     }
   };
+}
+
+/// Navegador (PWA): sem dart:io, a mesma chamada pelo package:http (fetch).
+Future<String> _transcreverPelaWeb(SupabaseClient cliente, Uint8List audio, String formato) async {
+  final rede.Response r;
+  try {
+    r = await rede
+        .post(
+          Uri.parse('$supabaseUrl/functions/v1/assistente'),
+          headers: {
+            'Authorization': 'Bearer ${cliente.auth.currentSession!.accessToken}',
+            'apikey': supabaseAnonKey,
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({'audio': base64Encode(audio), 'formato': formato}),
+        )
+        .timeout(const Duration(seconds: 90));
+  } on rede.ClientException {
+    throw const ErroIa('Sem conexão com a internet.', semConexao: true);
+  } on TimeoutException {
+    throw const ErroIa('A transcrição demorou demais. Tente de novo.', semConexao: true);
+  }
+  final Object? j;
+  try {
+    j = jsonDecode(utf8.decode(r.bodyBytes));
+  } on FormatException {
+    throw ErroIa('A IA não respondeu (erro ${r.statusCode}).');
+  }
+  if (j is Map && j['texto'] is String) return (j['texto'] as String).trim();
+  throw ErroIa(j is Map && j['erro'] is String ? j['erro'] as String : 'A IA não respondeu (erro ${r.statusCode}).');
 }
 
 enum FaseVoz { parada, ouvindo, entendendo }

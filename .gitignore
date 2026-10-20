@@ -53,3 +53,6 @@ supabase/.branches/
 
 # GIFs originais dos exercícios (1,1 GB): ficam só na máquina do dono
 /Exercicios/
+
+# Wrangler (Cloudflare Pages): cache local com dados da conta
+.wrangler/

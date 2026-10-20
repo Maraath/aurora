@@ -73,5 +73,15 @@ foreach ($d in $densidades.Keys) {
   # Adaptável: 108 dp, dos quais o aparelho mostra os 72 do meio.
   Desenhar ([int](108 * $f)) "$res\mipmap-$d\ic_launcher_fundo.png" $false '-18 -18 136 136'
 }
+# Web (PWA). O iOS arredonda e não aceita transparência: apple-touch-icon quadrado, sem cantos.
+# Maskable: o navegador recorta até 20% de cada lado, então vai com céu em volta como no Android.
+Desenhar 32 'web\favicon.png'
+Desenhar 192 'web\icons\Icon-192.png'
+Desenhar 512 'web\icons\Icon-512.png'
+Desenhar 192 'web\icons\Icon-maskable-192.png' $false '-18 -18 136 136'
+Desenhar 512 'web\icons\Icon-maskable-512.png' $false '-18 -18 136 136'
+foreach ($t in 152, 167, 180) { Desenhar $t "web\icons\apple-touch-icon-$t.png" $false }
+Desenhar 512 'web\icons\apple-touch-icon-512.png' $false
+
 Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
 Write-Host 'Ícones gerados.'

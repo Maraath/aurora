@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app.dart';
+import '../../core/area_segura.dart';
 import '../../core/atualizacao.dart';
 import '../../core/formato.dart';
 import '../../core/login_google.dart';
@@ -15,6 +17,7 @@ import '../bloqueio_ui.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import '../formulario.dart';
+import 'efeitos_config.dart';
 import 'fala_config.dart';
 import 'fotos_config.dart';
 
@@ -214,6 +217,8 @@ class _ContaPageState extends State<ContaPage> {
         SecaoBloqueio(db: AuroraEscopo.de(context).db),
         const SizedBox(height: 28),
         SecaoRespostaFalada(db: AuroraEscopo.de(context).db),
+        const SizedBox(height: 28),
+        SecaoEfeitos(db: AuroraEscopo.de(context).db),
         const SizedBox(height: 28),
         _Versao(),
       ],
@@ -624,6 +629,13 @@ class _VersaoState extends State<_Versao> {
   Widget build(BuildContext context) {
     final c = context.cores;
     final at = Atualizador.instancia;
+    if (kIsWeb) {
+      // Web: atualiza sozinha (Service Worker). As medidas ajudam a acertar o
+      // safe-area de cada iPhone (mande uma captura desta linha).
+      final medidas = medidasDaTela();
+      return Text('Aurora (web)${medidas == null ? '' : '\n$medidas'}',
+          style: manrope(12, cor: c.muted, altura: 1.5));
+    }
     if (!at.suportado) return const SizedBox.shrink();
     return Row(children: [
       Expanded(

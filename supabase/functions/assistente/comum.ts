@@ -2,7 +2,9 @@
 
 export const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  // x-ia-reserva e accept: mandados pelo app na web (PWA); sem eles o navegador barra o pedido.
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, accept, x-ia-reserva",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 export function json(corpo: unknown, status = 200) {

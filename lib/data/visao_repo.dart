@@ -120,16 +120,31 @@ class VisaoRepo {
     final hoje = dataSP(agora);
     final fimSemana = hoje.add(const Duration(days: 6));
 
-    final quadroHabitos = await habitos.carregar();
+    // As leituras não dependem umas das outras: saem todas juntas. Na web cada
+    // consulta vai e volta do worker do banco, e em fila somava ~0,5 s no PC.
+    final pedidoHabitos = habitos.carregar();
+    final pedidoTarefas = _tarefas.carregar();
+    final pedidoFinancas = _financas.carregar();
+    final pedidoLembretes = (db.select(db.lembretes)
+          ..where((l) => l.apagadoEm.isNull() & l.ativo.equals(true) & l.itemTipo.isNull()))
+        .get();
+    final pedidoMeta = (db.select(db.metas)
+          ..where((m) => m.status.equals('ativa') & m.apagadoEm.isNull())
+          ..orderBy([(m) => OrderingTerm(expression: m.dataAlvo)])
+          ..limit(1))
+        .getSingleOrNull();
+    final pedidoNome = db.preferencia('nome');
+
+    final quadroHabitos = await pedidoHabitos;
     final habitosHoje = [
       for (final h in quadroHabitos.doDia(hoje))
         HabitoDoDia(habito: h, feito: quadroHabitos.feito(h.id, hoje)),
     ];
 
-    final quadro = await _tarefas.carregar();
+    final quadro = await pedidoTarefas;
     final tarefasPorDia = quadro.porDia(hoje, fimSemana, agora);
 
-    final financas = await _financas.carregar();
+    final financas = await pedidoFinancas;
     final mes = financas.mes(hoje);
     final contas = [
       for (final t in financas.transacoes)
@@ -139,9 +154,7 @@ class VisaoRepo {
 
     // Disparos de lembretes ativos de hoje até o fim da semana. Os ligados a
     // uma tarefa ou hábito ficam de fora: o próprio item já aparece.
-    final lembretes = await (db.select(db.lembretes)
-          ..where((l) => l.apagadoEm.isNull() & l.ativo.equals(true) & l.itemTipo.isNull()))
-        .get();
+    final lembretes = await pedidoLembretes;
     final inicioHoje = instanteSP(hoje).subtract(const Duration(seconds: 1));
     final disparos = <DateTime, List<(Lembrete, DateTime)>>{};
     for (final l in lembretes) {
@@ -152,11 +165,7 @@ class VisaoRepo {
       }
     }
 
-    final meta = await (db.select(db.metas)
-          ..where((m) => m.status.equals('ativa') & m.apagadoEm.isNull())
-          ..orderBy([(m) => OrderingTerm(expression: m.dataAlvo)])
-          ..limit(1))
-        .getSingleOrNull();
+    final meta = await pedidoMeta;
 
     final linha = <ItemLinha>[
       for (final o in tarefasPorDia[hoje] ?? const <OcorrenciaTarefa>[])
@@ -201,7 +210,7 @@ class VisaoRepo {
     ];
 
     return ResumoVisao(
-      nome: await db.preferencia('nome') ?? '',
+      nome: await pedidoNome ?? '',
       habitos: habitosHoje,
       tarefasHoje: quadro.pendentes.where((o) => o.dia == hoje).toList(),
       tarefasAtrasadas: quadro.atrasadas,

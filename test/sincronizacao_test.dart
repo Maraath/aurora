@@ -1,7 +1,9 @@
 import 'package:aurora/core/relogio.dart';
+import 'package:aurora/data/automacoes_repo.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/data/habitos_repo.dart';
+import 'package:aurora/data/saude_repo.dart';
 import 'package:aurora/data/sincronizacao.dart';
 import 'package:aurora/data/tarefas_repo.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
@@ -10,31 +12,46 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 /// Servidor em memória com as mesmas regras do Supabase: servidor_em a cada
-/// gravação e "edição mais antiga é ignorada".
+/// gravação, "edição mais antiga é ignorada" e RLS por conta ([usuario] faz o
+/// papel de auth.uid()). [chave] é a chave primária das tabelas: a de hoje
+/// ([chaveNoServidor], por conta) ou a antiga, só o id.
 class ServidorFalso implements RemotoSync {
+  ServidorFalso({this.chave = chaveNoServidor});
+  final String chave;
+  var usuario = 'u1';
   final tabelas = <String, Map<String, Map<String, dynamic>>>{};
   var _relogio = DateTime.utc(2026, 1, 1);
   int envios = 0;
 
   String _agora() => (_relogio = _relogio.add(const Duration(microseconds: 1))).toIso8601String();
 
+  String _chaveDe(String id) => chave == 'id' ? id : '$usuario|$id';
+
+  Iterable<Map<String, dynamic>> _visiveis(String tabela) =>
+      (tabelas[tabela]?.values ?? const <Map<String, dynamic>>[]).where((l) => l['user_id'] == usuario);
+
   @override
   Future<void> enviar(String tabela, List<Map<String, dynamic>> linhas) async {
     envios++;
     final t = tabelas.putIfAbsent(tabela, () => {});
     for (final l in linhas) {
-      final atual = t[l['id']];
+      final k = _chaveDe(l['id'] as String);
+      final atual = t[k];
+      // Upsert que cai na linha de outra conta: o "dono altera" (USING) recusa.
+      if (atual != null && atual['user_id'] != usuario) {
+        throw StateError('new row violates row-level security policy (USING expression) for table "$tabela"');
+      }
       if (atual != null &&
           DateTime.parse(l['atualizado_em'] as String).isBefore(DateTime.parse(atual['atualizado_em'] as String))) {
         continue;
       }
-      t[l['id'] as String] = {...l, 'servidor_em': _agora()};
+      t[k] = {...l, 'user_id': usuario, 'servidor_em': _agora()};
     }
   }
 
   @override
   Future<List<Map<String, dynamic>>> baixar(String tabela, Cursor? depois, int limite) async {
-    final linhas = (tabelas[tabela]?.values.toList() ?? [])
+    final linhas = _visiveis(tabela).toList()
       ..sort((a, b) {
         final c = (a['servidor_em'] as String).compareTo(b['servidor_em'] as String);
         return c != 0 ? c : (a['id'] as String).compareTo(b['id'] as String);
@@ -50,7 +67,7 @@ class ServidorFalso implements RemotoSync {
   }
 
   @override
-  Future<bool> temDados() async => tabelas.values.any((t) => t.isNotEmpty);
+  Future<bool> temDados() async => tabelas.keys.any((t) => _visiveis(t).isNotEmpty);
 }
 
 void main() {
@@ -175,5 +192,48 @@ void main() {
     final volta = paraLocal(pc.lembretes, s);
     expect(volta['quando'], linha['quando']);
     expect(volta['ativo'], 1);
+  });
+
+  group('duas contas no mesmo servidor', () {
+    // Caso real (20/10/2026): conta nova no iPhone, "new row violates row-level
+    // security policy (USING expression) for table automacoes". As automações
+    // prontas têm id fixo (idNatural pelo modelo), igual ao das do dono; medidas
+    // do mesmo dia também.
+    Future<void> criarDados(BancoAurora db) async {
+      await AutomacoesRepo(db).garantirModelos();
+      await SaudeRepo(db).salvarMedidas(hojeSP(), [(tipo: 'peso', valor: 80, unidade: 'kg')]);
+    }
+
+    Future<void> sincronizarComo(ServidorFalso s, BancoAurora db, String conta) async {
+      s.usuario = conta;
+      await Sincronizador(db, s, usuarioId: conta).sincronizar();
+    }
+
+    test('com a chave só no id, a conta nova cai na RLS (a causa)', () async {
+      final antigo = ServidorFalso(chave: 'id');
+      await criarDados(pc);
+      await criarDados(celular);
+      await sincronizarComo(antigo, pc, 'dono');
+      await expectLater(sincronizarComo(antigo, celular, 'nova'), throwsA(isA<StateError>()));
+    });
+
+    test('com a chave por conta, as duas sincronizam e cada uma só vê o que é seu', () async {
+      expect(chaveNoServidor, 'user_id,id');
+      await criarDados(pc);
+      await criarDados(celular);
+      await sincronizarComo(servidor, pc, 'dono');
+      await sincronizarComo(servidor, celular, 'nova');
+
+      // A nova liga o briefing; o do dono continua desligado.
+      final briefing = (await AutomacoesRepo(celular).listar()).firstWhere((a) => a.modelo == 'briefing');
+      await AutomacoesRepo(celular).alternar(briefing, true);
+      await sincronizarComo(servidor, celular, 'nova');
+      await sincronizarComo(servidor, pc, 'dono');
+
+      final doDono = (await AutomacoesRepo(pc).listar()).firstWhere((a) => a.modelo == 'briefing');
+      expect(doDono.ativa, isFalse);
+      expect(servidor.tabelas['automacoes']!.length, 2 * (ModeloAutomacao.values.length - 1));
+      expect(servidor.tabelas['medidas']!.length, 2);
+    });
   });
 }

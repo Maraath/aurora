@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../core/efeitos.dart';
 import '../core/tema.dart';
 
 /// Fundo de céu noturno do Aurora: brilho de aurora bem fraco no topo,
@@ -30,7 +32,7 @@ class CeuEstrelado extends StatefulWidget {
   State<CeuEstrelado> createState() => _CeuEstreladoState();
 }
 
-final _emTeste = Platform.environment.containsKey('FLUTTER_TEST');
+final _emTeste = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
 /// Cintilação a 15 quadros por segundo: cada estrela leva de 6 a 12 s para
 /// piscar, então 15 atualizações por segundo parecem iguais a 60 e custam um
@@ -43,6 +45,7 @@ class _CeuEstreladoState extends State<CeuEstrelado> {
   // Um ciclo longo (0 a 1 em 24 s); cada estrela tem a sua fase e velocidade nele.
   final _fase = ValueNotifier<double>(0);
   final _relogio = Stopwatch();
+  final _cache = _CacheCeu();
   Timer? _timer;
   bool _animar = false;
   late final _vida = AppLifecycleListener(onStateChange: (_) => _ajustar());
@@ -94,6 +97,7 @@ class _CeuEstreladoState extends State<CeuEstrelado> {
     super.didChangeDependencies();
     _animar = !_emTeste &&
         Theme.of(context).brightness == Brightness.dark &&
+        EscopoEfeitos.cintilar(context) &&
         !(MediaQuery.maybeDisableAnimationsOf(context) ?? false);
     _ajustar();
   }
@@ -104,6 +108,7 @@ class _CeuEstreladoState extends State<CeuEstrelado> {
     _voltar?.cancel();
     _vida.dispose();
     _fase.dispose();
+    _cache.dispose();
     super.dispose();
   }
 
@@ -118,7 +123,9 @@ class _CeuEstreladoState extends State<CeuEstrelado> {
       children: [
         Positioned.fill(
           child: RepaintBoundary(
-            child: CustomPaint(painter: _CeuFixo(c)),
+            child: CustomPaint(
+              painter: kIsWeb ? _CeuFixoEmImagem(c, MediaQuery.devicePixelRatioOf(context), _cache) : _CeuFixo(c),
+            ),
           ),
         ),
         Positioned.fill(
@@ -218,6 +225,60 @@ class _CeuFixo extends CustomPainter {
 
   @override
   bool shouldRepaint(_CeuFixo antigo) => antigo.c != c;
+}
+
+/// Web: o céu fixo vira uma imagem desenhada uma vez (por tamanho, densidade e
+/// tema) e cada quadro só copia a imagem. A web não guarda camadas entre
+/// quadros como o app instalado: sem isso, os degradês da tela inteira e as
+/// estrelas eram refeitos a cada quadro, o que mais pesava no iPhone XR.
+class _CacheCeu {
+  ui.Image? _imagem;
+  Size? _tamanho;
+  double? _densidade;
+  AuroraCores? _cores;
+
+  ui.Image? imagem(Size tamanho, double densidade, AuroraCores c) {
+    if (tamanho.isEmpty) return null;
+    if (_imagem != null && _tamanho == tamanho && _densidade == densidade && _cores == c) return _imagem;
+    _imagem?.dispose();
+    final gravador = ui.PictureRecorder();
+    final canvas = Canvas(gravador)..scale(densidade);
+    _CeuFixo(c).paint(canvas, tamanho);
+    final desenho = gravador.endRecording();
+    _imagem = desenho.toImageSync((tamanho.width * densidade).ceil(), (tamanho.height * densidade).ceil());
+    desenho.dispose();
+    _tamanho = tamanho;
+    _densidade = densidade;
+    _cores = c;
+    return _imagem;
+  }
+
+  void dispose() {
+    _imagem?.dispose();
+    _imagem = null;
+  }
+}
+
+class _CeuFixoEmImagem extends CustomPainter {
+  _CeuFixoEmImagem(this.c, this.densidade, this.cache);
+  final AuroraCores c;
+  final double densidade;
+  final _CacheCeu cache;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final imagem = cache.imagem(size, densidade, c);
+    if (imagem == null) return;
+    canvas.drawImageRect(
+      imagem,
+      Rect.fromLTWH(0, 0, imagem.width.toDouble(), imagem.height.toDouble()),
+      Offset.zero & size,
+      Paint()..filterQuality = FilterQuality.low,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CeuFixoEmImagem antigo) => antigo.c != c || antigo.densidade != densidade;
 }
 
 class _Cintilantes extends CustomPainter {

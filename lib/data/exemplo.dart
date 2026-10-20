@@ -9,8 +9,14 @@ const chaveInicio = 'inicio';
 
 /// Aparelho novo: nunca passou pelas boas-vindas nem recebeu os dados de
 /// exemplo (que só existem nos aparelhos de antes da versão 1.0.3).
-Future<bool> ehPrimeiraVez(BancoAurora db) async =>
-    await db.preferencia(chaveInicio) == null && await db.preferencia('exemplo_semeado') == null;
+Future<bool> ehPrimeiraVez(BancoAurora db) async {
+  // Em passos separados: na web compilada em WebAssembly, `await a == null && await b == null`
+  // numa função de uma linha falhava na conferência de tipo e o app travava na abertura.
+  final inicio = await db.preferencia(chaveInicio);
+  if (inicio != null) return false;
+  final semeado = await db.preferencia('exemplo_semeado');
+  return semeado == null;
+}
 
 /// Dados de exemplo do protótipo. O app não os cria mais (cada pessoa começa
 /// vazia); ficam para os testes. As datas são relativas a hoje.

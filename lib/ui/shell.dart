@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart' show Value;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import 'icone_ia.dart';
 import '../app.dart';
+import '../core/area_segura.dart';
 import '../core/tema.dart';
 import '../data/assistente_repo.dart';
 import '../data/banco.dart';
@@ -546,13 +548,19 @@ class _BarraInferior extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     final escuro = Theme.of(context).brightness == Brightness.dark;
+    if (kIsWeb) {
+      // iPhone (tela de início): a faixa abaixo da página fica com a cor da barra.
+      final cor = corDoVidro(context, TipoVidro.barra);
+      WidgetsBinding.instance.addPostFrameCallback((_) => definirCorDaBorda(cor));
+    }
     return Vidro(
       tipo: TipoVidro.barra,
       lados: Border(top: BorderSide(color: escuro ? Colors.white.withValues(alpha: 0.09) : c.line)),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+          // Com indicador de início embaixo (iPhone), a faixa dele já dá o respiro.
+          padding: EdgeInsets.fromLTRB(10, 8, 10, MediaQuery.paddingOf(context).bottom > 0 ? 2 : 10),
           child: Row(
             children: [
               for (final item in _itensBarra)

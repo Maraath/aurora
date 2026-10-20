@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
 import 'app.dart';
+import 'core/efeitos.dart';
 import 'core/medir_quadros.dart';
 import 'core/notificacoes.dart';
 import 'core/nuvem.dart';
@@ -27,6 +28,7 @@ Future<void> main() async {
   final db = BancoAurora();
   final tema = await db.preferencia('tema');
   final primeiraVez = await ehPrimeiraVez(db);
+  await Efeitos.iniciar(db);
 
   runApp(AuroraApp(db: db, escuro: ValueNotifier(tema != 'claro'), primeiraVez: primeiraVez));
 

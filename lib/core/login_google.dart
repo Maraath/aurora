@@ -27,7 +27,11 @@ class LoginCancelado implements Exception {
 Future<void> entrarComGoogle() async {
   final cliente = nuvem;
   if (cliente == null) throw const AuthException('A nuvem não está disponível.');
-  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+  if (kIsWeb) {
+    // Navegador (PWA): a página vai ao Google e volta para ela mesma; o supabase_flutter
+    // lê o código na volta. A volta tem de estar nas Redirect URLs do Supabase.
+    await cliente.auth.signInWithOAuth(OAuthProvider.google, redirectTo: '${Uri.base.origin}${Uri.base.path}');
+  } else if (Platform.isAndroid || Platform.isIOS) {
     await _nativo(cliente);
   } else {
     await _peloNavegador(cliente);
