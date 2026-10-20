@@ -10,6 +10,7 @@ import '../../core/nuvem.dart';
 import '../../core/tema.dart';
 import '../../data/assistente_repo.dart';
 import '../../data/banco.dart';
+import '../../data/ia/voz.dart';
 import '../vidro.dart';
 
 /// Chat com o assistente, organizado assim:
@@ -18,13 +19,18 @@ import '../vidro.dart';
 /// poucos e um indicador "pensando" com orbe pulsando e texto que alterna.
 /// Cores e fontes do Aurora.
 class AssistentePage extends StatefulWidget {
-  const AssistentePage({super.key, this.compacto = false, this.aoExpandir, this.aoFechar});
+  const AssistentePage(
+      {super.key, this.compacto = false, this.aoExpandir, this.aoFechar, this.gravador, this.transcrever});
 
   /// Mini chat (janela flutuante do canto): cabeçalho pequeno com expandir e
   /// fechar, e letras um pouco menores. A conversa é a mesma da área Assistente.
   final bool compacto;
   final VoidCallback? aoExpandir;
   final VoidCallback? aoFechar;
+
+  /// Microfone e transcrição (os de verdade quando nulos; trocados nos testes).
+  final Gravador Function()? gravador;
+  final TranscreverIa? Function()? transcrever;
 
   @override
   State<AssistentePage> createState() => _AssistentePageState();
@@ -38,6 +44,13 @@ class _AssistentePageState extends State<AssistentePage> {
   final _rolagem = ScrollController();
   String _nome = '';
   StreamSubscription<AuthState>? _login;
+
+  /// Comando por voz: o texto entendido vai para a conversa como se digitado.
+  late final _voz = ComandoDeVoz(
+    aoEntender: (texto) => _enviar(texto),
+    gravador: widget.gravador,
+    transcrever: widget.transcrever,
+  );
 
   /// Mensagens que já estavam na tela ao abrir: estas não animam.
   Set<String>? _jaVistas;
@@ -71,6 +84,7 @@ class _AssistentePageState extends State<AssistentePage> {
   void dispose() {
     AssistenteRepo.pensando.removeListener(_irAoFim);
     _login?.cancel();
+    _voz.dispose();
     _texto.dispose();
     _foco.dispose();
     _rolagem.dispose();
@@ -196,12 +210,14 @@ class _AssistentePageState extends State<AssistentePage> {
                       child: _CartaoConfirmacao(pedido: pedido),
                     ),
             ),
+            _AvisoVoz(voz: _voz),
             _Compositor(
               controle: _texto,
               foco: _foco,
               aoEnviar: _enviar,
               aoMudar: () => setState(() {}),
               autofocus: widget.compacto,
+              voz: _voz,
             ),
           ],
         );
@@ -803,25 +819,34 @@ class _Compositor extends StatelessWidget {
     required this.foco,
     required this.aoEnviar,
     required this.aoMudar,
+    required this.voz,
     this.autofocus = false,
   });
   final TextEditingController controle;
   final FocusNode foco;
   final Future<void> Function([String?]) aoEnviar;
   final VoidCallback aoMudar;
+  final ComandoDeVoz voz;
   final bool autofocus;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(listenable: voz, builder: (context, _) => _montar(context));
+
+  Widget _montar(BuildContext context) {
     final c = context.cores;
     final temTexto = controle.text.trim().isNotEmpty;
+    final fase = voz.fase;
+    final ouvindo = fase == FaseVoz.ouvindo;
     return ContornoAtivo(
       foco: foco,
+      ativo: ouvindo,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 6, 6, 6),
         child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
           Expanded(
-            child: Padding(
+            child: fase != FaseVoz.parada
+                ? _Ouvindo(voz: voz)
+                : Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: CallbackShortcuts(
                 bindings: {
@@ -851,30 +876,202 @@ class _Compositor extends StatelessWidget {
             ),
           ),
           const SizedBox(width: Espaco.sm),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOut,
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: temTexto ? c.gradiente : null,
-              color: temTexto ? null : c.surface2,
-            ),
-            child: Material(
-              type: MaterialType.transparency,
-              shape: const CircleBorder(),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                onTap: temTexto ? () => aoEnviar() : null,
-                child: Tooltip(
-                  message: 'Enviar',
-                  child: Icon(Icons.arrow_upward_rounded, size: 20, color: temTexto ? c.noAccent : c.muted),
-                ),
+          if (ouvindo) ...[
+            _BotaoRedondo(icone: Icons.close_rounded, dica: 'Cancelar a gravação', aoTocar: voz.cancelar),
+            const SizedBox(width: 6),
+            _BotaoRedondo(
+                icone: Icons.arrow_upward_rounded, dica: 'Parar e enviar', destaque: true, aoTocar: voz.concluir),
+          ] else ...[
+            // Com texto digitado o microfone some: o botão da vez é o de enviar.
+            if (!temTexto) ...[
+              _BotaoRedondo(
+                icone: Icons.mic_none_rounded,
+                dica: 'Falar com a Aurora',
+                aoTocar: fase == FaseVoz.parada ? voz.ouvir : null,
               ),
+              const SizedBox(width: 6),
+            ],
+            _BotaoRedondo(
+              icone: Icons.arrow_upward_rounded,
+              dica: 'Enviar',
+              destaque: temTexto,
+              aoTocar: temTexto && fase == FaseVoz.parada ? () => aoEnviar() : null,
             ),
-          ),
+          ],
         ]),
+      ),
+    );
+  }
+}
+
+/// Botão redondo de 40 px do compositor; [destaque] = degradê do botão principal.
+class _BotaoRedondo extends StatelessWidget {
+  const _BotaoRedondo({required this.icone, required this.dica, this.aoTocar, this.destaque = false});
+  final IconData icone;
+  final String dica;
+  final VoidCallback? aoTocar;
+  final bool destaque;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: destaque ? c.gradiente : null,
+        color: destaque ? null : c.surface2,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: aoTocar,
+          child: Tooltip(
+            message: dica,
+            child: Icon(icone,
+                size: 20, color: destaque ? c.noAccent : (aoTocar == null ? c.muted.withValues(alpha: .5) : c.muted)),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// No lugar do campo enquanto grava: ponto pulsando, tempo e barrinhas de
+/// volume; depois, "Entendendo o que você disse…".
+class _Ouvindo extends StatelessWidget {
+  const _Ouvindo({required this.voz});
+  final ComandoDeVoz voz;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    final parado = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (voz.fase == FaseVoz.entendendo) {
+      return SizedBox(
+        height: 40,
+        child: Row(children: [
+          SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: c.accent)),
+          const SizedBox(width: Espaco.sm),
+          Text('Entendendo o que você disse…', style: manrope(15, cor: c.muted)),
+        ]),
+      );
+    }
+    final s = voz.tempo.inSeconds;
+    final restante = voz.maximo - voz.tempo;
+    return SizedBox(
+      height: 40,
+      child: Row(children: [
+        _PontoGravando(parado: parado),
+        const SizedBox(width: Espaco.sm),
+        Text('Ouvindo', style: manrope(15, peso: FontWeight.w600, cor: c.text)),
+        const SizedBox(width: Espaco.sm),
+        Text('${s ~/ 60}:${'${s % 60}'.padLeft(2, '0')}',
+            style: manrope(14, cor: restante.inSeconds <= 10 ? c.warn : c.muted)
+                .copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+        const SizedBox(width: Espaco.md),
+        Expanded(child: _Barras(nivel: voz.nivel, parado: parado)),
+      ]),
+    );
+  }
+}
+
+/// Bolinha magenta que pulsa enquanto grava (parada com "reduzir movimento").
+class _PontoGravando extends StatefulWidget {
+  const _PontoGravando({required this.parado});
+  final bool parado;
+
+  @override
+  State<_PontoGravando> createState() => _PontoGravandoState();
+}
+
+class _PontoGravandoState extends State<_PontoGravando> with SingleTickerProviderStateMixin {
+  late final _pulso = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.parado) _pulso.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulso.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return AnimatedBuilder(
+      animation: _pulso,
+      builder: (_, _) => Container(
+        width: 10,
+        height: 10,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: c.bad,
+          boxShadow: [BoxShadow(color: c.bad.withValues(alpha: .5 * _pulso.value), blurRadius: 8, spreadRadius: 2)],
+        ),
+      ),
+    );
+  }
+}
+
+/// Barrinhas de volume: as do meio sobem mais, como uma onda, com o degradê da Aurora.
+class _Barras extends StatelessWidget {
+  const _Barras({required this.nivel, required this.parado});
+  final double nivel;
+  final bool parado;
+
+  static const _pesos = [.35, .55, .8, 1.0, .8, .6, .9, .7, .45, .3];
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+      for (final p in _pesos)
+        AnimatedContainer(
+          duration: parado ? Duration.zero : const Duration(milliseconds: 120),
+          margin: const EdgeInsets.symmetric(horizontal: 1.5),
+          width: 3,
+          height: 4 + 18 * p * nivel,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(2), gradient: c.gradiente),
+        ),
+    ]);
+  }
+}
+
+/// Recado da voz ("Não ouvi nada", microfone bloqueado) logo acima do campo.
+class _AvisoVoz extends StatelessWidget {
+  const _AvisoVoz({required this.voz});
+  final ComandoDeVoz voz;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return ListenableBuilder(
+      listenable: voz,
+      builder: (context, _) => AnimatedSize(
+        duration: const Duration(milliseconds: 180),
+        child: voz.aviso == null
+            ? const SizedBox(width: double.infinity)
+            : Padding(
+                padding: const EdgeInsets.only(bottom: Espaco.sm, left: 6, right: 6),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Icon(Icons.mic_off_outlined, size: 16, color: c.warn),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text(voz.aviso!, style: manrope(13, cor: c.warn, altura: 1.4))),
+                ]),
+              ),
       ),
     );
   }
@@ -882,9 +1079,12 @@ class _Compositor extends StatelessWidget {
 
 /// Caixa do compositor: borda fina que acende (com halo) quando o campo tem foco.
 class ContornoAtivo extends StatefulWidget {
-  const ContornoAtivo({super.key, required this.foco, required this.child});
+  const ContornoAtivo({super.key, required this.foco, required this.child, this.ativo = false});
   final FocusNode foco;
   final Widget child;
+
+  /// Acende mesmo sem foco (gravando a voz).
+  final bool ativo;
 
   @override
   State<ContornoAtivo> createState() => _ContornoAtivoState();
@@ -908,7 +1108,7 @@ class _ContornoAtivoState extends State<ContornoAtivo> {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final ativo = widget.foco.hasFocus;
+    final ativo = widget.foco.hasFocus || widget.ativo;
     final escuro = Theme.of(context).brightness == Brightness.dark;
     final cantos = BorderRadius.circular(24);
     return AnimatedContainer(

@@ -20,8 +20,9 @@
 import { createClient } from "@supabase/supabase-js";
 import { cadeiaDeModelos, type Escolha, esquemaMensagens, janela, PERSONA } from "./agente.ts";
 import { mensagemDeErro, responderComCadeia } from "./cadeia.ts";
-import { cors, json } from "./comum.ts";
+import { cors, ErroParaPessoa, json } from "./comum.ts";
 import { type MensagemLegada, responderLegado } from "./legado.ts";
+import { FORMATOS_AUDIO, MAX_AUDIO_BASE64, transcrever } from "./transcrever.ts";
 
 /// Voltas seguidas de ferramenta depois de uma mensagem da pessoa.
 const MAX_VOLTAS_FERRAMENTA = 6;
@@ -38,11 +39,34 @@ Deno.serve(async (req) => {
   const { data: { user } } = await comoUsuario.auth.getUser();
   if (!user) return json({ erro: "Entre na sua conta para usar a IA." }, 401);
 
-  let corpo: { pedido?: string; contexto?: string; historico?: MensagemLegada[]; mensagens?: unknown };
+  let corpo: {
+    pedido?: string;
+    contexto?: string;
+    historico?: MensagemLegada[];
+    mensagens?: unknown;
+    audio?: unknown;
+    formato?: unknown;
+  };
   try {
     corpo = await req.json();
   } catch {
     return json({ erro: "Pedido inválido." }, 400);
+  }
+
+  // Comando por voz (app 1.9.7+): { audio: base64, formato } → { texto }. Não
+  // conta no limite do dia: o texto volta ao app e o pedido conta quando ele
+  // for enviado à conversa.
+  if (corpo.audio !== undefined) {
+    const formato = String(corpo.formato ?? "");
+    if (typeof corpo.audio !== "string" || !corpo.audio || !FORMATOS_AUDIO.has(formato)) {
+      return json({ erro: "Áudio inválido." }, 400);
+    }
+    if (corpo.audio.length > MAX_AUDIO_BASE64) return json({ erro: "Áudio longo demais: fale em até um minuto." }, 413);
+    try {
+      return json({ texto: await transcrever(corpo.audio, formato, req.signal) });
+    } catch (e) {
+      return e instanceof ErroParaPessoa ? json({ erro: e.message }, e.status) : json({ erro: mensagemDeErro(e) }, 500);
+    }
   }
   const contexto = String(corpo.contexto ?? "").slice(0, 16000);
   const legado = typeof corpo.pedido === "string";

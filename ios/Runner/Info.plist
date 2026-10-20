@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Para tirar as fotos do check-in de shape.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Para você falar com a Aurora: o áudio vira texto e vai para a conversa.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Para escolher as fotos do check-in de shape.</string>
 	<key>UIApplicationSceneManifest</key>
