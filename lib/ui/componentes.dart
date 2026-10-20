@@ -218,29 +218,71 @@ class Segmentos<T> extends StatelessWidget {
     return p.width;
   }
 
-  Widget _opcao(AuroraCores c, T o) => Semantics(
-        selected: o == selecionado,
-        button: true,
-        child: Material(
-          color: o == selecionado ? c.surface : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          clipBehavior: Clip.antiAlias,
+  /// Selecionada: degradê da marca bem leve, contorno violeta e um traço com o
+  /// degradê embaixo. Mouse em cima: turquesa, para não se confundir com a
+  /// seleção.
+  Widget _opcao(AuroraCores c, T o) {
+    final ativo = o == selecionado;
+    final cantos = BorderRadius.circular(10);
+    return Semantics(
+      selected: ativo,
+      button: true,
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: cantos,
+        clipBehavior: Clip.antiAlias,
+        child: Ink(
+          decoration: ativo
+              ? BoxDecoration(
+                  borderRadius: cantos,
+                  gradient: LinearGradient(colors: [
+                    c.gradIni.withValues(alpha: 0.20),
+                    c.gradFim.withValues(alpha: 0.22),
+                  ]),
+                  border: Border.all(color: c.violeta.withValues(alpha: 0.45), width: 0.6),
+                )
+              : null,
           child: InkWell(
             onTap: () => aoEscolher(o),
+            hoverColor: c.teal.withValues(alpha: 0.10),
+            highlightColor: c.teal.withValues(alpha: 0.06),
+            splashColor: c.violeta.withValues(alpha: 0.14),
             child: SizedBox(
               height: 40,
-              child: Center(
-                child: Text(
-                  rotulo(o),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: manrope(13, peso: FontWeight.w700, cor: o == selecionado ? c.text : c.muted),
+              child: Stack(children: [
+                Center(
+                  child: Text(
+                    rotulo(o),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: manrope(13, peso: FontWeight.w700, cor: ativo ? c.text : c.muted),
+                  ),
                 ),
-              ),
+                if (ativo)
+                  Positioned(
+                    bottom: 4,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: FractionallySizedBox(
+                        widthFactor: 0.42,
+                        child: Container(
+                          height: 2,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            gradient: LinearGradient(colors: [c.gradIni, c.gradFim]),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ]),
             ),
           ),
         ),
-      );
+      ),
+    );
+  }
 }
 
 /// Contador do topo das telas (atrasadas / abertas / feitas hoje).

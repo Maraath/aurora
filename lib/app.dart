@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/tema.dart';
 import 'data/banco.dart';
+import 'ui/barra_rolagem.dart';
 import 'ui/bloqueio_ui.dart';
 import 'ui/janela/moldura_janela.dart';
 import 'ui/shell.dart';
@@ -47,6 +48,7 @@ class AuroraApp extends StatelessWidget {
         valueListenable: escuro,
         builder: (context, ehEscuro, _) => MaterialApp(
           title: 'Aurora',
+          scrollBehavior: const RolagemAurora(),
           debugShowCheckedModeBanner: false,
           theme: temaAurora(Brightness.light),
           darkTheme: temaAurora(Brightness.dark),

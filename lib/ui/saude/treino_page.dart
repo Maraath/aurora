@@ -126,6 +126,8 @@ class SubAbas<T> extends StatelessWidget {
           child: InkWell(
             onTap: () => aoEscolher(o),
             customBorder: const StadiumBorder(),
+            hoverColor: c.teal.withValues(alpha: 0.10),
+            splashColor: c.violeta.withValues(alpha: 0.14),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               child: Row(

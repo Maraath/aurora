@@ -199,6 +199,12 @@ ThemeData temaAurora(Brightness brilho) {
       displayColor: c.text,
     ),
     dividerColor: c.line,
+    // Mouse em cima: turquesa; clique: onda violeta (no lugar do cinza do
+    // Material). Vale para listas, menus e botões sem cor própria.
+    hoverColor: c.teal.withValues(alpha: 0.08),
+    focusColor: c.teal.withValues(alpha: 0.12),
+    highlightColor: c.teal.withValues(alpha: 0.05),
+    splashColor: c.violeta.withValues(alpha: 0.12),
   );
 }
 
