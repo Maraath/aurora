@@ -46,6 +46,11 @@ function TrocarNoGitHubBaixar([string]$local, [string]$nomeFixo) {
   $copia = Join-Path $pasta $nomeFixo
   Copy-Item $local $copia -Force
   PublicarNoGitHub 'baixar' 'Baixar o Aurora' 'Sempre a versão mais nova. Windows: Aurora-setup.exe. Android: Aurora.apk.' @($copia)
+  # O selo "Latest" do GitHub fica sempre nesta (só uma release pode ter): quem
+  # abre a página vê os links de download, e as versões por plataforma ficam
+  # como histórico (elas são criadas com --latest=false).
+  $r = ChamarGitHub release edit 'baixar' --repo $RepoInstaladores --latest
+  if (-not $r.Ok) { Write-Warning "Não marquei a release baixar como Latest: $($r.Saida)" }
 }
 
 # O CLI adivinha o tipo pelo conteúdo e marca o APK (um zip por dentro) como
