@@ -72,8 +72,9 @@ void main() {
     await repo.salvarAlvo(TipoDia.treino, const Nutrientes(2700, 160, 320, 70)); // regravar substitui
     expect(await db.select(db.alvosDieta).get(), hasLength(2));
 
-    // Exemplo: Treino A segunda e quinta, Treino B terça e sexta.
-    final segunda = DateTime(2026, 10, 19), domingo = DateTime(2026, 10, 18);
+    // Exemplo: Treino A segunda e quinta, Treino B terça e sexta. Semana longe de
+    // hoje: o exemplo tem um treino feito 3 dias atrás, que viraria dia de treino.
+    final segunda = DateTime(2030, 1, 7), domingo = DateTime(2030, 1, 6);
     expect(await repo.tipoDoDia(segunda), TipoDia.treino);
     expect(await repo.tipoDoDia(domingo), TipoDia.descanso);
     expect((await repo.carregarDia(segunda)).alvo?.kcal, 2700);
