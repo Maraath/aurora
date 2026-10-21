@@ -51,5 +51,6 @@ if ($SemEnviar) { return }
 Enviar $arquivo "windows/$nome"
 Substituir $arquivo 'baixar/Aurora-setup.exe'
 Substituir build\instalador\versao.json 'windows/versao.json'
+ApagarAntigos 'windows' @($nome)
 Write-Host "Publicado: Aurora $versao"
 Write-Host "Link fixo para baixar: $UrlBalde/baixar/Aurora-setup.exe"

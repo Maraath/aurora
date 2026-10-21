@@ -30,3 +30,18 @@ function Substituir([string]$local, [string]$remoto) {
   npx --yes supabase --experimental storage cp $local "ss:///atualizacoes/$remoto" --linked --cache-control 'max-age=60' --content-type (TipoDe $remoto)
   if ($LASTEXITCODE -ne 0) { throw "Envio de $remoto falhou." }
 }
+
+# Apaga da pasta os instaladores de versões antigas (o balde gratuito tem 1 GB
+# e cada versão do Android ocupa ~80 MB). Chamar só depois do versao.json novo
+# no ar: daí nenhum app aponta mais para os antigos. Fica o versao.json e os
+# arquivos em $manter.
+function ApagarAntigos([string]$pasta, [string[]]$manter) {
+  $lista = npx --yes supabase --experimental storage ls "ss:///atualizacoes/$pasta/" --linked | Out-String
+  if ($LASTEXITCODE -ne 0) { Write-Warning "Não listei $pasta/; nada foi apagado."; return }
+  $antigos = [regex]::Matches($lista, '"(Aurora-[^"/]+\.(apk|exe))"') | ForEach-Object { $_.Groups[1].Value } |
+    Where-Object { $manter -notcontains $_ }
+  if (-not $antigos) { return }
+  Write-Host "Apagando versões antigas de ${pasta}/: $($antigos -join ', ')"
+  npx --yes supabase --experimental storage rm ($antigos | ForEach-Object { "ss:///atualizacoes/$pasta/$_" }) --linked --yes
+  if ($LASTEXITCODE -ne 0) { Write-Warning "Não apaguei as versões antigas de $pasta/ (a publicação valeu)." }
+}

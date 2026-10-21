@@ -60,5 +60,6 @@ if ($SemEnviar) { return }
 foreach ($a in $abis.Values) { Enviar "build\instalador\$($a.instalador)" "android/$($a.instalador)" }
 Substituir "build\instalador\$($abis['arm64-v8a'].instalador)" 'baixar/Aurora.apk'
 Substituir build\instalador\versao-android.json 'android/versao.json'
+ApagarAntigos 'android' @($abis.Values | ForEach-Object { $_.instalador })
 Write-Host "Publicado: Aurora $versao para Android"
 Write-Host "Link fixo para baixar: $UrlBalde/baixar/Aurora.apk"
