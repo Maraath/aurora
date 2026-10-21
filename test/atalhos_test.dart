@@ -7,6 +7,7 @@ import 'package:aurora/data/busca.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/ui/atalhos/captura.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -191,7 +192,25 @@ void main() {
       await t.tap(find.byTooltip('Buscar em tudo'));
       await assentar(t);
       expect(find.text('IR PARA'), findsOneWidget);
+      // No celular não há teclado físico: sem dicas de teclas, com botão de fechar.
+      expect(find.text('navegar'), findsNothing);
+      await t.tap(find.byTooltip('Fechar a busca'));
+      await assentar(t);
+      expect(find.text('IR PARA'), findsNothing);
       await t.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('computador: busca mostra as dicas de teclado', (t) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+      await abrir(t, const Size(1280, 900));
+      await t.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await t.sendKeyEvent(LogicalKeyboardKey.keyK);
+      await t.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await assentar(t);
+      expect(find.text('navegar'), findsOneWidget);
+      expect(find.byTooltip('Fechar a busca'), findsNothing);
+      await t.pumpWidget(const SizedBox());
+      debugDefaultTargetPlatformOverride = null;
     });
   });
 }

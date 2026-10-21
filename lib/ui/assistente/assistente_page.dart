@@ -896,7 +896,7 @@ class _Compositor extends StatelessWidget {
                   style: manrope(15, cor: c.text, altura: 1.5),
                   cursorColor: c.accent,
                   decoration: InputDecoration(
-                    hintText: 'Peça algo ao Aurora…',
+                    hintText: 'Peça algo à Aurora…',
                     hintStyle: manrope(15, cor: c.muted),
                     border: InputBorder.none,
                     isDense: true,

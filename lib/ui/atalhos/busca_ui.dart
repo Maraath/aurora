@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -255,6 +256,9 @@ class _BuscaState extends State<_Busca> {
     final termo = _texto.text.trim();
     final cantos = BorderRadius.circular(20);
     final altura = MediaQuery.sizeOf(context).height;
+    // Celular (Android e iPhone, inclusive o app web no iPhone): sem dicas de
+    // teclado, e o "Esc" vira um botão de fechar para tocar.
+    final toque = defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS;
 
     final caixa = Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Padding(
@@ -289,7 +293,14 @@ class _BuscaState extends State<_Busca> {
               ),
             ),
           ),
-          _Tecla('Esc'),
+          if (toque)
+            IconButton(
+              tooltip: 'Fechar a busca',
+              icon: Icon(Icons.close_rounded, color: c.muted),
+              onPressed: () => Navigator.of(context).pop(),
+            )
+          else
+            _Tecla('Esc'),
         ]),
       ),
       Divider(height: 1, color: c.line),
@@ -338,15 +349,17 @@ class _BuscaState extends State<_Busca> {
                 },
               ),
       ),
-      Divider(height: 1, color: c.line),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        child: Wrap(spacing: 16, runSpacing: 6, children: [
-          _Dica(teclas: const ['↑', '↓'], texto: 'navegar'),
-          _Dica(teclas: const ['Enter'], texto: 'abrir'),
-          _Dica(teclas: const ['Esc'], texto: 'fechar'),
-        ]),
-      ),
+      if (!toque) ...[
+        Divider(height: 1, color: c.line),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+          child: Wrap(spacing: 16, runSpacing: 6, children: [
+            _Dica(teclas: const ['↑', '↓'], texto: 'navegar'),
+            _Dica(teclas: const ['Enter'], texto: 'abrir'),
+            _Dica(teclas: const ['Esc'], texto: 'fechar'),
+          ]),
+        ),
+      ],
     ]);
 
     return SafeArea(
