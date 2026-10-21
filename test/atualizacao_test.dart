@@ -22,6 +22,23 @@ void main() {
     expect(novaVersao(json, 3), isNull);
   });
 
+  test('endereço do GitHub quando vem no versao.json; sem ele, o balde', () {
+    expect(novaVersao(json, 1)!.url, isNull);
+    const gh = 'https://github.com/Maraath/aurora-instaladores/releases/download/windows-1.0.1/Aurora-1.0.1-setup.exe';
+    expect(novaVersao({...json, 'url': gh}, 1)!.url, gh);
+    // Só https: qualquer outra coisa cai no balde.
+    expect(novaVersao({...json, 'url': 'http://exemplo.test/a.exe'}, 1)!.url, isNull);
+    expect(novaVersao({...json, 'url': 'arquivo.exe'}, 1)!.url, isNull);
+    final android = {
+      'versao': '1.0.2',
+      'build': 3,
+      'abis': {
+        'arm64-v8a': {'instalador': 'Aurora-1.0.2-arm64-v8a.apk', 'sha256': 'AA', 'url': '$gh.apk'},
+      },
+    };
+    expect(novaVersao(android, 2, abis: ['arm64-v8a'])!.url, '$gh.apk');
+  });
+
   group('Android, um APK por arquitetura', () {
     final android = {
       'versao': '1.0.2',

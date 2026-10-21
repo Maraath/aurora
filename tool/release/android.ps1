@@ -36,6 +36,8 @@ $env:JAVA_TOOL_OPTIONS = $u.JAVA_TOOL_OPTIONS
 flutter build apk --release --split-per-abi
 if ($LASTEXITCODE -ne 0) { throw 'flutter build falhou.' }
 
+. "$PSScriptRoot\comum.ps1"
+$tag = "android-$versao"
 $bt = Get-ChildItem C:\Android\Sdk\build-tools | Sort-Object Name | Select-Object -Last 1
 New-Item -ItemType Directory -Force build\instalador | Out-Null
 $abis = [ordered]@{}
@@ -46,7 +48,8 @@ foreach ($abi in 'arm64-v8a', 'armeabi-v7a', 'x86_64') {
   if ($certificado -notmatch 'CN=Maraath') { throw "O APK $abi não saiu com a chave de lançamento:`n$certificado" }
   $nome = "Aurora-$versao-$abi.apk"
   Copy-Item $origem "build\instalador\$nome" -Force
-  $abis[$abi] = [ordered]@{ instalador = $nome; sha256 = (Get-FileHash "build\instalador\$nome" -Algorithm SHA256).Hash.ToLower() }
+  $abis[$abi] = [ordered]@{ instalador = $nome; sha256 = (Get-FileHash "build\instalador\$nome" -Algorithm SHA256).Hash.ToLower()
+    url = (UrlNoGitHub $tag $nome) }
   Write-Host "APK: build\instalador\$nome ($([math]::Round((Get-Item "build\instalador\$nome").Length / 1MB, 1)) MB)"
 }
 $json = [ordered]@{ versao = $versao; build = $build; notas = $Notas; abis = $abis } | ConvertTo-Json -Depth 4
@@ -56,10 +59,11 @@ if ($SemEnviar) { return }
 
 # Os APKs vão antes do versao.json. Aurora.apk (arm64, o de quase todo
 # celular) é o link fixo para instalar pela 1ª vez.
-. "$PSScriptRoot\comum.ps1"
+PublicarNoGitHub $tag "Aurora $versao para Android" $Notas @($abis.Values | ForEach-Object { "build\instalador\$($_.instalador)" })
+TrocarNoGitHubBaixar "build\instalador\$($abis['arm64-v8a'].instalador)" 'Aurora.apk'
 foreach ($a in $abis.Values) { Enviar "build\instalador\$($a.instalador)" "android/$($a.instalador)" }
 Substituir "build\instalador\$($abis['arm64-v8a'].instalador)" 'baixar/Aurora.apk'
 Substituir build\instalador\versao-android.json 'android/versao.json'
 ApagarAntigos 'android' @($abis.Values | ForEach-Object { $_.instalador })
 Write-Host "Publicado: Aurora $versao para Android"
-Write-Host "Link fixo para baixar: $UrlBalde/baixar/Aurora.apk"
+Write-Host "Link fixo para baixar: $(UrlNoGitHub 'baixar' 'Aurora.apk')"

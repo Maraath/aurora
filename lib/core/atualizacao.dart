@@ -24,6 +24,7 @@ class Atualizacao {
     required this.notas,
     required this.instalador,
     required this.sha256,
+    this.url,
   });
 
   final String versao;
@@ -33,6 +34,10 @@ class Atualizacao {
   /// Nome do arquivo na pasta da plataforma (ex.: Aurora-1.0.1-setup.exe).
   final String instalador;
   final String sha256;
+
+  /// Endereço completo do instalador (GitHub Releases, desde a 1.10.1). Sem ele,
+  /// baixa da pasta da plataforma no balde, como as versões antigas.
+  final String? url;
 
   /// No Android há um APK por arquitetura ("abis": {"arm64-v8a": {instalador,
   /// sha256}, …}); [abis] é a lista do aparelho, da preferida para a última.
@@ -50,7 +55,13 @@ class Atualizacao {
       notas: (j['notas'] as String?) ?? '',
       instalador: arquivo['instalador'] as String,
       sha256: (arquivo['sha256'] as String).toLowerCase(),
+      url: _soHttps(arquivo['url']),
     );
+  }
+
+  static String? _soHttps(Object? url) {
+    final uri = url is String ? Uri.tryParse(url) : null;
+    return uri != null && uri.scheme == 'https' && uri.host.isNotEmpty ? url as String : null;
   }
 }
 
@@ -140,7 +151,9 @@ class Atualizador {
   Future<File> _baixar(Atualizacao a) async {
     final pasta = await getTemporaryDirectory();
     final arquivo = File('${pasta.path}${Platform.pathSeparator}${a.instalador}');
-    final resposta = await http.Client().send(http.Request('GET', Uri.parse('$_urlBalde/$_pasta/${a.instalador}')));
+    // O GitHub responde com redirecionamento para o arquivo; o http segue sozinho.
+    final endereco = a.url ?? '$_urlBalde/$_pasta/${a.instalador}';
+    final resposta = await http.Client().send(http.Request('GET', Uri.parse(endereco)));
     if (resposta.statusCode != 200) throw HttpException('download respondeu ${resposta.statusCode}');
     final total = resposta.contentLength ?? 0;
     var recebido = 0;
