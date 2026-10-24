@@ -54,6 +54,15 @@ class MaisPage extends StatelessWidget {
           detalhe: 'Etapas e linha do tempo',
           aoTocar: () => ir(Secao.projetos),
         ),
+        const SizedBox(height: 10),
+        _Linha(
+          icone: Icons.sticky_note_2_outlined,
+          fundo: c.badSoft,
+          frente: c.bad,
+          titulo: 'Anotações',
+          detalhe: 'Notas, listas e ideias em áudio',
+          aoTocar: () => ir(Secao.anotacoes),
+        ),
         const SizedBox(height: 18),
         _Linha(
           icone: Icons.person_outline_rounded,

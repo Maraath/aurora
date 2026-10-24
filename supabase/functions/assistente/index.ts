@@ -22,7 +22,7 @@ import { cadeiaDeModelos, type Escolha, esquemaMensagens, janela, PERSONA } from
 import { mensagemDeErro, responderComCadeia } from "./cadeia.ts";
 import { cors, ErroParaPessoa, json } from "./comum.ts";
 import { type MensagemLegada, responderLegado } from "./legado.ts";
-import { FORMATOS_AUDIO, MAX_AUDIO_BASE64, transcrever } from "./transcrever.ts";
+import { FORMATOS_AUDIO, FORMATOS_NOTA, MAX_AUDIO_BASE64, MAX_NOTA_BASE64, transcrever } from "./transcrever.ts";
 
 /// Voltas seguidas de ferramenta depois de uma mensagem da pessoa.
 const MAX_VOLTAS_FERRAMENTA = 6;
@@ -46,6 +46,7 @@ Deno.serve(async (req) => {
     mensagens?: unknown;
     audio?: unknown;
     formato?: unknown;
+    uso?: unknown;
   };
   try {
     corpo = await req.json();
@@ -56,14 +57,19 @@ Deno.serve(async (req) => {
   // Comando por voz (app 1.9.7+): { audio: base64, formato } → { texto }. Não
   // conta no limite do dia: o texto volta ao app e o pedido conta quando ele
   // for enviado à conversa.
+  // Nota de áudio das Anotações (app 1.11+): { audio, formato, uso: "nota" },
+  // até 10 minutos, transcrita como ditado.
   if (corpo.audio !== undefined) {
     const formato = String(corpo.formato ?? "");
-    if (typeof corpo.audio !== "string" || !corpo.audio || !FORMATOS_AUDIO.has(formato)) {
+    const nota = corpo.uso === "nota";
+    if (typeof corpo.audio !== "string" || !corpo.audio || !(nota ? FORMATOS_NOTA : FORMATOS_AUDIO).has(formato)) {
       return json({ erro: "Áudio inválido." }, 400);
     }
-    if (corpo.audio.length > MAX_AUDIO_BASE64) return json({ erro: "Áudio longo demais: fale em até um minuto." }, 413);
+    if (corpo.audio.length > (nota ? MAX_NOTA_BASE64 : MAX_AUDIO_BASE64)) {
+      return json({ erro: nota ? "Áudio longo demais para transcrever (até 10 minutos)." : "Áudio longo demais: fale em até um minuto." }, 413);
+    }
     try {
-      return json({ texto: await transcrever(corpo.audio, formato, req.signal) });
+      return json({ texto: await transcrever(corpo.audio, formato, req.signal, nota) });
     } catch (e) {
       return e instanceof ErroParaPessoa ? json({ erro: e.message }, e.status) : json({ erro: mensagemDeErro(e) }, 500);
     }

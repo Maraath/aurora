@@ -39,7 +39,11 @@ class AtalhosFlutuantes extends StatefulWidget {
     required this.aoAbrirAssistente,
     this.controle,
     this.assistenteNaTela,
+    this.aoNovaNota,
   });
+
+  /// "Nova anotação" e "Gravar ideia": a Shell abre Anotações já criando a nota.
+  final ValueChanged<TipoNota>? aoNovaNota;
 
   /// Verdadeiro quando a área Assistente está aberta (ela mesma mostra os avisos).
   final bool Function()? assistenteNaTela;
@@ -140,6 +144,10 @@ class _AtalhosFlutuantesState extends State<AtalhosFlutuantes> {
         LogicalKeyboardKey.keyL: _novoLancamento,
         LogicalKeyboardKey.keyR: _novoLembrete,
         LogicalKeyboardKey.keyH: () => _abrir(_Painel.habitos),
+        if (widget.aoNovaNota != null) ...{
+          LogicalKeyboardKey.keyN: () => _novaNota(TipoNota.texto),
+          LogicalKeyboardKey.keyG: () => _novaNota(TipoNota.audio),
+        },
       }[k];
       if (acao != null) {
         acao();
@@ -183,6 +191,11 @@ class _AtalhosFlutuantesState extends State<AtalhosFlutuantes> {
     await abrirFormLembrete(context);
   }
 
+  void _novaNota(TipoNota tipo) {
+    _fechar();
+    widget.aoNovaNota?.call(tipo);
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
@@ -202,6 +215,8 @@ class _AtalhosFlutuantesState extends State<AtalhosFlutuantes> {
             aoLancamento: _novoLancamento,
             aoLembrete: _novoLembrete,
             aoHabito: () => _abrir(_Painel.habitos),
+            aoNota: widget.aoNovaNota == null ? null : () => _novaNota(TipoNota.texto),
+            aoGravar: widget.aoNovaNota == null ? null : () => _novaNota(TipoNota.audio),
           ),
         ),
       _Painel.captura => SizedBox(
@@ -525,8 +540,11 @@ class _MenuMais extends StatelessWidget {
     required this.aoLancamento,
     required this.aoLembrete,
     required this.aoHabito,
+    this.aoNota,
+    this.aoGravar,
   });
   final VoidCallback aoCaptura, aoTarefa, aoLancamento, aoLembrete, aoHabito;
+  final VoidCallback? aoNota, aoGravar;
 
   @override
   Widget build(BuildContext context) {
@@ -539,6 +557,10 @@ class _MenuMais extends StatelessWidget {
         _Opcao(icone: Icons.attach_money_rounded, cor: c.teal, titulo: 'Novo lançamento', sub: 'gasto ou receita', tecla: 'L', aoTocar: aoLancamento),
         _Opcao(icone: Icons.notifications_none_rounded, cor: c.warn, titulo: 'Novo lembrete', sub: 'com hora para avisar', tecla: 'R', aoTocar: aoLembrete),
         _Opcao(icone: Icons.repeat_rounded, cor: c.bad, titulo: 'Marcar hábito', sub: 'feito hoje', tecla: 'H', aoTocar: aoHabito),
+        if (aoNota != null)
+          _Opcao(icone: Icons.sticky_note_2_outlined, cor: c.violeta, titulo: 'Nova anotação', sub: 'nota ou lista', tecla: 'N', aoTocar: aoNota!),
+        if (aoGravar != null)
+          _Opcao(icone: Icons.mic_none_rounded, cor: c.bad, titulo: 'Gravar ideia', sub: 'nota em áudio', tecla: 'G', aoTocar: aoGravar!),
       ]),
     );
   }

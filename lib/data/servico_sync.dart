@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/nuvem.dart';
+import 'anotacoes_repo.dart';
 import 'banco.dart';
 import 'fotos_sync.dart';
 import 'shape_repo.dart';
@@ -116,6 +117,12 @@ class ServicoSync {
       if (r.enviadas + r.apagadas > 0) debugPrint('Fotos: ${r.enviadas} enviadas, ${r.apagadas} apagadas da nuvem');
     } catch (e) {
       debugPrint('Shape: sincronização das fotos falhou: $e');
+    }
+    try {
+      final r = await AnotacoesRepo(s.db).sincronizarAudios();
+      if (r.enviados + r.apagados > 0) debugPrint('Áudios: ${r.enviados} enviados, ${r.apagados} apagados da nuvem');
+    } catch (e) {
+      debugPrint('Anotações: sincronização dos áudios falhou: $e');
     }
   }
 

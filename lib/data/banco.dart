@@ -331,6 +331,52 @@ class Automacoes extends Table with Sincronizavel {
   TextColumn get ultimaExecucao => text().nullable()();
 }
 
+/// Pasta de anotações ("Ideias", "Trabalho"). Nota sem pasta aparece só em "Todas".
+@DataClassName('PastaNota')
+class PastasNotas extends Table with Sincronizavel {
+  TextColumn get nome => text()();
+  IntColumn get ordem => integer().withDefault(const Constant(0))();
+}
+
+/// Como a nota foi criada (muda o ícone e o que o editor mostra primeiro).
+enum TipoNota { texto, lista, foto, audio }
+
+/// Anotação. As caixinhas ficam em [itens], em JSON (`[{"t": "Ovos", "f": true}]`):
+/// a nota é editada inteira e, como nas outras tabelas, a versão mais nova vence.
+class Notas extends Table with Sincronizavel {
+  TextColumn get pastaId => text().nullable().references(PastasNotas, #id)();
+  TextColumn get tipo => textEnum<TipoNota>().withDefault(Constant(TipoNota.texto.name))();
+  TextColumn get titulo => text().withDefault(const Constant(''))();
+  TextColumn get texto => text().withDefault(const Constant(''))();
+  TextColumn get itens => text().nullable()();
+  BoolColumn get fixada => boolean().withDefault(const Constant(false))();
+}
+
+/// Foto ou áudio de uma nota. Como as fotos do Shape: a LINHA sempre
+/// sincroniza; o arquivo só se [naNuvem]. Fotos usam o mesmo CofreFotos
+/// (`<suporte>/fotos/<id>.webp`, balde "fotos"); áudios, o CofreAudios
+/// (`<suporte>/audios/<id>.<ext>`, balde privado "audios").
+@DataClassName('AnexoNota')
+class AnexosNota extends Table with Sincronizavel {
+  TextColumn get notaId => text().references(Notas, #id)();
+
+  /// 'foto' ou 'audio'.
+  TextColumn get tipo => text()();
+  TextColumn get hash => text().nullable()();
+  BoolColumn get naNuvem => boolean().withDefault(const Constant(false))();
+
+  /// Tipo do arquivo de áudio ("audio/mp4", "audio/flac", "audio/wav").
+  TextColumn get formato => text().nullable()();
+  IntColumn get duracaoMs => integer().nullable()();
+
+  /// Volume do áudio em 48 dígitos de 0 a 9, para desenhar a onda sem abrir o arquivo.
+  TextColumn get onda => text().nullable()();
+
+  /// Texto do áudio: nulo até transcrever; vazio se não havia fala.
+  TextColumn get transcricao => text().nullable()();
+  IntColumn get ordem => integer().withDefault(const Constant(0))();
+}
+
 enum PapelMensagem { eu, aurora, sistema }
 
 /// Conversa com o assistente. Pedidos que só a IA responde ficam com
@@ -380,6 +426,9 @@ class Preferencias extends Table {
   RegistrosAlimentacao,
   MensagensAssistente,
   Automacoes,
+  PastasNotas,
+  Notas,
+  AnexosNota,
   Preferencias,
 ])
 class BancoAurora extends _$BancoAurora {
@@ -397,7 +446,7 @@ class BancoAurora extends _$BancoAurora {
             ));
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -453,6 +502,12 @@ class BancoAurora extends _$BancoAurora {
           if (de < 12) {
             // Idempotente como o passo 11 (o app dev e o instalado dividem o banco).
             if (!await _temColuna('lembretes', 'despertar')) await m.addColumn(lembretes, lembretes.despertar);
+          }
+          if (de < 13) {
+            // CREATE TABLE IF NOT EXISTS: aguenta rodar de novo (ver o passo 10).
+            await m.createTable(pastasNotas);
+            await m.createTable(notas);
+            await m.createTable(anexosNota);
           }
         },
         beforeOpen: (detalhes) async {

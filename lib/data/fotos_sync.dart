@@ -1,9 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 
+import 'anotacoes_repo.dart';
 import 'shape_repo.dart';
 
-/// Leva as imagens das fotos depois da sincronização das tabelas:
+/// Leva as imagens das fotos (Shape e anotações, o mesmo cofre) depois da
+/// sincronização das tabelas:
 ///  1. apaga da nuvem o que ficou pendente (fotos apagadas ou tiradas da
 ///     nuvem sem internet);
 ///  2. envia as fotos marcadas para subir (modo "Sincronizar" ou "Enviar para
@@ -12,8 +14,9 @@ import 'shape_repo.dart';
 /// Não baixa nada: miniaturas e fotos inteiras descem quando aparecem na tela
 /// (CofreFotos.obter) e ficam guardadas.
 class SincronizadorFotos {
-  SincronizadorFotos(this.repo);
+  SincronizadorFotos(this.repo, {AnotacoesRepo? notas}) : notas = notas ?? AnotacoesRepo(repo.db, cofreFotos: repo.cofre);
   final ShapeRepo repo;
+  final AnotacoesRepo notas;
 
   Future<({int enviadas, int apagadas})> sincronizar() async {
     final cofre = repo.cofre;
@@ -30,14 +33,20 @@ class SincronizadorFotos {
       }
 
       final ativas = {for (final f in await repo.fotosAtivas()) f.id: f};
+      final dasNotas = {for (final a in await notas.fotosAtivas()) a.id: a};
       for (final id in await cofre.pendentesEnviar()) {
         final foto = ativas[id];
-        if (foto == null) {
+        final anexo = dasNotas[id];
+        if (foto == null && anexo == null) {
           await cofre.esquecerEnvio(id);
           continue;
         }
         try {
-          await repo.enviarParaNuvem(foto);
+          if (foto != null) {
+            await repo.enviarParaNuvem(foto);
+          } else {
+            await notas.enviarParaNuvem(anexo!);
+          }
           enviadas++;
         } on StateError catch (e) {
           // A imagem não está aqui (trocada em outro aparelho): nada a enviar.
@@ -46,7 +55,10 @@ class SincronizadorFotos {
         }
       }
     }
-    await cofre.limparSobras({for (final f in await repo.fotosAtivas()) f.id});
+    await cofre.limparSobras({
+      for (final f in await repo.fotosAtivas()) f.id,
+      for (final a in await notas.fotosAtivas()) a.id,
+    });
     if (enviadas > 0) repo.db.notifyUpdates({TableUpdate.onTable(repo.db.fotosShape)});
     return (enviadas: enviadas, apagadas: apagadas);
   }

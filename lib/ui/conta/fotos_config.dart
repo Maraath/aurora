@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/nuvem.dart';
 import '../../core/tema.dart';
+import '../../data/anotacoes_repo.dart';
 import '../../data/banco.dart';
 import '../../data/fotos/cofre.dart';
 import '../../data/shape_repo.dart';
@@ -57,7 +58,10 @@ class _SecaoFotosState extends State<SecaoFotos> {
       nao: 'Cancelar',
     );
     if (ok != true) return;
-    final liberado = await _cofre.limparCache([for (final f in await _repo.fotosAtivas()) f.ref]);
+    final liberado = await _cofre.limparCache([
+      for (final f in await _repo.fotosAtivas()) f.ref,
+      for (final a in await AnotacoesRepo(widget.db, cofreFotos: _cofre).fotosAtivas()) a.refFoto,
+    ]);
     await _medir();
     if (mounted) {
       setState(() => _aviso = liberado == 0
@@ -79,7 +83,7 @@ class _SecaoFotosState extends State<SecaoFotos> {
           Text('Onde guardar minhas fotos', style: sora(16)),
           const SizedBox(height: 4),
           Text(
-            'Vale para as fotos de evolução do corpo (Shape) e as próximas que o Aurora tiver. '
+            'Vale para as fotos de evolução do corpo (Shape) e para as fotos e os áudios das anotações. '
             'Antes de guardar, toda foto é reduzida e perde a localização e os outros dados ocultos.',
             style: manrope(13, cor: c.muted, altura: 1.5),
           ),

@@ -13387,6 +13387,1773 @@ class AutomacoesCompanion extends UpdateCompanion<Automacao> {
   }
 }
 
+class $PastasNotasTable extends PastasNotas
+    with TableInfo<$PastasNotasTable, PastaNota> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PastasNotasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ordemMeta = const VerificationMeta('ordem');
+  @override
+  late final GeneratedColumn<int> ordem = GeneratedColumn<int>(
+    'ordem',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    nome,
+    ordem,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pastas_notas';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PastaNota> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('ordem')) {
+      context.handle(
+        _ordemMeta,
+        ordem.isAcceptableOrUnknown(data['ordem']!, _ordemMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PastaNota map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PastaNota(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      ordem: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ordem'],
+      )!,
+    );
+  }
+
+  @override
+  $PastasNotasTable createAlias(String alias) {
+    return $PastasNotasTable(attachedDatabase, alias);
+  }
+}
+
+class PastaNota extends DataClass implements Insertable<PastaNota> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String nome;
+  final int ordem;
+  const PastaNota({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.nome,
+    required this.ordem,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['nome'] = Variable<String>(nome);
+    map['ordem'] = Variable<int>(ordem);
+    return map;
+  }
+
+  PastasNotasCompanion toCompanion(bool nullToAbsent) {
+    return PastasNotasCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      nome: Value(nome),
+      ordem: Value(ordem),
+    );
+  }
+
+  factory PastaNota.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PastaNota(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      nome: serializer.fromJson<String>(json['nome']),
+      ordem: serializer.fromJson<int>(json['ordem']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'nome': serializer.toJson<String>(nome),
+      'ordem': serializer.toJson<int>(ordem),
+    };
+  }
+
+  PastaNota copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? nome,
+    int? ordem,
+  }) => PastaNota(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    nome: nome ?? this.nome,
+    ordem: ordem ?? this.ordem,
+  );
+  PastaNota copyWithCompanion(PastasNotasCompanion data) {
+    return PastaNota(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      ordem: data.ordem.present ? data.ordem.value : this.ordem,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PastaNota(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('nome: $nome, ')
+          ..write('ordem: $ordem')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, criadoEm, atualizadoEm, apagadoEm, nome, ordem);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PastaNota &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.nome == this.nome &&
+          other.ordem == this.ordem);
+}
+
+class PastasNotasCompanion extends UpdateCompanion<PastaNota> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> nome;
+  final Value<int> ordem;
+  final Value<int> rowid;
+  const PastasNotasCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.ordem = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PastasNotasCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String nome,
+    this.ordem = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : nome = Value(nome);
+  static Insertable<PastaNota> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? nome,
+    Expression<int>? ordem,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (nome != null) 'nome': nome,
+      if (ordem != null) 'ordem': ordem,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PastasNotasCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? nome,
+    Value<int>? ordem,
+    Value<int>? rowid,
+  }) {
+    return PastasNotasCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      nome: nome ?? this.nome,
+      ordem: ordem ?? this.ordem,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (ordem.present) {
+      map['ordem'] = Variable<int>(ordem.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PastasNotasCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('nome: $nome, ')
+          ..write('ordem: $ordem, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $NotasTable extends Notas with TableInfo<$NotasTable, Nota> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NotasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pastaIdMeta = const VerificationMeta(
+    'pastaId',
+  );
+  @override
+  late final GeneratedColumn<String> pastaId = GeneratedColumn<String>(
+    'pasta_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES pastas_notas (id)',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<TipoNota, String> tipo =
+      GeneratedColumn<String>(
+        'tipo',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(TipoNota.texto.name),
+      ).withConverter<TipoNota>($NotasTable.$convertertipo);
+  static const VerificationMeta _tituloMeta = const VerificationMeta('titulo');
+  @override
+  late final GeneratedColumn<String> titulo = GeneratedColumn<String>(
+    'titulo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _textoMeta = const VerificationMeta('texto');
+  @override
+  late final GeneratedColumn<String> texto = GeneratedColumn<String>(
+    'texto',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _itensMeta = const VerificationMeta('itens');
+  @override
+  late final GeneratedColumn<String> itens = GeneratedColumn<String>(
+    'itens',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fixadaMeta = const VerificationMeta('fixada');
+  @override
+  late final GeneratedColumn<bool> fixada = GeneratedColumn<bool>(
+    'fixada',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("fixada" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    pastaId,
+    tipo,
+    titulo,
+    texto,
+    itens,
+    fixada,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'notas';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Nota> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('pasta_id')) {
+      context.handle(
+        _pastaIdMeta,
+        pastaId.isAcceptableOrUnknown(data['pasta_id']!, _pastaIdMeta),
+      );
+    }
+    if (data.containsKey('titulo')) {
+      context.handle(
+        _tituloMeta,
+        titulo.isAcceptableOrUnknown(data['titulo']!, _tituloMeta),
+      );
+    }
+    if (data.containsKey('texto')) {
+      context.handle(
+        _textoMeta,
+        texto.isAcceptableOrUnknown(data['texto']!, _textoMeta),
+      );
+    }
+    if (data.containsKey('itens')) {
+      context.handle(
+        _itensMeta,
+        itens.isAcceptableOrUnknown(data['itens']!, _itensMeta),
+      );
+    }
+    if (data.containsKey('fixada')) {
+      context.handle(
+        _fixadaMeta,
+        fixada.isAcceptableOrUnknown(data['fixada']!, _fixadaMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Nota map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Nota(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      pastaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pasta_id'],
+      ),
+      tipo: $NotasTable.$convertertipo.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}tipo'],
+        )!,
+      ),
+      titulo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}titulo'],
+      )!,
+      texto: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}texto'],
+      )!,
+      itens: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}itens'],
+      ),
+      fixada: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}fixada'],
+      )!,
+    );
+  }
+
+  @override
+  $NotasTable createAlias(String alias) {
+    return $NotasTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<TipoNota, String, String> $convertertipo =
+      const EnumNameConverter<TipoNota>(TipoNota.values);
+}
+
+class Nota extends DataClass implements Insertable<Nota> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String? pastaId;
+  final TipoNota tipo;
+  final String titulo;
+  final String texto;
+  final String? itens;
+  final bool fixada;
+  const Nota({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    this.pastaId,
+    required this.tipo,
+    required this.titulo,
+    required this.texto,
+    this.itens,
+    required this.fixada,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    if (!nullToAbsent || pastaId != null) {
+      map['pasta_id'] = Variable<String>(pastaId);
+    }
+    {
+      map['tipo'] = Variable<String>($NotasTable.$convertertipo.toSql(tipo));
+    }
+    map['titulo'] = Variable<String>(titulo);
+    map['texto'] = Variable<String>(texto);
+    if (!nullToAbsent || itens != null) {
+      map['itens'] = Variable<String>(itens);
+    }
+    map['fixada'] = Variable<bool>(fixada);
+    return map;
+  }
+
+  NotasCompanion toCompanion(bool nullToAbsent) {
+    return NotasCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      pastaId: pastaId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pastaId),
+      tipo: Value(tipo),
+      titulo: Value(titulo),
+      texto: Value(texto),
+      itens: itens == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itens),
+      fixada: Value(fixada),
+    );
+  }
+
+  factory Nota.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Nota(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      pastaId: serializer.fromJson<String?>(json['pastaId']),
+      tipo: $NotasTable.$convertertipo.fromJson(
+        serializer.fromJson<String>(json['tipo']),
+      ),
+      titulo: serializer.fromJson<String>(json['titulo']),
+      texto: serializer.fromJson<String>(json['texto']),
+      itens: serializer.fromJson<String?>(json['itens']),
+      fixada: serializer.fromJson<bool>(json['fixada']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'pastaId': serializer.toJson<String?>(pastaId),
+      'tipo': serializer.toJson<String>(
+        $NotasTable.$convertertipo.toJson(tipo),
+      ),
+      'titulo': serializer.toJson<String>(titulo),
+      'texto': serializer.toJson<String>(texto),
+      'itens': serializer.toJson<String?>(itens),
+      'fixada': serializer.toJson<bool>(fixada),
+    };
+  }
+
+  Nota copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    Value<String?> pastaId = const Value.absent(),
+    TipoNota? tipo,
+    String? titulo,
+    String? texto,
+    Value<String?> itens = const Value.absent(),
+    bool? fixada,
+  }) => Nota(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    pastaId: pastaId.present ? pastaId.value : this.pastaId,
+    tipo: tipo ?? this.tipo,
+    titulo: titulo ?? this.titulo,
+    texto: texto ?? this.texto,
+    itens: itens.present ? itens.value : this.itens,
+    fixada: fixada ?? this.fixada,
+  );
+  Nota copyWithCompanion(NotasCompanion data) {
+    return Nota(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      pastaId: data.pastaId.present ? data.pastaId.value : this.pastaId,
+      tipo: data.tipo.present ? data.tipo.value : this.tipo,
+      titulo: data.titulo.present ? data.titulo.value : this.titulo,
+      texto: data.texto.present ? data.texto.value : this.texto,
+      itens: data.itens.present ? data.itens.value : this.itens,
+      fixada: data.fixada.present ? data.fixada.value : this.fixada,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Nota(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('pastaId: $pastaId, ')
+          ..write('tipo: $tipo, ')
+          ..write('titulo: $titulo, ')
+          ..write('texto: $texto, ')
+          ..write('itens: $itens, ')
+          ..write('fixada: $fixada')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    pastaId,
+    tipo,
+    titulo,
+    texto,
+    itens,
+    fixada,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Nota &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.pastaId == this.pastaId &&
+          other.tipo == this.tipo &&
+          other.titulo == this.titulo &&
+          other.texto == this.texto &&
+          other.itens == this.itens &&
+          other.fixada == this.fixada);
+}
+
+class NotasCompanion extends UpdateCompanion<Nota> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String?> pastaId;
+  final Value<TipoNota> tipo;
+  final Value<String> titulo;
+  final Value<String> texto;
+  final Value<String?> itens;
+  final Value<bool> fixada;
+  final Value<int> rowid;
+  const NotasCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.pastaId = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.titulo = const Value.absent(),
+    this.texto = const Value.absent(),
+    this.itens = const Value.absent(),
+    this.fixada = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  NotasCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.pastaId = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.titulo = const Value.absent(),
+    this.texto = const Value.absent(),
+    this.itens = const Value.absent(),
+    this.fixada = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  static Insertable<Nota> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? pastaId,
+    Expression<String>? tipo,
+    Expression<String>? titulo,
+    Expression<String>? texto,
+    Expression<String>? itens,
+    Expression<bool>? fixada,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (pastaId != null) 'pasta_id': pastaId,
+      if (tipo != null) 'tipo': tipo,
+      if (titulo != null) 'titulo': titulo,
+      if (texto != null) 'texto': texto,
+      if (itens != null) 'itens': itens,
+      if (fixada != null) 'fixada': fixada,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  NotasCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String?>? pastaId,
+    Value<TipoNota>? tipo,
+    Value<String>? titulo,
+    Value<String>? texto,
+    Value<String?>? itens,
+    Value<bool>? fixada,
+    Value<int>? rowid,
+  }) {
+    return NotasCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      pastaId: pastaId ?? this.pastaId,
+      tipo: tipo ?? this.tipo,
+      titulo: titulo ?? this.titulo,
+      texto: texto ?? this.texto,
+      itens: itens ?? this.itens,
+      fixada: fixada ?? this.fixada,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (pastaId.present) {
+      map['pasta_id'] = Variable<String>(pastaId.value);
+    }
+    if (tipo.present) {
+      map['tipo'] = Variable<String>(
+        $NotasTable.$convertertipo.toSql(tipo.value),
+      );
+    }
+    if (titulo.present) {
+      map['titulo'] = Variable<String>(titulo.value);
+    }
+    if (texto.present) {
+      map['texto'] = Variable<String>(texto.value);
+    }
+    if (itens.present) {
+      map['itens'] = Variable<String>(itens.value);
+    }
+    if (fixada.present) {
+      map['fixada'] = Variable<bool>(fixada.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NotasCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('pastaId: $pastaId, ')
+          ..write('tipo: $tipo, ')
+          ..write('titulo: $titulo, ')
+          ..write('texto: $texto, ')
+          ..write('itens: $itens, ')
+          ..write('fixada: $fixada, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AnexosNotaTable extends AnexosNota
+    with TableInfo<$AnexosNotaTable, AnexoNota> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AnexosNotaTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notaIdMeta = const VerificationMeta('notaId');
+  @override
+  late final GeneratedColumn<String> notaId = GeneratedColumn<String>(
+    'nota_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES notas (id)',
+    ),
+  );
+  static const VerificationMeta _tipoMeta = const VerificationMeta('tipo');
+  @override
+  late final GeneratedColumn<String> tipo = GeneratedColumn<String>(
+    'tipo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _hashMeta = const VerificationMeta('hash');
+  @override
+  late final GeneratedColumn<String> hash = GeneratedColumn<String>(
+    'hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _naNuvemMeta = const VerificationMeta(
+    'naNuvem',
+  );
+  @override
+  late final GeneratedColumn<bool> naNuvem = GeneratedColumn<bool>(
+    'na_nuvem',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("na_nuvem" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _formatoMeta = const VerificationMeta(
+    'formato',
+  );
+  @override
+  late final GeneratedColumn<String> formato = GeneratedColumn<String>(
+    'formato',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _duracaoMsMeta = const VerificationMeta(
+    'duracaoMs',
+  );
+  @override
+  late final GeneratedColumn<int> duracaoMs = GeneratedColumn<int>(
+    'duracao_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ondaMeta = const VerificationMeta('onda');
+  @override
+  late final GeneratedColumn<String> onda = GeneratedColumn<String>(
+    'onda',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _transcricaoMeta = const VerificationMeta(
+    'transcricao',
+  );
+  @override
+  late final GeneratedColumn<String> transcricao = GeneratedColumn<String>(
+    'transcricao',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ordemMeta = const VerificationMeta('ordem');
+  @override
+  late final GeneratedColumn<int> ordem = GeneratedColumn<int>(
+    'ordem',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    notaId,
+    tipo,
+    hash,
+    naNuvem,
+    formato,
+    duracaoMs,
+    onda,
+    transcricao,
+    ordem,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'anexos_nota';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AnexoNota> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('nota_id')) {
+      context.handle(
+        _notaIdMeta,
+        notaId.isAcceptableOrUnknown(data['nota_id']!, _notaIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_notaIdMeta);
+    }
+    if (data.containsKey('tipo')) {
+      context.handle(
+        _tipoMeta,
+        tipo.isAcceptableOrUnknown(data['tipo']!, _tipoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tipoMeta);
+    }
+    if (data.containsKey('hash')) {
+      context.handle(
+        _hashMeta,
+        hash.isAcceptableOrUnknown(data['hash']!, _hashMeta),
+      );
+    }
+    if (data.containsKey('na_nuvem')) {
+      context.handle(
+        _naNuvemMeta,
+        naNuvem.isAcceptableOrUnknown(data['na_nuvem']!, _naNuvemMeta),
+      );
+    }
+    if (data.containsKey('formato')) {
+      context.handle(
+        _formatoMeta,
+        formato.isAcceptableOrUnknown(data['formato']!, _formatoMeta),
+      );
+    }
+    if (data.containsKey('duracao_ms')) {
+      context.handle(
+        _duracaoMsMeta,
+        duracaoMs.isAcceptableOrUnknown(data['duracao_ms']!, _duracaoMsMeta),
+      );
+    }
+    if (data.containsKey('onda')) {
+      context.handle(
+        _ondaMeta,
+        onda.isAcceptableOrUnknown(data['onda']!, _ondaMeta),
+      );
+    }
+    if (data.containsKey('transcricao')) {
+      context.handle(
+        _transcricaoMeta,
+        transcricao.isAcceptableOrUnknown(
+          data['transcricao']!,
+          _transcricaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ordem')) {
+      context.handle(
+        _ordemMeta,
+        ordem.isAcceptableOrUnknown(data['ordem']!, _ordemMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AnexoNota map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AnexoNota(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      notaId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nota_id'],
+      )!,
+      tipo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo'],
+      )!,
+      hash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}hash'],
+      ),
+      naNuvem: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}na_nuvem'],
+      )!,
+      formato: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}formato'],
+      ),
+      duracaoMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duracao_ms'],
+      ),
+      onda: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}onda'],
+      ),
+      transcricao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transcricao'],
+      ),
+      ordem: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ordem'],
+      )!,
+    );
+  }
+
+  @override
+  $AnexosNotaTable createAlias(String alias) {
+    return $AnexosNotaTable(attachedDatabase, alias);
+  }
+}
+
+class AnexoNota extends DataClass implements Insertable<AnexoNota> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String notaId;
+
+  /// 'foto' ou 'audio'.
+  final String tipo;
+  final String? hash;
+  final bool naNuvem;
+
+  /// Tipo do arquivo de áudio ("audio/mp4", "audio/flac", "audio/wav").
+  final String? formato;
+  final int? duracaoMs;
+
+  /// Volume do áudio em 48 dígitos de 0 a 9, para desenhar a onda sem abrir o arquivo.
+  final String? onda;
+
+  /// Texto do áudio: nulo até transcrever; vazio se não havia fala.
+  final String? transcricao;
+  final int ordem;
+  const AnexoNota({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.notaId,
+    required this.tipo,
+    this.hash,
+    required this.naNuvem,
+    this.formato,
+    this.duracaoMs,
+    this.onda,
+    this.transcricao,
+    required this.ordem,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['nota_id'] = Variable<String>(notaId);
+    map['tipo'] = Variable<String>(tipo);
+    if (!nullToAbsent || hash != null) {
+      map['hash'] = Variable<String>(hash);
+    }
+    map['na_nuvem'] = Variable<bool>(naNuvem);
+    if (!nullToAbsent || formato != null) {
+      map['formato'] = Variable<String>(formato);
+    }
+    if (!nullToAbsent || duracaoMs != null) {
+      map['duracao_ms'] = Variable<int>(duracaoMs);
+    }
+    if (!nullToAbsent || onda != null) {
+      map['onda'] = Variable<String>(onda);
+    }
+    if (!nullToAbsent || transcricao != null) {
+      map['transcricao'] = Variable<String>(transcricao);
+    }
+    map['ordem'] = Variable<int>(ordem);
+    return map;
+  }
+
+  AnexosNotaCompanion toCompanion(bool nullToAbsent) {
+    return AnexosNotaCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      notaId: Value(notaId),
+      tipo: Value(tipo),
+      hash: hash == null && nullToAbsent ? const Value.absent() : Value(hash),
+      naNuvem: Value(naNuvem),
+      formato: formato == null && nullToAbsent
+          ? const Value.absent()
+          : Value(formato),
+      duracaoMs: duracaoMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(duracaoMs),
+      onda: onda == null && nullToAbsent ? const Value.absent() : Value(onda),
+      transcricao: transcricao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(transcricao),
+      ordem: Value(ordem),
+    );
+  }
+
+  factory AnexoNota.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AnexoNota(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      notaId: serializer.fromJson<String>(json['notaId']),
+      tipo: serializer.fromJson<String>(json['tipo']),
+      hash: serializer.fromJson<String?>(json['hash']),
+      naNuvem: serializer.fromJson<bool>(json['naNuvem']),
+      formato: serializer.fromJson<String?>(json['formato']),
+      duracaoMs: serializer.fromJson<int?>(json['duracaoMs']),
+      onda: serializer.fromJson<String?>(json['onda']),
+      transcricao: serializer.fromJson<String?>(json['transcricao']),
+      ordem: serializer.fromJson<int>(json['ordem']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'notaId': serializer.toJson<String>(notaId),
+      'tipo': serializer.toJson<String>(tipo),
+      'hash': serializer.toJson<String?>(hash),
+      'naNuvem': serializer.toJson<bool>(naNuvem),
+      'formato': serializer.toJson<String?>(formato),
+      'duracaoMs': serializer.toJson<int?>(duracaoMs),
+      'onda': serializer.toJson<String?>(onda),
+      'transcricao': serializer.toJson<String?>(transcricao),
+      'ordem': serializer.toJson<int>(ordem),
+    };
+  }
+
+  AnexoNota copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? notaId,
+    String? tipo,
+    Value<String?> hash = const Value.absent(),
+    bool? naNuvem,
+    Value<String?> formato = const Value.absent(),
+    Value<int?> duracaoMs = const Value.absent(),
+    Value<String?> onda = const Value.absent(),
+    Value<String?> transcricao = const Value.absent(),
+    int? ordem,
+  }) => AnexoNota(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    notaId: notaId ?? this.notaId,
+    tipo: tipo ?? this.tipo,
+    hash: hash.present ? hash.value : this.hash,
+    naNuvem: naNuvem ?? this.naNuvem,
+    formato: formato.present ? formato.value : this.formato,
+    duracaoMs: duracaoMs.present ? duracaoMs.value : this.duracaoMs,
+    onda: onda.present ? onda.value : this.onda,
+    transcricao: transcricao.present ? transcricao.value : this.transcricao,
+    ordem: ordem ?? this.ordem,
+  );
+  AnexoNota copyWithCompanion(AnexosNotaCompanion data) {
+    return AnexoNota(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      notaId: data.notaId.present ? data.notaId.value : this.notaId,
+      tipo: data.tipo.present ? data.tipo.value : this.tipo,
+      hash: data.hash.present ? data.hash.value : this.hash,
+      naNuvem: data.naNuvem.present ? data.naNuvem.value : this.naNuvem,
+      formato: data.formato.present ? data.formato.value : this.formato,
+      duracaoMs: data.duracaoMs.present ? data.duracaoMs.value : this.duracaoMs,
+      onda: data.onda.present ? data.onda.value : this.onda,
+      transcricao: data.transcricao.present
+          ? data.transcricao.value
+          : this.transcricao,
+      ordem: data.ordem.present ? data.ordem.value : this.ordem,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnexoNota(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('notaId: $notaId, ')
+          ..write('tipo: $tipo, ')
+          ..write('hash: $hash, ')
+          ..write('naNuvem: $naNuvem, ')
+          ..write('formato: $formato, ')
+          ..write('duracaoMs: $duracaoMs, ')
+          ..write('onda: $onda, ')
+          ..write('transcricao: $transcricao, ')
+          ..write('ordem: $ordem')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    notaId,
+    tipo,
+    hash,
+    naNuvem,
+    formato,
+    duracaoMs,
+    onda,
+    transcricao,
+    ordem,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AnexoNota &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.notaId == this.notaId &&
+          other.tipo == this.tipo &&
+          other.hash == this.hash &&
+          other.naNuvem == this.naNuvem &&
+          other.formato == this.formato &&
+          other.duracaoMs == this.duracaoMs &&
+          other.onda == this.onda &&
+          other.transcricao == this.transcricao &&
+          other.ordem == this.ordem);
+}
+
+class AnexosNotaCompanion extends UpdateCompanion<AnexoNota> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> notaId;
+  final Value<String> tipo;
+  final Value<String?> hash;
+  final Value<bool> naNuvem;
+  final Value<String?> formato;
+  final Value<int?> duracaoMs;
+  final Value<String?> onda;
+  final Value<String?> transcricao;
+  final Value<int> ordem;
+  final Value<int> rowid;
+  const AnexosNotaCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.notaId = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.hash = const Value.absent(),
+    this.naNuvem = const Value.absent(),
+    this.formato = const Value.absent(),
+    this.duracaoMs = const Value.absent(),
+    this.onda = const Value.absent(),
+    this.transcricao = const Value.absent(),
+    this.ordem = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AnexosNotaCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String notaId,
+    required String tipo,
+    this.hash = const Value.absent(),
+    this.naNuvem = const Value.absent(),
+    this.formato = const Value.absent(),
+    this.duracaoMs = const Value.absent(),
+    this.onda = const Value.absent(),
+    this.transcricao = const Value.absent(),
+    this.ordem = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : notaId = Value(notaId),
+       tipo = Value(tipo);
+  static Insertable<AnexoNota> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? notaId,
+    Expression<String>? tipo,
+    Expression<String>? hash,
+    Expression<bool>? naNuvem,
+    Expression<String>? formato,
+    Expression<int>? duracaoMs,
+    Expression<String>? onda,
+    Expression<String>? transcricao,
+    Expression<int>? ordem,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (notaId != null) 'nota_id': notaId,
+      if (tipo != null) 'tipo': tipo,
+      if (hash != null) 'hash': hash,
+      if (naNuvem != null) 'na_nuvem': naNuvem,
+      if (formato != null) 'formato': formato,
+      if (duracaoMs != null) 'duracao_ms': duracaoMs,
+      if (onda != null) 'onda': onda,
+      if (transcricao != null) 'transcricao': transcricao,
+      if (ordem != null) 'ordem': ordem,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AnexosNotaCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? notaId,
+    Value<String>? tipo,
+    Value<String?>? hash,
+    Value<bool>? naNuvem,
+    Value<String?>? formato,
+    Value<int?>? duracaoMs,
+    Value<String?>? onda,
+    Value<String?>? transcricao,
+    Value<int>? ordem,
+    Value<int>? rowid,
+  }) {
+    return AnexosNotaCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      notaId: notaId ?? this.notaId,
+      tipo: tipo ?? this.tipo,
+      hash: hash ?? this.hash,
+      naNuvem: naNuvem ?? this.naNuvem,
+      formato: formato ?? this.formato,
+      duracaoMs: duracaoMs ?? this.duracaoMs,
+      onda: onda ?? this.onda,
+      transcricao: transcricao ?? this.transcricao,
+      ordem: ordem ?? this.ordem,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (notaId.present) {
+      map['nota_id'] = Variable<String>(notaId.value);
+    }
+    if (tipo.present) {
+      map['tipo'] = Variable<String>(tipo.value);
+    }
+    if (hash.present) {
+      map['hash'] = Variable<String>(hash.value);
+    }
+    if (naNuvem.present) {
+      map['na_nuvem'] = Variable<bool>(naNuvem.value);
+    }
+    if (formato.present) {
+      map['formato'] = Variable<String>(formato.value);
+    }
+    if (duracaoMs.present) {
+      map['duracao_ms'] = Variable<int>(duracaoMs.value);
+    }
+    if (onda.present) {
+      map['onda'] = Variable<String>(onda.value);
+    }
+    if (transcricao.present) {
+      map['transcricao'] = Variable<String>(transcricao.value);
+    }
+    if (ordem.present) {
+      map['ordem'] = Variable<int>(ordem.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnexosNotaCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('notaId: $notaId, ')
+          ..write('tipo: $tipo, ')
+          ..write('hash: $hash, ')
+          ..write('naNuvem: $naNuvem, ')
+          ..write('formato: $formato, ')
+          ..write('duracaoMs: $duracaoMs, ')
+          ..write('onda: $onda, ')
+          ..write('transcricao: $transcricao, ')
+          ..write('ordem: $ordem, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PreferenciasTable extends Preferencias
     with TableInfo<$PreferenciasTable, Preferencia> {
   @override
@@ -13628,6 +15395,9 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   late final $MensagensAssistenteTable mensagensAssistente =
       $MensagensAssistenteTable(this);
   late final $AutomacoesTable automacoes = $AutomacoesTable(this);
+  late final $PastasNotasTable pastasNotas = $PastasNotasTable(this);
+  late final $NotasTable notas = $NotasTable(this);
+  late final $AnexosNotaTable anexosNota = $AnexosNotaTable(this);
   late final $PreferenciasTable preferencias = $PreferenciasTable(this);
   late final Index conclusaoTarefaDia = Index(
     'conclusao_tarefa_dia',
@@ -13676,6 +15446,9 @@ abstract class _$BancoAurora extends GeneratedDatabase {
     registrosAlimentacao,
     mensagensAssistente,
     automacoes,
+    pastasNotas,
+    notas,
+    anexosNota,
     preferencias,
     conclusaoTarefaDia,
     registroHabitoDia,
@@ -23416,6 +25189,1285 @@ typedef $$AutomacoesTableProcessedTableManager =
       Automacao,
       PrefetchHooks Function()
     >;
+typedef $$PastasNotasTableCreateCompanionBuilder =
+    PastasNotasCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      required String nome,
+      Value<int> ordem,
+      Value<int> rowid,
+    });
+typedef $$PastasNotasTableUpdateCompanionBuilder =
+    PastasNotasCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      Value<String> nome,
+      Value<int> ordem,
+      Value<int> rowid,
+    });
+
+final class $$PastasNotasTableReferences
+    extends BaseReferences<_$BancoAurora, $PastasNotasTable, PastaNota> {
+  $$PastasNotasTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$NotasTable, List<Nota>> _notasRefsTable(
+    _$BancoAurora db,
+  ) => MultiTypedResultKey.fromTable(
+    db.notas,
+    aliasName: 'pastas_notas__id__notas__pasta_id',
+  );
+
+  $$NotasTableProcessedTableManager get notasRefs {
+    final manager = $$NotasTableTableManager(
+      $_db,
+      $_db.notas,
+    ).filter((f) => f.pastaId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_notasRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$PastasNotasTableFilterComposer
+    extends Composer<_$BancoAurora, $PastasNotasTable> {
+  $$PastasNotasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> notasRefs(
+    Expression<bool> Function($$NotasTableFilterComposer f) f,
+  ) {
+    final $$NotasTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.notas,
+      getReferencedColumn: (t) => t.pastaId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NotasTableFilterComposer(
+            $db: $db,
+            $table: $db.notas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PastasNotasTableOrderingComposer
+    extends Composer<_$BancoAurora, $PastasNotasTable> {
+  $$PastasNotasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PastasNotasTableAnnotationComposer
+    extends Composer<_$BancoAurora, $PastasNotasTable> {
+  $$PastasNotasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<int> get ordem =>
+      $composableBuilder(column: $table.ordem, builder: (column) => column);
+
+  Expression<T> notasRefs<T extends Object>(
+    Expression<T> Function($$NotasTableAnnotationComposer a) f,
+  ) {
+    final $$NotasTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.notas,
+      getReferencedColumn: (t) => t.pastaId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NotasTableAnnotationComposer(
+            $db: $db,
+            $table: $db.notas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PastasNotasTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $PastasNotasTable,
+          PastaNota,
+          $$PastasNotasTableFilterComposer,
+          $$PastasNotasTableOrderingComposer,
+          $$PastasNotasTableAnnotationComposer,
+          $$PastasNotasTableCreateCompanionBuilder,
+          $$PastasNotasTableUpdateCompanionBuilder,
+          (PastaNota, $$PastasNotasTableReferences),
+          PastaNota,
+          PrefetchHooks Function({bool notasRefs})
+        > {
+  $$PastasNotasTableTableManager(_$BancoAurora db, $PastasNotasTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PastasNotasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PastasNotasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PastasNotasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<int> ordem = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PastasNotasCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                nome: nome,
+                ordem: ordem,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String nome,
+                Value<int> ordem = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PastasNotasCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                nome: nome,
+                ordem: ordem,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PastasNotasTable, PastaNota>(table),
+                  $$PastasNotasTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({notasRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (notasRefs) db.notas],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (notasRefs)
+                    await $_getPrefetchedData<
+                      PastaNota,
+                      $PastasNotasTable,
+                      Nota
+                    >(
+                      currentTable: table,
+                      referencedTable: $$PastasNotasTableReferences
+                          ._notasRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$PastasNotasTableReferences(db, table, p0).notasRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.pastaId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PastasNotasTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $PastasNotasTable,
+      PastaNota,
+      $$PastasNotasTableFilterComposer,
+      $$PastasNotasTableOrderingComposer,
+      $$PastasNotasTableAnnotationComposer,
+      $$PastasNotasTableCreateCompanionBuilder,
+      $$PastasNotasTableUpdateCompanionBuilder,
+      (PastaNota, $$PastasNotasTableReferences),
+      PastaNota,
+      PrefetchHooks Function({bool notasRefs})
+    >;
+typedef $$NotasTableCreateCompanionBuilder = NotasCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String?> pastaId,
+  Value<TipoNota> tipo,
+  Value<String> titulo,
+  Value<String> texto,
+  Value<String?> itens,
+  Value<bool> fixada,
+  Value<int> rowid,
+});
+typedef $$NotasTableUpdateCompanionBuilder = NotasCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String?> pastaId,
+  Value<TipoNota> tipo,
+  Value<String> titulo,
+  Value<String> texto,
+  Value<String?> itens,
+  Value<bool> fixada,
+  Value<int> rowid,
+});
+
+final class $$NotasTableReferences
+    extends BaseReferences<_$BancoAurora, $NotasTable, Nota> {
+  $$NotasTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PastasNotasTable _pastaIdTable(_$BancoAurora db) =>
+      db.pastasNotas.createAlias('notas__pasta_id__pastas_notas__id');
+
+  $$PastasNotasTableProcessedTableManager? get pastaId {
+    final $_column = $_itemColumn<String>('pasta_id');
+    if ($_column == null) return null;
+    final manager = $$PastasNotasTableTableManager(
+      $_db,
+      $_db.pastasNotas,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_pastaIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$AnexosNotaTable, List<AnexoNota>>
+  _anexosNotaRefsTable(_$BancoAurora db) => MultiTypedResultKey.fromTable(
+    db.anexosNota,
+    aliasName: 'notas__id__anexos_nota__nota_id',
+  );
+
+  $$AnexosNotaTableProcessedTableManager get anexosNotaRefs {
+    final manager = $$AnexosNotaTableTableManager(
+      $_db,
+      $_db.anexosNota,
+    ).filter((f) => f.notaId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_anexosNotaRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$NotasTableFilterComposer extends Composer<_$BancoAurora, $NotasTable> {
+  $$NotasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<TipoNota, TipoNota, String> get tipo =>
+      $composableBuilder(
+        column: $table.tipo,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get titulo => $composableBuilder(
+    column: $table.titulo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get texto => $composableBuilder(
+    column: $table.texto,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itens => $composableBuilder(
+    column: $table.itens,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get fixada => $composableBuilder(
+    column: $table.fixada,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PastasNotasTableFilterComposer get pastaId {
+    final $$PastasNotasTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pastaId,
+      referencedTable: $db.pastasNotas,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PastasNotasTableFilterComposer(
+            $db: $db,
+            $table: $db.pastasNotas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> anexosNotaRefs(
+    Expression<bool> Function($$AnexosNotaTableFilterComposer f) f,
+  ) {
+    final $$AnexosNotaTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.anexosNota,
+      getReferencedColumn: (t) => t.notaId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnexosNotaTableFilterComposer(
+            $db: $db,
+            $table: $db.anexosNota,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$NotasTableOrderingComposer
+    extends Composer<_$BancoAurora, $NotasTable> {
+  $$NotasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get titulo => $composableBuilder(
+    column: $table.titulo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get texto => $composableBuilder(
+    column: $table.texto,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itens => $composableBuilder(
+    column: $table.itens,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get fixada => $composableBuilder(
+    column: $table.fixada,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PastasNotasTableOrderingComposer get pastaId {
+    final $$PastasNotasTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pastaId,
+      referencedTable: $db.pastasNotas,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PastasNotasTableOrderingComposer(
+            $db: $db,
+            $table: $db.pastasNotas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$NotasTableAnnotationComposer
+    extends Composer<_$BancoAurora, $NotasTable> {
+  $$NotasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<TipoNota, String> get tipo =>
+      $composableBuilder(column: $table.tipo, builder: (column) => column);
+
+  GeneratedColumn<String> get titulo =>
+      $composableBuilder(column: $table.titulo, builder: (column) => column);
+
+  GeneratedColumn<String> get texto =>
+      $composableBuilder(column: $table.texto, builder: (column) => column);
+
+  GeneratedColumn<String> get itens =>
+      $composableBuilder(column: $table.itens, builder: (column) => column);
+
+  GeneratedColumn<bool> get fixada =>
+      $composableBuilder(column: $table.fixada, builder: (column) => column);
+
+  $$PastasNotasTableAnnotationComposer get pastaId {
+    final $$PastasNotasTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.pastaId,
+      referencedTable: $db.pastasNotas,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PastasNotasTableAnnotationComposer(
+            $db: $db,
+            $table: $db.pastasNotas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> anexosNotaRefs<T extends Object>(
+    Expression<T> Function($$AnexosNotaTableAnnotationComposer a) f,
+  ) {
+    final $$AnexosNotaTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.anexosNota,
+      getReferencedColumn: (t) => t.notaId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnexosNotaTableAnnotationComposer(
+            $db: $db,
+            $table: $db.anexosNota,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$NotasTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $NotasTable,
+          Nota,
+          $$NotasTableFilterComposer,
+          $$NotasTableOrderingComposer,
+          $$NotasTableAnnotationComposer,
+          $$NotasTableCreateCompanionBuilder,
+          $$NotasTableUpdateCompanionBuilder,
+          (Nota, $$NotasTableReferences),
+          Nota,
+          PrefetchHooks Function({bool pastaId, bool anexosNotaRefs})
+        > {
+  $$NotasTableTableManager(_$BancoAurora db, $NotasTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NotasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NotasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$NotasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String?> pastaId = const Value.absent(),
+                Value<TipoNota> tipo = const Value.absent(),
+                Value<String> titulo = const Value.absent(),
+                Value<String> texto = const Value.absent(),
+                Value<String?> itens = const Value.absent(),
+                Value<bool> fixada = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => NotasCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                pastaId: pastaId,
+                tipo: tipo,
+                titulo: titulo,
+                texto: texto,
+                itens: itens,
+                fixada: fixada,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String?> pastaId = const Value.absent(),
+                Value<TipoNota> tipo = const Value.absent(),
+                Value<String> titulo = const Value.absent(),
+                Value<String> texto = const Value.absent(),
+                Value<String?> itens = const Value.absent(),
+                Value<bool> fixada = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => NotasCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                pastaId: pastaId,
+                tipo: tipo,
+                titulo: titulo,
+                texto: texto,
+                itens: itens,
+                fixada: fixada,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$NotasTable, Nota>(table),
+                  $$NotasTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({pastaId = false, anexosNotaRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (anexosNotaRefs) db.anexosNota],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (pastaId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.pastaId,
+                        referencedTable: $$NotasTableReferences._pastaIdTable(
+                          db,
+                        ),
+                        referencedColumn: $$NotasTableReferences
+                            ._pastaIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (anexosNotaRefs)
+                    await $_getPrefetchedData<Nota, $NotasTable, AnexoNota>(
+                      currentTable: table,
+                      referencedTable: $$NotasTableReferences
+                          ._anexosNotaRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$NotasTableReferences(db, table, p0).anexosNotaRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.notaId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$NotasTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $NotasTable,
+      Nota,
+      $$NotasTableFilterComposer,
+      $$NotasTableOrderingComposer,
+      $$NotasTableAnnotationComposer,
+      $$NotasTableCreateCompanionBuilder,
+      $$NotasTableUpdateCompanionBuilder,
+      (Nota, $$NotasTableReferences),
+      Nota,
+      PrefetchHooks Function({bool pastaId, bool anexosNotaRefs})
+    >;
+typedef $$AnexosNotaTableCreateCompanionBuilder = AnexosNotaCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  required String notaId,
+  required String tipo,
+  Value<String?> hash,
+  Value<bool> naNuvem,
+  Value<String?> formato,
+  Value<int?> duracaoMs,
+  Value<String?> onda,
+  Value<String?> transcricao,
+  Value<int> ordem,
+  Value<int> rowid,
+});
+typedef $$AnexosNotaTableUpdateCompanionBuilder = AnexosNotaCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String> notaId,
+  Value<String> tipo,
+  Value<String?> hash,
+  Value<bool> naNuvem,
+  Value<String?> formato,
+  Value<int?> duracaoMs,
+  Value<String?> onda,
+  Value<String?> transcricao,
+  Value<int> ordem,
+  Value<int> rowid,
+});
+
+final class $$AnexosNotaTableReferences
+    extends BaseReferences<_$BancoAurora, $AnexosNotaTable, AnexoNota> {
+  $$AnexosNotaTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $NotasTable _notaIdTable(_$BancoAurora db) =>
+      db.notas.createAlias('anexos_nota__nota_id__notas__id');
+
+  $$NotasTableProcessedTableManager get notaId {
+    final $_column = $_itemColumn<String>('nota_id')!;
+
+    final manager = $$NotasTableTableManager(
+      $_db,
+      $_db.notas,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_notaIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AnexosNotaTableFilterComposer
+    extends Composer<_$BancoAurora, $AnexosNotaTable> {
+  $$AnexosNotaTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hash => $composableBuilder(
+    column: $table.hash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get naNuvem => $composableBuilder(
+    column: $table.naNuvem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get formato => $composableBuilder(
+    column: $table.formato,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get duracaoMs => $composableBuilder(
+    column: $table.duracaoMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get onda => $composableBuilder(
+    column: $table.onda,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get transcricao => $composableBuilder(
+    column: $table.transcricao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$NotasTableFilterComposer get notaId {
+    final $$NotasTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.notaId,
+      referencedTable: $db.notas,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NotasTableFilterComposer(
+            $db: $db,
+            $table: $db.notas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnexosNotaTableOrderingComposer
+    extends Composer<_$BancoAurora, $AnexosNotaTable> {
+  $$AnexosNotaTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hash => $composableBuilder(
+    column: $table.hash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get naNuvem => $composableBuilder(
+    column: $table.naNuvem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get formato => $composableBuilder(
+    column: $table.formato,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get duracaoMs => $composableBuilder(
+    column: $table.duracaoMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get onda => $composableBuilder(
+    column: $table.onda,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get transcricao => $composableBuilder(
+    column: $table.transcricao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$NotasTableOrderingComposer get notaId {
+    final $$NotasTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.notaId,
+      referencedTable: $db.notas,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NotasTableOrderingComposer(
+            $db: $db,
+            $table: $db.notas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnexosNotaTableAnnotationComposer
+    extends Composer<_$BancoAurora, $AnexosNotaTable> {
+  $$AnexosNotaTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get tipo =>
+      $composableBuilder(column: $table.tipo, builder: (column) => column);
+
+  GeneratedColumn<String> get hash =>
+      $composableBuilder(column: $table.hash, builder: (column) => column);
+
+  GeneratedColumn<bool> get naNuvem =>
+      $composableBuilder(column: $table.naNuvem, builder: (column) => column);
+
+  GeneratedColumn<String> get formato =>
+      $composableBuilder(column: $table.formato, builder: (column) => column);
+
+  GeneratedColumn<int> get duracaoMs =>
+      $composableBuilder(column: $table.duracaoMs, builder: (column) => column);
+
+  GeneratedColumn<String> get onda =>
+      $composableBuilder(column: $table.onda, builder: (column) => column);
+
+  GeneratedColumn<String> get transcricao => $composableBuilder(
+    column: $table.transcricao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get ordem =>
+      $composableBuilder(column: $table.ordem, builder: (column) => column);
+
+  $$NotasTableAnnotationComposer get notaId {
+    final $$NotasTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.notaId,
+      referencedTable: $db.notas,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NotasTableAnnotationComposer(
+            $db: $db,
+            $table: $db.notas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnexosNotaTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $AnexosNotaTable,
+          AnexoNota,
+          $$AnexosNotaTableFilterComposer,
+          $$AnexosNotaTableOrderingComposer,
+          $$AnexosNotaTableAnnotationComposer,
+          $$AnexosNotaTableCreateCompanionBuilder,
+          $$AnexosNotaTableUpdateCompanionBuilder,
+          (AnexoNota, $$AnexosNotaTableReferences),
+          AnexoNota,
+          PrefetchHooks Function({bool notaId})
+        > {
+  $$AnexosNotaTableTableManager(_$BancoAurora db, $AnexosNotaTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AnexosNotaTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AnexosNotaTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AnexosNotaTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> notaId = const Value.absent(),
+                Value<String> tipo = const Value.absent(),
+                Value<String?> hash = const Value.absent(),
+                Value<bool> naNuvem = const Value.absent(),
+                Value<String?> formato = const Value.absent(),
+                Value<int?> duracaoMs = const Value.absent(),
+                Value<String?> onda = const Value.absent(),
+                Value<String?> transcricao = const Value.absent(),
+                Value<int> ordem = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AnexosNotaCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                notaId: notaId,
+                tipo: tipo,
+                hash: hash,
+                naNuvem: naNuvem,
+                formato: formato,
+                duracaoMs: duracaoMs,
+                onda: onda,
+                transcricao: transcricao,
+                ordem: ordem,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String notaId,
+                required String tipo,
+                Value<String?> hash = const Value.absent(),
+                Value<bool> naNuvem = const Value.absent(),
+                Value<String?> formato = const Value.absent(),
+                Value<int?> duracaoMs = const Value.absent(),
+                Value<String?> onda = const Value.absent(),
+                Value<String?> transcricao = const Value.absent(),
+                Value<int> ordem = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AnexosNotaCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                notaId: notaId,
+                tipo: tipo,
+                hash: hash,
+                naNuvem: naNuvem,
+                formato: formato,
+                duracaoMs: duracaoMs,
+                onda: onda,
+                transcricao: transcricao,
+                ordem: ordem,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AnexosNotaTable, AnexoNota>(table),
+                  $$AnexosNotaTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({notaId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (notaId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.notaId,
+                        referencedTable: $$AnexosNotaTableReferences
+                            ._notaIdTable(db),
+                        referencedColumn: $$AnexosNotaTableReferences
+                            ._notaIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AnexosNotaTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $AnexosNotaTable,
+      AnexoNota,
+      $$AnexosNotaTableFilterComposer,
+      $$AnexosNotaTableOrderingComposer,
+      $$AnexosNotaTableAnnotationComposer,
+      $$AnexosNotaTableCreateCompanionBuilder,
+      $$AnexosNotaTableUpdateCompanionBuilder,
+      (AnexoNota, $$AnexosNotaTableReferences),
+      AnexoNota,
+      PrefetchHooks Function({bool notaId})
+    >;
 typedef $$PreferenciasTableCreateCompanionBuilder =
     PreferenciasCompanion Function({
       required String chave,
@@ -23611,6 +26663,12 @@ class $BancoAuroraManager {
       $$MensagensAssistenteTableTableManager(_db, _db.mensagensAssistente);
   $$AutomacoesTableTableManager get automacoes =>
       $$AutomacoesTableTableManager(_db, _db.automacoes);
+  $$PastasNotasTableTableManager get pastasNotas =>
+      $$PastasNotasTableTableManager(_db, _db.pastasNotas);
+  $$NotasTableTableManager get notas =>
+      $$NotasTableTableManager(_db, _db.notas);
+  $$AnexosNotaTableTableManager get anexosNota =>
+      $$AnexosNotaTableTableManager(_db, _db.anexosNota);
   $$PreferenciasTableTableManager get preferencias =>
       $$PreferenciasTableTableManager(_db, _db.preferencias);
 }

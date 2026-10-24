@@ -51,6 +51,8 @@ Deno.serve(async (req) => {
     await esvaziarPasta(servico, "fotos", `${user.id}/fotos`);
     await esvaziarPasta(servico, "fotos", `${user.id}/miniaturas`);
     await esvaziarPasta(servico, "shape", user.id);
+    // Áudios das anotações (balde privado "audios", app 1.11+).
+    await esvaziarPasta(servico, "audios", `${user.id}/audios`);
   } catch (e) {
     console.error("excluir-conta fotos", user.id, String(e));
     return json({ erro: "Não deu para apagar as fotos. Tente de novo." }, 500);

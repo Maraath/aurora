@@ -32,6 +32,7 @@ IconData iconeDoResultado(TipoResultado t) => switch (t) {
       TipoResultado.projeto => Icons.folder_outlined,
       TipoResultado.exercicio => Icons.fitness_center_rounded,
       TipoResultado.treino => Icons.list_alt_rounded,
+      TipoResultado.nota => Icons.sticky_note_2_outlined,
     };
 
 String _tituloNavegando(TipoResultado t) => switch (t) {
@@ -44,6 +45,7 @@ String _tituloNavegando(TipoResultado t) => switch (t) {
       TipoResultado.projeto => 'PROJETOS',
       TipoResultado.treino => 'TREINOS',
       TipoResultado.exercicio => 'EXERCÍCIOS',
+      TipoResultado.nota => 'ANOTAÇÕES RECENTES',
     };
 
 /// Busca em tudo (Ctrl+K): caixa no topo da tela, por cima de um véu escuro.

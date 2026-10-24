@@ -6,6 +6,7 @@ import 'icone_ia.dart';
 import '../app.dart';
 import '../core/area_segura.dart';
 import '../core/tema.dart';
+import '../data/anotacoes_repo.dart' show NotaCompleta;
 import '../data/assistente_repo.dart';
 import '../data/banco.dart';
 import '../data/busca.dart';
@@ -17,6 +18,7 @@ import 'atalhos/atalhos_flutuantes.dart';
 import 'atalhos/busca_ui.dart';
 import 'componentes.dart';
 import 'alimentacao/alimentacao_page.dart';
+import 'anotacoes/anotacoes_page.dart';
 import 'financas/form_lancamento.dart';
 import 'habitos/form_habito.dart';
 import 'lembretes/form_lembrete.dart';
@@ -53,6 +55,7 @@ enum Secao {
   lembretes,
   metas,
   projetos,
+  anotacoes,
   financas,
   conta,
   mais,
@@ -89,6 +92,7 @@ const _gruposLateral = [
   [
     _ItemNav(Secao.metas, 'Metas', Icons.flag_outlined),
     _ItemNav(Secao.projetos, 'Projetos', Icons.folder_outlined),
+    _ItemNav(Secao.anotacoes, 'Anotações', Icons.sticky_note_2_outlined),
     _ItemNav(Secao.financas, 'Finanças', Icons.account_balance_wallet_outlined),
   ],
 ];
@@ -251,6 +255,9 @@ class _ShellState extends State<Shell> {
       case TipoResultado.projeto:
         _ir(Secao.projetos);
         await abrirFormProjeto(context, projeto: r.item as Projeto);
+      case TipoResultado.nota:
+        _ir(Secao.anotacoes);
+        pedidoAbrirNota.value = (r.item as NotaCompleta).id;
       case TipoResultado.treino || TipoResultado.exercicio:
         setState(() {
           _secao = Secao.saude;
@@ -298,6 +305,7 @@ class _ShellState extends State<Shell> {
         Secao.financas => const FinancasPage(),
         Secao.metas => MetasPage(voltar: _voltar(desktop)),
         Secao.projetos => ProjetosPage(voltar: _voltar(desktop)),
+        Secao.anotacoes => AnotacoesPage(voltar: _voltar(desktop)),
         Secao.assistente => const AssistentePage(),
         Secao.conta => ContaPage(voltar: _voltar(desktop)),
       };
@@ -337,10 +345,11 @@ class _ShellState extends State<Shell> {
       child: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 820),
-          // O assistente ocupa a altura toda (conversa rolando e campo fixo
-          // embaixo); as outras áreas rolam inteiras.
-          child: _secao == Secao.assistente
+          // Anotações usa a largura da janela (mural e colunas da Lista).
+          constraints: BoxConstraints(maxWidth: _secao == Secao.anotacoes ? 1320 : 820),
+          // O assistente e as anotações ocupam a altura toda (rolam por dentro,
+          // com o campo ou os botões fixos); as outras áreas rolam inteiras.
+          child: _secao == Secao.assistente || _secao == Secao.anotacoes
               ? Padding(
                   padding: desktop
                       ? const EdgeInsets.fromLTRB(Espaco.xl, Espaco.lg, Espaco.xl, Espaco.lg)
@@ -393,6 +402,10 @@ class _ShellState extends State<Shell> {
                           aoBuscar: _buscar,
                           aoAbrirAssistente: () => _ir(Secao.assistente),
                           assistenteNaTela: () => _secao == Secao.assistente,
+                          aoNovaNota: (tipo) {
+                            _ir(Secao.anotacoes);
+                            pedidoNovaNota.value = tipo;
+                          },
                         ),
                       ),
                     ]),

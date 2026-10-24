@@ -99,12 +99,14 @@ class GravadorDoAparelho implements Gravador {
 typedef TranscreverIa = Future<String> Function(Uint8List audio, String formato);
 
 /// Transcrição pela Edge Function, com a sessão de quem está logado. Nula sem
-/// conta conectada (a voz precisa da nuvem).
-TranscreverIa? transcricaoDaNuvem() {
+/// conta conectada (a voz precisa da nuvem). [uso] 'nota': áudio de uma
+/// anotação (mais longo, transcrito como ditado, não como comando).
+TranscreverIa? transcricaoDaNuvem({String? uso}) {
   final cliente = nuvem;
   if (cliente?.auth.currentSession == null) return null;
+  final extra = {'uso': ?uso};
   return (audio, formato) async {
-    if (kIsWeb) return _transcreverPelaWeb(cliente!, audio, formato);
+    if (kIsWeb) return _transcreverPelaWeb(cliente!, audio, formato, extra);
     final http = HttpClient()..connectionTimeout = const Duration(seconds: 20);
     try {
       final pedido = await http.postUrl(Uri.parse('$supabaseUrl/functions/v1/assistente'));
@@ -112,8 +114,8 @@ TranscreverIa? transcricaoDaNuvem() {
         ..set(HttpHeaders.authorizationHeader, 'Bearer ${cliente!.auth.currentSession!.accessToken}')
         ..set('apikey', supabaseAnonKey)
         ..contentType = ContentType.json;
-      pedido.add(utf8.encode(jsonEncode({'audio': base64Encode(audio), 'formato': formato})));
-      final r = await pedido.close().timeout(const Duration(seconds: 90));
+      pedido.add(utf8.encode(jsonEncode({'audio': base64Encode(audio), 'formato': formato, ...extra})));
+      final r = await pedido.close().timeout(Duration(seconds: uso == null ? 90 : 180));
       final corpo = await r.transform(utf8.decoder).join();
       final Object? j;
       try {
@@ -136,7 +138,8 @@ TranscreverIa? transcricaoDaNuvem() {
 }
 
 /// Navegador (PWA): sem dart:io, a mesma chamada pelo package:http (fetch).
-Future<String> _transcreverPelaWeb(SupabaseClient cliente, Uint8List audio, String formato) async {
+Future<String> _transcreverPelaWeb(
+    SupabaseClient cliente, Uint8List audio, String formato, Map<String, String> extra) async {
   final rede.Response r;
   try {
     r = await rede
@@ -147,9 +150,9 @@ Future<String> _transcreverPelaWeb(SupabaseClient cliente, Uint8List audio, Stri
             'apikey': supabaseAnonKey,
             'Content-Type': 'application/json',
           },
-          body: jsonEncode({'audio': base64Encode(audio), 'formato': formato}),
+          body: jsonEncode({'audio': base64Encode(audio), 'formato': formato, ...extra}),
         )
-        .timeout(const Duration(seconds: 90));
+        .timeout(Duration(seconds: extra.isEmpty ? 90 : 180));
   } on rede.ClientException {
     throw const ErroIa('Sem conexão com a internet.', semConexao: true);
   } on TimeoutException {

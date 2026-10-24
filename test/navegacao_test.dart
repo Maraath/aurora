@@ -37,7 +37,7 @@ void main() {
 
   testWidgets('computador: todas as áreas no menu lateral', (tester) async {
     await abrirApp(tester, const Size(1280, 860));
-    for (final area in ['Tarefas', 'Hábitos', 'Metas', 'Projetos', 'Finanças', 'Assistente', 'Visão']) {
+    for (final area in ['Tarefas', 'Hábitos', 'Metas', 'Projetos', 'Anotações', 'Finanças', 'Assistente', 'Visão']) {
       await tocar(tester, find.bySemanticsLabel(area));
     }
     // Abas novas (Análise e Parceladas).
@@ -99,7 +99,7 @@ void main() {
 
   testWidgets('celular: áreas fora da barra ficam em Mais', (tester) async {
     await abrirApp(tester, const Size(390, 844));
-    for (final area in ['Saúde', 'Lembretes', 'Metas', 'Projetos', 'Conta e sincronização']) {
+    for (final area in ['Saúde', 'Lembretes', 'Metas', 'Projetos', 'Anotações', 'Conta e sincronização']) {
       await tocar(tester, find.text('Mais'));
       await tocar(tester, find.text(area));
     }

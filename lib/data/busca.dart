@@ -8,6 +8,7 @@ import 'package:drift/drift.dart';
 import '../core/comandos.dart' show normalizar;
 import '../core/formato.dart';
 import '../core/relogio.dart';
+import 'anotacoes_repo.dart';
 import 'banco.dart';
 
 enum GrupoBusca {
@@ -15,6 +16,7 @@ enum GrupoBusca {
   tarefas('Tarefas e lembretes'),
   habitos('Hábitos'),
   planos('Metas e projetos'),
+  notas('Anotações'),
   saude('Saúde');
 
   const GrupoBusca(this.rotulo);
@@ -30,7 +32,8 @@ enum TipoResultado {
   meta(GrupoBusca.planos),
   projeto(GrupoBusca.planos),
   exercicio(GrupoBusca.saude),
-  treino(GrupoBusca.saude);
+  treino(GrupoBusca.saude),
+  nota(GrupoBusca.notas);
 
   const TipoResultado(this.grupo);
   final GrupoBusca grupo;
@@ -148,6 +151,15 @@ Future<List<ResultadoBusca>> buscarTudo(BancoAurora db, String termo,
       ..sort((a, b) => porNome(a.nome, b.nome));
     for (final p in projetos) {
       add(TipoResultado.projeto, p.nome, p.status == 'ativo' ? 'Projeto' : 'Projeto · arquivado', p);
+    }
+  }
+  if (quer(GrupoBusca.notas)) {
+    // Já vêm da editada por último para a mais antiga (fixadas antes).
+    final quadro = await AnotacoesRepo(db).carregar();
+    for (final n in quadro.notas) {
+      final pasta = quadro.pasta(n.nota.pastaId)?.nome;
+      add(TipoResultado.nota, n.tituloVisivel, pasta == null ? 'Anotação' : 'Anotação · $pasta', n,
+          tambem: n.textoParaBusca);
     }
   }
   if (quer(GrupoBusca.saude)) {

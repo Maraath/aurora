@@ -37,6 +37,9 @@ List<TableInfo<Table, dynamic>> tabelasSincronizadas(BancoAurora db) => [
       db.registrosAlimentacao,
       db.mensagensAssistente,
       db.automacoes,
+      db.pastasNotas,
+      db.notas,
+      db.anexosNota,
     ];
 
 /// Tabelas com chave natural (além do id), para não duplicar registros antigos.
