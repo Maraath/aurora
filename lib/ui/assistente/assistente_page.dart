@@ -14,8 +14,7 @@ import '../../data/ia/fala.dart';
 import '../../data/ia/voz.dart';
 import '../vidro.dart';
 
-/// Chat com o assistente, organizado assim:
-/// conversa rolando no meio, campo de mensagem fixo embaixo, mensagens novas
+/// Chat com o assistente: conversa rolando no meio, campo de mensagem fixo embaixo, mensagens novas
 /// entrando com fade e subida de 10 px (0,3 s), a resposta da IA aparecendo aos
 /// poucos e um indicador "pensando" com orbe pulsando e texto que alterna.
 /// Cores e fontes do Aurora.
