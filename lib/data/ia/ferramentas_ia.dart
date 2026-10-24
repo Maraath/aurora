@@ -387,7 +387,7 @@ class FerramentasIa {
       }
       o = Ocorrencia(transacao: t, vencimento: dataLocal(t.vencimento!), pagoEm: t.pagoEm);
     } else {
-      final lista = q.ocorrencias(t, inicioDaRegra(t), hoje.add(const Duration(days: 62))).toList();
+      final lista = q.ocorrencias(t, inicioDaRegra(t), somarDias(hoje, 62)).toList();
       o = dia != null
           ? lista.where((x) => x.vencimento == dia).firstOrNull
           : (pago ? lista.where((x) => !x.paga).firstOrNull : lista.where((x) => x.paga).lastOrNull);
@@ -784,7 +784,7 @@ Future<void> restaurar(BancoAurora db, String json) async {
 /// Vai além do resumo mandado em toda pergunta (ver contexto_ia.dart).
 Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
   final hoje = hojeLocal();
-  final desde = hoje.subtract(Duration(days: dias - 1));
+  final desde = somarDias(hoje, -(dias - 1));
   final l = <String>['Período: últimos $dias dias (de ${diaMesCurto(desde)} a ${diaMesCurto(hoje)}).'];
 
   switch (area) {
@@ -889,7 +889,7 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
       final repo = AlimentacaoRepo(db);
       final n = dias.clamp(1, 7);
       for (var i = 0; i < n; i++) {
-        final d = hoje.subtract(Duration(days: i));
+        final d = somarDias(hoje, -i);
         final dia = await repo.carregarDia(d);
         final t = dia.total;
         String g(double v) => numero(v.roundToDouble());

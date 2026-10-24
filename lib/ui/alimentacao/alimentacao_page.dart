@@ -88,7 +88,7 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
         Row(children: [
           IconButton(
             tooltip: 'Dia anterior',
-            onPressed: () => _irPara(_dia.subtract(const Duration(days: 1))),
+            onPressed: () => _irPara(somarDias(_dia, -1)),
             icon: Icon(Icons.chevron_left_rounded, color: c.muted),
           ),
           Flexible(
@@ -101,7 +101,7 @@ class _AlimentacaoPageState extends State<AlimentacaoPage> {
           ),
           IconButton(
             tooltip: 'Próximo dia',
-            onPressed: () => _irPara(_dia.add(const Duration(days: 1))),
+            onPressed: () => _irPara(somarDias(_dia, 1)),
             icon: Icon(Icons.chevron_right_rounded, color: c.muted),
           ),
           const Spacer(),

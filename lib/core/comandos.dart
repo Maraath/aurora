@@ -6,6 +6,7 @@ library;
 
 import 'formato.dart';
 import 'recorrencia.dart';
+import 'relogio.dart';
 
 sealed class Comando {
   const Comando();
@@ -132,8 +133,8 @@ Comando? _dinheiro(String o, String n, DateTime hoje) {
   final quando = RegExp(r'\b(hoje|ontem|anteontem)\b').firstMatch(restoN);
   if (quando != null) {
     dia = switch (quando.group(1)) {
-      'ontem' => hoje.subtract(const Duration(days: 1)),
-      'anteontem' => hoje.subtract(const Duration(days: 2)),
+      'ontem' => somarDias(hoje, -1),
+      'anteontem' => somarDias(hoje, -2),
       _ => hoje,
     };
     resto = _recortar(resto, quando.start, quando.end);
@@ -196,11 +197,11 @@ Comando? _lembrete(String o, String n, DateTime hoje, DateTime agora) {
   final regra = q.regra;
   if (regra != null) {
     // Primeira ocorrência a partir de hoje (hoje só se o horário ainda não passou).
-    final inicio = regra.ocorreEm(hoje, hoje) && !passou ? hoje : hoje.add(const Duration(days: 1));
+    final inicio = regra.ocorreEm(hoje, hoje) && !passou ? hoje : somarDias(hoje, 1);
     dia = regra.proxima(inicio, inicio) ?? inicio;
   } else {
     // Sem dia: hoje se o horário ainda vem; senão amanhã (às 09:00 sem horário).
-    dia ??= temHora && !passou ? hoje : hoje.add(const Duration(days: 1));
+    dia ??= temHora && !passou ? hoje : somarDias(hoje, 1);
   }
   return CmdLembrete(texto: texto, dia: dia, hora: hora, minuto: minuto, regra: regra);
 }
@@ -383,10 +384,10 @@ class _Quando {
     // Dia.
     Match? d;
     if ((d = RegExp(r'\bdepois de amanha\b').firstMatch(t)) != null) {
-      q.dia = hoje.add(const Duration(days: 2));
+      q.dia = somarDias(hoje, 2);
       tirar(d!);
     } else if ((d = RegExp(r'\bamanha\b').firstMatch(t)) != null) {
-      q.dia = hoje.add(const Duration(days: 1));
+      q.dia = somarDias(hoje, 1);
       tirar(d!);
     } else if ((d = RegExp(r'\bhoje\b').firstMatch(t)) != null) {
       q.dia = hoje;
@@ -401,7 +402,7 @@ class _Quando {
       final alvo = _diasSemana[d!.group(1)]!;
       var dif = (alvo - hoje.weekday) % 7;
       if (dif == 0) dif = 7;
-      q.dia = hoje.add(Duration(days: dif));
+      q.dia = somarDias(hoje, dif);
       tirar(d);
     }
 

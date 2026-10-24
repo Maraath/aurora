@@ -40,7 +40,7 @@ class QuadroHabitos {
   /// o hábito foi feito nos dias previstos.
   int sequencia(Habito h, DateTime hoje) {
     var n = 0;
-    var d = feito(h.id, hoje) ? hoje : hoje.subtract(const Duration(days: 1));
+    var d = feito(h.id, hoje) ? hoje : somarDias(hoje, -1);
     final inicio = dataLocal(h.criadoEm);
     for (var i = 0; i < 366 && !d.isBefore(inicio); i++) {
       if (h.diasSemana & bitDoDiaDaSemana(d) != 0) {

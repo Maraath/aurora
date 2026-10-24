@@ -124,7 +124,7 @@ class _TarefasPageState extends State<TarefasPage> {
   }
 
   List<Widget> _todas(QuadroTarefas q, DateTime hoje) {
-    final amanha = hoje.add(const Duration(days: 1));
+    final amanha = somarDias(hoje, 1);
     final grupos = <String, List<OcorrenciaTarefa>>{
       'Atrasadas': [],
       'Hoje': [],

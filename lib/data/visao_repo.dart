@@ -118,7 +118,7 @@ class VisaoRepo {
   Future<ResumoVisao> carregar() async {
     final agora = agoraLocal();
     final hoje = dataLocal(agora);
-    final fimSemana = hoje.add(const Duration(days: 6));
+    final fimSemana = somarDias(hoje, 6);
 
     // As leituras não dependem umas das outras: saem todas juntas. Na web cada
     // consulta vai e volta do worker do banco, e em fila somava ~0,5 s no PC.
@@ -199,7 +199,7 @@ class VisaoRepo {
     final semana = [
       for (var i = 0; i < 7; i++)
         () {
-          final d = hoje.add(Duration(days: i));
+          final d = somarDias(hoje, i);
           return DiaSemana(
             d,
             tarefas: (tarefasPorDia[d] ?? const []).where((o) => !o.feita).length,
@@ -224,7 +224,7 @@ class VisaoRepo {
         hoje: hoje,
         atrasadas: quadro.atrasadas,
         contasVencidas: mes.aPagar.where((o) => o.atrasada(hoje)).length,
-        contasProximas: contas.where((o) => !o.paga && o.vencimento.difference(hoje).inDays <= 3).length,
+        contasProximas: contas.where((o) => !o.paga && diasEntre(hoje, o.vencimento) <= 3).length,
         sequencias: {for (final h in quadroHabitos.habitos) h.nome: quadroHabitos.sequencia(h, hoje)},
         semana: semana,
       ),

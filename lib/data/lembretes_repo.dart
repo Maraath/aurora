@@ -48,7 +48,7 @@ Iterable<DateTime> ocorrenciasLembrete(Lembrete l, DateTime agora, {int limite =
   }
   final hoje = dataLocal(agora);
   final inicio = DateTime(base.year, base.month, base.day);
-  for (final d in regra.ocorrencias(inicio, hoje, hoje.add(Duration(days: limite)))) {
+  for (final d in regra.ocorrencias(inicio, hoje, somarDias(hoje, limite))) {
     final instante = instanteLocal(d, base.hour, base.minute);
     if (instante.isAfter(agora)) yield instante;
   }

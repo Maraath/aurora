@@ -113,7 +113,7 @@ class QuadroSaude {
   /// Próximo treino com dia fixo a partir de amanhã (para dias de descanso).
   ({TreinoCompleto treino, DateTime dia})? proximoTreino(DateTime hoje) {
     for (var i = 1; i <= 7; i++) {
-      final d = hoje.add(Duration(days: i));
+      final d = somarDias(hoje, i);
       final t = treinoDoDia(d);
       if (t != null) return (treino: t, dia: d);
     }

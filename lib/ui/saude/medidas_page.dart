@@ -227,7 +227,7 @@ class _Grafico extends StatelessWidget {
                 interval: ultimoX <= 0 ? 1 : ultimoX,
                 getTitlesWidget: (v, meta) => Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text(diaMesCurto(inicio.add(Duration(days: v.round()))),
+                  child: Text(diaMesCurto(somarDias(inicio, v.round())),
                       style: manrope(10, peso: FontWeight.w700, cor: c.muted)),
                 ),
               ),
@@ -239,7 +239,7 @@ class _Grafico extends StatelessWidget {
               getTooltipItems: (spots) => [
                 for (final s in spots)
                   LineTooltipItem(
-                    '${numero(s.y)} ${medidas.first.unidade}\n${diaMesCurto(inicio.add(Duration(days: s.x.round())))}',
+                    '${numero(s.y)} ${medidas.first.unidade}\n${diaMesCurto(somarDias(inicio, s.x.round()))}',
                     manrope(12, peso: FontWeight.w700, cor: c.text),
                   ),
               ],

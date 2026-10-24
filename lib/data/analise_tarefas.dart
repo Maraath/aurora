@@ -35,7 +35,7 @@ AnaliseTarefas analisarTarefas(QuadroTarefas q, DateTime hoje) {
   // a recorrente por cada dia marcado.
   final feitas = <DateTime>[];
   var noPrazo = 0, comPrazo = 0;
-  final limite30 = hoje.subtract(const Duration(days: 29));
+  final limite30 = somarDias(hoje, -29);
   for (final t in q.tarefas) {
     if (t.regraRepeticao == null) {
       if (t.feitaEm == null) continue;
@@ -57,7 +57,7 @@ AnaliseTarefas analisarTarefas(QuadroTarefas q, DateTime hoje) {
       feitas.where((d) => !d.isBefore(de) && !d.isAfter(ate)).length;
 
   final porDiaSemana = <int, int>{};
-  final limite60 = hoje.subtract(const Duration(days: 59));
+  final limite60 = somarDias(hoje, -59);
   for (final d in feitas.where((d) => !d.isBefore(limite60) && !d.isAfter(hoje))) {
     porDiaSemana[d.weekday] = (porDiaSemana[d.weekday] ?? 0) + 1;
   }
@@ -73,12 +73,12 @@ AnaliseTarefas analisarTarefas(QuadroTarefas q, DateTime hoje) {
     porDia: [
       for (var i = 13; i >= 0; i--)
         () {
-          final d = hoje.subtract(Duration(days: i));
+          final d = somarDias(hoje, -i);
           return (dia: d, feitas: contar(d, d));
         }(),
     ],
-    semana: contar(hoje.subtract(const Duration(days: 6)), hoje),
-    semanaAnterior: contar(hoje.subtract(const Duration(days: 13)), hoje.subtract(const Duration(days: 7))),
+    semana: contar(somarDias(hoje, -6), hoje),
+    semanaAnterior: contar(somarDias(hoje, -13), somarDias(hoje, -7)),
     noPrazo: noPrazo,
     comPrazo: comPrazo,
     abertasPorPrioridade: abertas,

@@ -52,7 +52,7 @@ DateTime? ocorrenciaNoDia(Automacao a, DateTime dia) {
 ({DateTime dia, DateTime quando})? ultimaOcorrencia(Automacao a, DateTime agora) {
   final hoje = dataLocal(agora);
   for (var i = 0; i <= 7; i++) {
-    final dia = hoje.subtract(Duration(days: i));
+    final dia = somarDias(hoje, -i);
     final q = ocorrenciaNoDia(a, dia);
     if (q != null && !q.isAfter(agora)) return (dia: dia, quando: q);
   }
@@ -63,7 +63,7 @@ DateTime? ocorrenciaNoDia(Automacao a, DateTime dia) {
 Iterable<DateTime> proximasOcorrencias(Automacao a, DateTime agora, {int dias = 14}) sync* {
   final hoje = dataLocal(agora);
   for (var i = 0; i <= dias; i++) {
-    final q = ocorrenciaNoDia(a, hoje.add(Duration(days: i)));
+    final q = ocorrenciaNoDia(a, somarDias(hoje, i));
     if (q != null && q.isAfter(agora)) yield q;
   }
 }

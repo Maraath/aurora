@@ -60,8 +60,8 @@ class _LembretesPageState extends State<LembretesPage> {
     final c = context.cores;
     final agora = agoraLocal();
     final hoje = dataLocal(agora);
-    final amanha = instanteLocal(hoje.add(const Duration(days: 1)));
-    final fimDaSemana = instanteLocal(hoje.add(Duration(days: 8 - hoje.weekday)));
+    final amanha = instanteLocal(somarDias(hoje, 1));
+    final fimDaSemana = instanteLocal(somarDias(hoje, 8 - hoje.weekday));
     final aSeguir = q.aSeguir;
 
     // Próximos: ativos por data; depois os desligados e os que já passaram.

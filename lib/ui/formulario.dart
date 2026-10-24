@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/relogio.dart';
 
 import '../core/formato.dart';
 import '../core/recorrencia.dart';
@@ -552,7 +553,7 @@ class EscolhaData extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final amanha = hoje.add(const Duration(days: 1));
+    final amanha = somarDias(hoje, 1);
     final outra = data != null && data != hoje && data != amanha;
     return Wrap(
       spacing: 8,

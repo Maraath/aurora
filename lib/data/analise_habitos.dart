@@ -1,5 +1,6 @@
 import 'banco.dart';
 import 'habitos_repo.dart';
+import '../core/relogio.dart';
 
 /// Constância de um hábito nos últimos 30 dias.
 class ConstanciaHabito {
@@ -43,7 +44,7 @@ class AnaliseHabitos {
 }
 
 AnaliseHabitos analisarHabitos(QuadroHabitos q, DateTime hoje) {
-  List<DateTime> ultimos(int n) => [for (var i = n - 1; i >= 0; i--) hoje.subtract(Duration(days: i))];
+  List<DateTime> ultimos(int n) => [for (var i = n - 1; i >= 0; i--) somarDias(hoje, -i)];
 
   final dias30 = ultimos(30);
   // Hoje fica de fora da média: o dia ainda está em andamento.

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import '../core/relogio.dart';
 
 import 'banco.dart';
 import 'financas_repo.dart';
@@ -188,7 +189,7 @@ List<VelaSaldo> velasDoSaldo(QuadroFinancas q, DateTime ate, DateTime hoje, {int
         final inicio = DateTime(fimSerie.year, fimSerie.month - i, 1);
         final ultimo = DateTime(inicio.year, inicio.month + 1, 0);
         final ateDia = ultimo.isAfter(hoje) ? hoje : ultimo;
-        final abertura = saldoNoFimDe(inicio.subtract(const Duration(days: 1)));
+        final abertura = saldoNoFimDe(somarDias(inicio, -1));
         var s = abertura, maxima = abertura, minima = abertura;
         if (!inicio.isAfter(hoje)) {
           for (var d = inicio; !d.isAfter(ateDia); d = DateTime(d.year, d.month, d.day + 1)) {

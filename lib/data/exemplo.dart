@@ -32,7 +32,7 @@ Future<void> _etapa4(BancoAurora db) async {
   if (await db.preferencia('exemplo_v4') != null) return;
   final saude = SaudeRepo(db);
   final hoje = hojeLocal();
-  DateTime antes(int dias) => hoje.subtract(Duration(days: dias));
+  DateTime antes(int dias) => somarDias(hoje, -dias);
 
   await db.transaction(() async {
     final a = await saude.salvarTreino(
@@ -86,7 +86,7 @@ Future<void> _etapa2(BancoAurora db) async {
   if (await db.preferencia('exemplo_v2') != null) return;
   final hoje = hojeLocal();
   DateTime dia(int deslocamento, int hora) =>
-      instanteLocal(hoje.add(Duration(days: deslocamento)), hora);
+      instanteLocal(somarDias(hoje, deslocamento), hora);
   // Próxima data (a partir de hoje) que cai no dia da semana pedido (1 = segunda).
   DateTime proximo(int diaSemana, int hora) =>
       dia((diaSemana - hoje.weekday) % 7, hora);

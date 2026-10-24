@@ -174,7 +174,7 @@ class TarefasRepo {
       if (regra.ocorreEm(hoje, inicio)) {
         dia = hoje;
       } else {
-        dia = regra.proxima(inicio, hoje.add(const Duration(days: 1)));
+        dia = regra.proxima(inicio, somarDias(hoje, 1));
       }
       if (dia == null) continue;
       final o = OcorrenciaTarefa(

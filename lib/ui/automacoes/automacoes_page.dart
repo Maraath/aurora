@@ -193,7 +193,7 @@ class _CartaoAutomacao extends StatelessWidget {
     final dia = DateTime.tryParse(p.first);
     if (dia == null) return chave;
     final hoje = hojeLocal();
-    final rel = dia == hoje ? 'hoje' : (dia == hoje.subtract(const Duration(days: 1)) ? 'ontem' : null);
+    final rel = dia == hoje ? 'hoje' : (dia == somarDias(hoje, -1) ? 'ontem' : null);
     return '${rel ?? '${dia.day}/${dia.month}'} às ${p.length > 1 ? p[1] : ''}';
   }
 }

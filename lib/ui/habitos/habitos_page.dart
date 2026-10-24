@@ -237,12 +237,12 @@ class _Semana extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final segunda = hoje.subtract(Duration(days: hoje.weekday - 1));
+    final segunda = somarDias(hoje, -(hoje.weekday - 1));
     return Row(
       children: [
         for (var i = 0; i < 7; i++) ...[
           if (i > 0) const SizedBox(width: 6),
-          Expanded(child: _dia(c, segunda.add(Duration(days: i)))),
+          Expanded(child: _dia(c, somarDias(segunda, i))),
         ],
       ],
     );

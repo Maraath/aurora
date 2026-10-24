@@ -282,7 +282,7 @@ class QuadroFinancas {
       lista.addAll(ocorrencias(t, inicio, fim));
       // No mês atual, o que ficou sem pagar nos meses anteriores também aparece.
       if (mesAtual) {
-        lista.addAll(ocorrencias(t, DateTime(2000), inicio.subtract(const Duration(days: 1)))
+        lista.addAll(ocorrencias(t, DateTime(2000), somarDias(inicio, -1))
             .where((o) => !o.paga));
       }
     }
@@ -463,7 +463,7 @@ class FinancasRepo {
   /// Até quando a regra vai ao ser encerrada: ontem ou o último vencimento
   /// pago, o que vier depois (o que já foi pago continua no extrato).
   static DateTime fimAoEncerrar(List<PagamentoTransacao> pagos) {
-    var fim = hojeLocal().subtract(const Duration(days: 1));
+    var fim = somarDias(hojeLocal(), -1);
     for (final p in pagos) {
       final v = DateTime.parse(p.vencimento);
       if (v.isAfter(fim)) fim = v;

@@ -102,7 +102,7 @@ Future<String> _atrasadas(BancoAurora db, DateTime agora) async {
 
 Future<String> _dinheiroSemana(BancoAurora db, DateTime agora) async {
   final hoje = dataLocal(agora);
-  final segunda = hoje.subtract(Duration(days: hoje.weekday - 1));
+  final segunda = somarDias(hoje, -(hoje.weekday - 1));
   final q = await FinancasRepo(db).carregar();
   var entrou = 0, saiu = 0;
   final cats = <String, int>{};
@@ -120,7 +120,7 @@ Future<String> _dinheiroSemana(BancoAurora db, DateTime agora) async {
   for (final t in q.transacoes) {
     if (t.contaDestinoId != null || t.tipo != TipoTransacao.saida) continue;
     proximas.addAll(q
-        .ocorrencias(t, hoje.add(const Duration(days: 1)), hoje.add(const Duration(days: 7)))
+        .ocorrencias(t, somarDias(hoje, 1), somarDias(hoje, 7))
         .where((o) => !o.paga));
   }
   proximas.sort((a, b) => a.vencimento.compareTo(b.vencimento));
@@ -152,7 +152,7 @@ Future<String> _metasDomingo(BancoAurora db, DateTime agora) async {
 
 Future<String> _habitosSemana(BancoAurora db, DateTime agora) async {
   final hoje = dataLocal(agora);
-  final segunda = hoje.subtract(Duration(days: hoje.weekday - 1));
+  final segunda = somarDias(hoje, -(hoje.weekday - 1));
   final q = await HabitosRepo(db).carregar();
   if (q.habitos.isEmpty) return 'Você ainda não tem hábitos. Crie um em Hábitos.';
   final linhas = <String>[];
@@ -160,7 +160,7 @@ Future<String> _habitosSemana(BancoAurora db, DateTime agora) async {
   final taxas = <String, double>{};
   for (final h in q.habitos) {
     var previstos = 0, feitos = 0;
-    for (var d = segunda; !d.isAfter(hoje); d = d.add(const Duration(days: 1))) {
+    for (var d = segunda; !d.isAfter(hoje); d = somarDias(d, 1)) {
       if (!q.doDia(d).contains(h)) continue;
       previstos++;
       if (q.feito(h.id, d)) feitos++;

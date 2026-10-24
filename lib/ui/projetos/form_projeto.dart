@@ -47,7 +47,7 @@ class _FormProjetoState extends State<_FormProjeto> {
     final p = widget.projeto;
     _nome = TextEditingController(text: p?.nome ?? '');
     _inicio = p == null ? _hoje : dataLocal(p.inicio);
-    _fim = p == null ? _hoje.add(const Duration(days: 90)) : dataLocal(p.fim);
+    _fim = p == null ? somarDias(_hoje, 90) : dataLocal(p.fim);
     _metaId = p?.metaId;
     _arquivado = p?.status == 'arquivado';
     if (_novo) _etapas.addAll([TextEditingController(), TextEditingController()]);
