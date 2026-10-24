@@ -46,7 +46,7 @@ class _FinancasPageState extends State<FinancasPage> {
   FinancasRepo? _repo;
   Stream<QuadroFinancas>? _quadro;
   PreferenciasPainel? _prefs;
-  final _hoje = hojeSP();
+  final _hoje = hojeLocal();
   late DateTime _mes = DateTime(_hoje.year, _hoje.month, 1);
   _Vista _vista = _Vista.resumo;
 

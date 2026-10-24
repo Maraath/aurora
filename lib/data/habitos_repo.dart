@@ -26,7 +26,7 @@ class QuadroHabitos {
 
   /// Hábitos previstos para o dia (pela regra de dias da semana e pela data de criação).
   List<Habito> doDia(DateTime dia) => habitos
-      .where((h) => h.diasSemana & bitDoDiaDaSemana(dia) != 0 && !dia.isBefore(dataSP(h.criadoEm)))
+      .where((h) => h.diasSemana & bitDoDiaDaSemana(dia) != 0 && !dia.isBefore(dataLocal(h.criadoEm)))
       .toList();
 
   /// Fração feita no dia (0 a 1), ou nulo se não havia hábito previsto.
@@ -41,7 +41,7 @@ class QuadroHabitos {
   int sequencia(Habito h, DateTime hoje) {
     var n = 0;
     var d = feito(h.id, hoje) ? hoje : hoje.subtract(const Duration(days: 1));
-    final inicio = dataSP(h.criadoEm);
+    final inicio = dataLocal(h.criadoEm);
     for (var i = 0; i < 366 && !d.isBefore(inicio); i++) {
       if (h.diasSemana & bitDoDiaDaSemana(d) != 0) {
         if (!feito(h.id, d)) break;
@@ -66,7 +66,7 @@ class HabitosRepo {
           ..orderBy([(h) => OrderingTerm(expression: h.horario), (h) => OrderingTerm(expression: h.criadoEm)]))
         .get();
     // Últimos ~13 meses bastam para semana, calendário e sequência.
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final desde = chaveData(DateTime(hoje.year - 1, hoje.month - 1, 1));
     final registros = await (db.select(db.registrosHabito)
           ..where((r) => r.feito & r.apagadoEm.isNull() & r.dia.isBiggerOrEqualValue(desde)))
@@ -122,11 +122,11 @@ class HabitosRepo {
         final horario = dados.horario.present ? dados.horario.value : null;
         final partes = (horario ?? '08:00').split(':');
         final regra = Regra.semanal(dias);
-        final hoje = hojeSP();
+        final hoje = hojeLocal();
         final primeiro = regra.proxima(hoje, hoje) ?? hoje;
         await db.into(db.lembretes).insert(LembretesCompanion.insert(
               texto: dados.nome.value,
-              quando: instanteSP(primeiro, int.parse(partes[0]), int.parse(partes[1])),
+              quando: instanteLocal(primeiro, int.parse(partes[0]), int.parse(partes[1])),
               regraRepeticao: Value(regra.rrule),
               itemTipo: const Value('habito'),
               itemId: Value(habitoId),

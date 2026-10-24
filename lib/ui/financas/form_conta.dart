@@ -178,7 +178,7 @@ class _PagarFaturaState extends State<_PagarFatura> {
   late final TextEditingController _valor =
       TextEditingController(text: centavosParaCampo(widget.cartao.faturaCentavos));
   late String? _origem = widget.contas.firstOrNull?.id;
-  final _hoje = hojeSP();
+  final _hoje = hojeLocal();
   late DateTime _data = _hoje;
   String? _erro;
 
@@ -202,7 +202,7 @@ class _PagarFaturaState extends State<_PagarFatura> {
       cartao: widget.cartao.conta,
       origemId: _origem!,
       valorCentavos: valor,
-      instante: _data == _hoje ? DateTime.now() : instanteSP(_data, 12),
+      instante: _data == _hoje ? DateTime.now() : instanteLocal(_data, 12),
     );
     if (mounted) Navigator.pop(context);
   }

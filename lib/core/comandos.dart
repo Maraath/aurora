@@ -98,7 +98,7 @@ String normalizar(String s) {
 const _valor = r'(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)';
 
 /// Entende [texto]. [hoje] é a data de calendário e [agora] o horário atual
-/// (ambos de São Paulo). Nulo = não é comando rápido.
+/// (ambos no fuso do aparelho). Nulo = não é comando rápido.
 Comando? interpretar(String texto, {required DateTime hoje, required DateTime agora}) {
   final original = texto.trim().replaceAll(RegExp(r'[.!?]+$'), '').replaceAll(RegExp(r'\s+'), ' ');
   if (original.isEmpty) return null;

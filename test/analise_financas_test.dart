@@ -38,7 +38,7 @@ void main() {
 
   test('análise do mês: média, projeção e comparação', () async {
     final q = await FinancasRepo(db).carregar();
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final mes = DateTime(hoje.year, hoje.month, 1);
     final a = analisarMes(q, mes, hoje);
     expect(a.gastoCentavos, q.mes(mes).saiuCentavos);
@@ -59,7 +59,7 @@ void main() {
 
   test('painel: receitas, despesas, tendência e transações recentes', () async {
     final repo = FinancasRepo(db);
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final mes = DateTime(hoje.year, hoje.month, 1);
     final passado = DateTime(hoje.year, hoje.month - 1, 10);
     Future<void> lancar(String nome, int centavos, TipoTransacao tipo, DateTime quando, String cat) =>
@@ -67,9 +67,9 @@ void main() {
               descricao: nome,
               valorCentavos: centavos,
               tipo: tipo,
-              data: instanteSP(quando, 12),
+              data: instanteLocal(quando, 12),
               categoria: Value(cat),
-              pagoEm: Value(instanteSP(quando, 12)),
+              pagoEm: Value(instanteLocal(quando, 12)),
             ));
     await lancar('Salário', 500000, TipoTransacao.entrada, passado, 'Salário');
     await lancar('Mercado', 40000, TipoTransacao.saida, passado, 'Mercado');

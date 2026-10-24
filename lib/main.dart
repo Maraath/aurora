@@ -22,7 +22,7 @@ Future<void> main() async {
   iniciarMedidorDeQuadros();
   Intl.defaultLocale = 'pt_BR';
   await initializeDateFormatting('pt_BR');
-  iniciarRelogio();
+  iniciarRelogio(await fusoDoAparelho());
   await iniciarNuvem();
 
   final db = BancoAurora();
@@ -42,4 +42,9 @@ Future<void> main() async {
   unawaited(AlimentacaoRepo(db).atualizarCopiasTaco());
   // Fotos do Shape de antes da 1.6 (JPEG 1600 px) viram WebP 1080 px com miniatura.
   unawaited(ShapeRepo(db).converterFotosAntigas());
+  // Ao voltar ao app, confere se o fuso do aparelho mudou (viagem); se mudou,
+  // os avisos são recalculados no fuso novo.
+  AppLifecycleListener(onResume: () async {
+    if (await atualizarFusoDoAparelho()) unawaited(Notificador.instancia.reagendar(db));
+  });
 }

@@ -39,7 +39,7 @@ void main() {
   }
 
   // Sexta, 16/10/2026.
-  DateTime sp(int dia, int hora, [int minuto = 0]) => diaSP(2026, 10, dia, hora, minuto);
+  DateTime sp(int dia, int hora, [int minuto = 0]) => diaLocal(2026, 10, dia, hora, minuto);
 
   test('modelos nascem desligados, um de cada, com o mesmo id em qualquer aparelho', () async {
     await repo.garantirModelos();
@@ -86,7 +86,7 @@ void main() {
   group('execução', () {
     test('grava o texto na conversa e marca; chave geral desligada não roda', () async {
       await ligar(ModeloAutomacao.briefing);
-      final agora = agoraSP();
+      final agora = agoraLocal();
       final b = await modelo(ModeloAutomacao.briefing);
       // Força a ocorrência de hoje para "agora".
       await repo.salvar(
@@ -120,7 +120,7 @@ void main() {
         pedido: const Value('Como foi minha semana de treino?'),
       ));
       final a = (await repo.listar()).last;
-      await executarAutomacao(db, a, agora: agoraSP(), assistente: assistente);
+      await executarAutomacao(db, a, agora: agoraLocal(), assistente: assistente);
       expect(pedidoRecebido, 'Semana de treino: Como foi minha semana de treino?');
       expect((await assistente.carregarConversa()).last.texto, 'Sua semana foi boa.');
     });
@@ -128,13 +128,13 @@ void main() {
 
   group('textos', () {
     test('atrasadas lista com os dias de atraso', () async {
-      final t = await gerarTexto(ModeloAutomacao.atrasadas, db, agoraSP());
+      final t = await gerarTexto(ModeloAutomacao.atrasadas, db, agoraLocal());
       expect(t, contains('Testes Estágios (38 dias)'));
       expect(t, contains('Pagar faculdade (4 dias)'));
     });
 
     test('dinheiro, metas e hábitos montam sem erro', () async {
-      final agora = agoraSP();
+      final agora = agoraLocal();
       expect(await gerarTexto(ModeloAutomacao.dinheiroSemana, db, agora), contains('Saldo em conta: R\$ 703,18.'));
       expect(await gerarTexto(ModeloAutomacao.metasDomingo, db, agora), contains('Shape 80kg'));
       expect(await gerarTexto(ModeloAutomacao.habitosSemana, db, agora), startsWith('Semana dos hábitos: 0% feito.'));

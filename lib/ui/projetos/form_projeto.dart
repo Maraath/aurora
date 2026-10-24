@@ -30,7 +30,7 @@ class _FormProjeto extends StatefulWidget {
 }
 
 class _FormProjetoState extends State<_FormProjeto> {
-  final _hoje = hojeSP();
+  final _hoje = hojeLocal();
   late final TextEditingController _nome;
   late DateTime _inicio;
   late DateTime _fim;
@@ -46,8 +46,8 @@ class _FormProjetoState extends State<_FormProjeto> {
     super.initState();
     final p = widget.projeto;
     _nome = TextEditingController(text: p?.nome ?? '');
-    _inicio = p == null ? _hoje : dataSP(p.inicio);
-    _fim = p == null ? _hoje.add(const Duration(days: 90)) : dataSP(p.fim);
+    _inicio = p == null ? _hoje : dataLocal(p.inicio);
+    _fim = p == null ? _hoje.add(const Duration(days: 90)) : dataLocal(p.fim);
     _metaId = p?.metaId;
     _arquivado = p?.status == 'arquivado';
     if (_novo) _etapas.addAll([TextEditingController(), TextEditingController()]);
@@ -85,8 +85,8 @@ class _FormProjetoState extends State<_FormProjeto> {
     }
     final dados = ProjetosCompanion(
       nome: Value(nome),
-      inicio: Value(instanteSP(_inicio)),
-      fim: Value(instanteSP(_fim)),
+      inicio: Value(instanteLocal(_inicio)),
+      fim: Value(instanteLocal(_fim)),
       metaId: Value(_metaId),
       status: Value(_arquivado ? 'arquivado' : 'ativo'),
     );

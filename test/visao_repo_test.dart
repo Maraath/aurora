@@ -39,7 +39,7 @@ void main() {
     // 5 tarefas da etapa 1 + 1 recorrente ("Planejar a semana").
     expect(r.tarefasAbertas, 6);
     // "Fórmula Mágica" é hoje às 21:00 e passa a contar como atrasada depois disso.
-    expect(r.tarefasAtrasadas, agoraSP().hour >= 21 ? 4 : 3);
+    expect(r.tarefasAtrasadas, agoraLocal().hour >= 21 ? 4 : 3);
     expect(r.aPagarCentavos, 22280);
     expect(r.contasAPagar, 3);
     expect(r.meta?.nome, 'Shape 80kg');
@@ -57,7 +57,7 @@ void main() {
     expect(r.linha.skip(horas.length).every((i) => i.hora == null), isTrue);
 
     expect(r.semana, hasLength(7));
-    expect(r.semana.first.dia, hojeSP());
+    expect(r.semana.first.dia, hojeLocal());
     expect(r.insights, isNotEmpty);
     expect(r.insights.length, lessThanOrEqualTo(3));
   });
@@ -80,7 +80,7 @@ void main() {
   });
 
   test('tarefa sem repetição: com hora atrasa pelo horário; sem hora, pelo dia', () {
-    final agora = diaSP(2026, 10, 16, 15);
+    final agora = diaLocal(2026, 10, 16, 15);
     Tarefa t(DateTime prazo, bool temHora) => Tarefa(
           id: 'x',
           criadoEm: agora,
@@ -90,9 +90,9 @@ void main() {
           prazoTemHora: temHora,
           prioridade: Prioridade.media,
         );
-    expect(tarefaAtrasada(t(diaSP(2026, 10, 16, 9), true), agora), isTrue);
-    expect(tarefaAtrasada(t(diaSP(2026, 10, 16), false), agora), isFalse);
-    expect(tarefaAtrasada(t(diaSP(2026, 10, 15), false), agora), isTrue);
+    expect(tarefaAtrasada(t(diaLocal(2026, 10, 16, 9), true), agora), isTrue);
+    expect(tarefaAtrasada(t(diaLocal(2026, 10, 16), false), agora), isFalse);
+    expect(tarefaAtrasada(t(diaLocal(2026, 10, 15), false), agora), isTrue);
   });
 
   group('tarefa recorrente', () {
@@ -103,7 +103,7 @@ void main() {
       id = await tarefas.salvar(
         TarefasCompanion.insert(
           titulo: 'Tomar creatina',
-          prazo: Value(instanteSP(hojeSP().subtract(const Duration(days: 10)), 8)),
+          prazo: Value(instanteLocal(hojeLocal().subtract(const Duration(days: 10)), 8)),
           prazoTemHora: const Value(true),
           regraRepeticao: const Value('FREQ=DAILY'),
         ),
@@ -116,7 +116,7 @@ void main() {
     test('mostra só a ocorrência de hoje, sem acumular atrasadas', () async {
       final q = await tarefas.carregar();
       final o = daTarefa(q);
-      expect(o.dia, hojeSP());
+      expect(o.dia, hojeLocal());
       expect(o.atrasada, isFalse);
       expect(q.atuais.where((o) => o.tarefa.id == id), hasLength(1));
     });
@@ -146,8 +146,8 @@ void main() {
 
     test('calendário mostra a ocorrência em cada dia do mês', () async {
       final q = await tarefas.carregar();
-      final hoje = hojeSP();
-      final semana = q.porDia(hoje, hoje.add(const Duration(days: 6)), agoraSP());
+      final hoje = hojeLocal();
+      final semana = q.porDia(hoje, hoje.add(const Duration(days: 6)), agoraLocal());
       expect(semana.values.where((l) => l.any((o) => o.tarefa.id == id)), hasLength(7));
     });
   });
@@ -160,7 +160,7 @@ void main() {
     );
     var q = await repo.carregar();
     final ler = q.habitos.firstWhere((h) => h.nome == 'Ler');
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     expect(q.doDia(hoje).map((h) => h.nome), contains('Ler'));
 
     await repo.alternar(ler.id, hoje, true);
@@ -170,7 +170,7 @@ void main() {
   });
 
   group('planejar avisos', () {
-    late final agora = diaSP(2026, 10, 16, 10);
+    late final agora = diaLocal(2026, 10, 16, 10);
     Lembrete lembrete(String texto, DateTime quando,
             {String? regra, bool ativo = true, String? tipo, String? item, bool despertar = false}) =>
         Lembrete(
@@ -202,17 +202,17 @@ void main() {
 
     test('único no futuro, passado não, desligado não', () {
       final avisos = planejar([
-        lembrete('futuro', diaSP(2026, 10, 17, 9)),
-        lembrete('passado', diaSP(2026, 10, 15, 9)),
-        lembrete('desligado', diaSP(2026, 10, 17, 9), ativo: false),
+        lembrete('futuro', diaLocal(2026, 10, 17, 9)),
+        lembrete('passado', diaLocal(2026, 10, 15, 9)),
+        lembrete('desligado', diaLocal(2026, 10, 17, 9), ativo: false),
       ]);
       expect(avisos.map((a) => a.titulo), ['futuro']);
     });
 
     test('"Me despertar" vai junto em cada aviso do lembrete', () {
       final avisos = planejar([
-        lembrete('acordar', diaSP(2026, 10, 17, 6), regra: 'FREQ=DAILY', despertar: true),
-        lembrete('comum', diaSP(2026, 10, 17, 9)),
+        lembrete('acordar', diaLocal(2026, 10, 17, 6), regra: 'FREQ=DAILY', despertar: true),
+        lembrete('comum', diaLocal(2026, 10, 17, 9)),
       ]);
       expect(avisos.where((a) => a.titulo == 'acordar').every((a) => a.despertar), isTrue);
       expect(avisos.firstWhere((a) => a.titulo == 'comum').despertar, isFalse);
@@ -226,14 +226,14 @@ void main() {
 
     test('diário gera 14 dias, em ordem, e respeita o limite', () {
       final avisos = planejar([
-        lembrete('vitamina', diaSP(2026, 10, 1, 8), regra: 'FREQ=DAILY'),
+        lembrete('vitamina', diaLocal(2026, 10, 1, 8), regra: 'FREQ=DAILY'),
       ]);
       // Hoje às 8h já passou (agora = 10h): começa amanhã.
-      expect(avisos.first.quando, diaSP(2026, 10, 17, 8));
+      expect(avisos.first.quando, diaLocal(2026, 10, 17, 8));
       expect(avisos, hasLength(14));
       final muitos = planejarAvisos(
         lembretes: [
-          for (var i = 0; i < 10; i++) lembrete('l$i', diaSP(2026, 10, 1, 12), regra: 'FREQ=DAILY'),
+          for (var i = 0; i < 10; i++) lembrete('l$i', diaLocal(2026, 10, 1, 12), regra: 'FREQ=DAILY'),
         ],
         tarefas: const {},
         habitos: const {},
@@ -246,18 +246,18 @@ void main() {
 
     test('hábito já feito hoje não avisa hoje', () {
       final avisos = planejar(
-        [lembrete('Cardio', diaSP(2026, 10, 1, 18), regra: 'FREQ=DAILY', tipo: 'habito', item: 'h1')],
+        [lembrete('Cardio', diaLocal(2026, 10, 1, 18), regra: 'FREQ=DAILY', tipo: 'habito', item: 'h1')],
         habitos: {'h1'},
         habitosFeitos: {
           '2026-10-16': {'h1'},
         },
       );
-      expect(avisos.first.quando, diaSP(2026, 10, 17, 18));
+      expect(avisos.first.quando, diaLocal(2026, 10, 17, 18));
     });
 
     test('lembrete de item apagado não avisa', () {
       final avisos = planejar([
-        lembrete('órfão', diaSP(2026, 10, 17, 9), tipo: 'habito', item: 'sumiu'),
+        lembrete('órfão', diaLocal(2026, 10, 17, 9), tipo: 'habito', item: 'sumiu'),
       ]);
       expect(avisos, isEmpty);
     });

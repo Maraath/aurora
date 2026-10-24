@@ -69,8 +69,8 @@ void main() {
   });
 
   test('captura rápida descreve o comando antes de salvar', () {
-    final agora = agoraSP();
-    final hoje = dataSP(agora);
+    final agora = agoraLocal();
+    final hoje = dataLocal(agora);
     final c = interpretar('gastei 42,90 no mercado', hoje: hoje, agora: agora)!;
     final (_, texto) = descreverComando(c, hoje);
     expect(texto, contains('Despesa'));

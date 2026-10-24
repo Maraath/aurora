@@ -75,8 +75,8 @@ class _PainelCapturaState extends State<PainelCaptura> {
   }
 
   void _mudou(String t) {
-    final agora = agoraSP();
-    setState(() => _comando = interpretar(t, hoje: dataSP(agora), agora: agora));
+    final agora = agoraLocal();
+    setState(() => _comando = interpretar(t, hoje: dataLocal(agora), agora: agora));
   }
 
   void _avisar(String texto) {
@@ -124,7 +124,7 @@ class _PainelCapturaState extends State<PainelCaptura> {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final temTexto = _texto.text.trim().isNotEmpty;
     final cmd = _comando;
     final (icone, descricao) = cmd == null ? (null, null) : descreverComando(cmd, hoje);

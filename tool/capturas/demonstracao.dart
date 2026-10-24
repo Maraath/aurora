@@ -13,9 +13,9 @@ import 'package:drift/drift.dart';
 Future<void> semearDemonstracao(BancoAurora db) async {
   if (await db.preferencia('demonstracao') != null) return;
   final sorte = Random(7);
-  final hoje = hojeSP();
+  final hoje = hojeLocal();
   DateTime dia(int deslocamento) => hoje.add(Duration(days: deslocamento));
-  DateTime as(int deslocamento, int hora, [int minuto = 0]) => instanteSP(dia(deslocamento), hora, minuto);
+  DateTime as(int deslocamento, int hora, [int minuto = 0]) => instanteLocal(dia(deslocamento), hora, minuto);
 
   await db.transaction(() async {
     // Metas
@@ -26,7 +26,7 @@ Future<void> semearDemonstracao(BancoAurora db) async {
         valorAtual: 620000,
         valorAlvo: 1000000,
         unidade: const Value('R\$'),
-        dataAlvo: Value(instanteSP(DateTime(hoje.year, 12, 31)))));
+        dataAlvo: Value(instanteLocal(DateTime(hoje.year, 12, 31)))));
     final corrida = await db.into(db.metas).insertReturning(MetasCompanion.insert(
         nome: 'Correr 10 km',
         criadoEm: Value(as(-75, 9)),
@@ -34,7 +34,7 @@ Future<void> semearDemonstracao(BancoAurora db) async {
         valorAtual: 7,
         valorAlvo: 10,
         unidade: const Value('km'),
-        dataAlvo: Value(instanteSP(DateTime(hoje.year, 12, 15)))));
+        dataAlvo: Value(instanteLocal(DateTime(hoje.year, 12, 15)))));
     await db.into(db.metas).insert(MetasCompanion.insert(
         nome: 'Ler 12 livros no ano',
         criadoEm: Value(as(-290, 9)),
@@ -42,7 +42,7 @@ Future<void> semearDemonstracao(BancoAurora db) async {
         valorAtual: 9,
         valorAlvo: 12,
         unidade: const Value('livros'),
-        dataAlvo: Value(instanteSP(DateTime(hoje.year, 12, 31)))));
+        dataAlvo: Value(instanteLocal(DateTime(hoje.year, 12, 31)))));
 
     // Projeto com etapas (etapas são tarefas)
     final projeto = await db.into(db.projetos).insertReturning(ProjetosCompanion.insert(
@@ -176,8 +176,8 @@ Future<void> semearDemonstracao(BancoAurora db) async {
           descricao: nome,
           valorCentavos: centavos,
           tipo: tipo,
-          data: instanteSP(primeira),
-          vencimento: Value(instanteSP(primeira)),
+          data: instanteLocal(primeira),
+          vencimento: Value(instanteLocal(primeira)),
           categoria: Value(categoria),
           regraRepeticao: Value('FREQ=MONTHLY;BYMONTHDAY=$diaDoMes'),
           parcelaTotal: Value(parcelas),
@@ -186,7 +186,7 @@ Future<void> semearDemonstracao(BancoAurora db) async {
         final v = DateTime(primeira.year, primeira.month + m, diaDoMes);
         if (v.isAfter(hoje)) break;
         await db.into(db.pagamentosTransacao).insert(PagamentosTransacaoCompanion.insert(
-            transacaoId: t.id, vencimento: chaveData(v), pagoEm: instanteSP(v, 9), valorCentavos: centavos));
+            transacaoId: t.id, vencimento: chaveData(v), pagoEm: instanteLocal(v, 9), valorCentavos: centavos));
       }
     }
 
@@ -303,7 +303,7 @@ Future<void> semearDemonstracao(BancoAurora db) async {
           ..where((t) =>
               t.tipo.equalsValue(TipoTransacao.saida) &
               t.regraRepeticao.isNull() &
-              t.data.isBiggerOrEqualValue(instanteSP(mes))))
+              t.data.isBiggerOrEqualValue(instanteLocal(mes))))
         .get();
     final porCategoria = <String, int>{};
     for (final t in doMes) {

@@ -23,7 +23,7 @@ class _FormMedidas extends StatefulWidget {
 }
 
 class _FormMedidasState extends State<_FormMedidas> {
-  final _hoje = hojeSP();
+  final _hoje = hojeLocal();
   late DateTime _dia = _hoje;
 
   /// Tipo → (unidade, campo). Os padrão e os livres que já têm registro.

@@ -39,7 +39,7 @@ void main() {
     expect(conversa.last.texto, contains('R\$ 35,00'));
     var q = await FinancasRepo(db).carregar();
     expect(q.saldoCentavos, 70318 - 3500);
-    expect(q.mes(hojeSP()).categorias.single.nome, 'Mercado');
+    expect(q.mes(hojeLocal()).categorias.single.nome, 'Mercado');
 
     await repo.desfazer(conversa.last);
     q = await FinancasRepo(db).carregar();
@@ -55,8 +55,8 @@ void main() {
     expect(r.itemTipo, 'lembrete');
     final l = await (db.select(db.lembretes)..where((l) => l.id.equals(r.itemId!))).getSingle();
     expect(l.texto, 'Ligar pro dentista');
-    expect(emSP(l.quando).hour, 10);
-    expect(dataSP(l.quando), hojeSP().add(const Duration(days: 1)));
+    expect(emLocal(l.quando).hour, 10);
+    expect(dataLocal(l.quando), hojeLocal().add(const Duration(days: 1)));
   });
 
   test('hábito pelo nome, sem acento nem maiúscula', () async {
@@ -64,7 +64,7 @@ void main() {
     expect((await ultima()).texto, startsWith('Marquei Cardio como feito hoje. Falta: Estudo.'));
     final q = await HabitosRepo(db).carregar();
     final cardio = q.habitos.firstWhere((h) => h.nome == 'Cardio');
-    expect(q.feito(cardio.id, hojeSP()), isTrue);
+    expect(q.feito(cardio.id, hojeLocal()), isTrue);
 
     await repo.enviar('fiz natação');
     expect((await ultima()).texto, contains('Não achei um hábito chamado “natação”'));
@@ -91,7 +91,7 @@ void main() {
     test('texto chega aos poucos, ferramentas rodam no aparelho e a IA continua', () async {
       final chamadas = <List<Map<String, Object?>>>[];
       final contextos = <String>[];
-      final amanha = hojeSP().add(const Duration(days: 1));
+      final amanha = hojeLocal().add(const Duration(days: 1));
       final dataAmanha = '${amanha.year}-${'${amanha.month}'.padLeft(2, '0')}-${'${amanha.day}'.padLeft(2, '0')}';
       final comIa = AssistenteRepo(db, ia: () => (mensagens, contexto, {reserva = false}) async* {
             chamadas.add([...mensagens]);
@@ -126,7 +126,7 @@ void main() {
       expect(conversa[2].itemTipo, 'transacao');
       expect(conversa[3].itemTipo, 'lembrete');
       expect(conversa.last.texto, 'Pronto! Anotei e agendei.');
-      expect((await FinancasRepo(db).carregar()).mes(hojeSP()).saiuCentavos, 4200);
+      expect((await FinancasRepo(db).carregar()).mes(hojeLocal()).saiuCentavos, 4200);
 
       // Segunda chamada: a conversa + a resposta com as chamadas + os resultados.
       expect(chamadas, hasLength(2));
@@ -192,7 +192,7 @@ void main() {
     });
 
     test('a mesma ação pedida de novo na mesma resposta não roda duas vezes', () async {
-      final amanha = hojeSP().add(const Duration(days: 1));
+      final amanha = hojeLocal().add(const Duration(days: 1));
       final data = '${amanha.year}-${'${amanha.month}'.padLeft(2, '0')}-${'${amanha.day}'.padLeft(2, '0')}';
       final lembrete = {'texto': 'Levar minha mãe na consulta', 'data': data, 'hora': '09:00'};
       String? resultadoDaRepeticao;
@@ -461,14 +461,14 @@ void main() {
 
     test('editar tarefa: título, prazo com hora e concluir; desfazer volta tudo', () async {
       final t = await (db.select(db.tarefas)..where((x) => x.titulo.equals('Testes Estágios'))).getSingle();
-      final amanha = hojeSP().add(const Duration(days: 1));
+      final amanha = hojeLocal().add(const Duration(days: 1));
       final (r, _) = agente('editar_tarefa',
           {'id': t.id, 'titulo': 'testes do estágio', 'data': dataIso(amanha), 'hora': '15:00', 'concluida': true});
       await r.enviar('muda a tarefa');
       var x = await (db.select(db.tarefas)..where((x) => x.id.equals(t.id))).getSingle();
       expect(x.titulo, 'Testes do estágio');
-      expect(dataSP(x.prazo!), amanha);
-      expect(emSP(x.prazo!).hour, 15);
+      expect(dataLocal(x.prazo!), amanha);
+      expect(emLocal(x.prazo!).hour, 15);
       expect(x.prazoTemHora, isTrue);
       expect(x.feitaEm, isNotNull);
       expect(await ultimoTexto(r), allOf(contains('amanhã às 15:00'), contains('marcada como feita')));
@@ -496,8 +496,8 @@ void main() {
       final (r, _) = agente('editar_lembrete', {'id': l.id, 'hora': '16:30', 'repeticao': 'toda terça'});
       await r.enviar('muda o lembrete dos documentos');
       var x = await (db.select(db.lembretes)..where((x) => x.id.equals(l.id))).getSingle();
-      expect(emSP(x.quando).hour, 16);
-      expect(emSP(x.quando).minute, 30);
+      expect(emLocal(x.quando).hour, 16);
+      expect(emLocal(x.quando).minute, 30);
       expect(x.regraRepeticao, contains('BYDAY=TU'));
       expect(x.texto, l.texto);
 
@@ -571,8 +571,8 @@ void main() {
       /// "Netflix" de R$ 50 todo mês, vencendo hoje e já paga (como no app).
       Future<Transacao> netflix() async {
         final financas = FinancasRepo(db);
-        final hoje = hojeSP();
-        final venc = instanteSP(hoje, 9);
+        final hoje = hojeLocal();
+        final venc = instanteLocal(hoje, 9);
         final id = await financas.salvar(
           TransacoesCompanion.insert(
             descricao: 'Netflix',

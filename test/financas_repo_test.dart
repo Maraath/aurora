@@ -23,7 +23,7 @@ void main() {
     db = BancoAurora(NativeDatabase.memory());
     repo = FinancasRepo(db);
     await semearExemplo(db);
-    hoje = hojeSP();
+    hoje = hojeLocal();
     primeiroDoMes = DateTime(hoje.year, hoje.month, 1);
   });
 
@@ -41,7 +41,7 @@ void main() {
     String? contaId,
     String categoria = 'Serviços',
   }) async {
-    final venc = instanteSP(primeiroDoMes, 9);
+    final venc = instanteLocal(primeiroDoMes, 9);
     final id = await repo.salvar(
       TransacoesCompanion.insert(
         descricao: nome,
@@ -194,8 +194,8 @@ void main() {
           descricao: 'Salário',
           valorCentavos: 70000,
           tipo: TipoTransacao.entrada,
-          data: instanteSP(hoje, 9),
-          pagoEm: Value(instanteSP(hoje, 9)),
+          data: instanteLocal(hoje, 9),
+          pagoEm: Value(instanteLocal(hoje, 9)),
         ));
     final q = await FinancasRepo(vazio).carregar();
     expect(q.contas, isEmpty);
@@ -215,8 +215,8 @@ void main() {
           descricao: 'Pix recebido',
           valorCentavos: 5000,
           tipo: TipoTransacao.entrada,
-          data: instanteSP(hoje, 10),
-          pagoEm: Value(instanteSP(hoje, 10)),
+          data: instanteLocal(hoje, 10),
+          pagoEm: Value(instanteLocal(hoje, 10)),
           contaId: Value(conta.id),
         ));
     final depois = await repo.carregar();

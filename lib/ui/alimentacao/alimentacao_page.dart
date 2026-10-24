@@ -26,7 +26,7 @@ class AlimentacaoPage extends StatefulWidget {
 
 class _AlimentacaoPageState extends State<AlimentacaoPage> {
   AlimentacaoRepo? _repo;
-  final _hoje = hojeSP();
+  final _hoje = hojeLocal();
   late DateTime _dia = _hoje;
   Stream<DiaAlimentacao>? _stream;
   bool _verAlimentos = false;

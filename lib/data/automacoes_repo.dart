@@ -41,16 +41,16 @@ const atrasoMaximo = Duration(hours: 12);
 /// "aaaa-mm-dd HH:mm" de uma ocorrência (para comparar com ultimaExecucao).
 String chaveOcorrencia(DateTime dia, String horario) => '${chaveData(dia)} $horario';
 
-/// Instante (São Paulo) da ocorrência do dia, se a automação roda nesse dia.
+/// Instante (fuso do aparelho) da ocorrência do dia, se a automação roda nesse dia.
 DateTime? ocorrenciaNoDia(Automacao a, DateTime dia) {
   if (a.diasSemana & bitDoDiaDaSemana(dia) == 0) return null;
   final h = lerHorario(a.horario);
-  return instanteSP(dia, h.hora, h.minuto);
+  return instanteLocal(dia, h.hora, h.minuto);
 }
 
 /// Última ocorrência em ou antes de [agora] (procura uma semana para trás).
 ({DateTime dia, DateTime quando})? ultimaOcorrencia(Automacao a, DateTime agora) {
-  final hoje = dataSP(agora);
+  final hoje = dataLocal(agora);
   for (var i = 0; i <= 7; i++) {
     final dia = hoje.subtract(Duration(days: i));
     final q = ocorrenciaNoDia(a, dia);
@@ -61,7 +61,7 @@ DateTime? ocorrenciaNoDia(Automacao a, DateTime dia) {
 
 /// Próximas ocorrências depois de [agora], nos próximos [dias].
 Iterable<DateTime> proximasOcorrencias(Automacao a, DateTime agora, {int dias = 14}) sync* {
-  final hoje = dataSP(agora);
+  final hoje = dataLocal(agora);
   for (var i = 0; i <= dias; i++) {
     final q = ocorrenciaNoDia(a, hoje.add(Duration(days: i)));
     if (q != null && q.isAfter(agora)) yield q;

@@ -93,8 +93,8 @@ class FerramentasIa {
 
   /// Executa um comando rápido (o mesmo caminho dos comandos por texto).
   Future<ResultadoFerramenta> _acao(Comando c) async {
-    final agora = agoraSP();
-    final r = await assistente.executarComando(c, dataSP(agora), agora);
+    final agora = agoraLocal();
+    final r = await assistente.executarComando(c, dataLocal(agora), agora);
     // Sem item criado (hábito não achado, alimento ambíguo…): é um aviso para
     // a IA explicar, não uma confirmação.
     return ResultadoFerramenta(r.texto, erro: r.itemId == null, aviso: r.itemId == null ? null : r);
@@ -110,7 +110,7 @@ class FerramentasIa {
       categoria: categoria != null && categoria.isNotEmpty
           ? _capitalizar(categoria)
           : (receita ? categoriaEntrada(descricao) : categoriaGasto(descricao)),
-      dia: _data(e['data']) ?? hojeSP(),
+      dia: _data(e['data']) ?? hojeLocal(),
       entrada: receita,
     );
   }
@@ -121,14 +121,14 @@ class FerramentasIa {
     final repeticao = (e['repeticao'] as String?)?.trim() ?? '';
     if (repeticao.isNotEmpty) {
       // A repetição em português passa pelo mesmo interpretador dos comandos.
-      final agora = agoraSP();
-      final c = interpretar('me lembra de $texto $repeticao às ${horaDe(h, m)}', hoje: dataSP(agora), agora: agora);
+      final agora = agoraLocal();
+      final c = interpretar('me lembra de $texto $repeticao às ${horaDe(h, m)}', hoje: dataLocal(agora), agora: agora);
       if (c is CmdLembrete && c.regra != null) return _acao(c);
       return Future.value(ResultadoFerramenta(
           'Não entendi a repetição "$repeticao". Use algo como "todo dia", "toda segunda e quarta" ou "todo dia 10".',
           erro: true));
     }
-    return _acao(CmdLembrete(texto: texto, dia: _data(e['data']) ?? hojeSP(), hora: h, minuto: m));
+    return _acao(CmdLembrete(texto: texto, dia: _data(e['data']) ?? hojeLocal(), hora: h, minuto: m));
   }
 
   Future<ResultadoFerramenta> _treino(Map<String, Object?> e) async {
@@ -200,7 +200,7 @@ class FerramentasIa {
       // Como no formulário: pago muda a data e o pagamento; a pagar, o vencimento.
       dados = t.pagoEm != null
           ? dados.copyWith(data: Value(_instante(dia)), pagoEm: Value(_instante(dia)))
-          : dados.copyWith(data: Value(instanteSP(dia, 9)), vencimento: Value(instanteSP(dia, 9)));
+          : dados.copyWith(data: Value(instanteLocal(dia, 9)), vencimento: Value(instanteLocal(dia, 9)));
     }
     await FinancasRepo(db).salvar(dados, id: t.id);
     final partes = [
@@ -233,7 +233,7 @@ class FerramentasIa {
           'Título, data e hora podem mudar.',
           erro: true);
     }
-    final antes = t.prazo == null ? null : emSP(t.prazo!);
+    final antes = t.prazo == null ? null : emLocal(t.prazo!);
     if (hora != null && dia == null && antes == null) {
       return const ResultadoFerramenta('A tarefa não tem data: diga o dia também.', erro: true);
     }
@@ -245,15 +245,15 @@ class FerramentasIa {
       final d = dia ?? DateTime(antes!.year, antes.month, antes.day);
       final temHora = hora != null || (t.prazoTemHora && antes != null);
       final (h, m) = hora ?? (temHora ? (antes!.hour, antes.minute) : (0, 0));
-      dados = dados.copyWith(prazo: Value(instanteSP(d, h, m)), prazoTemHora: Value(temHora));
+      dados = dados.copyWith(prazo: Value(instanteLocal(d, h, m)), prazoTemHora: Value(temHora));
     }
     if (concluida != null) dados = dados.copyWith(feitaEm: Value(concluida ? DateTime.now() : null));
     final repo = TarefasRepo(db);
     final avisar = await repo.temLembrete(t.id);
     await repo.salvar(dados, id: t.id, avisar: avisar);
 
-    final hoje = hojeSP();
-    final novoPrazo = dados.prazo.value == null ? null : emSP(dados.prazo.value!);
+    final hoje = hojeLocal();
+    final novoPrazo = dados.prazo.value == null ? null : emLocal(dados.prazo.value!);
     final partes = [
       if (titulo != null && titulo.isNotEmpty) 'título “${_capitalizar(titulo)}”',
       if (semPrazo) 'sem prazo',
@@ -285,7 +285,7 @@ class FerramentasIa {
       return const ResultadoFerramenta('Diga o que mudar no lembrete: texto, dia, hora, repetição ou o aviso.',
           erro: true);
     }
-    final quando = emSP(l.quando);
+    final quando = emLocal(l.quando);
     final (h, m) = hora ?? (quando.hour, quando.minute);
     var regra = const Value<String?>.absent();
     String? descricaoRegra;
@@ -296,9 +296,9 @@ class FerramentasIa {
         descricaoRegra = 'sem repetição';
       } else {
         // A repetição em português passa pelo mesmo interpretador dos comandos.
-        final agora = agoraSP();
+        final agora = agoraLocal();
         final c = interpretar('me lembra de ${texto ?? l.texto} $repeticao às ${horaDe(h, m)}',
-            hoje: dataSP(agora), agora: agora);
+            hoje: dataLocal(agora), agora: agora);
         if (c is! CmdLembrete || c.regra == null) {
           return ResultadoFerramenta(
               'Não entendi a repetição "$repeticao". Use algo como "todo dia", "toda segunda e quarta" ou "todo dia 10".',
@@ -313,7 +313,7 @@ class FerramentasIa {
     await LembretesRepo(db).salvar(
       LembretesCompanion(
         texto: texto == null || texto.isEmpty ? const Value.absent() : Value(_capitalizar(texto)),
-        quando: dia == null && hora == null ? const Value.absent() : Value(instanteSP(novoDia, h, m)),
+        quando: dia == null && hora == null ? const Value.absent() : Value(instanteLocal(novoDia, h, m)),
         regraRepeticao: regra,
         ativo: ativo == null ? const Value.absent() : Value(ativo),
       ),
@@ -321,7 +321,7 @@ class FerramentasIa {
     );
     final partes = [
       if (texto != null && texto.isNotEmpty) 'texto “${_capitalizar(texto)}”',
-      if (dia != null || hora != null) '${rotuloDiaLembrete(novoDia, hojeSP())} às ${horaDe(h, m)}',
+      if (dia != null || hora != null) '${rotuloDiaLembrete(novoDia, hojeLocal())} às ${horaDe(h, m)}',
       ?descricaoRegra,
       if (ativo == true) 'aviso ligado',
       if (ativo == false) 'aviso desligado',
@@ -375,7 +375,7 @@ class FerramentasIa {
     final pago = e['pago'] as bool;
     final repo = FinancasRepo(db);
     final q = await repo.carregar();
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final dia = _data(e['vencimento']);
     final Ocorrencia? o;
     if (t.regraRepeticao == null) {
@@ -385,7 +385,7 @@ class FerramentasIa {
             'marcar. Para tirá-lo do extrato, use excluir_item.',
             erro: true);
       }
-      o = Ocorrencia(transacao: t, vencimento: dataSP(t.vencimento!), pagoEm: t.pagoEm);
+      o = Ocorrencia(transacao: t, vencimento: dataLocal(t.vencimento!), pagoEm: t.pagoEm);
     } else {
       final lista = q.ocorrencias(t, inicioDaRegra(t), hoje.add(const Duration(days: 62))).toList();
       o = dia != null
@@ -447,7 +447,7 @@ class FerramentasIa {
           final t = await _transacao(id);
           if (t == null) return null;
           if (t.regraRepeticao == null) {
-            return 'Excluir ${_rotuloLancamento(t)} do dia ${diaMesLongo(dataSP(t.data))}? '
+            return 'Excluir ${_rotuloLancamento(t)} do dia ${diaMesLongo(dataLocal(t.data))}? '
                 'Sai das contas e do extrato.';
           }
           final pagos = await FinancasRepo(db).pagamentosDe(t.id);
@@ -466,7 +466,7 @@ class FerramentasIa {
           final l = await _lembreteDe(id);
           if (l == null) return null;
           final q = l.quando.toLocal();
-          return 'Excluir o lembrete “${l.texto}” (${rotuloDiaLembrete(dataSP(q), hojeSP())}, ${hora(q)}'
+          return 'Excluir o lembrete “${l.texto}” (${rotuloDiaLembrete(dataLocal(q), hojeLocal())}, ${hora(q)}'
               '${l.regraRepeticao == null ? '' : ', repete'})?';
         case 'treino':
           final t = await _treinoDe(id);
@@ -612,7 +612,7 @@ class FerramentasIa {
       MetasCompanion(
         valorAtual: atual == null ? const Value.absent() : Value(atual),
         valorAlvo: valorAlvo == null ? const Value.absent() : Value(valorAlvo),
-        dataAlvo: data == null ? const Value.absent() : Value(instanteSP(data, 12)),
+        dataAlvo: data == null ? const Value.absent() : Value(instanteLocal(data, 12)),
       ),
       id: meta.id,
     );
@@ -689,7 +689,7 @@ DateTime? _data(Object? v) {
 String _capitalizar(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
 /// Hoje = agora; outro dia = meio-dia (como nos comandos rápidos).
-DateTime _instante(DateTime dia) => dia == hojeSP() ? DateTime.now() : instanteSP(dia, 12);
+DateTime _instante(DateTime dia) => dia == hojeLocal() ? DateTime.now() : instanteLocal(dia, 12);
 
 const _bitsDias = {'seg': 1, 'ter': 2, 'qua': 4, 'qui': 8, 'sex': 16, 'sab': 32, 'dom': 64};
 
@@ -783,7 +783,7 @@ Future<void> restaurar(BancoAurora db, String json) async {
 /// Dados detalhados de uma área, em texto, para a ferramenta "consultar".
 /// Vai além do resumo mandado em toda pergunta (ver contexto_ia.dart).
 Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
-  final hoje = hojeSP();
+  final hoje = hojeLocal();
   final desde = hoje.subtract(Duration(days: dias - 1));
   final l = <String>['Período: últimos $dias dias (de ${diaMesCurto(desde)} a ${diaMesCurto(hoje)}).'];
 
@@ -796,7 +796,7 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
         l.add('- ${o.tarefa.titulo}: ${o.dia == null ? 'sem data' : diaRelativo(o.dia!, hoje)}'
             '${h == null ? '' : ' ${horaDe(h.hora, h.minuto)}'}${o.atrasada ? ', atrasada' : ''} (id ${o.tarefa.id})');
       }
-      final feitas = q.tarefas.where((t) => t.feitaEm != null && !dataSP(t.feitaEm!).isBefore(desde)).toList();
+      final feitas = q.tarefas.where((t) => t.feitaEm != null && !dataLocal(t.feitaEm!).isBefore(desde)).toList();
       l.add('Tarefas únicas concluídas no período: ${feitas.length}'
           '${feitas.isEmpty ? '' : ' (${feitas.take(15).map((t) => t.titulo).join(', ')})'}.');
 
@@ -828,8 +828,8 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
             ..limit(25))
           .get();
       l.add('Lançamentos únicos recentes:');
-      for (final t in recentes.where((t) => !dataSP(t.data).isBefore(desde))) {
-        l.add('- ${diaMesCurto(dataSP(t.data))} ${t.descricao}${t.categoria == null ? '' : ' (${t.categoria})'}: '
+      for (final t in recentes.where((t) => !dataLocal(t.data).isBefore(desde))) {
+        l.add('- ${diaMesCurto(dataLocal(t.data))} ${t.descricao}${t.categoria == null ? '' : ' (${t.categoria})'}: '
             '${t.tipo == TipoTransacao.entrada ? '+' : '−'}${reais(t.valorCentavos)} (id ${t.id})');
       }
       // Contas fixas e parceladas: uma linha (o id) gera todas as ocorrências;
@@ -904,7 +904,7 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
       for (final p in metas) {
         final m = p.meta;
         l.add('- ${m.nome}: ${valorMeta(m.valorAtual, m.unidade)} de ${valorMeta(m.valorAlvo, m.unidade)}'
-            '${m.dataAlvo == null ? '' : ' até ${diaMesCurto(dataSP(m.dataAlvo!))}'}, ${p.estado.rotulo.toLowerCase()}.');
+            '${m.dataAlvo == null ? '' : ' até ${diaMesCurto(dataLocal(m.dataAlvo!))}'}, ${p.estado.rotulo.toLowerCase()}.');
       }
 
     case 'projetos':
@@ -913,7 +913,7 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
       for (final p in projetos) {
         final feitas = p.etapas.where((e) => e.tarefa.feitaEm != null).length;
         l.add('- ${p.projeto.nome}: ${p.estado.rotulo.toLowerCase()}, $feitas de ${p.etapas.length} etapas feitas, '
-            'até ${diaMesCurto(dataSP(p.projeto.fim))}.');
+            'até ${diaMesCurto(dataLocal(p.projeto.fim))}.');
       }
 
     case 'lembretes':
@@ -921,7 +921,7 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
       if (q.todos.isEmpty) l.add('Nenhum lembrete.');
       for (final x in q.proximos.take(30)) {
         final p = x.proxima!.toLocal();
-        l.add('- ${x.lembrete.texto}: ${rotuloDiaLembrete(dataSP(p), hoje)} ${hora(p)}${x.recorrente ? ' (repete)' : ''} (id ${x.lembrete.id})');
+        l.add('- ${x.lembrete.texto}: ${rotuloDiaLembrete(dataLocal(p), hoje)} ${hora(p)}${x.recorrente ? ' (repete)' : ''} (id ${x.lembrete.id})');
       }
 
     default:

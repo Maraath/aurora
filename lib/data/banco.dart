@@ -98,7 +98,7 @@ class Habitos extends Table with Sincronizavel {
 class ConclusoesTarefa extends Table with Sincronizavel {
   TextColumn get tarefaId => text().references(Tarefas, #id)();
 
-  /// "aaaa-mm-dd" da ocorrência, no fuso de São Paulo.
+  /// "aaaa-mm-dd" da ocorrência, no fuso do aparelho.
   TextColumn get dia => text()();
 }
 
@@ -106,7 +106,7 @@ class ConclusoesTarefa extends Table with Sincronizavel {
 class RegistrosHabito extends Table with Sincronizavel {
   TextColumn get habitoId => text().references(Habitos, #id)();
 
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   TextColumn get dia => text()();
   BoolColumn get feito => boolean().withDefault(const Constant(true))();
   IntColumn get valor => integer().nullable()();
@@ -155,7 +155,7 @@ class Transacoes extends Table with Sincronizavel {
 class PagamentosTransacao extends Table with Sincronizavel {
   TextColumn get transacaoId => text().references(Transacoes, #id)();
 
-  /// "aaaa-mm-dd" do vencimento da ocorrência, no fuso de São Paulo.
+  /// "aaaa-mm-dd" do vencimento da ocorrência, no fuso do aparelho.
   TextColumn get vencimento => text()();
   DateTimeColumn get pagoEm => dateTime()();
 
@@ -219,7 +219,7 @@ class ItensTreino extends Table with Sincronizavel {
 class SessoesTreino extends Table with Sincronizavel {
   TextColumn get treinoId => text().nullable().references(Treinos, #id)();
 
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   TextColumn get dia => text()();
   DateTimeColumn get inicio => dateTime()();
   DateTimeColumn get fim => dateTime().nullable()();
@@ -239,7 +239,7 @@ class SeriesFeitas extends Table with Sincronizavel {
 /// Nomes livres permitem qualquer outra medida.
 @TableIndex(name: 'medida_dia_tipo', columns: {#dia, #tipo}, unique: true)
 class Medidas extends Table with Sincronizavel {
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   TextColumn get dia => text()();
   TextColumn get tipo => text()();
   RealColumn get valor => real()();
@@ -254,7 +254,7 @@ class Medidas extends Table with Sincronizavel {
 @DataClassName('FotoShape')
 @TableIndex(name: 'foto_shape_dia_angulo', columns: {#dia, #angulo}, unique: true)
 class FotosShape extends Table with Sincronizavel {
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   TextColumn get dia => text()();
   TextColumn get angulo => text()();
 
@@ -298,7 +298,7 @@ class AlvosDieta extends Table with Sincronizavel {
 /// não reescreve o passado).
 @DataClassName('RegistroAlimentacao')
 class RegistrosAlimentacao extends Table with Sincronizavel {
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   TextColumn get dia => text()();
 
   /// 'cafe', 'almoco', 'lanche', 'jantar' ou 'ceia'.

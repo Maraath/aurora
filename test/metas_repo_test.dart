@@ -116,7 +116,7 @@ void main() {
       await (db.update(db.metas)).write(MetasCompanion(atualizadoEm: Value(DateTime(2026, 1, 1))));
       await TarefasRepo(db).alternar(ligada, true);
       final p = (await repo.carregar()).single;
-      expect(dataSP(p.ultimaAtividade), hojeSP());
+      expect(dataLocal(p.ultimaAtividade), hojeLocal());
       expect(p.tarefasAbertas, 0);
     });
 

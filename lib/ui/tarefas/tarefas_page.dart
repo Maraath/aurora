@@ -37,8 +37,8 @@ class _TarefasPageState extends State<TarefasPage> {
   TarefasRepo? _repo;
   Stream<QuadroTarefas>? _quadro;
   var _vista = _Vista.agora;
-  late DateTime _mes = hojeSP();
-  late DateTime _diaSelecionado = hojeSP();
+  late DateTime _mes = hojeLocal();
+  late DateTime _diaSelecionado = hojeLocal();
 
   @override
   void didChangeDependencies() {
@@ -65,7 +65,7 @@ class _TarefasPageState extends State<TarefasPage> {
 
   Widget _conteudo(BuildContext context, QuadroTarefas q) {
     final c = context.cores;
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -252,9 +252,9 @@ class _TarefasPageState extends State<TarefasPage> {
     final c = context.cores;
     final inicio = DateTime(_mes.year, _mes.month, 1);
     final fim = DateTime(_mes.year, _mes.month + 1, 0);
-    final porDia = q.porDia(inicio, fim, agoraSP());
+    final porDia = q.porDia(inicio, fim, agoraLocal());
     final doDia = (porDia[_diaSelecionado] ??
-        q.porDia(_diaSelecionado, _diaSelecionado, agoraSP())[_diaSelecionado] ??
+        q.porDia(_diaSelecionado, _diaSelecionado, agoraLocal())[_diaSelecionado] ??
         const []);
     return [
       Cartao(

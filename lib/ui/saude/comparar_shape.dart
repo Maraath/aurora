@@ -33,7 +33,7 @@ class _CompararShapePageState extends State<CompararShapePage> {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final a = _checkin(_diaA), b = _checkin(_diaB);
     final dias = diasEntre(a.data, b.data).abs();
     final largo = MediaQuery.sizeOf(context).width >= 600;
@@ -205,7 +205,7 @@ class _FolhaDatas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     return SafeArea(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.7),

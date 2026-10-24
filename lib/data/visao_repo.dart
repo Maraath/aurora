@@ -36,7 +36,7 @@ class ItemLinha {
   final TipoItemLinha tipo;
   final String titulo;
 
-  /// Instante (São Paulo); nulo = ao longo do dia.
+  /// Instante (fuso do aparelho); nulo = ao longo do dia.
   final DateTime? hora;
   final bool feito;
   final bool atrasado;
@@ -116,8 +116,8 @@ class VisaoRepo {
       ], carregar);
 
   Future<ResumoVisao> carregar() async {
-    final agora = agoraSP();
-    final hoje = dataSP(agora);
+    final agora = agoraLocal();
+    final hoje = dataLocal(agora);
     final fimSemana = hoje.add(const Duration(days: 6));
 
     // As leituras não dependem umas das outras: saem todas juntas. Na web cada
@@ -155,11 +155,11 @@ class VisaoRepo {
     // Disparos de lembretes ativos de hoje até o fim da semana. Os ligados a
     // uma tarefa ou hábito ficam de fora: o próprio item já aparece.
     final lembretes = await pedidoLembretes;
-    final inicioHoje = instanteSP(hoje).subtract(const Duration(seconds: 1));
+    final inicioHoje = instanteLocal(hoje).subtract(const Duration(seconds: 1));
     final disparos = <DateTime, List<(Lembrete, DateTime)>>{};
     for (final l in lembretes) {
       for (final instante in ocorrenciasLembrete(l, inicioHoje, limite: 8)) {
-        final d = dataSP(instante);
+        final d = dataLocal(instante);
         if (d.isAfter(fimSemana)) break;
         disparos.putIfAbsent(d, () => []).add((l, instante));
       }
@@ -233,7 +233,7 @@ class VisaoRepo {
 
   /// Marca ou desmarca o hábito hoje.
   Future<void> alternarHabito(String habitoId, bool feito) =>
-      habitos.alternar(habitoId, hojeSP(), feito);
+      habitos.alternar(habitoId, hojeLocal(), feito);
 }
 
 /// "HH:mm" do hábito, no dia de hoje.
@@ -241,7 +241,7 @@ DateTime? _horario(String? texto, DateTime hoje) {
   final partes = texto?.split(':');
   if (partes == null || partes.length != 2) return null;
   final h = int.tryParse(partes[0]), m = int.tryParse(partes[1]);
-  return h == null || m == null ? null : instanteSP(hoje, h, m);
+  return h == null || m == null ? null : instanteLocal(hoje, h, m);
 }
 
 /// Com hora primeiro, em ordem; sem hora no fim, pendentes antes de feitos.

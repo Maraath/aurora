@@ -20,7 +20,7 @@ Future<void> executarAutomacao(
   AssistenteRepo? assistente,
 }) async {
   final modelo = ModeloAutomacao.de(a.modelo);
-  final quando = dia ?? dataSP(agora);
+  final quando = dia ?? dataLocal(agora);
   final repoAssistente = assistente ?? AssistenteRepo(db);
   // Marca antes: se a IA demorar, o minuto seguinte não roda de novo.
   if (marcar) await AutomacoesRepo(db).marcarExecutada(a, quando);
@@ -66,7 +66,7 @@ class ServicoAutomacoes {
     if (_rodando) return;
     _rodando = true;
     try {
-      final n = await executarPendentes(db, agora: agoraSP());
+      final n = await executarPendentes(db, agora: agoraLocal());
       if (n > 0) debugPrint('Automações: $n executada(s).');
     } catch (e) {
       debugPrint('Automações falharam: $e');

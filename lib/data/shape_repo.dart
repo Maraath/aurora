@@ -25,7 +25,7 @@ enum AnguloShape {
 class CheckinShape {
   const CheckinShape(this.dia, this.fotos);
 
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   final String dia;
   final Map<AnguloShape, FotoShape> fotos;
 
@@ -63,7 +63,7 @@ class ShapeRepo {
             ..orderBy([(f) => OrderingTerm(expression: f.dia, mode: OrderingMode.desc)]))
           .get();
 
-  /// Guarda a foto de [angulo] no dia [dia] (data de São Paulo); se já havia
+  /// Guarda a foto de [angulo] no dia [dia] (data no fuso do aparelho); se já havia
   /// uma, é trocada (mesmo id, hash novo). No modo "Sincronizar", fica marcada
   /// para subir na próxima sincronização.
   Future<void> salvarFoto(DateTime dia, AnguloShape angulo, Uint8List bytes) async {

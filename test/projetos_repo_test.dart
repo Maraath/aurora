@@ -20,15 +20,15 @@ void main() {
   setUp(() {
     db = BancoAurora(NativeDatabase.memory());
     repo = ProjetosRepo(db);
-    hoje = hojeSP();
+    hoje = hojeLocal();
   });
 
   tearDown(() => db.close());
 
   Future<String> projeto({int comecouHa = 10, int terminaEm = 30}) => repo.salvar(ProjetosCompanion.insert(
         nome: 'Estágio',
-        inicio: instanteSP(hoje.subtract(Duration(days: comecouHa))),
-        fim: instanteSP(hoje.add(Duration(days: terminaEm))),
+        inicio: instanteLocal(hoje.subtract(Duration(days: comecouHa))),
+        fim: instanteLocal(hoje.add(Duration(days: terminaEm))),
       ));
 
   Future<ProgressoProjeto> carregar() async => (await repo.carregar()).single;
@@ -40,7 +40,7 @@ void main() {
     await TarefasRepo(db).salvar(
       TarefasCompanion.insert(
         titulo: 'Estudar inglês',
-        prazo: Value(instanteSP(hoje)),
+        prazo: Value(instanteLocal(hoje)),
         regraRepeticao: const Value('FREQ=DAILY'),
         projetoId: Value(id),
       ),

@@ -103,7 +103,7 @@ void main() {
   });
 
   testWidgets('"Me despertar" fica gravado no lembrete', (tester) async {
-    final amanha = agoraSP().add(const Duration(days: 1));
+    final amanha = agoraLocal().add(const Duration(days: 1));
     await tester.runAsync(() => LembretesRepo(db).salvar(LembretesCompanion(
           texto: const Value('Acordar'),
           quando: Value(amanha),
@@ -298,12 +298,12 @@ void main() {
   testWidgets('projetos: tela, linha do tempo e formulário', (tester) async {
     await tester.runAsync(() async {
       await semearExemplo(db);
-      final hoje = hojeSP();
+      final hoje = hojeLocal();
       final repo = ProjetosRepo(db);
       final id = await repo.salvar(ProjetosCompanion.insert(
         nome: 'Estágio',
-        inicio: instanteSP(hoje.subtract(const Duration(days: 40))),
-        fim: instanteSP(hoje.add(const Duration(days: 45))),
+        inicio: instanteLocal(hoje.subtract(const Duration(days: 40))),
+        fim: instanteLocal(hoje.add(const Duration(days: 45))),
       ));
       await repo.novaEtapa(id, 'Pesquisar vagas');
       await repo.novaEtapa(id, 'Entrevista', dia: hoje.subtract(const Duration(days: 2)));
@@ -344,7 +344,7 @@ void main() {
       await repo.salvarAlvo(TipoDia.treino, const Nutrientes(2600, 160, 300, 70));
       await repo.salvarAlvo(TipoDia.descanso, const Nutrientes(2200, 150, 220, 70));
       alimentos = await repo.listarAlimentos();
-      await repo.registrar(dia: hojeSP(), refeicao: Refeicao.cafe, alimento: alimentos.single, gramas: 100);
+      await repo.registrar(dia: hojeLocal(), refeicao: Refeicao.cafe, alimento: alimentos.single, gramas: 100);
     });
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
@@ -365,7 +365,7 @@ void main() {
     tester.view.reset();
     await tester.pumpWidget(const SizedBox());
 
-    await abrir(tester, (c) => abrirFormRegistro(c, dia: hojeSP(), alimentos: alimentos));
+    await abrir(tester, (c) => abrirFormRegistro(c, dia: hojeLocal(), alimentos: alimentos));
     await tester.tap(find.text('Ovo cozido'));
     await tester.pumpAndSettle();
     expect(find.textContaining('73 kcal'), findsOneWidget); // 1 ovo = 50 g
@@ -440,5 +440,5 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  test('relógio iniciado', () => expect(hojeSP(), isNotNull));
+  test('relógio iniciado', () => expect(hojeLocal(), isNotNull));
 }

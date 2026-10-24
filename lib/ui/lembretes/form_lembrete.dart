@@ -32,7 +32,7 @@ class _FormLembreteState extends State<_FormLembrete> {
   late bool _despertar;
   Regra? _regraAtual;
   String? _erro;
-  final _hoje = hojeSP();
+  final _hoje = hojeLocal();
 
   bool get _ligadoAItem => widget.lembrete?.itemTipo != null;
 
@@ -42,12 +42,12 @@ class _FormLembreteState extends State<_FormLembrete> {
     final l = widget.lembrete;
     _texto = TextEditingController(text: l?.texto ?? '');
     if (l != null) {
-      final q = emSP(l.quando);
+      final q = emLocal(l.quando);
       _data = DateTime(q.year, q.month, q.day);
       _hora = TimeOfDay(hour: q.hour, minute: q.minute);
     } else {
       _data = _hoje;
-      final agora = agoraSP();
+      final agora = agoraLocal();
       _hora = TimeOfDay(hour: (agora.hour + 1) % 24, minute: 0);
     }
     _regraAtual = Regra.ler(l?.regraRepeticao);
@@ -75,9 +75,9 @@ class _FormLembreteState extends State<_FormLembrete> {
     }
     final data = _data ?? _hoje;
     final hora = _hora ?? const TimeOfDay(hour: 9, minute: 0);
-    final quando = instanteSP(data, hora.hour, hora.minute);
+    final quando = instanteLocal(data, hora.hour, hora.minute);
     final regra = _repetir.regra(data, _regraAtual);
-    if (regra == null && !quando.isAfter(agoraSP())) {
+    if (regra == null && !quando.isAfter(agoraLocal())) {
       setState(() => _erro = 'Esse horário já passou. Escolha outro ou repita.');
       return;
     }

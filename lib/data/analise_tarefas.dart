@@ -39,11 +39,11 @@ AnaliseTarefas analisarTarefas(QuadroTarefas q, DateTime hoje) {
   for (final t in q.tarefas) {
     if (t.regraRepeticao == null) {
       if (t.feitaEm == null) continue;
-      final dia = dataSP(t.feitaEm!);
+      final dia = dataLocal(t.feitaEm!);
       feitas.add(dia);
       if (t.prazo != null && !dia.isBefore(limite30)) {
         comPrazo++;
-        final prazo = t.prazoTemHora ? t.prazo! : instanteSP(dataSP(t.prazo!), 23, 59);
+        final prazo = t.prazoTemHora ? t.prazo! : instanteLocal(dataLocal(t.prazo!), 23, 59);
         if (!t.feitaEm!.isAfter(prazo)) noPrazo++;
       }
     } else {

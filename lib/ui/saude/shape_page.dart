@@ -62,7 +62,7 @@ class _ShapePageState extends State<ShapePage> {
 
   Widget _conteudo(BuildContext context, List<CheckinShape> checkins) {
     final c = context.cores;
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final chaveHoje = chaveData(hoje);
     final deHoje = checkins.where((k) => k.dia == chaveHoje).firstOrNull ?? CheckinShape(chaveHoje, const {});
     final anteriores = checkins.where((k) => k.dia != chaveHoje).toList();

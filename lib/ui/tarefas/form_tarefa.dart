@@ -68,7 +68,7 @@ class _FormTarefaState extends State<_FormTarefa> {
   String? _projetoId;
   late bool _avisar;
   String? _erro;
-  final _hoje = hojeSP();
+  final _hoje = hojeLocal();
 
   @override
   void initState() {
@@ -76,7 +76,7 @@ class _FormTarefaState extends State<_FormTarefa> {
     final t = widget.tarefa;
     _titulo = TextEditingController(text: t?.titulo ?? '');
     if (t?.prazo != null) {
-      final p = emSP(t!.prazo!);
+      final p = emLocal(t!.prazo!);
       _data = DateTime(p.year, p.month, p.day);
       if (t.prazoTemHora) _hora = TimeOfDay(hour: p.hour, minute: p.minute);
     } else {
@@ -108,7 +108,7 @@ class _FormTarefaState extends State<_FormTarefa> {
     final regra = data == null ? null : _repetir.regra(data, _regraAtual);
     final dados = TarefasCompanion(
       titulo: Value(titulo),
-      prazo: Value(data == null ? null : instanteSP(data, _hora?.hour ?? 0, _hora?.minute ?? 0)),
+      prazo: Value(data == null ? null : instanteLocal(data, _hora?.hour ?? 0, _hora?.minute ?? 0)),
       prazoTemHora: Value(data != null && _hora != null),
       prioridade: Value(_prioridade),
       regraRepeticao: Value(regra?.rrule),

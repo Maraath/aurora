@@ -10,7 +10,7 @@ class LembreteVisto {
 
   final Lembrete lembrete;
 
-  /// Próximo disparo (instante em São Paulo); nulo se já passou e não repete.
+  /// Próximo disparo (instante no fuso do aparelho); nulo se já passou e não repete.
   final DateTime? proxima;
 
   /// Nome do item ligado ("Tarefa · Pagar faculdade").
@@ -40,16 +40,16 @@ DateTime? proximaOcorrencia(Lembrete l, DateTime agora) => ocorrenciasLembrete(l
 
 /// Disparos de um lembrete a partir de [agora], em ordem (até [limite] dias).
 Iterable<DateTime> ocorrenciasLembrete(Lembrete l, DateTime agora, {int limite = 400}) sync* {
-  final base = emSP(l.quando);
+  final base = emLocal(l.quando);
   final regra = Regra.ler(l.regraRepeticao);
   if (regra == null) {
     if (l.quando.isAfter(agora)) yield l.quando;
     return;
   }
-  final hoje = dataSP(agora);
+  final hoje = dataLocal(agora);
   final inicio = DateTime(base.year, base.month, base.day);
   for (final d in regra.ocorrencias(inicio, hoje, hoje.add(Duration(days: limite)))) {
-    final instante = instanteSP(d, base.hour, base.minute);
+    final instante = instanteLocal(d, base.hour, base.minute);
     if (instante.isAfter(agora)) yield instante;
   }
 }
@@ -62,7 +62,7 @@ class LembretesRepo {
       observar(db, [db.lembretes, db.tarefas, db.habitos], carregar);
 
   Future<QuadroLembretes> carregar() async {
-    final agora = agoraSP();
+    final agora = agoraLocal();
     final lista = await (db.select(db.lembretes)..where((l) => l.apagadoEm.isNull())).get();
     final tarefas = {
       for (final t in await (db.select(db.tarefas)..where((t) => t.apagadoEm.isNull())).get())

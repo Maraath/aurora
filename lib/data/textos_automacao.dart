@@ -11,7 +11,7 @@ import 'saude_repo.dart';
 import 'tarefas_repo.dart';
 
 /// Texto de um modelo pronto, montado só com os dados do app (sem IA).
-/// [agora] em São Paulo. Personalizada não passa por aqui (vai para a IA).
+/// [agora] no fuso do aparelho. Personalizada não passa por aqui (vai para a IA).
 Future<String> gerarTexto(ModeloAutomacao modelo, BancoAurora db, DateTime agora) => switch (modelo) {
       ModeloAutomacao.briefing => _briefing(db, agora),
       ModeloAutomacao.atrasadas => _atrasadas(db, agora),
@@ -30,7 +30,7 @@ String _lista(Iterable<String> itens) {
 String _dias(int n) => '$n ${n == 1 ? 'dia' : 'dias'}';
 
 Future<String> _briefing(BancoAurora db, DateTime agora) async {
-  final hoje = dataSP(agora);
+  final hoje = dataLocal(agora);
   final nome = await db.preferencia('nome');
   final linhas = <String>['${saudacao(agora)}${nome == null || nome.isEmpty ? '' : ', $nome'}! Seu ${diaSemanaCurto(hoje)}:'];
 
@@ -54,8 +54,8 @@ Future<String> _briefing(BancoAurora db, DateTime agora) async {
 
   final lembretes = (await LembretesRepo(db).carregar())
       .todos
-      .where((l) => l.lembrete.ativo && l.proxima != null && dataSP(l.proxima!) == hoje)
-      .map((l) => '${hora(emSP(l.proxima!))} ${l.lembrete.texto}');
+      .where((l) => l.lembrete.ativo && l.proxima != null && dataLocal(l.proxima!) == hoje)
+      .map((l) => '${hora(emLocal(l.proxima!))} ${l.lembrete.texto}');
   if (lembretes.isNotEmpty) linhas.add('• Lembretes: ${_lista(lembretes)}.');
 
   final financas = await FinancasRepo(db).carregar();
@@ -84,7 +84,7 @@ Future<String> _briefing(BancoAurora db, DateTime agora) async {
 }
 
 Future<String> _atrasadas(BancoAurora db, DateTime agora) async {
-  final hoje = dataSP(agora);
+  final hoje = dataLocal(agora);
   final atrasadas = (await TarefasRepo(db).carregar()).atuais.where((o) => o.atrasada).toList()
     ..sort((a, b) => (a.dia ?? hoje).compareTo(b.dia ?? hoje));
   if (atrasadas.isEmpty) return 'Nenhuma tarefa atrasada. Bom começo de dia!';
@@ -101,7 +101,7 @@ Future<String> _atrasadas(BancoAurora db, DateTime agora) async {
 }
 
 Future<String> _dinheiroSemana(BancoAurora db, DateTime agora) async {
-  final hoje = dataSP(agora);
+  final hoje = dataLocal(agora);
   final segunda = hoje.subtract(Duration(days: hoje.weekday - 1));
   final q = await FinancasRepo(db).carregar();
   var entrou = 0, saiu = 0;
@@ -136,7 +136,7 @@ Future<String> _dinheiroSemana(BancoAurora db, DateTime agora) async {
 }
 
 Future<String> _metasDomingo(BancoAurora db, DateTime agora) async {
-  final hoje = dataSP(agora);
+  final hoje = dataLocal(agora);
   final metas = await MetasRepo(db).carregar();
   final q = await FinancasRepo(db).carregar();
   final mes = q.mes(hoje);
@@ -151,7 +151,7 @@ Future<String> _metasDomingo(BancoAurora db, DateTime agora) async {
 }
 
 Future<String> _habitosSemana(BancoAurora db, DateTime agora) async {
-  final hoje = dataSP(agora);
+  final hoje = dataLocal(agora);
   final segunda = hoje.subtract(Duration(days: hoje.weekday - 1));
   final q = await HabitosRepo(db).carregar();
   if (q.habitos.isEmpty) return 'Você ainda não tem hábitos. Crie um em Hábitos.';

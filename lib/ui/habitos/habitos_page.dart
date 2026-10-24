@@ -25,7 +25,7 @@ class HabitosPage extends StatefulWidget {
 class _HabitosPageState extends State<HabitosPage> {
   HabitosRepo? _repo;
   Stream<QuadroHabitos>? _quadro;
-  late DateTime _mes = hojeSP();
+  late DateTime _mes = hojeLocal();
   _Aba _aba = _Aba.hoje;
 
   @override
@@ -131,7 +131,7 @@ class _HabitosPageState extends State<HabitosPage> {
 
   Widget _conteudo(BuildContext context, QuadroHabitos q) {
     final c = context.cores;
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final deHoje = q.doDia(hoje);
     final outros = q.habitos.where((h) => !deHoje.contains(h)).toList();
     final feitosHoje = deHoje.where((h) => q.feito(h.id, hoje)).length;

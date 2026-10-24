@@ -53,7 +53,7 @@ void main() {
 
   test('registro soma o dia e guarda os valores do momento', () async {
     final arroz = await alimento('Arroz branco cozido', 130, 2.5, 28, 0.3);
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     await repo.registrar(dia: hoje, refeicao: Refeicao.almoco, alimento: arroz, gramas: 150);
     await repo.registrar(dia: hoje, refeicao: Refeicao.jantar, alimento: arroz, gramas: 100);
     var d = await repo.carregarDia(hoje);
@@ -181,10 +181,10 @@ void main() {
       await assistente.enviar('comi 2 ovos no café');
       final r = await ultima();
       expect(r.texto, startsWith('Anotei 100 g de Ovo cozido no café da manhã: 146 kcal'));
-      expect((await repo.carregarDia(hojeSP())).daRefeicao(Refeicao.cafe), hasLength(1));
+      expect((await repo.carregarDia(hojeLocal())).daRefeicao(Refeicao.cafe), hasLength(1));
 
       await assistente.desfazer(r);
-      expect((await repo.carregarDia(hojeSP())).registros, isEmpty);
+      expect((await repo.carregarDia(hojeLocal())).registros, isEmpty);
     });
 
     test('fora da lista e da TACO pede cadastro', () async {

@@ -33,7 +33,7 @@ class Ocorrencia {
 
   final Transacao transacao;
 
-  /// Data de calendário (São Paulo).
+  /// Data de calendário (fuso do aparelho).
   final DateTime vencimento;
   final int? parcela;
   final DateTime? pagoEm;
@@ -61,7 +61,7 @@ class Movimento {
   final int valorCentavos;
   final int? parcela;
 
-  DateTime get dia => dataSP(instante);
+  DateTime get dia => dataLocal(instante);
   bool get entrada => transacao.tipo == TipoTransacao.entrada;
   bool get transferencia => transacao.contaDestinoId != null;
   String get nome => nomeComParcela(transacao, parcela);
@@ -232,7 +232,7 @@ class QuadroFinancas {
     final regra = Regra.ler(t.regraRepeticao);
     if (regra == null) {
       if (t.vencimento == null) return; // movimento direto, não é conta
-      final v = dataSP(t.vencimento!);
+      final v = dataLocal(t.vencimento!);
       if (!v.isBefore(de) && !v.isAfter(ate)) {
         yield Ocorrencia(transacao: t, vencimento: v, pagoEm: t.pagoEm);
       }
@@ -346,7 +346,7 @@ class QuadroFinancas {
 }
 
 /// Data do primeiro vencimento de uma transação com regra.
-DateTime inicioDaRegra(Transacao t) => dataSP(t.vencimento ?? t.data);
+DateTime inicioDaRegra(Transacao t) => dataLocal(t.vencimento ?? t.data);
 
 /// Número da parcela que vence em [vencimento] (nulo se não é parcelada).
 int? numeroParcela(Transacao t, DateTime vencimento) {
@@ -377,7 +377,7 @@ class FinancasRepo {
       pagamentos.putIfAbsent(p.transacaoId, () => {})[p.vencimento] = p;
     }
     return QuadroFinancas(
-      hoje: hojeSP(),
+      hoje: hojeLocal(),
       contas: contas,
       transacoes: transacoes,
       pagamentos: pagamentos,
@@ -463,7 +463,7 @@ class FinancasRepo {
   /// Até quando a regra vai ao ser encerrada: ontem ou o último vencimento
   /// pago, o que vier depois (o que já foi pago continua no extrato).
   static DateTime fimAoEncerrar(List<PagamentoTransacao> pagos) {
-    var fim = hojeSP().subtract(const Duration(days: 1));
+    var fim = hojeLocal().subtract(const Duration(days: 1));
     for (final p in pagos) {
       final v = DateTime.parse(p.vencimento);
       if (v.isAfter(fim)) fim = v;

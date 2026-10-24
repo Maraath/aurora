@@ -27,12 +27,12 @@ void main() {
 
   test('tarefas: conclusões por dia, semana e prazo', () async {
     final repo = TarefasRepo(db);
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     // Tarefa de hoje sem hora: só fica atrasada quando o dia acaba. A de
     // exemplo vence às 21h e, depois disso, o teste não achava nenhuma.
     await db.into(db.tarefas).insert(TarefasCompanion.insert(
           titulo: 'Tarefa do teste',
-          prazo: Value(instanteSP(hoje)),
+          prazo: Value(instanteLocal(hoje)),
         ));
     final antes = await repo.carregar();
     final base = analisarTarefas(antes, hoje);
@@ -55,11 +55,11 @@ void main() {
 
   test('hábitos: constância, sequência e recorde', () async {
     final repo = HabitosRepo(db);
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final cardio = (await repo.carregar()).habitos.firstWhere((h) => h.nome == 'Cardio');
     // Hábito criado há 10 dias, feito nos últimos 3 (ontem incluso) e hoje.
     await (db.update(db.habitos)..where((h) => h.id.equals(cardio.id)))
-        .write(HabitosCompanion(criadoEm: Value(instanteSP(hoje.subtract(const Duration(days: 10))))));
+        .write(HabitosCompanion(criadoEm: Value(instanteLocal(hoje.subtract(const Duration(days: 10))))));
     for (var i = 0; i <= 3; i++) {
       await repo.alternar(cardio.id, hoje.subtract(Duration(days: i)), true);
     }

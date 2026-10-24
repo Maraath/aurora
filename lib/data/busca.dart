@@ -90,7 +90,7 @@ Future<List<ResultadoBusca>> buscarTudo(BancoAurora db, String termo,
     {int porGrupo = 5, DateTime? hoje, GrupoBusca? grupo}) async {
   final navegar = termo.trim().length < 2;
   if (navegar && grupo == null) return const [];
-  final dia = hoje ?? hojeSP();
+  final dia = hoje ?? hojeLocal();
   final r = <ResultadoBusca>[];
   bool quer(GrupoBusca g) => grupo == null || grupo == g;
 
@@ -115,7 +115,7 @@ Future<List<ResultadoBusca>> buscarTudo(BancoAurora db, String termo,
         ..sort((a, b) => (a.prazo ?? DateTime(9999)).compareTo(b.prazo ?? DateTime(9999)));
     }
     for (final t in tarefas) {
-      final quando = t.prazo == null ? 'sem data' : diaRelativo(dataSP(t.prazo!), dia);
+      final quando = t.prazo == null ? 'sem data' : diaRelativo(dataLocal(t.prazo!), dia);
       add(TipoResultado.tarefa, t.titulo, t.feitaEm != null ? 'Tarefa · feita' : 'Tarefa · $quando', t,
           extra: t.feitaEm == null ? 20 : 0, tambem: t.notas);
     }
@@ -125,7 +125,7 @@ Future<List<ResultadoBusca>> buscarTudo(BancoAurora db, String termo,
         .get();
     for (final l in lembretes) {
       final q = l.quando.toLocal();
-      add(TipoResultado.lembrete, l.texto, 'Lembrete · ${rotuloDiaLembrete(dataSP(q), dia)}, ${hora(q)}', l);
+      add(TipoResultado.lembrete, l.texto, 'Lembrete · ${rotuloDiaLembrete(dataLocal(q), dia)}, ${hora(q)}', l);
     }
   }
 
@@ -203,7 +203,7 @@ Future<void> _financas(BancoAurora db, _Adicionar add, bool navegar) async {
     final entrada = t.tipo == TipoTransacao.entrada;
     final partes = [
       entrada ? 'Receita' : 'Despesa',
-      diaMesCurto(dataSP(t.data)),
+      diaMesCurto(dataLocal(t.data)),
       if (cat != null && cat.isNotEmpty && normalizar(cat) != normalizar(t.descricao)) cat,
       ?contas[t.contaId],
     ];

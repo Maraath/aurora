@@ -2173,7 +2173,7 @@ class ConclusoesTarefaData extends DataClass
   final DateTime? apagadoEm;
   final String tarefaId;
 
-  /// "aaaa-mm-dd" da ocorrência, no fuso de São Paulo.
+  /// "aaaa-mm-dd" da ocorrência, no fuso do aparelho.
   final String dia;
   const ConclusoesTarefaData({
     required this.id,
@@ -3296,7 +3296,7 @@ class RegistrosHabitoData extends DataClass
   final DateTime? apagadoEm;
   final String habitoId;
 
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   final String dia;
   final bool feito;
   final int? valor;
@@ -5351,7 +5351,7 @@ class PagamentoTransacao extends DataClass
   final DateTime? apagadoEm;
   final String transacaoId;
 
-  /// "aaaa-mm-dd" do vencimento da ocorrência, no fuso de São Paulo.
+  /// "aaaa-mm-dd" do vencimento da ocorrência, no fuso do aparelho.
   final String vencimento;
   final DateTime pagoEm;
 
@@ -8162,7 +8162,7 @@ class SessaoTreino extends DataClass implements Insertable<SessaoTreino> {
   final DateTime? apagadoEm;
   final String? treinoId;
 
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   final String dia;
   final DateTime inicio;
   final DateTime? fim;
@@ -9243,7 +9243,7 @@ class Medida extends DataClass implements Insertable<Medida> {
   final DateTime atualizadoEm;
   final DateTime? apagadoEm;
 
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   final String dia;
   final String tipo;
   final double valor;
@@ -9775,7 +9775,7 @@ class FotoShape extends DataClass implements Insertable<FotoShape> {
   final DateTime atualizadoEm;
   final DateTime? apagadoEm;
 
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   final String dia;
   final String angulo;
 
@@ -11697,7 +11697,7 @@ class RegistroAlimentacao extends DataClass
   final DateTime atualizadoEm;
   final DateTime? apagadoEm;
 
-  /// "aaaa-mm-dd" no fuso de São Paulo.
+  /// "aaaa-mm-dd" no fuso do aparelho.
   final String dia;
 
   /// 'cafe', 'almoco', 'lanche', 'jantar' ou 'ceia'.

@@ -11,8 +11,8 @@ import 'tarefas_repo.dart';
 /// Resumo em texto dos dados do app, mandado junto com cada pergunta à IA.
 /// É montado no aparelho (a IA não lê o banco) e fica curto de propósito.
 Future<String> montarContexto(BancoAurora db) async {
-  final agora = agoraSP();
-  final hoje = dataSP(agora);
+  final agora = agoraLocal();
+  final hoje = dataLocal(agora);
   final l = <String>[];
   final nome = await db.preferencia('nome');
   l.add('Hoje: ${dataCabecalho(hoje).toLowerCase()}, ${hora(agora)}.${nome == null ? '' : ' Nome: $nome.'}');
@@ -56,7 +56,7 @@ Future<String> montarContexto(BancoAurora db) async {
     l.add('Metas: ${metas.map((p) {
       final m = p.meta;
       return '${m.nome}: ${valorMeta(m.valorAtual, m.unidade)} de ${valorMeta(m.valorAlvo, m.unidade)}'
-          '${m.dataAlvo == null ? '' : ' até ${diaMesCurto(dataSP(m.dataAlvo!))}'}, ${p.estado.rotulo.toLowerCase()}';
+          '${m.dataAlvo == null ? '' : ' até ${diaMesCurto(dataLocal(m.dataAlvo!))}'}, ${p.estado.rotulo.toLowerCase()}';
     }).join('; ')}.');
   }
 

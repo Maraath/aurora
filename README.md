@@ -12,8 +12,8 @@ Tarefas · Hábitos · Treino · Alimentação · Finanças · Metas · Projetos
 ![Dart](https://img.shields.io/badge/Dart-3-0175C2?logo=dart&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3FCF8E?logo=supabase&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/Edge%20Functions-TypeScript-3178C6?logo=typescript&logoColor=white)
-![Plataformas](https://img.shields.io/badge/Windows%20%C2%B7%20Android%20%C2%B7%20iOS%20%C2%B7%20Web-5CF0B0)
-![Testes](https://img.shields.io/badge/testes-260%20passando-42E3C8)
+![Plataformas](https://img.shields.io/badge/Windows%20%C2%B7%20Android%20%C2%B7%20Web%20%28PWA%29-5CF0B0)
+![Testes](https://img.shields.io/badge/testes-263%20passando-42E3C8)
 ![Licença](https://img.shields.io/badge/licen%C3%A7a-PolyForm%20Noncommercial-9D8CFF)
 
 <img src="docs/imagens/visao.png" alt="Tela Visão do Aurora no Windows" width="900">
@@ -42,17 +42,17 @@ O Aurora junta numa tela só o que normalmente fica espalhado em vários apps: t
 metas. Por cima de tudo há uma assistente, a **Aurora**, que entende pedidos em linguagem natural: *"gastei 35 no mercado"*, *"me lembra de pagar a luz amanhã às 9"* ou
 *"como estão meus gastos este mês?"*.
 
-É um app completo, publicado e em uso: **um único código Flutter** roda no **Windows, Android, iOS e web (PWA)**,
+É um app completo, publicado e em uso: **um único código Flutter** roda no **Windows, no Android e na web (PWA, que também instala no iPhone)**; a versão nativa para iOS está nos planos. O app
 funciona **100% offline** e sincroniza entre aparelhos quando há internet. Tem instalador próprio, atualização
 automática e um servidor com autenticação, banco protegido por usuário e IA.
 
 | Versão atual | Código | Testes | Plataformas |
 | :---: | :---: | :---: | :---: |
-| **1.10.2** | ~54 mil linhas de Dart | **260** automatizados | Windows · Android · iOS · Web |
+| **1.10.2** | ~54 mil linhas de Dart | **263** automatizados | Windows · Android · Web (PWA) |
 
 > **In English:** Aurora is a personal routine app (tasks, habits, workouts, nutrition, finances, goals, projects,
 > reminders) with an AI assistant that creates and edits your data through tool calls. One Flutter codebase for
-> Windows, Android, iOS and web; offline-first with SQLite (Drift), synced to Supabase (Postgres + Row Level
+> Windows, Android and web (PWA, installable on iPhone); offline-first with SQLite (Drift), synced to Supabase (Postgres + Row Level
 > Security); AI served by a Deno Edge Function with an automatic model fallback chain. Source-available under
 > PolyForm Noncommercial 1.0.0.
 
@@ -96,13 +96,13 @@ automática e um servidor com autenticação, banco protegido por usuário e IA.
 | 🎯 **Metas e projetos** | Progresso, ritmo necessário até a data e etapas ligadas a tarefas. |
 | 🔔 **Lembretes** | Avisos locais, Web Push no PWA e despertador de tela cheia no Android. |
 | ✨ **Assistente** | Texto e voz; cria, edita e exclui dados com confirmação e "Desfazer"; sem internet, comandos rápidos por regras. |
-| 🔎 **Extras** | Busca global (Ctrl+K), atalhos flutuantes, bloqueio por PIN ou biometria, tema escuro e claro. |
+| 🔎 **Extras** | Busca global (Ctrl+K), atalhos flutuantes, bloqueio por PIN ou biometria, tema escuro e claro, e datas e avisos sempre no fuso de onde você está. |
 
 ## Arquitetura
 
 ```mermaid
 flowchart LR
-    subgraph App["App Flutter (Windows · Android · iOS · Web)"]
+    subgraph App["App Flutter (Windows · Android · Web)"]
         UI["UI<br/>lib/ui"] --> Repo["Repositórios<br/>lib/data"]
         Repo --> DB[("SQLite local<br/>Drift")]
         IA["Cliente da IA<br/>AssistenteRepo"] --> Ferr["Ferramentas<br/>no aparelho"]
@@ -139,10 +139,11 @@ mantém o banco pequeno.
 </details>
 
 <details>
-<summary><b>Dinheiro em centavos e datas num fuso fixo</b></summary>
+<summary><b>Dinheiro em centavos e datas no fuso de quem usa</b></summary>
 
 Valores são inteiros em centavos (sem erro de arredondamento de ponto flutuante) e todas as datas são interpretadas
-no fuso America/Sao_Paulo, independentemente do fuso do aparelho.
+no fuso do aparelho (lido em nome IANA, como `Europe/Lisbon`, com São Paulo como reserva). Se a pessoa viaja e
+o fuso muda, o app percebe ao voltar à tela e recalcula os avisos no horário novo.
 </details>
 
 <details>
@@ -169,13 +170,13 @@ SDK, implementado em Dart.
 - **Windows**: barra de título própria desenhada em Flutter, com o runner em C++ tratando `WM_NCHITTEST` para manter
   arrastar, snap layouts do Windows 11 e duplo clique; voz pelo SAPI.
 - **Android**: alarmes exatos com tela cheia (despertador) e APK por arquitetura.
-- **Web/iPhone**: PWA com Service Worker próprio, área segura do iOS e Web Push agendado pelo servidor (pg_cron).
+- **Web/iPhone**: PWA com Service Worker próprio, área segura do iPhone e Web Push agendado pelo servidor (pg_cron).
 - **Distribuição**: instalador Inno Setup e atualização automática dentro do app, com verificação de SHA-256.
 </details>
 
 ## Qualidade
 
-- **260 testes automatizados** (widgets e regras de negócio): recorrência, finanças, sincronização, assistente,
+- **263 testes automatizados** (widgets e regras de negócio): recorrência, finanças, sincronização, assistente,
   voz, gráficos, busca e mais.
 - `flutter analyze` sem nenhum aviso.
 - Migrações do servidor versionadas em [`supabase/migrations`](supabase/migrations), testadas num banco local antes
@@ -183,7 +184,7 @@ SDK, implementado em Dart.
 - Backup semanal automático do banco do servidor.
 
 ```bash
-flutter test      # roda os 260 testes
+flutter test      # roda os 263 testes
 flutter analyze   # análise estática
 ```
 

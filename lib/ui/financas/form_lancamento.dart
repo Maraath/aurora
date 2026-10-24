@@ -56,7 +56,7 @@ class _FormLancamentoState extends State<_FormLancamento> {
   String? _contaId;
   String? _erro;
 
-  final _hoje = hojeSP();
+  final _hoje = hojeLocal();
 
   Transacao? get _t => widget.transacao;
   bool get _editando => _t != null;
@@ -73,7 +73,7 @@ class _FormLancamentoState extends State<_FormLancamento> {
     _categoria = t?.categoria ?? (_saida ? 'Mercado' : 'Salário');
     _forma = t == null ? FormaTransacao.unica : formaDe(t);
     _pago = t == null ? true : t.pagoEm != null;
-    _data = t == null ? _hoje : dataSP(t.pagoEm ?? t.vencimento ?? t.data);
+    _data = t == null ? _hoje : dataLocal(t.pagoEm ?? t.vencimento ?? t.data);
     _contaId = t?.contaId ?? widget.contaPrincipalId;
   }
 
@@ -95,7 +95,7 @@ class _FormLancamentoState extends State<_FormLancamento> {
 
   /// Instante gravado para a data escolhida: agora, se for hoje; senão meio-dia.
   DateTime _instante(DateTime dia, {int hora = 12}) =>
-      dia == _hoje ? DateTime.now() : instanteSP(dia, hora);
+      dia == _hoje ? DateTime.now() : instanteLocal(dia, hora);
 
   Future<void> _salvar() async {
     final desc = _desc.text.trim();
@@ -120,7 +120,7 @@ class _FormLancamentoState extends State<_FormLancamento> {
       if (_forma == FormaTransacao.unica) {
         dados = t.pagoEm != null
             ? dados.copyWith(data: Value(_instante(_data)), pagoEm: Value(_instante(_data)))
-            : dados.copyWith(data: Value(instanteSP(_data, 9)), vencimento: Value(instanteSP(_data, 9)));
+            : dados.copyWith(data: Value(instanteLocal(_data, 9)), vencimento: Value(instanteLocal(_data, 9)));
       }
       await widget.repo.salvar(dados, id: t.id);
       if (mounted) Navigator.pop(context);
@@ -131,7 +131,7 @@ class _FormLancamentoState extends State<_FormLancamento> {
     final TransacoesCompanion dados;
     switch (forma) {
       case FormaTransacao.unica:
-        final instante = _pago ? _instante(_data) : instanteSP(_data, 9);
+        final instante = _pago ? _instante(_data) : instanteLocal(_data, 9);
         dados = TransacoesCompanion.insert(
           descricao: desc,
           valorCentavos: valor,
@@ -145,7 +145,7 @@ class _FormLancamentoState extends State<_FormLancamento> {
       case FormaTransacao.recorrente:
       case FormaTransacao.parcelada:
         final parcelada = forma == FormaTransacao.parcelada;
-        final venc = instanteSP(_data, 9);
+        final venc = instanteLocal(_data, 9);
         dados = TransacoesCompanion.insert(
           descricao: desc,
           valorCentavos: parcelada ? (valor / _numParcelas).round() : valor,

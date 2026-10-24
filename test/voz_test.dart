@@ -317,7 +317,7 @@ void main() {
       }
       expect(find.text('gastei 35 no mercado'), findsOneWidget, reason: 'o que foi dito aparece como mensagem');
       expect(find.textContaining('Anotei R\$ 35,00'), findsOneWidget);
-      final saiu = await tester.runAsync(() async => (await FinancasRepo(db).carregar()).mes(hojeSP()).saiuCentavos);
+      final saiu = await tester.runAsync(() async => (await FinancasRepo(db).carregar()).mes(hojeLocal()).saiuCentavos);
       expect(saiu, 3500);
       expect(find.text('Ouvindo'), findsNothing);
 

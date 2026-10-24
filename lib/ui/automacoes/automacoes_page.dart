@@ -47,7 +47,7 @@ class _AutomacoesPageState extends State<AutomacoesPage> {
   }
 
   Future<void> _rodarAgora(Automacao a) async {
-    await executarAutomacao(_repo!.db, a, agora: agoraSP(), marcar: false);
+    await executarAutomacao(_repo!.db, a, agora: agoraLocal(), marcar: false);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('“${a.nome}” está no assistente.'),
@@ -192,7 +192,7 @@ class _CartaoAutomacao extends StatelessWidget {
     final p = chave.split(' ');
     final dia = DateTime.tryParse(p.first);
     if (dia == null) return chave;
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final rel = dia == hoje ? 'hoje' : (dia == hoje.subtract(const Duration(days: 1)) ? 'ontem' : null);
     return '${rel ?? '${dia.day}/${dia.month}'} às ${p.length > 1 ? p[1] : ''}';
   }

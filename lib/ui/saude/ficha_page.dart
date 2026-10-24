@@ -50,7 +50,7 @@ class _FichaPageState extends State<FichaPage> {
 
   Widget _conteudo(BuildContext context, QuadroSaude q) {
     final c = context.cores;
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -97,7 +97,7 @@ class _FichaPageState extends State<FichaPage> {
                   Text(
                     [
                       t.treino.diasSemana == 0 ? 'sem dia fixo' : descreverDias(t.treino.diasSemana),
-                      t.ultimaVez == null ? 'ainda não feito' : 'último ${diaRelativo(dataSP(t.ultimaVez!), hoje)}',
+                      t.ultimaVez == null ? 'ainda não feito' : 'último ${diaRelativo(dataLocal(t.ultimaVez!), hoje)}',
                     ].join(' · '),
                     style: manrope(12, cor: c.muted),
                   ),

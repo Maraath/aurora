@@ -18,7 +18,7 @@ class OcorrenciaTarefa {
 
   final Tarefa tarefa;
 
-  /// Data de calendário (São Paulo) da ocorrência; nulo = sem data.
+  /// Data de calendário (fuso do aparelho) da ocorrência; nulo = sem data.
   final DateTime? dia;
   final bool feita;
   final bool atrasada;
@@ -30,7 +30,7 @@ class OcorrenciaTarefa {
   /// Horário "HH:mm" da ocorrência, se a tarefa tem hora.
   ({int hora, int minuto})? get horario {
     if (!tarefa.prazoTemHora || tarefa.prazo == null) return null;
-    final p = emSP(tarefa.prazo!);
+    final p = emLocal(tarefa.prazo!);
     return (hora: p.hour, minuto: p.minute);
   }
 
@@ -38,7 +38,7 @@ class OcorrenciaTarefa {
   DateTime? get momento {
     if (dia == null) return null;
     final h = horario;
-    return h == null ? instanteSP(dia!, 23, 59) : instanteSP(dia!, h.hora, h.minuto);
+    return h == null ? instanteLocal(dia!, 23, 59) : instanteLocal(dia!, h.hora, h.minuto);
   }
 }
 
@@ -85,7 +85,7 @@ class QuadroTarefas {
     for (final t in tarefas) {
       final regra = Regra.ler(t.regraRepeticao);
       if (t.prazo == null) continue;
-      final inicio = dataSP(t.prazo!);
+      final inicio = dataLocal(t.prazo!);
       final dias = regra == null
           ? [if (!inicio.isBefore(de) && !inicio.isAfter(ate)) inicio]
           : regra.ocorrencias(inicio, de, ate);
@@ -123,7 +123,7 @@ int compararOcorrencias(OcorrenciaTarefa a, OcorrenciaTarefa b) {
 bool tarefaAtrasada(Tarefa t, DateTime agora) {
   if (t.feitaEm != null || t.prazo == null || t.regraRepeticao != null) return false;
   if (t.prazoTemHora) return t.prazo!.isBefore(agora);
-  return dataSP(t.prazo!).isBefore(dataSP(agora));
+  return dataLocal(t.prazo!).isBefore(dataLocal(agora));
 }
 
 class TarefasRepo {
@@ -134,8 +134,8 @@ class TarefasRepo {
       observar(db, [db.tarefas, db.conclusoesTarefa, db.metas], carregar);
 
   Future<QuadroTarefas> carregar() async {
-    final agora = agoraSP();
-    final hoje = dataSP(agora);
+    final agora = agoraLocal();
+    final hoje = dataLocal(agora);
     final chaveHoje = chaveData(hoje);
 
     final tarefas = await (db.select(db.tarefas)..where((t) => t.apagadoEm.isNull())).get();
@@ -156,19 +156,19 @@ class TarefasRepo {
       final regra = Regra.ler(t.regraRepeticao);
       final meta = metasPorId[t.metaId];
       if (regra == null) {
-        if (t.feitaEm != null && dataSP(t.feitaEm!) == hoje) feitasHoje++;
+        if (t.feitaEm != null && dataLocal(t.feitaEm!) == hoje) feitasHoje++;
         // Concluídas em outros dias saem da lista.
-        if (t.feitaEm != null && dataSP(t.feitaEm!) != hoje) continue;
+        if (t.feitaEm != null && dataLocal(t.feitaEm!) != hoje) continue;
         atuais.add(OcorrenciaTarefa(
           tarefa: t,
-          dia: t.prazo == null ? null : dataSP(t.prazo!),
+          dia: t.prazo == null ? null : dataLocal(t.prazo!),
           feita: t.feitaEm != null,
           atrasada: tarefaAtrasada(t, agora),
           meta: meta,
         ));
         continue;
       }
-      final inicio = t.prazo == null ? hoje : dataSP(t.prazo!);
+      final inicio = t.prazo == null ? hoje : dataLocal(t.prazo!);
       final feitos = conclusoes[t.id] ?? const {};
       final DateTime? dia;
       if (regra.ocorreEm(hoje, inicio)) {
@@ -208,7 +208,7 @@ class TarefasRepo {
           TarefasCompanion(feitaEm: Value(feita ? agora : null), atualizadoEm: Value(agora)));
       return;
     }
-    final dia = chaveData(o.dia ?? hojeSP());
+    final dia = chaveData(o.dia ?? hojeLocal());
     if (feita) {
       await db.into(db.conclusoesTarefa).insert(
             ConclusoesTarefaCompanion.insert(
@@ -247,10 +247,10 @@ class TarefasRepo {
       final prazo = dados.prazo.present ? dados.prazo.value : null;
       if (avisar && prazo != null) {
         final temHora = dados.prazoTemHora.present && dados.prazoTemHora.value;
-        final p = emSP(prazo);
+        final p = emLocal(prazo);
         await db.into(db.lembretes).insert(LembretesCompanion.insert(
               texto: dados.titulo.value,
-              quando: temHora ? prazo : diaSP(p.year, p.month, p.day, 9),
+              quando: temHora ? prazo : diaLocal(p.year, p.month, p.day, 9),
               regraRepeticao: dados.regraRepeticao,
               itemTipo: const Value('tarefa'),
               itemId: Value(tarefaId),

@@ -210,7 +210,7 @@ class Notificador {
   /// Para o som e toca de novo daqui a [minutosAdiar] minutos.
   Future<void> _adiar(String titulo, int? id) async {
     if (id != null) await _plugin.cancel(id: id);
-    final quando = tz.TZDateTime.now(fusoSP).add(const Duration(minutes: minutosAdiar));
+    final quando = tz.TZDateTime.now(fusoLocal).add(const Duration(minutes: minutosAdiar));
     try {
       await _plugin.zonedSchedule(
         id: idAdiadoBase + quando.millisecondsSinceEpoch ~/ 1000 % 90000,
@@ -284,7 +284,7 @@ class Notificador {
   static const _folga = Duration(seconds: 30);
 
   Future<void> _reagendarAgora(BancoAurora db) async {
-    final agora = agoraSP();
+    final agora = agoraLocal();
     final lembretes = await (db.select(db.lembretes)..where((l) => l.apagadoEm.isNull())).get();
     final tarefas = {
       for (final t in await (db.select(db.tarefas)..where((t) => t.apagadoEm.isNull())).get()) t.id: t,
@@ -345,7 +345,7 @@ class Notificador {
           id: i + 1,
           title: a.titulo,
           body: a.corpo,
-          scheduledDate: tz.TZDateTime.from(a.quando, fusoSP),
+          scheduledDate: tz.TZDateTime.from(a.quando, fusoLocal),
           notificationDetails: despertador ? detalhesDespertador : _detalhesComuns,
           payload: despertador ? payloadDespertador(a.titulo) : null,
           // alarmClock: o Android trata como despertador de verdade (ícone de

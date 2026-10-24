@@ -106,8 +106,8 @@ ProgressoMeta calcularProgresso(
   final caminho = m.valorAlvo - m.valorInicial;
   final progresso =
       caminho == 0 ? 1.0 : ((m.valorAtual - m.valorInicial) / caminho).clamp(0.0, 1.0);
-  final criada = dataSP(m.criadoEm);
-  final alvo = m.dataAlvo == null ? null : dataSP(m.dataAlvo!);
+  final criada = dataLocal(m.criadoEm);
+  final alvo = m.dataAlvo == null ? null : dataLocal(m.dataAlvo!);
   double? tempo;
   if (alvo != null) {
     final total = diasEntre(criada, alvo);
@@ -119,7 +119,7 @@ ProgressoMeta calcularProgresso(
     estado = EstadoMeta.concluida;
   } else if (diasEntre(criada, hoje) < 7) {
     estado = EstadoMeta.nova;
-  } else if (diasEntre(dataSP(ultimaAtividade), hoje) >= diasParaParada) {
+  } else if (diasEntre(dataLocal(ultimaAtividade), hoje) >= diasParaParada) {
     estado = EstadoMeta.parada;
   } else if (tempo != null && progresso < tempo - 0.1) {
     estado = EstadoMeta.emRisco;
@@ -157,7 +157,7 @@ class MetasRepo {
 
   /// Metas ativas primeiro (pela data-alvo), concluídas no fim.
   Future<List<ProgressoMeta>> carregar() async {
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
     final tarefas = await (db.select(db.tarefas)
           ..where((t) => t.apagadoEm.isNull() & t.metaId.isNotNull()))

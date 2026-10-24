@@ -27,7 +27,7 @@ class _ProjetosPageState extends State<ProjetosPage> {
   ProjetosRepo? _repo;
   Stream<List<ProgressoProjeto>>? _projetos;
   String? _aberto;
-  final _hoje = hojeSP();
+  final _hoje = hojeLocal();
 
   /// Primeiro mês da linha do tempo (começa no mês passado).
   late DateTime _janela = DateTime(_hoje.year, _hoje.month - 1, 1);

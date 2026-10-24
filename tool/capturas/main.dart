@@ -20,7 +20,7 @@ Future<void> main() async {
   }
   Intl.defaultLocale = 'pt_BR';
   await initializeDateFormatting('pt_BR');
-  iniciarRelogio();
+  iniciarRelogio(await fusoDoAparelho());
 
   final db = BancoAurora();
   await semearDemonstracao(db);

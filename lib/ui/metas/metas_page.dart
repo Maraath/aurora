@@ -168,7 +168,7 @@ class CartaoMeta extends StatelessWidget {
           if (p.tempo != null) ...[
             const SizedBox(height: 10),
             linha('Tempo passado',
-                '${diaMesCurto(dataSP(m.criadoEm))} → ${diaMesCurto(dataSP(m.dataAlvo!))}'),
+                '${diaMesCurto(dataLocal(m.criadoEm))} → ${diaMesCurto(dataLocal(m.dataAlvo!))}'),
             const SizedBox(height: 6),
             BarraProgresso(fracao: p.tempo!, cor: c.accent),
           ],

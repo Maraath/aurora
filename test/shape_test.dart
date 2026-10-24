@@ -145,7 +145,7 @@ void main() {
 
   test('padrão: só neste aparelho; nada sobe nem na sincronização', () async {
     expect(await pc.cofre.modo(), ModoFotos.aparelho);
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
     final r = await SincronizadorFotos(pc.repo).sincronizar();
     expect(r.enviadas, 0);
     expect(nuvem.inteiras, isEmpty);
@@ -158,7 +158,7 @@ void main() {
 
   test('sincronizar: a foto sobe e o outro aparelho baixa uma vez só', () async {
     await pc.cofre.definirModo(ModoFotos.nuvem);
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 600, altura: 800));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 600, altura: 800));
     expect((await SincronizadorFotos(pc.repo).sincronizar()).enviadas, 1);
     final f = await pc.foto(AnguloShape.frente);
     expect(f.naNuvem, isTrue);
@@ -174,7 +174,7 @@ void main() {
     expect(nuvem.downloads, 1, reason: 'já está no aparelho: não baixa de novo');
 
     // Trocada no PC: hash novo, o celular baixa de novo.
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 640, altura: 800));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 640, altura: 800));
     await SincronizadorFotos(pc.repo).sincronizar();
     await cel.receberLinhasDe(pc);
     final trocada = await cel.foto(AnguloShape.frente);
@@ -184,7 +184,7 @@ void main() {
   });
 
   test('outro aparelho: foto que não foi para a nuvem não é procurada lá', () async {
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.lado, imagemTeste(largura: 300, altura: 400));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.lado, imagemTeste(largura: 300, altura: 400));
     final cel = await Aparelho.novo(() => nuvem);
     addTearDown(cel.fechar);
     await cel.receberLinhasDe(pc);
@@ -194,8 +194,8 @@ void main() {
   });
 
   test('"Enviar para a nuvem" vale para uma foto, mesmo no modo só no aparelho', () async {
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.costas, imagemTeste(largura: 300, altura: 400));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.costas, imagemTeste(largura: 300, altura: 400));
     await pc.repo.enviarParaNuvem(await pc.foto(AnguloShape.frente));
     expect(nuvem.inteiras.keys, [(await pc.foto(AnguloShape.frente)).id]);
     expect((await pc.foto(AnguloShape.frente)).naNuvem, isTrue);
@@ -208,8 +208,8 @@ void main() {
 
   test('apagar foto apaga da nuvem; sem internet, apaga na próxima sincronização', () async {
     await pc.cofre.definirModo(ModoFotos.nuvem);
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.lado, imagemTeste(largura: 300, altura: 400));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.lado, imagemTeste(largura: 300, altura: 400));
     await SincronizadorFotos(pc.repo).sincronizar();
     expect(nuvem.inteiras, hasLength(2));
 
@@ -225,17 +225,17 @@ void main() {
   });
 
   test('trocar foto no modo só no aparelho tira a versão antiga da nuvem', () async {
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
     await pc.repo.enviarParaNuvem(await pc.foto(AnguloShape.frente));
     expect(nuvem.inteiras, hasLength(1));
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 320, altura: 400));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 320, altura: 400));
     expect(nuvem.inteiras, isEmpty);
     expect((await pc.foto(AnguloShape.frente)).naNuvem, isFalse);
   });
 
   test('limpar cache só apaga cópias que estão na nuvem', () async {
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 600, altura: 800));
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.lado, imagemTeste(largura: 600, altura: 800));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 600, altura: 800));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.lado, imagemTeste(largura: 600, altura: 800));
     await pc.repo.enviarParaNuvem(await pc.foto(AnguloShape.frente));
     final antes = await pc.cofre.espacoOcupado();
 
@@ -250,7 +250,7 @@ void main() {
 
   test('tirar da nuvem guarda uma cópia aqui antes de apagar lá', () async {
     await pc.cofre.definirModo(ModoFotos.nuvem);
-    await pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
+    await pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
     await SincronizadorFotos(pc.repo).sincronizar();
 
     final cel = await Aparelho.novo(() => nuvem);
@@ -315,7 +315,7 @@ void main() {
     testWidgets('foto de outro aparelho aparece como espaço reservado', (tester) async {
       final outro = (await tester.runAsync(() => Aparelho.novo(() => nuvem)))!;
       await tester.runAsync(() async {
-        await outro.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
+        await outro.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
         await pc.receberLinhasDe(outro);
       });
       await abrirTela(tester);
@@ -327,7 +327,7 @@ void main() {
 
     testWidgets('Shape: escolher onde guardar perto das fotos', (tester) async {
       await tester.runAsync(
-        () => pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400)),
+        () => pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400)),
       );
       await abrirTela(tester);
       for (var i = 0; i < 20 && find.text('Na nuvem').evaluate().isEmpty; i++) {
@@ -358,7 +358,7 @@ void main() {
 
     testWidgets('foto trocada no mesmo arquivo não mostra a versão antiga da memória', (tester) async {
       await tester.runAsync(
-        () => pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400)),
+        () => pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400)),
       );
       await abrirTela(tester);
       Future<void> esperarImagem() async {
@@ -371,7 +371,7 @@ void main() {
       await esperarImagem();
       final antes = chave();
       await tester.runAsync(
-        () => pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 320, altura: 400)),
+        () => pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 320, altura: 400)),
       );
       await assentar(tester);
       await assentar(tester);
@@ -381,7 +381,7 @@ void main() {
     });
 
     testWidgets('enviar foto e comparar duas datas', (tester) async {
-      final passado = hojeSP().subtract(const Duration(days: 40));
+      final passado = hojeLocal().subtract(const Duration(days: 40));
       await tester.runAsync(() async {
         await pc.repo.salvarFoto(passado, AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
         await pc.repo.salvarFoto(passado, AnguloShape.costas, imagemTeste(largura: 300, altura: 400));
@@ -395,7 +395,7 @@ void main() {
       // Toque dentro do runAsync: a compressão roda num isolate de verdade.
       await tester.runAsync(() async {
         await tester.tap(find.bySemanticsLabel('Enviar foto de frente'));
-        final hoje = chaveData(hojeSP());
+        final hoje = chaveData(hojeLocal());
         for (var i = 0; i < 50 && !(await pc.repo.carregar()).any((k) => k.dia == hoje); i++) {
           await Future<void>.delayed(const Duration(milliseconds: 100));
         }
@@ -419,8 +419,8 @@ void main() {
 
     testWidgets('Conta › Fotos: padrão com aviso; sincronizar envia as que já existem', (tester) async {
       await tester.runAsync(() async {
-        await pc.repo.salvarFoto(hojeSP(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
-        await pc.repo.salvarFoto(hojeSP(), AnguloShape.costas, imagemTeste(largura: 300, altura: 400));
+        await pc.repo.salvarFoto(hojeLocal(), AnguloShape.frente, imagemTeste(largura: 300, altura: 400));
+        await pc.repo.salvarFoto(hojeLocal(), AnguloShape.costas, imagemTeste(largura: 300, altura: 400));
       });
       await abrir(tester, SecaoFotos(db: pc.db, repo: pc.repo));
       // A seção lê o modo e mede a pasta (disco de verdade) antes de aparecer.

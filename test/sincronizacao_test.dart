@@ -150,8 +150,8 @@ void main() {
     await sync(celular).sincronizar();
 
     final cardio = (await HabitosRepo(pc).carregar()).habitos.firstWhere((h) => h.nome == 'Cardio');
-    await HabitosRepo(pc).alternar(cardio.id, hojeSP(), true);
-    await HabitosRepo(celular).alternar(cardio.id, hojeSP(), true);
+    await HabitosRepo(pc).alternar(cardio.id, hojeLocal(), true);
+    await HabitosRepo(celular).alternar(cardio.id, hojeLocal(), true);
     await sync(pc).sincronizar();
     await sync(celular).sincronizar();
     await sync(pc).sincronizar();
@@ -159,7 +159,7 @@ void main() {
     for (final db in [pc, celular]) {
       final registros = await db.select(db.registrosHabito).get();
       expect(registros, hasLength(1));
-      expect((await HabitosRepo(db).carregar()).feito(cardio.id, hojeSP()), isTrue);
+      expect((await HabitosRepo(db).carregar()).feito(cardio.id, hojeLocal()), isTrue);
     }
   });
 
@@ -201,7 +201,7 @@ void main() {
     // do mesmo dia também.
     Future<void> criarDados(BancoAurora db) async {
       await AutomacoesRepo(db).garantirModelos();
-      await SaudeRepo(db).salvarMedidas(hojeSP(), [(tipo: 'peso', valor: 80, unidade: 'kg')]);
+      await SaudeRepo(db).salvarMedidas(hojeLocal(), [(tipo: 'peso', valor: 80, unidade: 'kg')]);
     }
 
     Future<void> sincronizarComo(ServidorFalso s, BancoAurora db, String conta) async {

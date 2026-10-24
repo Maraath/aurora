@@ -22,7 +22,7 @@ Future<void> abrirFormRegistro(BuildContext context,
       repo: repo,
       dia: dia,
       alimentos: alimentos,
-      refeicao: refeicao ?? Refeicao.pelaHora(agoraSP().hour),
+      refeicao: refeicao ?? Refeicao.pelaHora(agoraLocal().hour),
     ),
   );
 }

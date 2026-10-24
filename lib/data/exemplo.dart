@@ -31,7 +31,7 @@ Future<void> semearExemplo(BancoAurora db) async {
 Future<void> _etapa4(BancoAurora db) async {
   if (await db.preferencia('exemplo_v4') != null) return;
   final saude = SaudeRepo(db);
-  final hoje = hojeSP();
+  final hoje = hojeLocal();
   DateTime antes(int dias) => hoje.subtract(Duration(days: dias));
 
   await db.transaction(() async {
@@ -59,7 +59,7 @@ Future<void> _etapa4(BancoAurora db) async {
     final triceps = await saude.exercicioPorNome('Tríceps na corda');
     await saude.registrarSessao(
       treinoId: a,
-      inicio: instanteSP(antes(3), 19),
+      inicio: instanteLocal(antes(3), 19),
       series: [
         for (var n = 1; n <= 4; n++) (exercicioId: supino, numero: n, repeticoes: 10, cargaKg: 37.5),
         for (var n = 1; n <= 3; n++)
@@ -84,9 +84,9 @@ Future<void> _etapa4(BancoAurora db) async {
 /// Fase 2: lembretes do protótipo e uma tarefa recorrente.
 Future<void> _etapa2(BancoAurora db) async {
   if (await db.preferencia('exemplo_v2') != null) return;
-  final hoje = hojeSP();
+  final hoje = hojeLocal();
   DateTime dia(int deslocamento, int hora) =>
-      instanteSP(hoje.add(Duration(days: deslocamento)), hora);
+      instanteLocal(hoje.add(Duration(days: deslocamento)), hora);
   // Próxima data (a partir de hoje) que cai no dia da semana pedido (1 = segunda).
   DateTime proximo(int diaSemana, int hora) =>
       dia((diaSemana - hoje.weekday) % 7, hora);
@@ -104,7 +104,7 @@ Future<void> _etapa2(BancoAurora db) async {
             regraRepeticao: const Value('FREQ=WEEKLY;BYDAY=MO,WE,FR')),
         LembretesCompanion.insert(
             texto: 'Pagar iCloud e Spotify',
-            quando: instanteSP(DateTime(hoje.year, hoje.month, 9), 9),
+            quando: instanteLocal(DateTime(hoje.year, hoje.month, 9), 9),
             regraRepeticao: const Value('FREQ=MONTHLY;BYMONTHDAY=9')),
         LembretesCompanion.insert(
             texto: 'Entregar documentos do estágio', quando: dia(5, 14)),
@@ -125,10 +125,10 @@ Future<void> _etapa2(BancoAurora db) async {
 Future<void> _etapa1(BancoAurora db) async {
   if (await db.preferencia('exemplo_semeado') != null) return;
 
-  final agora = agoraSP();
-  final hoje = diaSP(agora.year, agora.month, agora.day);
+  final agora = agoraLocal();
+  final hoje = diaLocal(agora.year, agora.month, agora.day);
   DateTime dia(int deslocamento, [int hora = 0, int minuto = 0]) =>
-      diaSP(hoje.year, hoje.month, hoje.day + deslocamento, hora, minuto);
+      diaLocal(hoje.year, hoje.month, hoje.day + deslocamento, hora, minuto);
 
   await db.transaction(() async {
     final meta = await db.into(db.metas).insertReturning(MetasCompanion.insert(
@@ -137,7 +137,7 @@ Future<void> _etapa1(BancoAurora db) async {
           valorAtual: 74,
           valorAlvo: 80,
           unidade: const Value('kg'),
-          dataAlvo: Value(diaSP(hoje.year, 12, 31)),
+          dataAlvo: Value(diaLocal(hoje.year, 12, 31)),
         ));
 
     await db.batch((b) {

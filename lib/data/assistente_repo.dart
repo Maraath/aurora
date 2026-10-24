@@ -164,8 +164,8 @@ class AssistenteRepo {
   Future<void> enviar(String texto) async {
     final limpo = texto.trim();
     if (limpo.isEmpty) return;
-    final agora = agoraSP();
-    final hoje = dataSP(agora);
+    final agora = agoraLocal();
+    final hoje = dataLocal(agora);
     var comando = interpretar(limpo, hoje: hoje, agora: agora);
     // Com a IA conectada, os resumos vão para ela: resposta conversada e
     // personalizada em vez do texto fixo (que continua valendo offline).
@@ -415,7 +415,7 @@ class AssistenteRepo {
       case CmdDinheiro():
         final financas = FinancasRepo(db);
         final q = await financas.carregar();
-        final instante = c.dia == hoje ? DateTime.now() : instanteSP(c.dia, 12);
+        final instante = c.dia == hoje ? DateTime.now() : instanteLocal(c.dia, 12);
         final id = await financas.salvar(TransacoesCompanion.insert(
           descricao: c.descricao,
           valorCentavos: c.centavos,
@@ -438,7 +438,7 @@ class AssistenteRepo {
       case CmdLembrete():
         final l = await db.into(db.lembretes).insertReturning(LembretesCompanion.insert(
               texto: c.texto,
-              quando: instanteSP(c.dia, c.hora, c.minuto),
+              quando: instanteLocal(c.dia, c.hora, c.minuto),
               regraRepeticao: Value(c.regra?.rrule),
             ));
         final quando = c.regra != null
@@ -448,7 +448,7 @@ class AssistenteRepo {
             itemTipo: 'lembrete', itemId: l.id);
 
       case CmdTarefa():
-        final prazo = c.dia == null ? null : instanteSP(c.dia!, c.hora ?? 0, c.minuto);
+        final prazo = c.dia == null ? null : instanteLocal(c.dia!, c.hora ?? 0, c.minuto);
         final id = await TarefasRepo(db).salvar(
           TarefasCompanion.insert(
             titulo: c.titulo,

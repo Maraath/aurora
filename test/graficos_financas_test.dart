@@ -28,7 +28,7 @@ void main() {
 
   test('gasto por dia: soma o mês e prevê os dias que faltam', () async {
     final q = await FinancasRepo(db).carregar();
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final mes = DateTime(hoje.year, hoje.month, 1);
     final g = gastoPorDia(q, mes, hoje);
     expect(g.pago.length, DateTime(mes.year, mes.month + 1, 0).day);
@@ -45,7 +45,7 @@ void main() {
 
   test('fluxo do dinheiro: entradas e saídas fecham com a sobra', () async {
     final q = await FinancasRepo(db).carregar();
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     for (final previstos in [false, true]) {
       final f = fluxoDoDinheiro(q, hoje, comPrevistos: previstos);
       final entra = f.origens.fold(0, (s, x) => s + x.centavos);
@@ -60,7 +60,7 @@ void main() {
 
   test('velas do saldo: cada mês abre onde o anterior fechou e termina no saldo de hoje', () async {
     final q = await FinancasRepo(db).carregar();
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final velas = velasDoSaldo(q, hoje, hoje);
     expect(velas, hasLength(6));
     for (var i = 1; i < velas.length; i++) {
@@ -82,7 +82,7 @@ void main() {
 
   test('rigidez, categorias no tempo e mapa de calor batem com o gasto', () async {
     final q = await FinancasRepo(db).carregar();
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final r = rigidez(q, hoje);
     expect(r.last.totalCentavos, q.mes(hoje).saiuCentavos);
     final ct = categoriasNoTempo(q, hoje, maxCategorias: 2);

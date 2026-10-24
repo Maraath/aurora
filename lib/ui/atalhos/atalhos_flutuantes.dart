@@ -652,7 +652,7 @@ class _PainelHabitos extends StatelessWidget {
     final c = context.cores;
     final db = AuroraEscopo.de(context).db;
     final repo = HabitosRepo(db);
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     return Padding(
       padding: const EdgeInsets.all(14),
       child: StreamBuilder<QuadroHabitos>(

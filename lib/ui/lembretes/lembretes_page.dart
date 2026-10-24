@@ -58,10 +58,10 @@ class _LembretesPageState extends State<LembretesPage> {
 
   Widget _conteudo(BuildContext context, QuadroLembretes q) {
     final c = context.cores;
-    final agora = agoraSP();
-    final hoje = dataSP(agora);
-    final amanha = instanteSP(hoje.add(const Duration(days: 1)));
-    final fimDaSemana = instanteSP(hoje.add(Duration(days: 8 - hoje.weekday)));
+    final agora = agoraLocal();
+    final hoje = dataLocal(agora);
+    final amanha = instanteLocal(hoje.add(const Duration(days: 1)));
+    final fimDaSemana = instanteLocal(hoje.add(Duration(days: 8 - hoje.weekday)));
     final aSeguir = q.aSeguir;
 
     // Próximos: ativos por data; depois os desligados e os que já passaram.
@@ -157,7 +157,7 @@ class _LembretesPageState extends State<LembretesPage> {
   }
 
   String _quando(DateTime instante, DateTime hoje) {
-    final d = emSP(instante);
+    final d = emLocal(instante);
     final rel = diaRelativo(DateTime(d.year, d.month, d.day), hoje);
     return '${rel[0].toUpperCase()}${rel.substring(1)} às ${hora(d)}';
   }
@@ -181,7 +181,7 @@ class _LinhaLembrete extends StatelessWidget {
     final c = context.cores;
     final l = item.lembrete;
     final ligado = l.ativo;
-    final momento = emSP(item.proxima ?? l.quando);
+    final momento = emLocal(item.proxima ?? l.quando);
     final dia = item.proxima == null
         ? 'PASSOU'
         : rotuloDiaLembrete(DateTime(momento.year, momento.month, momento.day), hoje);

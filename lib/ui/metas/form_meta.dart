@@ -31,7 +31,7 @@ class _FormMetaState extends State<_FormMeta> {
   late String _unidade;
   DateTime? _data;
   String? _erro;
-  final _hoje = hojeSP();
+  final _hoje = hojeLocal();
 
   bool get _outraUnidade => !unidadesMeta.contains(_unidade);
   String get _unidadeFinal => _outraUnidade ? _outra.text.trim() : _unidade;
@@ -45,7 +45,7 @@ class _FormMetaState extends State<_FormMeta> {
     _outra = TextEditingController(text: _outraUnidade ? _unidade : '');
     _atual = TextEditingController(text: m == null ? '' : valorParaCampo(m.valorAtual, m.unidade));
     _alvo = TextEditingController(text: m == null ? '' : valorParaCampo(m.valorAlvo, m.unidade));
-    _data = m?.dataAlvo == null ? null : dataSP(m!.dataAlvo!);
+    _data = m?.dataAlvo == null ? null : dataLocal(m!.dataAlvo!);
   }
 
   @override
@@ -90,7 +90,7 @@ class _FormMetaState extends State<_FormMeta> {
       return;
     }
     final m = widget.meta;
-    final dataAlvo = _data == null ? null : instanteSP(_data!);
+    final dataAlvo = _data == null ? null : instanteLocal(_data!);
     if (m == null) {
       await widget.repo.salvar(MetasCompanion.insert(
         nome: nome,

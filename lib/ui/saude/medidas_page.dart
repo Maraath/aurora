@@ -53,7 +53,7 @@ class _MedidasPageState extends State<MedidasPage> {
     final tipos = q.tiposMedida;
     final tipo = tipos.contains(_tipo) ? _tipo! : tipos.firstOrNull;
     final lista = tipo == null ? const <Medida>[] : q.medidas[tipo]!;
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

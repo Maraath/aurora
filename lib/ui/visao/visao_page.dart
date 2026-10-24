@@ -62,7 +62,7 @@ class _Conteudo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final agora = agoraSP();
+    final agora = agoraLocal();
     final data = DateFormat("EEEE, d 'de' MMMM", 'pt_BR').format(agora);
     final feitos = resumo.linha.where((i) => i.feito).length;
 
@@ -113,7 +113,7 @@ class _Conteudo extends StatelessWidget {
           ItemFoco(
             o.tarefa.titulo,
             o.momento != null && o.horario != null
-                ? 'Hoje às ${hora(emSP(o.momento!))} · Tarefas'
+                ? 'Hoje às ${hora(emLocal(o.momento!))} · Tarefas'
                 : 'Para hoje · Tarefas',
           ),
       ];
@@ -246,7 +246,7 @@ class _LinhaDoDia extends StatelessWidget {
         child: Row(children: [
           SizedBox(
             width: 52,
-            child: Text(item.hora == null ? 'Dia' : hora(emSP(item.hora!)),
+            child: Text(item.hora == null ? 'Dia' : hora(emLocal(item.hora!)),
                 style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
           ),
           // Ícone neutro; só o "feito" ganha cor.
@@ -377,7 +377,7 @@ class _Panorama extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     final meta = resumo.meta;
-    final agora = agoraSP();
+    final agora = agoraLocal();
 
     final cartoes = <Widget>[
       _CartaoNumero(
@@ -428,7 +428,7 @@ class _Panorama extends StatelessWidget {
     final falta = (m.valorAlvo - m.valorAtual).abs();
     final partes = [
       falta == 0 ? 'meta alcançada' : 'faltam ${valorMeta(falta, m.unidade)}',
-      if (m.dataAlvo != null) diaMesCurto(emSP(m.dataAlvo!)),
+      if (m.dataAlvo != null) diaMesCurto(emLocal(m.dataAlvo!)),
     ];
     return partes.join(' · ');
   }

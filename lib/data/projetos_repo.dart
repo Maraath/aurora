@@ -44,8 +44,8 @@ class ProgressoProjeto {
   final Meta? meta;
   final DateTime hoje;
 
-  DateTime get inicio => dataSP(projeto.inicio);
-  DateTime get fim => dataSP(projeto.fim);
+  DateTime get inicio => dataLocal(projeto.inicio);
+  DateTime get fim => dataLocal(projeto.fim);
 
   /// Etapas que contam no progresso (tarefas recorrentes são "rotina").
   List<EtapaProjeto> get contaveis => etapas.where((e) => !e.rotina).toList();
@@ -77,7 +77,7 @@ EstadoProjeto estadoProjeto(Projeto p, List<EtapaProjeto> etapas, DateTime hoje)
   final feitas = contaveis.where((e) => e.feita).length;
   if (contaveis.isNotEmpty && feitas == contaveis.length) return EstadoProjeto.concluido;
   if (etapas.any((e) => e.atrasada)) return EstadoProjeto.emRisco;
-  final inicio = dataSP(p.inicio), fim = dataSP(p.fim);
+  final inicio = dataLocal(p.inicio), fim = dataLocal(p.fim);
   if (hoje.isAfter(fim)) return EstadoProjeto.emRisco;
   final dias = diasEntre(inicio, fim);
   final tempo = dias <= 0 ? 1.0 : (diasEntre(inicio, hoje) / dias).clamp(0.0, 1.0);
@@ -94,7 +94,7 @@ String detalheEtapa(EtapaProjeto e, DateTime hoje) {
     final regra = Regra.ler(e.tarefa.regraRepeticao);
     return 'rotina · ${regra?.descricao.toLowerCase() ?? ''}';
   }
-  if (e.feita) return 'feita ${diaRelativo(dataSP(e.tarefa.feitaEm!), hoje)}';
+  if (e.feita) return 'feita ${diaRelativo(dataLocal(e.tarefa.feitaEm!), hoje)}';
   if (o.dia == null) return 'sem data';
   if (e.atrasada) {
     final dias = diasEntre(o.dia!, hoje);
@@ -113,7 +113,7 @@ class ProjetosRepo {
 
   /// Ativos primeiro (pelo fim), depois concluídos e arquivados.
   Future<List<ProgressoProjeto>> carregar() async {
-    final hoje = hojeSP();
+    final hoje = hojeLocal();
     final projetos = await (db.select(db.projetos)..where((p) => p.apagadoEm.isNull())).get();
     final metas = {for (final m in await db.select(db.metas).get()) m.id: m};
     final quadro = await TarefasRepo(db).carregar();
@@ -126,7 +126,7 @@ class ProjetosRepo {
       final atual = quadro.atuais.where((o) => o.tarefa.id == t.id).firstOrNull ??
           OcorrenciaTarefa(
             tarefa: t,
-            dia: t.prazo == null ? null : dataSP(t.prazo!),
+            dia: t.prazo == null ? null : dataLocal(t.prazo!),
             feita: t.feitaEm != null,
             atrasada: false,
           );
@@ -181,7 +181,7 @@ class ProjetosRepo {
   Future<String> novaEtapa(String projetoId, String titulo, {DateTime? dia}) => TarefasRepo(db).salvar(
         TarefasCompanion.insert(
           titulo: titulo,
-          prazo: Value(dia == null ? null : instanteSP(dia)),
+          prazo: Value(dia == null ? null : instanteLocal(dia)),
           projetoId: Value(projetoId),
         ),
         avisar: false,

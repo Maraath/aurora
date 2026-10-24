@@ -309,7 +309,7 @@ class _ContaPageState extends State<ContaPage> {
       _ => (
           ultima == null
               ? 'Ainda não sincronizou.'
-              : 'Sincronizado ${diaRelativo(DateTime(ultima.year, ultima.month, ultima.day), hojeSP())} às ${hora(ultima)}.',
+              : 'Sincronizado ${diaRelativo(DateTime(ultima.year, ultima.month, ultima.day), hojeLocal())} às ${hora(ultima)}.',
           c.muted
         ),
     };

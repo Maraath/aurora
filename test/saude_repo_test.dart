@@ -100,7 +100,7 @@ void main() {
     );
     q = await repo.carregar();
     expect(q.treinos.first.exercicios.first.sugestao.cargaKg, 42.5);
-    expect(q.feitoEm(a.treino.id, hojeSP()), isTrue);
+    expect(q.feitoEm(a.treino.id, hojeLocal()), isTrue);
     // Crucifixo não entrou nesta sessão: continua usando a anterior.
     expect(q.treinos.first.exercicios[1].sugestao.cargaKg, 14);
   });
@@ -125,11 +125,11 @@ void main() {
     expect(q.ultima('Peso')?.valor, 74);
     expect(q.variacao('Peso'), closeTo(0.2, 0.001));
 
-    await repo.salvarMedidas(hojeSP(), [
+    await repo.salvarMedidas(hojeLocal(), [
       (tipo: 'Peso', valor: 74.6, unidade: 'kg'),
       (tipo: 'Panturrilha', valor: 38, unidade: 'cm'),
     ]);
-    await repo.salvarMedidas(hojeSP(), [(tipo: 'Peso', valor: 74.4, unidade: 'kg')]);
+    await repo.salvarMedidas(hojeLocal(), [(tipo: 'Peso', valor: 74.4, unidade: 'kg')]);
     q = await repo.carregar();
     expect(q.medidas['Peso'], hasLength(4));
     expect(q.ultima('Peso')?.valor, 74.4);
