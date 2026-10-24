@@ -56,6 +56,17 @@ Versão atual: **1.10.2** · ~54 mil linhas de Dart · 260 testes automatizados
 Flutter · Dart · Drift (SQLite) · Supabase (Auth, Postgres, Storage, Edge Functions) · TypeScript/Deno ·
 Vercel AI SDK · Claude e Gemini · C++ (runner do Windows) · PowerShell (scripts de build e publicação)
 
+## Metodologia de desenvolvimento
+
+O Aurora é um projeto meu, do início ao fim. Ele foi construído com práticas de **AI-Assisted Development**, usando
+o [Claude Code](https://claude.com/claude-code) (Anthropic) como ferramenta de *pair programming* para acelerar a
+escrita do código. A arquitetura, as decisões de design, as regras de negócio, a validação de cada funcionalidade e
+os testes foram definidos e conferidos por mim. Por isso os commits trazem o Claude como coautor
+(`Co-Authored-By`): ele foi a ferramenta, e a autoria e as decisões do projeto são minhas.
+
+> **Development methodology:** built with AI-assisted development, using Claude Code as a pair-programming tool to
+> speed up coding. Architecture, design decisions, business rules, validation and tests were defined by me.
+
 ## Estrutura
 
 | Pasta | Conteúdo |
