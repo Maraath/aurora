@@ -1,60 +1,232 @@
+<div align="center">
+
+<img src="assets/icone/aurora.png" alt="Ícone do Aurora" width="96">
+
 # Aurora
 
-App pessoal de rotina com assistente de IA: tarefas, hábitos, treino, alimentação, finanças, metas, projetos e
-lembretes num lugar só. Um código Flutter para **Windows, Android, iOS e web (PWA)**, que funciona **100% offline**
-e sincroniza com a nuvem quando há internet.
+**Sua rotina inteira num app só, com uma assistente de IA que entende o que você fala.**
 
-> **In English:** Aurora is a personal routine app (tasks, habits, workouts, nutrition, finances, goals, reminders)
-> with an AI assistant that can create and edit your data through tool calls. One Flutter codebase for Windows,
-> Android, iOS and web; offline-first with SQLite (Drift), synced to Supabase (Postgres + Row Level Security).
-> Source-available under PolyForm Noncommercial 1.0.0.
+Tarefas · Hábitos · Treino · Alimentação · Finanças · Metas · Projetos · Lembretes
 
-Versão atual: **1.10.2** · ~54 mil linhas de Dart · 260 testes automatizados
+![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-3-0175C2?logo=dart&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3FCF8E?logo=supabase&logoColor=white)
+![TypeScript](https://img.shields.io/badge/Edge%20Functions-TypeScript-3178C6?logo=typescript&logoColor=white)
+![Plataformas](https://img.shields.io/badge/Windows%20%C2%B7%20Android%20%C2%B7%20iOS%20%C2%B7%20Web-5CF0B0)
+![Testes](https://img.shields.io/badge/testes-260%20passando-42E3C8)
+![Licença](https://img.shields.io/badge/licen%C3%A7a-PolyForm%20Noncommercial-9D8CFF)
 
-## O que o app faz
+<img src="docs/imagens/visao.png" alt="Tela Visão do Aurora no Windows" width="900">
 
-- **Visão**: o dia em 5 blocos (em foco, linha do dia, semana, painel das áreas e insights).
-- **Tarefas, hábitos e lembretes** com recorrência por regra (nunca uma linha por dia), calendário, avisos locais e
-  despertador de tela cheia no Android.
-- **Finanças** em centavos: lançamentos, contas fixas e parceladas, e um painel com 8 gráficos personalizáveis
-  (Sankey do fluxo do dinheiro, mapa de calor, trajetória com projeção, categorias no tempo...).
-- **Saúde**: ficha de treino com 470 exercícios animados, medidas, fotos de evolução e dieta com a tabela TACO.
-- **Metas e projetos**, com análises de produtividade por área.
-- **Assistente com IA** em texto e voz: entende pedidos como "gastei 35 no mercado" ou "me lembra de pagar a luz
-  amanhã às 9" e cria, edita ou exclui os dados pelo app, com "Desfazer" e confirmação antes de apagar.
-  Sem internet, comandos rápidos por regras continuam funcionando.
-- **Busca global** (Ctrl+K), atalhos flutuantes, bloqueio por PIN ou biometria, tema escuro "céu estrelado" e claro.
+</div>
+
+---
+
+## Sumário
+
+- [Sobre o projeto](#sobre-o-projeto)
+- [Galeria](#galeria)
+- [Funcionalidades](#funcionalidades)
+- [Arquitetura](#arquitetura)
+- [Decisões técnicas](#decisões-técnicas)
+- [Qualidade](#qualidade)
+- [Tecnologias](#tecnologias)
+- [Estrutura do código](#estrutura-do-código)
+- [Como rodar](#como-rodar)
+- [Metodologia de desenvolvimento](#metodologia-de-desenvolvimento)
+- [Licença](#licença)
+
+## Sobre o projeto
+
+O Aurora junta numa tela só o que normalmente fica espalhado em vários apps: tarefas, gastos, treino, hábitos e
+metas. Por cima de tudo há uma assistente, a **Aurora**, que entende pedidos em linguagem natural: *"gastei 35 no mercado"*, *"me lembra de pagar a luz amanhã às 9"* ou
+*"como estão meus gastos este mês?"*.
+
+É um app completo, publicado e em uso: **um único código Flutter** roda no **Windows, Android, iOS e web (PWA)**,
+funciona **100% offline** e sincroniza entre aparelhos quando há internet. Tem instalador próprio, atualização
+automática e um servidor com autenticação, banco protegido por usuário e IA.
+
+| Versão atual | Código | Testes | Plataformas |
+| :---: | :---: | :---: | :---: |
+| **1.10.2** | ~54 mil linhas de Dart | **260** automatizados | Windows · Android · iOS · Web |
+
+> **In English:** Aurora is a personal routine app (tasks, habits, workouts, nutrition, finances, goals, projects,
+> reminders) with an AI assistant that creates and edits your data through tool calls. One Flutter codebase for
+> Windows, Android, iOS and web; offline-first with SQLite (Drift), synced to Supabase (Postgres + Row Level
+> Security); AI served by a Deno Edge Function with an automatic model fallback chain. Source-available under
+> PolyForm Noncommercial 1.0.0.
+
+## Galeria
+
+> As imagens usam dados de demonstração gerados por [`tool/capturas`](tool/capturas/demonstracao.dart).
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/imagens/assistente.png" alt="Assistente"><br><b>Assistente</b>: pedidos em linguagem natural viram lançamentos, lembretes e respostas com os seus dados.</td>
+    <td width="50%"><img src="docs/imagens/financas-fluxo.png" alt="Fluxo do dinheiro"><br><b>Fluxo do dinheiro</b>: diagrama de Sankey de onde o dinheiro veio e para onde foi.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/imagens/financas-categorias.png" alt="Despesas por categoria"><br><b>Despesas e gasto por dia</b>: cada gráfico troca de tipo (rosca, pizza, barras, blocos, radar).</td>
+    <td><img src="docs/imagens/financas-analise.png" alt="Análise financeira"><br><b>Análise</b>: trajetória do saldo com projeção, categorias no tempo e leituras automáticas.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/imagens/habitos-analise.png" alt="Análise de hábitos"><br><b>Hábitos</b>: constância dos últimos 30 dias, sequências e recordes.</td>
+    <td><img src="docs/imagens/saude-medidas.png" alt="Medidas"><br><b>Saúde</b>: ficha de treino com carga sugerida, medidas, fotos de evolução e dieta.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/imagens/projetos.png" alt="Projetos"><br><b>Projetos</b>: linha do tempo e etapas que também são tarefas.</td>
+    <td><img src="docs/imagens/tema-claro.png" alt="Tema claro"><br><b>Tema claro</b>: a mesma paleta de aurora boreal, em versão diurna.</td>
+  </tr>
+</table>
+
+<div align="center">
+  <img src="docs/imagens/celular.png" alt="Aurora no celular" width="900"><br>
+  <sub><b>No celular</b>: barra inferior, cabeçalho com busca e assistente, e as mesmas telas adaptadas.</sub>
+</div>
+
+## Funcionalidades
+
+| Área | O que faz |
+| --- | --- |
+| 🌌 **Visão** | O dia em cinco blocos: em foco agora, linha do dia, semana, painel das áreas e insights. |
+| ✅ **Tarefas** | Prioridades, prazos com hora, recorrência, calendário e análise de produtividade. |
+| 🔁 **Hábitos** | Marcar, por duração ou por quantidade; dias da semana, sequências e constância. |
+| 💪 **Saúde** | Ficha de treino com 470 exercícios animados, carga sugerida, medidas, fotos de evolução e dieta com a tabela TACO. |
+| 💰 **Finanças** | Lançamentos, contas fixas e parceladas, várias contas e 8 gráficos personalizáveis. |
+| 🎯 **Metas e projetos** | Progresso, ritmo necessário até a data e etapas ligadas a tarefas. |
+| 🔔 **Lembretes** | Avisos locais, Web Push no PWA e despertador de tela cheia no Android. |
+| ✨ **Assistente** | Texto e voz; cria, edita e exclui dados com confirmação e "Desfazer"; sem internet, comandos rápidos por regras. |
+| 🔎 **Extras** | Busca global (Ctrl+K), atalhos flutuantes, bloqueio por PIN ou biometria, tema escuro e claro. |
 
 ## Arquitetura
 
-```
-┌───────────────────────── App Flutter ─────────────────────────┐
-│ UI (lib/ui)  →  repositórios (lib/data)  →  SQLite local (Drift) │
-│                         │                                       │
-│      sincronização incremental  ·  ferramentas da IA no aparelho │
-└──────────────┬──────────────────────────────┬───────────────────┘
-               │                              │ stream SSE
-     Supabase Postgres + RLS          Edge Function "assistente"
-     (dados por usuário)              (Vercel AI SDK, cadeia de modelos)
+```mermaid
+flowchart LR
+    subgraph App["App Flutter (Windows · Android · iOS · Web)"]
+        UI["UI<br/>lib/ui"] --> Repo["Repositórios<br/>lib/data"]
+        Repo --> DB[("SQLite local<br/>Drift")]
+        IA["Cliente da IA<br/>AssistenteRepo"] --> Ferr["Ferramentas<br/>no aparelho"]
+        Ferr --> Repo
+    end
+    Repo <-->|"sincronização incremental"| PG[("Supabase Postgres<br/>RLS por usuário")]
+    IA <-->|"stream SSE"| EF["Edge Function 'assistente'<br/>Deno + Vercel AI SDK"]
+    EF --> Modelos["Cadeia de modelos<br/>Claude → Gemini → ..."]
 ```
 
-- **Offline-first**: o banco local é a fonte da verdade; a sincronização envia e recebe mudanças por
-  `servidor_em`, com chave `(user_id, id)` e Row Level Security em todas as tabelas.
-- **IA sem chave no app**: o app conversa com uma Edge Function (Deno + Vercel AI SDK) que escolhe o modelo numa
-  cadeia (Claude e vários Gemini). Se um modelo esgota a cota, falha ou demora, o próximo assume sem o app perceber.
-  As ferramentas (criar lançamento, editar tarefa, consultar dados...) **rodam no aparelho**, sobre o banco local.
-- **Protocolo de UI da AI SDK** implementado em Dart (o papel do `useChat` é do `AssistenteRepo`): resposta em
-  stream, várias voltas de ferramentas, retomada automática e limite diário por conta.
-- **Fotos privadas**: compressão em WebP sem metadados, balde privado com URL assinada e opção "só neste aparelho".
-- **Integração nativa**: barra de título própria no Windows (C++ no runner, snap layouts do Windows 11), voz SAPI,
-  Web Push no PWA do iPhone, alarmes exatos no Android.
-- **Distribuição**: instalador Inno Setup e APK por arquitetura com atualização automática dentro do app; PWA no
-  Cloudflare Pages com Service Worker próprio.
+1. **O banco local é a fonte da verdade.** Toda tela lê e grava no SQLite do aparelho; a rede nunca bloqueia o uso.
+2. **A sincronização** envia o que mudou e baixa o que mudou no servidor desde a última vez (cursor por
+   `servidor_em`), com a regra "última edição vence".
+3. **A IA não executa nada no servidor.** A Edge Function só conversa com o modelo; quando ele pede uma ferramenta
+   (criar lançamento, editar tarefa, consultar dados), o pedido volta ao app, que executa no banco local e devolve o
+   resultado. Isso mantém os dados no aparelho e o "Desfazer" funcionando.
+
+## Decisões técnicas
+
+<details>
+<summary><b>Offline-first com Drift</b></summary>
+
+O app precisava funcionar no metrô, na academia e sem sinal. Por isso o SQLite (via Drift, com tipos gerados e
+migrações versionadas) é a fonte da verdade, e a nuvem é só um espelho. Na web, o mesmo banco roda em WebAssembly
+com IndexedDB.
+</details>
+
+<details>
+<summary><b>Recorrência como regra, não como linhas</b></summary>
+
+Tarefas, hábitos, contas fixas e lembretes recorrentes guardam uma **regra** (no estilo RRULE do calendário) que
+gera as ocorrências na hora. Só o que foi feito vira linha. Isso evita a pilha de tarefas atrasadas repetidas e
+mantém o banco pequeno.
+</details>
+
+<details>
+<summary><b>Dinheiro em centavos e datas num fuso fixo</b></summary>
+
+Valores são inteiros em centavos (sem erro de arredondamento de ponto flutuante) e todas as datas são interpretadas
+no fuso America/Sao_Paulo, independentemente do fuso do aparelho.
+</details>
+
+<details>
+<summary><b>Segurança no servidor</b></summary>
+
+Todas as tabelas têm Row Level Security por usuário e permissões mínimas por papel (`authenticated` e
+`service_role`). A chave da IA nunca fica no app: vive nos segredos da Edge Function. Fotos do usuário ficam num
+balde privado, acessadas só por URL assinada de 1 hora, e são comprimidas em WebP sem metadados (EXIF) antes de
+sair do aparelho.
+</details>
+
+<details>
+<summary><b>IA resiliente com cadeia de modelos</b></summary>
+
+A Edge Function tenta os modelos em ordem. Se um responde com limite de cota, erro ou demora a começar, o próximo
+assume **antes** de qualquer texto chegar ao app, então a pessoa nem percebe a troca. Modelos lentos são chamados em
+paralelo com o próximo e fica o primeiro que responder. O protocolo de streaming é o mesmo do `useChat` da Vercel AI
+SDK, implementado em Dart.
+</details>
+
+<details>
+<summary><b>Integração nativa em cada plataforma</b></summary>
+
+- **Windows**: barra de título própria desenhada em Flutter, com o runner em C++ tratando `WM_NCHITTEST` para manter
+  arrastar, snap layouts do Windows 11 e duplo clique; voz pelo SAPI.
+- **Android**: alarmes exatos com tela cheia (despertador) e APK por arquitetura.
+- **Web/iPhone**: PWA com Service Worker próprio, área segura do iOS e Web Push agendado pelo servidor (pg_cron).
+- **Distribuição**: instalador Inno Setup e atualização automática dentro do app, com verificação de SHA-256.
+</details>
+
+## Qualidade
+
+- **260 testes automatizados** (widgets e regras de negócio): recorrência, finanças, sincronização, assistente,
+  voz, gráficos, busca e mais.
+- `flutter analyze` sem nenhum aviso.
+- Migrações do servidor versionadas em [`supabase/migrations`](supabase/migrations), testadas num banco local antes
+  de ir para produção.
+- Backup semanal automático do banco do servidor.
+
+```bash
+flutter test      # roda os 260 testes
+flutter analyze   # análise estática
+```
 
 ## Tecnologias
 
-Flutter · Dart · Drift (SQLite) · Supabase (Auth, Postgres, Storage, Edge Functions) · TypeScript/Deno ·
-Vercel AI SDK · Claude e Gemini · C++ (runner do Windows) · PowerShell (scripts de build e publicação)
+| Camada | Tecnologias |
+| --- | --- |
+| App | Flutter, Dart, Drift (SQLite), fl_chart |
+| Servidor | Supabase (Auth, Postgres, Storage, Edge Functions), pg_cron |
+| IA | Vercel AI SDK, Claude (Anthropic), Gemini (Google), TypeScript/Deno |
+| Nativo | C++ (runner do Windows), Kotlin/Gradle (Android) |
+| Entrega | Inno Setup, GitHub Releases, Cloudflare Pages, scripts PowerShell |
+
+## Estrutura do código
+
+| Pasta | Conteúdo |
+| --- | --- |
+| [`lib/ui`](lib/ui) | telas e componentes (vidro, céu estrelado, menu em dock, gráficos) |
+| [`lib/data`](lib/data) | banco, repositórios, sincronização, análises e o cliente da IA ([`lib/data/ia`](lib/data/ia)) |
+| [`lib/core`](lib/core) | tema, notificações, bloqueio, atualização, efeitos |
+| [`supabase/functions`](supabase/functions) | Edge Functions: `assistente`, `avisos-push`, `excluir-conta` |
+| [`supabase/migrations`](supabase/migrations) | esquema do servidor, RLS e permissões |
+| [`test`](test) | testes de widgets e de regras |
+| [`tool`](tool) | scripts de ícone, publicação, backup, capturas e conversão de dados |
+| [`docs`](docs) | especificação, protótipo de referência e imagens |
+
+## Como rodar
+
+Pré-requisito: [Flutter](https://docs.flutter.dev/get-started/install) 3.47 ou mais novo.
+
+```bash
+flutter pub get
+dart run build_runner build
+flutter run -d windows
+```
+
+O app abre vazio e funciona offline. Para ver com os dados de demonstração das imagens, num banco separado:
+
+```bash
+flutter run -d windows -t tool/capturas/main.dart --dart-define=AURORA_BANCO=aurora_capturas
+```
+
+A conta, a sincronização e a assistente com IA usam o projeto Supabase do autor.
 
 ## Metodologia de desenvolvimento
 
@@ -66,29 +238,6 @@ os testes foram definidos e conferidos por mim. Por isso os commits trazem o Cla
 
 > **Development methodology:** built with AI-assisted development, using Claude Code as a pair-programming tool to
 > speed up coding. Architecture, design decisions, business rules, validation and tests were defined by me.
-
-## Estrutura
-
-| Pasta | Conteúdo |
-| --- | --- |
-| `lib/ui` | telas e componentes (vidro, céu estrelado, menu dock, gráficos) |
-| `lib/data` | banco, repositórios, sincronização, análises e o cliente da IA (`lib/data/ia`) |
-| `lib/core` | tema, notificações, bloqueio, atualização, efeitos |
-| `supabase/functions` | Edge Functions: `assistente`, `avisos-push`, `excluir-conta` |
-| `supabase/migrations` | esquema do servidor, RLS e permissões |
-| `test` | testes de widgets e de regras |
-| `tool` | scripts de ícone, publicação, backup e conversão de dados |
-| `docs` | especificação e protótipo de referência |
-
-## Rodar
-
-```bash
-flutter pub get
-dart run build_runner build
-flutter run -d windows
-```
-
-O app abre vazio e funciona offline. A conta, a sincronização e o assistente usam o projeto Supabase do autor.
 
 ## Licença
 
