@@ -250,7 +250,7 @@ void main() {
       await assentar(tester);
     }
 
-    testWidgets('computador: Nova nota › Lista, Mural e Lista', (tester) async {
+    testWidgets('computador: Nova nota › Lista abre ao lado do mural', (tester) async {
       await tester.runAsync(() => repo.criarNota(titulo: 'Ideias para o Aurora', texto: 'Pastas e áudio'));
       await abrir(tester, const Size(1400, 900));
       expect(find.text('Ideias para o Aurora'), findsOneWidget);
@@ -269,15 +269,11 @@ void main() {
       await assentar(tester);
       expect(find.text('Comprar café'), findsWidgets);
 
-      // Ver como Lista: pastas, notas e "Escolha uma nota".
-      await tester.tap(find.bySemanticsLabel('Ver como Lista'));
-      await assentar(tester);
-      expect(find.text('PASTAS'), findsOneWidget);
-      expect(find.text('Escolha uma nota ou crie uma nova.'), findsOneWidget);
+      // Só o mural de cartões: sem "Ver como".
+      expect(find.bySemanticsLabel('Ver como Lista'), findsNothing);
       await tester.tap(find.text('Ideias para o Aurora'));
       await assentar(tester);
-      expect(find.text('Escolha uma nota ou crie uma nova.'), findsNothing);
-      expect(await tester.runAsync(() => db.preferencia('anotacoes_vista')), 'lista');
+      expect(find.byTooltip('Fechar a nota'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     });

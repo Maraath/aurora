@@ -24,18 +24,7 @@ final pedidoNovaNota = ValueNotifier<TipoNota?>(null);
 /// Pedido da busca (Ctrl+K): abrir esta nota.
 final pedidoAbrirNota = ValueNotifier<String?>(null);
 
-/// Mural (cartões lado a lado) ou Lista (pastas, notas e a nota aberta em
-/// colunas). Fica na preferência `anotacoes_vista`, por aparelho.
-enum VistaNotas {
-  mural('Mural', Icons.dashboard_outlined),
-  lista('Lista', Icons.view_list_rounded);
-
-  const VistaNotas(this.rotulo, this.icone);
-  final String rotulo;
-  final IconData icone;
-}
-
-/// A partir desta largura a Lista mostra as três colunas e a nota abre ao lado.
+/// A partir desta largura a nota abre num painel ao lado do mural; abaixo, na tela toda.
 const larguraNotasLarga = 900.0;
 
 IconData iconeTipoNota(TipoNota t) => switch (t) {
@@ -81,7 +70,6 @@ class AnotacoesPage extends StatefulWidget {
 class _AnotacoesPageState extends State<AnotacoesPage> {
   AnotacoesRepo? _repo;
   Stream<QuadroNotas>? _quadro;
-  VistaNotas _vista = VistaNotas.mural;
   FiltroNotas _filtro = const TodasAsNotas();
   final _busca = TextEditingController();
   bool _buscaAberta = false;
@@ -97,9 +85,6 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
     final db = AuroraEscopo.de(context).db;
     _repo = widget.repo ?? AnotacoesRepo(db);
     _quadro = _repo!.observarQuadro();
-    db.preferencia('anotacoes_vista').then((v) {
-      if (mounted && v == VistaNotas.lista.name) setState(() => _vista = VistaNotas.lista);
-    });
     pedidoNovaNota.addListener(_atenderPedido);
     pedidoAbrirNota.addListener(_atenderPedido);
     HardwareKeyboard.instance.addHandler(_teclaNoMenu);
@@ -145,14 +130,6 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
   }
 
   bool get _larga => MediaQuery.sizeOf(context).width >= larguraNotasLarga;
-
-  void _trocarVista(VistaNotas v) {
-    setState(() {
-      _vista = v;
-      if (v == VistaNotas.mural) _aberta = null;
-    });
-    AuroraEscopo.de(context).db.salvarPreferencia('anotacoes_vista', v.name);
-  }
 
   String? get _pastaDoFiltro => switch (_filtro) {
     NaPasta(:final id) => id,
@@ -320,11 +297,7 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
           }
         }
         final larga = _larga;
-        final corpo = _vista == VistaNotas.lista && larga
-            ? _listaLarga(q, filtro, notas)
-            : _vista == VistaNotas.lista
-            ? _listaEstreita(q, filtro, notas)
-            : _mural(q, filtro, notas);
+        final corpo = _mural(q, filtro, notas);
         return CallbackShortcuts(
           bindings: {const SingleActivator(LogicalKeyboardKey.keyN, control: true): () => _nova(TipoNota.texto)},
           child: Column(
@@ -334,7 +307,7 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
               if (!larga && _buscaAberta) ...[const SizedBox(height: 12), _campoBusca(autofoco: true)],
               const SizedBox(height: 16),
               Expanded(
-                child: _vista == VistaNotas.mural && larga && _aberta != null
+                child: larga && _aberta != null
                     ? Stack(
                         children: [
                           Positioned.fill(child: corpo),
@@ -383,8 +356,6 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
         Flexible(
           child: Text('Anotações', style: sora(26), overflow: TextOverflow.ellipsis),
         ),
-        const SizedBox(width: 16),
-        _VerComo(atual: _vista, compacto: !larga, aoEscolher: _trocarVista),
         const Spacer(),
         if (larga)
           SizedBox(width: 260, child: _campoBusca())
@@ -561,188 +532,9 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
       ),
     );
   }
-
-  // ---------------------------------------------------------------- lista
-
-  Widget _listaLarga(QuadroNotas q, FiltroNotas filtro, List<NotaCompleta> notas) {
-    final c = context.cores;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          width: 220,
-          child: _painel(
-            _ColunaPastas(
-              quadro: q,
-              filtro: filtro,
-              aoEscolher: (f) => setState(() => _filtro = f),
-              aoNovaPasta: _novaPasta,
-              aoMenu: _menuPasta,
-            ),
-          ),
-        ),
-        const SizedBox(width: 14),
-        SizedBox(width: 340, child: _painel(_linhas(q, notas, padding: const EdgeInsets.all(12)))),
-        const SizedBox(width: 14),
-        Expanded(
-          child: _painel(
-            _aberta == null
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.sticky_note_2_outlined, size: 34, color: c.muted),
-                        const SizedBox(height: 8),
-                        Text('Escolha uma nota ou crie uma nova.', style: manrope(14, cor: c.muted)),
-                      ],
-                    ),
-                  )
-                : _editorAberto(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _listaEstreita(QuadroNotas q, FiltroNotas filtro, List<NotaCompleta> notas) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      _ChipsPastas(
-        quadro: q,
-        filtro: filtro,
-        aoEscolher: (f) => setState(() => _filtro = f),
-        aoNovaPasta: _novaPasta,
-        aoMenu: _menuPasta,
-      ),
-      const SizedBox(height: 12),
-      Expanded(child: notas.isEmpty ? _vazio(q) : _linhas(q, notas, cartoes: true)),
-    ],
-  );
-
-  /// Notas em linhas, com "Fixadas" em cima.
-  Widget _linhas(
-    QuadroNotas q,
-    List<NotaCompleta> notas, {
-    EdgeInsets padding = EdgeInsets.zero,
-    bool cartoes = false,
-  }) {
-    final hoje = hojeLocal();
-    if (notas.isEmpty && !cartoes) {
-      return Center(
-        child: Text('Nenhuma nota aqui.', style: manrope(14, cor: context.cores.muted)),
-      );
-    }
-    final fixadas = [
-      for (final n in notas)
-        if (n.nota.fixada) n,
-    ];
-    final outras = [
-      for (final n in notas)
-        if (!n.nota.fixada) n,
-    ];
-    Widget linha(NotaCompleta n) => _LinhaNota(
-      nota: n,
-      quando: quandoNota(n.nota.atualizadoEm, hoje),
-      selecionada: _larga && _aberta == n.id,
-      aoAbrir: () => _abrir(n.id),
-    );
-    Widget grupo(List<NotaCompleta> l) => cartoes
-        ? Cartao(
-            raio: 16,
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-            child: Column(children: [for (final n in l) linha(n)]),
-          )
-        : Column(children: [for (final n in l) linha(n)]);
-    return ListView(
-      padding: padding.copyWith(bottom: padding.bottom + 16),
-      children: [
-        if (fixadas.isNotEmpty) ...[const _RotuloGrupo(texto: 'Fixadas', fixadas: true), grupo(fixadas)],
-        if (outras.isNotEmpty) ...[if (fixadas.isNotEmpty) const _RotuloGrupo(texto: 'Outras'), grupo(outras)],
-      ],
-    );
-  }
 }
 
 // ==================================================================== peças
-
-class _VerComo extends StatelessWidget {
-  const _VerComo({required this.atual, required this.aoEscolher, this.compacto = false});
-  final VistaNotas atual;
-  final ValueChanged<VistaNotas> aoEscolher;
-  final bool compacto;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    final cantos = BorderRadius.circular(12);
-    final trilho = Padding(
-      padding: const EdgeInsets.all(3),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (!compacto)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text('Ver como', style: manrope(12, cor: c.muted)),
-            ),
-          for (final v in VistaNotas.values)
-            Semantics(
-              selected: v == atual,
-              button: true,
-              label: 'Ver como ${v.rotulo}',
-              child: Material(
-                type: MaterialType.transparency,
-                borderRadius: BorderRadius.circular(9),
-                clipBehavior: Clip.antiAlias,
-                child: Ink(
-                  decoration: v == atual
-                      ? BoxDecoration(
-                          borderRadius: BorderRadius.circular(9),
-                          gradient: LinearGradient(
-                            colors: [c.gradIni.withValues(alpha: 0.20), c.gradFim.withValues(alpha: 0.22)],
-                          ),
-                          border: Border.all(color: c.violeta.withValues(alpha: 0.45), width: 0.6),
-                        )
-                      : null,
-                  child: InkWell(
-                    onTap: () => aoEscolher(v),
-                    hoverColor: c.teal.withValues(alpha: 0.10),
-                    child: SizedBox(
-                      height: 36,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: ExcludeSemantics(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(v.icone, size: 16, color: v == atual ? c.text : c.muted),
-                              // Celular: só o ícone (o nome fica no leitor de tela).
-                              if (!compacto) ...[
-                                const SizedBox(width: 5),
-                                Text(
-                                  v.rotulo,
-                                  style: manrope(12, peso: FontWeight.w700, cor: v == atual ? c.text : c.muted),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-    if (Theme.of(context).brightness == Brightness.dark) return Vidro(raio: cantos, cor: c.surface2, child: trilho);
-    return DecoratedBox(
-      decoration: BoxDecoration(color: c.surface2, borderRadius: cantos),
-      child: trilho,
-    );
-  }
-}
 
 class _BotaoGravar extends StatelessWidget {
   const _BotaoGravar({required this.aoTocar});
@@ -1037,106 +829,6 @@ class _ChipsPastas extends StatelessWidget {
   }
 }
 
-/// Coluna das pastas na Lista larga.
-class _ColunaPastas extends StatelessWidget {
-  const _ColunaPastas({
-    required this.quadro,
-    required this.filtro,
-    required this.aoEscolher,
-    required this.aoNovaPasta,
-    required this.aoMenu,
-  });
-  final QuadroNotas quadro;
-  final FiltroNotas filtro;
-  final ValueChanged<FiltroNotas> aoEscolher;
-  final VoidCallback aoNovaPasta;
-  final ValueChanged<PastaNota> aoMenu;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    Widget linha(String nome, IconData icone, Color cor, int qtd, FiltroNotas f, {PastaNota? pasta}) {
-      final sel = f == filtro;
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 2),
-        child: Material(
-          type: MaterialType.transparency,
-          borderRadius: BorderRadius.circular(12),
-          clipBehavior: Clip.antiAlias,
-          child: Ink(
-            decoration: sel
-                ? BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    gradient: LinearGradient(
-                      colors: [c.gradIni.withValues(alpha: 0.14), c.gradFim.withValues(alpha: 0.17)],
-                    ),
-                    border: Border.all(color: c.violeta.withValues(alpha: 0.5), width: 0.7),
-                  )
-                : null,
-            child: InkWell(
-              onTap: () => aoEscolher(f),
-              onLongPress: pasta == null ? null : () => aoMenu(pasta),
-              onSecondaryTap: pasta == null ? null : () => aoMenu(pasta),
-              hoverColor: c.teal.withValues(alpha: 0.08),
-              child: SizedBox(
-                height: 40,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    children: [
-                      Icon(icone, size: 18, color: sel ? c.accent : cor),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          nome,
-                          overflow: TextOverflow.ellipsis,
-                          style: manrope(14, peso: FontWeight.w600),
-                        ),
-                      ),
-                      Text('$qtd', style: manrope(12, cor: c.muted)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    int contar(bool Function(NotaCompleta) teste) => quadro.notas.where(teste).length;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: Text('PASTAS', style: rotulo(c.muted)),
-              ),
-            ),
-            IconButton(
-              tooltip: 'Nova pasta',
-              onPressed: aoNovaPasta,
-              icon: Icon(Icons.create_new_folder_outlined, size: 20, color: c.muted),
-            ),
-          ],
-        ),
-        linha('Todas as notas', Icons.sticky_note_2_outlined, c.muted, quadro.notas.length, const TodasAsNotas()),
-        for (final p in quadro.pastas)
-          linha(p.nome, Icons.folder_outlined, c.muted, contar((n) => n.nota.pastaId == p.id), NaPasta(p.id), pasta: p),
-        const SizedBox(height: 12),
-        Padding(
-          padding: const EdgeInsets.only(left: 8, bottom: 6),
-          child: Text('FILTROS', style: rotulo(c.muted)),
-        ),
-        linha('Áudios', Icons.graphic_eq_rounded, c.bad, contar((n) => n.audios.isNotEmpty), const SoAudios()),
-      ],
-    );
-  }
-}
-
 class _RotuloGrupo extends StatelessWidget {
   const _RotuloGrupo({required this.texto, this.fixadas = false});
   final String texto;
@@ -1328,124 +1020,6 @@ class _CartaoNota extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LinhaNota extends StatelessWidget {
-  const _LinhaNota({required this.nota, required this.quando, required this.selecionada, required this.aoAbrir});
-  final NotaCompleta nota;
-  final String quando;
-  final bool selecionada;
-  final VoidCallback aoAbrir;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    final n = nota;
-    final tipo = n.nota.tipo;
-    Widget etiqueta(IconData icone, String texto, Color cor) => Container(
-      margin: const EdgeInsets.only(right: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(999)),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icone, size: 12, color: cor),
-          const SizedBox(width: 4),
-          Text(
-            texto,
-            style: manrope(11, peso: FontWeight.w700, cor: cor),
-          ),
-        ],
-      ),
-    );
-    final duracao = n.audios.fold(Duration.zero, (s, a) => s + a.duracao);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Material(
-        type: MaterialType.transparency,
-        borderRadius: BorderRadius.circular(14),
-        clipBehavior: Clip.antiAlias,
-        child: Ink(
-          decoration: selecionada
-              ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  gradient: LinearGradient(
-                    colors: [c.gradIni.withValues(alpha: 0.14), c.gradFim.withValues(alpha: 0.17)],
-                  ),
-                  border: Border.all(color: c.violeta.withValues(alpha: 0.5), width: 0.7),
-                )
-              : null,
-          child: InkWell(
-            onTap: aoAbrir,
-            hoverColor: c.teal.withValues(alpha: 0.08),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(10)),
-                    child: Icon(iconeTipoNota(tipo), size: 18, color: corTipoNota(c, tipo)),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                n.tituloVisivel,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: manrope(14, peso: FontWeight.w700),
-                              ),
-                            ),
-                            if (n.nota.fixada) Icon(Icons.push_pin_rounded, size: 13, color: c.warn),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: '$quando  ',
-                                style: manrope(13, peso: FontWeight.w600, cor: c.text.withValues(alpha: 0.8)),
-                              ),
-                              TextSpan(
-                                text: n.previaCompleta.replaceAll('\n', ' '),
-                                style: manrope(13, cor: c.muted),
-                              ),
-                            ],
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (n.itens.isNotEmpty || n.audios.isNotEmpty || n.fotos.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              if (n.itensComTexto > 0)
-                                etiqueta(Icons.check_rounded, '${n.feitos}/${n.itensComTexto}', c.teal),
-                              if (n.audios.isNotEmpty) etiqueta(Icons.graphic_eq_rounded, minSeg(duracao), c.bad),
-                              if (n.fotos.isNotEmpty) etiqueta(Icons.image_outlined, '${n.fotos.length}', c.warn),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
     );
