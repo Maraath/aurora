@@ -78,8 +78,7 @@ void main() {
 
   testWidgets('celular: Saúde › Treino troca de subseção', (tester) async {
     await abrirApp(tester, const Size(390, 844));
-    await tocar(tester, find.text('Mais'));
-    await tocar(tester, find.text('Saúde'));
+    await tocar(tester, find.bySemanticsLabel('Saúde'));
     // Se as pílulas não couberem na largura, a fileira rola de lado.
     for (final sub in ['Medidas', 'Exercícios', 'Shape', 'Ficha']) {
       await tester.ensureVisible(find.text(sub).first);
@@ -97,14 +96,22 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('celular: áreas fora da barra ficam em Mais', (tester) async {
+  testWidgets('celular: a barra rolável leva a todas as áreas e a orbe ao assistente', (tester) async {
     await abrirApp(tester, const Size(390, 844));
-    for (final area in ['Saúde', 'Lembretes', 'Metas', 'Projetos', 'Anotações', 'Conta e sincronização']) {
-      await tocar(tester, find.text('Mais'));
-      await tocar(tester, find.text(area));
+    for (final area in ['Visão', 'Tarefas', 'Finanças', 'Hábitos', 'Saúde']) {
+      await tocar(tester, find.bySemanticsLabel(area));
     }
+    // A 2ª página da barra (pelos pontinhos): o resto das áreas.
+    await tocar(tester, find.bySemanticsLabel('Página 2 do menu'));
+    for (final area in ['Metas', 'Lembretes', 'Projetos', 'Anotações', 'Conta']) {
+      await tocar(tester, find.bySemanticsLabel(area));
+    }
+    expect(find.text('Conta e sincronização'), findsWidgets);
+    await tocar(tester, find.bySemanticsLabel('Abrir a Aurora (assistente)'));
+    // Ir para uma área da 1ª página leva a barra junto (aqui, pela página 1).
+    await tocar(tester, find.bySemanticsLabel('Página 1 do menu'));
     // Finanças tem 6 abas: no celular a barra rola de lado até a Análise.
-    await tocar(tester, find.text('Finanças'));
+    await tocar(tester, find.bySemanticsLabel('Finanças'));
     await tester.ensureVisible(find.text('Análise'));
     await tocar(tester, find.text('Análise'));
     expect(find.text('Gasto no mês'), findsOneWidget);

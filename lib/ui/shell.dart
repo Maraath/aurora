@@ -34,7 +34,6 @@ import 'conta/conta_page.dart';
 import 'financas/financas_page.dart';
 import 'habitos/habitos_page.dart';
 import 'lembretes/lembretes_page.dart';
-import 'mais_page.dart';
 import 'menu_dock.dart';
 import 'metas/metas_page.dart';
 import 'projetos/projetos_page.dart';
@@ -43,23 +42,9 @@ import 'vidro.dart';
 import 'tarefas/tarefas_page.dart';
 import 'visao/visao_page.dart';
 
-/// Áreas do app. Cada uma aparece direto no menu lateral e
-/// organiza o conteúdo em abas no topo; no celular, as que não cabem na barra
-/// de baixo ficam em "Mais".
-enum Secao {
-  visao,
-  assistente,
-  tarefas,
-  habitos,
-  saude,
-  lembretes,
-  metas,
-  projetos,
-  anotacoes,
-  financas,
-  conta,
-  mais,
-}
+/// Áreas do app. Cada uma aparece direto no menu lateral (computador) e na
+/// barra rolável de baixo (celular), e organiza o conteúdo em abas no topo.
+enum Secao { visao, assistente, tarefas, habitos, saude, lembretes, metas, projetos, anotacoes, financas, conta }
 
 class _ItemNav {
   const _ItemNav(this.secao, this.rotulo, this.icone);
@@ -68,21 +53,28 @@ class _ItemNav {
   final IconData icone;
 }
 
-/// Barra de baixo (celular).
-const _itensBarra = [
-  _ItemNav(Secao.visao, 'Visão', Icons.home_outlined),
-  _ItemNav(Secao.tarefas, 'Tarefas', Icons.check_box_outlined),
-  _ItemNav(Secao.habitos, 'Hábitos', Icons.repeat_rounded),
-  _ItemNav(Secao.financas, 'Finanças', Icons.account_balance_wallet_outlined),
-  _ItemNav(Secao.mais, 'Mais', Icons.grid_view_rounded),
+/// Barra de baixo (celular): todas as áreas, 5 por página, na ordem de uso.
+/// O assistente fica fora, na orbe ao lado da barra.
+const _paginasBarra = [
+  [
+    _ItemNav(Secao.visao, 'Visão', Icons.home_outlined),
+    _ItemNav(Secao.tarefas, 'Tarefas', Icons.check_box_outlined),
+    _ItemNav(Secao.financas, 'Finanças', Icons.account_balance_wallet_outlined),
+    _ItemNav(Secao.habitos, 'Hábitos', Icons.repeat_rounded),
+    _ItemNav(Secao.saude, 'Saúde', Icons.monitor_heart_outlined),
+  ],
+  [
+    _ItemNav(Secao.metas, 'Metas', Icons.flag_outlined),
+    _ItemNav(Secao.lembretes, 'Lembretes', Icons.notifications_none_rounded),
+    _ItemNav(Secao.projetos, 'Projetos', Icons.folder_outlined),
+    _ItemNav(Secao.anotacoes, 'Anotações', Icons.sticky_note_2_outlined),
+    _ItemNav(Secao.conta, 'Conta', Icons.person_outline_rounded),
+  ],
 ];
 
 /// Menu lateral (computador), em grupos: início, rotina, planos.
 const _gruposLateral = [
-  [
-    _ItemNav(Secao.assistente, 'Assistente', iconeIa),
-    _ItemNav(Secao.visao, 'Visão', Icons.home_outlined),
-  ],
+  [_ItemNav(Secao.assistente, 'Assistente', iconeIa), _ItemNav(Secao.visao, 'Visão', Icons.home_outlined)],
   [
     _ItemNav(Secao.tarefas, 'Tarefas', Icons.check_box_outlined),
     _ItemNav(Secao.habitos, 'Hábitos', Icons.repeat_rounded),
@@ -181,24 +173,36 @@ class _ShellState extends State<Shell> {
 
   /// "Ir para" da busca: as áreas e as abas mais procuradas.
   List<AtalhoArea> get _areasDaBusca => [
-        for (final g in _gruposLateral)
-          for (final i in g) AtalhoArea(i.rotulo, i.icone, () => _ir(i.secao)),
-        AtalhoArea('Alimentação', Icons.restaurant_rounded, () => setState(() {
-              _secao = Secao.saude;
-              _abaSaude = 1;
-            })),
-        for (final s in [SubTreino.medidas, SubTreino.exercicios, SubTreino.shape])
-          AtalhoArea(s.rotulo, s.icone, () => setState(() {
-                _secao = Secao.saude;
-                _abaSaude = 0;
-                _subTreino = s;
-              })),
-        AtalhoArea('Automações', Icons.bolt_rounded, () => setState(() {
-              _secao = Secao.lembretes;
-              _abaLembretes = 1;
-            })),
-        AtalhoArea(_itemConta.rotulo, _itemConta.icone, () => _ir(Secao.conta)),
-      ];
+    for (final g in _gruposLateral)
+      for (final i in g) AtalhoArea(i.rotulo, i.icone, () => _ir(i.secao)),
+    AtalhoArea(
+      'Alimentação',
+      Icons.restaurant_rounded,
+      () => setState(() {
+        _secao = Secao.saude;
+        _abaSaude = 1;
+      }),
+    ),
+    for (final s in [SubTreino.medidas, SubTreino.exercicios, SubTreino.shape])
+      AtalhoArea(
+        s.rotulo,
+        s.icone,
+        () => setState(() {
+          _secao = Secao.saude;
+          _abaSaude = 0;
+          _subTreino = s;
+        }),
+      ),
+    AtalhoArea(
+      'Automações',
+      Icons.bolt_rounded,
+      () => setState(() {
+        _secao = Secao.lembretes;
+        _abaLembretes = 1;
+      }),
+    ),
+    AtalhoArea(_itemConta.rotulo, _itemConta.icone, () => _ir(Secao.conta)),
+  ];
 
   void _buscar() {
     final desktop = MediaQuery.sizeOf(context).width >= larguraDesktop;
@@ -215,10 +219,9 @@ class _ShellState extends State<Shell> {
         await TarefasRepo(AuroraEscopo.de(context).db)
             .salvar(TarefasCompanion.insert(titulo: t, prazo: const Value(null)), avisar: false);
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Criei a tarefa “$t”, sem data.'),
-          behavior: SnackBarBehavior.floating,
-        ));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Criei a tarefa “$t”, sem data.'), behavior: SnackBarBehavior.floating));
       },
     );
   }
@@ -240,8 +243,12 @@ class _ShellState extends State<Shell> {
         _ir(Secao.financas);
         final q = await FinancasRepo(db).carregar();
         if (!mounted) return;
-        await abrirFormLancamento(context,
-            transacao: r.item as Transacao, contas: q.contas, contaPrincipalId: q.contaPrincipalId);
+        await abrirFormLancamento(
+          context,
+          transacao: r.item as Transacao,
+          contas: q.contas,
+          contaPrincipalId: q.contaPrincipalId,
+        );
       case TipoResultado.categoria:
         _ir(Secao.financas);
       case TipoResultado.habito:
@@ -267,48 +274,31 @@ class _ShellState extends State<Shell> {
     }
   }
 
-  /// No celular, as áreas fora da barra de baixo acendem "Mais".
-  Secao _secaoDaBarra(bool desktop) {
-    if (desktop) return _secao;
-    return _itensBarra.any((i) => i.secao == _secao) ? _secao : Secao.mais;
-  }
-
-  /// "Voltar" só no celular, para retornar a "Mais".
-  VoidCallback? _voltar(bool desktop) => desktop ? null : () => _ir(Secao.mais);
-
   Widget _pagina(bool desktop) => switch (_secao) {
-        Secao.visao => VisaoPage(ir: _ir),
-        Secao.mais => MaisPage(ir: _ir),
-        Secao.tarefas => const TarefasPage(),
-        Secao.habitos => const HabitosPage(),
-        Secao.saude => AbasArea(
-            abas: abasSaude,
-            atual: _abaSaude,
-            aoEscolher: (i) => setState(() => _abaSaude = i),
-            voltar: _voltar(desktop),
-            child: _abaSaude == 0
-                ? TreinoPage(
-                    sub: _subTreino,
-                    aoEscolher: (s) => setState(() => _subTreino = s),
-                  )
-                : const AlimentacaoPage(),
-          ),
-        Secao.lembretes => AbasArea(
-            abas: abasLembretes,
-            atual: _abaLembretes,
-            aoEscolher: (i) => setState(() => _abaLembretes = i),
-            voltar: _voltar(desktop),
-            child: _abaLembretes == 0
-                ? const LembretesPage()
-                : AutomacoesPage(abrirAssistente: () => _ir(Secao.assistente)),
-          ),
-        Secao.financas => const FinancasPage(),
-        Secao.metas => MetasPage(voltar: _voltar(desktop)),
-        Secao.projetos => ProjetosPage(voltar: _voltar(desktop)),
-        Secao.anotacoes => AnotacoesPage(voltar: _voltar(desktop)),
-        Secao.assistente => const AssistentePage(),
-        Secao.conta => ContaPage(voltar: _voltar(desktop)),
-      };
+    Secao.visao => VisaoPage(ir: _ir),
+    Secao.tarefas => const TarefasPage(),
+    Secao.habitos => const HabitosPage(),
+    Secao.saude => AbasArea(
+      abas: abasSaude,
+      atual: _abaSaude,
+      aoEscolher: (i) => setState(() => _abaSaude = i),
+      child: _abaSaude == 0
+          ? TreinoPage(sub: _subTreino, aoEscolher: (s) => setState(() => _subTreino = s))
+          : const AlimentacaoPage(),
+    ),
+    Secao.lembretes => AbasArea(
+      abas: abasLembretes,
+      atual: _abaLembretes,
+      aoEscolher: (i) => setState(() => _abaLembretes = i),
+      child: _abaLembretes == 0 ? const LembretesPage() : AutomacoesPage(abrirAssistente: () => _ir(Secao.assistente)),
+    ),
+    Secao.financas => const FinancasPage(),
+    Secao.metas => const MetasPage(),
+    Secao.projetos => const ProjetosPage(),
+    Secao.anotacoes => const AnotacoesPage(),
+    Secao.assistente => const AssistentePage(),
+    Secao.conta => const ContaPage(),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -322,58 +312,49 @@ class _ShellState extends State<Shell> {
 
     // No computador, assistente, tema e busca ficam nos atalhos do canto; o
     // cabeçalho só existe no celular.
-    final cabecalho = desktop
-        ? null
-        : _Cabecalho(
-            assistenteAtivo: _secao == Secao.assistente,
-            abrirAssistente: () => _ir(Secao.assistente),
-            buscar: _buscar,
-          );
+    final cabecalho = desktop ? null : _Cabecalho(buscar: _buscar);
     final pagina = AnimatedSwitcher(
       duration: const Duration(milliseconds: 160),
-      child: KeyedSubtree(
-        key: ValueKey((_secao, _abaSaude, _abaLembretes)),
-        child: _pagina(desktop),
-      ),
+      child: KeyedSubtree(key: ValueKey((_secao, _abaSaude, _abaLembretes)), child: _pagina(desktop)),
     );
     // No celular o conteúdo passa por baixo da barra de vidro (extendBody): a
     // margem de baixo soma a altura da barra, que o Scaffold põe no MediaQuery.
     Widget conteudo(BuildContext ctx) {
       final barra = desktop ? 0.0 : MediaQuery.paddingOf(ctx).bottom;
       return SafeArea(
-      bottom: false,
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          // Anotações usa a largura da janela (mural e colunas da Lista).
-          constraints: BoxConstraints(maxWidth: _secao == Secao.anotacoes ? 1320 : 820),
-          // O assistente e as anotações ocupam a altura toda (rolam por dentro,
-          // com o campo ou os botões fixos); as outras áreas rolam inteiras.
-          child: _secao == Secao.assistente || _secao == Secao.anotacoes
-              ? Padding(
-                  padding: desktop
-                      ? const EdgeInsets.fromLTRB(Espaco.xl, Espaco.lg, Espaco.xl, Espaco.lg)
-                      : EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.md + barra),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+        bottom: false,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            // Anotações usa a largura da janela (mural e colunas da Lista).
+            constraints: BoxConstraints(maxWidth: _secao == Secao.anotacoes ? 1320 : 820),
+            // O assistente e as anotações ocupam a altura toda (rolam por dentro,
+            // com o campo ou os botões fixos); as outras áreas rolam inteiras.
+            child: _secao == Secao.assistente || _secao == Secao.anotacoes
+                ? Padding(
+                    padding: desktop
+                        ? const EdgeInsets.fromLTRB(Espaco.xl, Espaco.lg, Espaco.xl, Espaco.lg)
+                        : EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.md + barra),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (cabecalho != null) ...[cabecalho, const SizedBox(height: Espaco.md)],
+                        Expanded(child: pagina),
+                      ],
+                    ),
+                  )
+                : ListView(
+                    padding: desktop
+                        ? const EdgeInsets.fromLTRB(Espaco.xl, Espaco.lg, Espaco.xl, Espaco.xxl)
+                        : EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.xl + barra),
                     children: [
-                      if (cabecalho != null) ...[cabecalho, const SizedBox(height: Espaco.md)],
-                      Expanded(child: pagina),
+                      if (cabecalho != null) ...[cabecalho, const SizedBox(height: Espaco.lg)],
+                      pagina,
                     ],
                   ),
-                )
-              : ListView(
-                  padding: desktop
-                      ? const EdgeInsets.fromLTRB(Espaco.xl, Espaco.lg, Espaco.xl, Espaco.xxl)
-                      : EdgeInsets.fromLTRB(20, Espaco.md, 20, Espaco.xl + barra),
-                  children: [
-                    if (cabecalho != null) ...[cabecalho, const SizedBox(height: Espaco.lg)],
-                    pagina,
-                  ],
-                ),
+          ),
         ),
-      ),
-    );
+      );
     }
 
     // Um BackdropGroup para a tela toda: barra e cartões de vidro leem o fundo
@@ -386,29 +367,31 @@ class _ShellState extends State<Shell> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _BarraLateral(atual: _secaoDaBarra(true), ir: _ir),
+                _BarraLateral(atual: _secao, ir: _ir),
                 Expanded(
                   child: LayoutBuilder(
-                    builder: (context, box) => Stack(children: [
-                      // Janela estreita: o conteúdo abre espaço à direita para
-                      // não ficar por baixo dos atalhos.
-                      Padding(
-                        padding: EdgeInsets.only(right: box.maxWidth < 1000 ? 76 : 0),
-                        child: Builder(builder: conteudo),
-                      ),
-                      Positioned.fill(
-                        child: AtalhosFlutuantes(
-                          controle: _atalhos,
-                          aoBuscar: _buscar,
-                          aoAbrirAssistente: () => _ir(Secao.assistente),
-                          assistenteNaTela: () => _secao == Secao.assistente,
-                          aoNovaNota: (tipo) {
-                            _ir(Secao.anotacoes);
-                            pedidoNovaNota.value = tipo;
-                          },
+                    builder: (context, box) => Stack(
+                      children: [
+                        // Janela estreita: o conteúdo abre espaço à direita para
+                        // não ficar por baixo dos atalhos.
+                        Padding(
+                          padding: EdgeInsets.only(right: box.maxWidth < 1000 ? 76 : 0),
+                          child: Builder(builder: conteudo),
                         ),
-                      ),
-                    ]),
+                        Positioned.fill(
+                          child: AtalhosFlutuantes(
+                            controle: _atalhos,
+                            aoBuscar: _buscar,
+                            aoAbrirAssistente: () => _ir(Secao.assistente),
+                            assistenteNaTela: () => _secao == Secao.assistente,
+                            aoNovaNota: (tipo) {
+                              _ir(Secao.anotacoes);
+                              pedidoNovaNota.value = tipo;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -421,13 +404,13 @@ class _ShellState extends State<Shell> {
       child: Scaffold(
         extendBody: true,
         body: CeuEstrelado(child: Builder(builder: conteudo)),
-        bottomNavigationBar: _BarraInferior(atual: _secaoDaBarra(false), ir: _ir),
+        bottomNavigationBar: _BarraFlutuante(atual: _secao, ir: _ir),
       ),
     );
   }
 }
 
-/// Área com abas no topo (Saúde, Lembretes). No celular ganha "voltar" para "Mais".
+/// Área com abas no topo (Saúde, Lembretes), com "voltar" opcional.
 class AbasArea extends StatelessWidget {
   const AbasArea({
     super.key,
@@ -450,22 +433,24 @@ class AbasArea extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(children: [
-          if (voltar != null)
-            IconButton(
-              onPressed: voltar,
-              tooltip: 'Voltar',
-              icon: Icon(Icons.chevron_left_rounded, size: 28, color: c.text),
+        Row(
+          children: [
+            if (voltar != null)
+              IconButton(
+                onPressed: voltar,
+                tooltip: 'Voltar',
+                icon: Icon(Icons.chevron_left_rounded, size: 28, color: c.text),
+              ),
+            Expanded(
+              child: Segmentos<int>(
+                opcoes: [for (var i = 0; i < abas.length; i++) i],
+                selecionado: atual,
+                rotulo: (i) => abas[i],
+                aoEscolher: aoEscolher,
+              ),
             ),
-          Expanded(
-            child: Segmentos<int>(
-              opcoes: [for (var i = 0; i < abas.length; i++) i],
-              selecionado: atual,
-              rotulo: (i) => abas[i],
-              aoEscolher: aoEscolher,
-            ),
-          ),
-        ]),
+          ],
+        ),
         const SizedBox(height: 20),
         child,
       ],
@@ -473,16 +458,10 @@ class AbasArea extends StatelessWidget {
   }
 }
 
-/// Cabeçalho do celular: logo, busca, assistente e tema.
+/// Cabeçalho do celular: logo, busca e tema (o assistente é a orbe ao lado da barra).
 class _Cabecalho extends StatelessWidget {
-  const _Cabecalho({
-    required this.assistenteAtivo,
-    required this.abrirAssistente,
-    required this.buscar,
-  });
+  const _Cabecalho({required this.buscar});
 
-  final bool assistenteAtivo;
-  final VoidCallback abrirAssistente;
   final VoidCallback buscar;
 
   @override
@@ -498,13 +477,6 @@ class _Cabecalho extends StatelessWidget {
         BotaoRedondo(icone: Icons.search_rounded, dica: 'Buscar em tudo', aoTocar: buscar),
         const SizedBox(width: 8),
         BotaoRedondo(
-          icone: iconeIa,
-          dica: 'Abrir assistente',
-          ativo: assistenteAtivo,
-          aoTocar: abrirAssistente,
-        ),
-        const SizedBox(width: 8),
-        BotaoRedondo(
           icone: escuro ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
           dica: 'Alternar modo claro e escuro',
           aoTocar: escopo.alternarTema,
@@ -514,9 +486,181 @@ class _Cabecalho extends StatelessWidget {
   }
 }
 
-class _BotaoNav extends StatelessWidget {
-  const _BotaoNav({required this.item, required this.ativo, required this.aoTocar});
+/// Barra do celular (variação C, 25/10/2026): pílula de vidro flutuante só com
+/// ícones, 5 por página (arrasta de lado para as outras), a área ativa num
+/// círculo com o degradê da aurora e, embaixo, o nome dela e os pontinhos das
+/// páginas. À direita, a orbe da Aurora abre o assistente.
+class _BarraFlutuante extends StatefulWidget {
+  const _BarraFlutuante({required this.atual, required this.ir});
+  final Secao atual;
+  final ValueChanged<Secao> ir;
 
+  @override
+  State<_BarraFlutuante> createState() => _BarraFlutuanteState();
+}
+
+class _BarraFlutuanteState extends State<_BarraFlutuante> {
+  late int _pagina = _paginaDe(widget.atual) ?? 0;
+  late final _paginas = PageController(initialPage: _pagina);
+
+  static int? _paginaDe(Secao s) {
+    for (var p = 0; p < _paginasBarra.length; p++) {
+      if (_paginasBarra[p].any((i) => i.secao == s)) return p;
+    }
+    return null;
+  }
+
+  @override
+  void didUpdateWidget(_BarraFlutuante antigo) {
+    super.didUpdateWidget(antigo);
+    // Foi para uma área da outra página (pela busca, por exemplo): a barra acompanha.
+    final p = _paginaDe(widget.atual);
+    if (p != null && p != _pagina && _paginas.hasClients) {
+      _pagina = p;
+      final parado = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+      parado
+          ? _paginas.jumpToPage(p)
+          : _paginas.animateToPage(p, duration: const Duration(milliseconds: 280), curve: Curves.easeOutCubic);
+    }
+  }
+
+  @override
+  void dispose() {
+    _paginas.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    if (kIsWeb) {
+      // iPhone (tela de início): a faixa abaixo da página continua o céu.
+      WidgetsBinding.instance.addPostFrameCallback((_) => definirCorDaBorda(c.bg));
+    }
+    final rotuloAtivo = [
+      for (final pg in _paginasBarra)
+        for (final i in pg)
+          if (i.secao == widget.atual) i.rotulo,
+    ].firstOrNull;
+    final pilula = Vidro(
+      tipo: TipoVidro.barra,
+      raio: BorderRadius.circular(34),
+      cor: escuro ? null : c.surface,
+      child: SizedBox(
+        height: 68,
+        child: PageView(
+          controller: _paginas,
+          onPageChanged: (p) => setState(() => _pagina = p),
+          children: [
+            for (final pg in _paginasBarra)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    for (final item in pg)
+                      _IconeBarra(item: item, ativo: item.secao == widget.atual, aoTocar: () => widget.ir(item.secao)),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+    // O conteúdo rola por baixo da barra: um esmaecido do céu atrás dela deixa
+    // o nome e os pontinhos legíveis sem cobrir a tela com uma faixa.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [c.bg.withValues(alpha: 0), c.bg.withValues(alpha: 0.82), c.bg.withValues(alpha: 0.95)],
+          stops: const [0, 0.45, 1],
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(14, 16, 14, MediaQuery.paddingOf(context).bottom > 0 ? 2 : 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(34),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: escuro ? 0.45 : 0.12),
+                            blurRadius: 26,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: pilula,
+                    ),
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      height: 18,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (rotuloAtivo != null) ...[
+                            Text(
+                              rotuloAtivo,
+                              style: manrope(11, peso: FontWeight.w700, cor: c.text),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          for (var p = 0; p < _paginasBarra.length; p++)
+                            Semantics(
+                              button: true,
+                              selected: p == _pagina,
+                              label: 'Página ${p + 1} do menu',
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => _paginas.animateToPage(
+                                  p,
+                                  duration: const Duration(milliseconds: 280),
+                                  curve: Curves.easeOutCubic,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    width: p == _pagina ? 20 : 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color: p == _pagina ? c.text : c.muted.withValues(alpha: 0.6),
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              _OrbeAurora(ativa: widget.atual == Secao.assistente, aoTocar: () => widget.ir(Secao.assistente)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Ícone da barra: o ativo ganha um círculo com o degradê da aurora.
+class _IconeBarra extends StatelessWidget {
+  const _IconeBarra({required this.item, required this.ativo, required this.aoTocar});
   final _ItemNav item;
   final bool ativo;
   final VoidCallback aoTocar;
@@ -524,26 +668,31 @@ class _BotaoNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final cor = ativo ? c.accent : c.muted;
-    return Semantics(
-      selected: ativo,
-      button: true,
-      child: Material(
-        color: ativo ? c.accentSoft : Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: aoTocar,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 52),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(item.icone, size: 22, color: cor),
-                const SizedBox(height: 3),
-                Text(item.rotulo, style: manrope(11, peso: FontWeight.w700, cor: cor)),
-              ],
+    final parado = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    return Tooltip(
+      message: item.rotulo,
+      child: Semantics(
+        button: true,
+        selected: ativo,
+        label: item.rotulo,
+        excludeSemantics: true,
+        child: AnimatedScale(
+          scale: ativo ? 1.06 : 1,
+          duration: parado ? Duration.zero : const Duration(milliseconds: 200),
+          child: Material(
+            type: MaterialType.transparency,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: Ink(
+              decoration: BoxDecoration(shape: BoxShape.circle, gradient: ativo ? c.gradiente : null),
+              child: InkWell(
+                onTap: aoTocar,
+                child: SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: Icon(item.icone, size: 24, color: ativo ? c.noAccent : c.muted),
+                ),
+              ),
             ),
           ),
         ),
@@ -552,44 +701,88 @@ class _BotaoNav extends StatelessWidget {
   }
 }
 
-class _BarraInferior extends StatelessWidget {
-  const _BarraInferior({required this.atual, required this.ir});
-  final Secao atual;
-  final ValueChanged<Secao> ir;
+/// A orbe da Aurora ao lado da barra: abre o assistente.
+class _OrbeAurora extends StatelessWidget {
+  const _OrbeAurora({required this.ativa, required this.aoTocar});
+  final bool ativa;
+  final VoidCallback aoTocar;
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
     final escuro = Theme.of(context).brightness == Brightness.dark;
-    if (kIsWeb) {
-      // iPhone (tela de início): a faixa abaixo da página fica com a cor da barra.
-      final cor = corDoVidro(context, TipoVidro.barra);
-      WidgetsBinding.instance.addPostFrameCallback((_) => definirCorDaBorda(cor));
-    }
-    return Vidro(
-      tipo: TipoVidro.barra,
-      lados: Border(top: BorderSide(color: escuro ? Colors.white.withValues(alpha: 0.09) : c.line)),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          // Com indicador de início embaixo (iPhone), a faixa dele já dá o respiro.
-          padding: EdgeInsets.fromLTRB(10, 8, 10, MediaQuery.paddingOf(context).bottom > 0 ? 2 : 10),
-          child: Row(
-            children: [
-              for (final item in _itensBarra)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: _BotaoNav(
-                        item: item, ativo: atual == item.secao, aoTocar: () => ir(item.secao)),
-                  ),
-                ),
+    return Tooltip(
+      message: 'Abrir a Aurora',
+      child: Semantics(
+        button: true,
+        selected: ativa,
+        label: 'Abrir a Aurora (assistente)',
+        excludeSemantics: true,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: ativa ? c.accent : (escuro ? Colors.white.withValues(alpha: 0.10) : c.line)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: escuro ? 0.45 : 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+              BoxShadow(color: c.teal.withValues(alpha: escuro ? 0.22 : 0.10), blurRadius: 22),
             ],
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: Ink(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  center: const Alignment(0, -0.2),
+                  colors: escuro
+                      ? [c.teal.withValues(alpha: 0.30), c.gradFim.withValues(alpha: 0.18), c.surface]
+                      : [c.accent.withValues(alpha: 0.28), c.gradFim.withValues(alpha: 0.20), c.surface],
+                  stops: const [0, 0.45, 0.8],
+                ),
+              ),
+              child: InkWell(
+                onTap: aoTocar,
+                child: SizedBox(
+                  width: 68,
+                  height: 68,
+                  child: CustomPaint(painter: _FaiscasOrbe([c.accent, c.teal, c.violeta])),
+                ),
+              ),
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// Pontinhos de luz espalhados dentro da orbe (sempre nos mesmos lugares).
+class _FaiscasOrbe extends CustomPainter {
+  _FaiscasOrbe(this.cores);
+  final List<Color> cores;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var x = 17;
+    final p = Paint();
+    for (var k = 0; k < 18; k++) {
+      x = (x * 9301 + 49297) % 233280;
+      final px = 0.2 + (x / 233280) * 0.6;
+      x = (x * 9301 + 49297) % 233280;
+      final py = 0.2 + (x / 233280) * 0.6;
+      p.color = cores[k % cores.length].withValues(alpha: 0.45 + (k % 3) * 0.2);
+      canvas.drawCircle(Offset(px * size.width, py * size.height), k % 4 == 0 ? 1.6 : 1.1, p);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_FaiscasOrbe old) => old.cores != cores;
 }
 
 /// Menu lateral (computador): dock só de ícones flutuando. Os ícones
@@ -605,22 +798,26 @@ class _BarraLateral extends StatelessWidget {
     for (var g = 0; g < _gruposLateral.length; g++) {
       for (var i = 0; i < _gruposLateral[g].length; i++) {
         final item = _gruposLateral[g][i];
-        itens.add(ItemDock(
-          icone: item.icone,
-          rotulo: item.rotulo,
-          ativo: atual == item.secao,
-          aoTocar: () => ir(item.secao),
-          espacoAntes: g > 0 && i == 0 ? 16 : 0,
-        ));
+        itens.add(
+          ItemDock(
+            icone: item.icone,
+            rotulo: item.rotulo,
+            ativo: atual == item.secao,
+            aoTocar: () => ir(item.secao),
+            espacoAntes: g > 0 && i == 0 ? 16 : 0,
+          ),
+        );
       }
     }
-    itens.add(ItemDock(
-      icone: _itemConta.icone,
-      rotulo: _itemConta.rotulo,
-      ativo: atual == _itemConta.secao,
-      aoTocar: () => ir(_itemConta.secao),
-      espacoAntes: 16,
-    ));
+    itens.add(
+      ItemDock(
+        icone: _itemConta.icone,
+        rotulo: _itemConta.rotulo,
+        ativo: atual == _itemConta.secao,
+        aoTocar: () => ir(_itemConta.secao),
+        espacoAntes: 16,
+      ),
+    );
     // Sem painel, fundo nem borda. Os ícones flutuam sobre o
     // céu, numa coluna de 72 px centralizada na vertical (sem o logo: o primeiro
     // item já é o da Aurora, o assistente). A faixa fica reservada para o

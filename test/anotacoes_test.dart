@@ -243,9 +243,9 @@ void main() {
       if (tamanho.width >= 840) {
         await tester.tap(find.bySemanticsLabel('Anotações').first);
       } else {
-        await tester.tap(find.text('Mais'));
+        await tester.tap(find.bySemanticsLabel('Página 2 do menu'));
         await assentar(tester);
-        await tester.tap(find.text('Anotações'));
+        await tester.tap(find.bySemanticsLabel('Anotações').first);
       }
       await assentar(tester);
     }
