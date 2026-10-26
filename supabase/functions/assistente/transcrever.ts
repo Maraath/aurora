@@ -25,8 +25,9 @@ export const FORMATOS_AUDIO = new Set(["audio/flac", "audio/wav"]);
 /// ~90 s de FLAC ou ~60 s de WAV 16 kHz mono, em base64.
 export const MAX_AUDIO_BASE64 = 3_000_000;
 
-/// Notas de áudio das Anotações: AAC (.m4a) quando o aparelho tem, senão os de cima.
-export const FORMATOS_NOTA = new Set(["audio/mp4", "audio/aac", "audio/flac", "audio/wav"]);
+/// Notas de áudio das Anotações: AAC (.m4a) quando o aparelho tem, senão os de cima; na web, Opus em WebM
+/// quando o navegador não grava AAC (Firefox).
+export const FORMATOS_NOTA = new Set(["audio/mp4", "audio/aac", "audio/flac", "audio/wav", "audio/webm", "audio/ogg"]);
 
 /// ~10 min de AAC a 48 kbps (ou ~4 min de FLAC), em base64.
 export const MAX_NOTA_BASE64 = 6_000_000;
@@ -52,8 +53,13 @@ export async function transcrever(audio: string, formato: string, sinal: AbortSi
   if (!chave) throw new ErroParaPessoa("A transcrição de voz não está configurada no servidor.", 500);
   const google = createGoogleGenerativeAI({ apiKey: chave });
   const nomes = (Deno.env.get("GEMINI_MODELOS_VOZ") ?? "").split(",").map((n) => n.trim()).filter(Boolean);
-  // .m4a é AAC dentro de MP4: se o Gemini recusar "audio/mp4" (400), tenta "audio/aac".
-  const tipos = formato === "audio/mp4" ? ["audio/mp4", "audio/aac"] : [formato];
+  // .m4a é AAC dentro de MP4: se o Gemini recusar "audio/mp4" (400), tenta "audio/aac". WebM (Opus) não está
+  // na lista oficial do Gemini: se recusar, tenta como "audio/ogg" (o mesmo Opus).
+  const tipos = formato === "audio/mp4"
+    ? ["audio/mp4", "audio/aac"]
+    : formato === "audio/webm"
+    ? ["audio/webm", "audio/ogg"]
+    : [formato];
   let ultimo: unknown;
   for (const nome of nomes.length ? nomes : MODELOS_TRANSCRICAO) {
     for (const tipo of tipos) {

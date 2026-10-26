@@ -36,6 +36,29 @@ class AudiosNaMemoria implements ArmazemAudios {
   }
 }
 
+/// "IndexedDB" em memória: o disco dos áudios na web, sem pasta nem caminho.
+class DiscoNaMemoria implements DiscoAudios {
+  final guardados = <String, Uint8List>{};
+
+  @override
+  Future<void> gravar(String nome, Uint8List bytes) async => guardados[nome] = bytes;
+
+  @override
+  Future<Uint8List?> ler(String nome) async => guardados[nome];
+
+  @override
+  Future<bool> existe(String nome) async => guardados.containsKey(nome);
+
+  @override
+  Future<void> apagar(String nome) async => guardados.remove(nome);
+
+  @override
+  Future<List<String>> nomes() async => guardados.keys.toList();
+
+  @override
+  Future<String?> caminho(String nome) async => null;
+}
+
 /// Microfone falso: devolve sempre o mesmo "áudio" e um volume que sobe e desce.
 class GravadorFalso implements GravadorDeNota {
   final _volume = StreamController<double>.broadcast();
@@ -182,6 +205,49 @@ void main() {
     await repo.apagarAnexo(n.audios.single);
     expect(nuvem.guardados, isEmpty);
     expect(await File('${pasta.path}/audios/${anexo.id}.m4a').exists(), isFalse);
+  });
+
+  test('áudio na web: fica no navegador, toca dos bytes, sobe e outro aparelho baixa', () async {
+    final disco = DiscoNaMemoria();
+    final web = AnotacoesRepo(
+      db,
+      cofreFotos: CofreFotos(db, pasta: () async => pasta, armazem: () => null),
+      cofreAudios: CofreAudios(db, disco: disco, armazem: () => nuvem),
+      transcrever: () =>
+          (audio, formato) async => 'Ideia gravada no navegador (${audio.length} bytes, $formato).',
+    );
+    await CofreFotos(db).definirModo(ModoFotos.nuvem);
+    final id = await web.criarNota(tipo: TipoNota.audio);
+    final anexo = await web.adicionarAudio(
+      id,
+      AudioGravado(
+        bytes: Uint8List.fromList([9, 8, 7]),
+        formato: 'audio/webm',
+        duracao: const Duration(seconds: 4),
+        onda: '3' * 48,
+      ),
+    );
+    expect(disco.guardados.keys, ['${anexo.id}.webm']);
+    expect(await web.cofreAudios.caminho(anexo.refAudio), isNull, reason: 'na web não há arquivo');
+    expect(await web.cofreAudios.ler(anexo.refAudio), [9, 8, 7]);
+
+    expect(await web.tentarTranscrever(anexo), isNull);
+    expect((await web.nota(id))!.audios.single.transcricao, contains('3 bytes, audio/webm'));
+
+    expect((await web.sincronizarAudios()).enviados, 1);
+    expect(nuvem.guardados[anexo.id], [9, 8, 7]);
+
+    // Outro navegador (disco vazio) baixa da nuvem na hora de tocar.
+    final outro = DiscoNaMemoria();
+    final cofreOutro = CofreAudios(db, disco: outro, armazem: () => nuvem);
+    final ref = (await web.nota(id))!.audios.single.refAudio;
+    expect(await cofreOutro.ler(ref), [9, 8, 7]);
+    expect(outro.guardados, hasLength(1));
+
+    // Sobras de áudios apagados em outro aparelho saem do navegador.
+    await outro.gravar('sumiu.webm', Uint8List(2));
+    await cofreOutro.limparSobras({anexo.id});
+    expect(outro.guardados.keys, ['${anexo.id}.webm']);
   });
 
   test('áudio: sem conta, a transcrição fica para depois com o aviso', () async {

@@ -435,18 +435,17 @@ class _EditorNotaState extends State<EditorNota> {
               onPressed: () => _novoItem(),
               icon: Icon(Icons.checklist_rounded, color: c.teal),
             ),
-            if (anexosDisponiveis) ...[
+            if (fotosDisponiveis)
               IconButton(
                 tooltip: 'Foto',
                 onPressed: _foto,
                 icon: Icon(Icons.image_outlined, color: c.warn),
               ),
-              IconButton(
-                tooltip: 'Gravar áudio',
-                onPressed: _gravar,
-                icon: Icon(Icons.mic_none_rounded, color: c.bad),
-              ),
-            ],
+            IconButton(
+              tooltip: 'Gravar áudio',
+              onPressed: _gravar,
+              icon: Icon(Icons.mic_none_rounded, color: c.bad),
+            ),
             IconButton(
               tooltip: n.nota.fixada ? 'Desafixar' : 'Fixar no topo',
               onPressed: () => _repo.salvarNota(widget.id, fixada: !n.nota.fixada),

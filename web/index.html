@@ -246,6 +246,38 @@
       },
     };
 
+    // Áudios das notas guardados no navegador (lib/data/fotos/disco_audios_web.dart): IndexedDB,
+    // um registro por arquivo ("<id>.<ext>" → bytes). Some junto com os dados do site.
+    let bancoAudios = null;
+    function abrirAudios() {
+      bancoAudios = bancoAudios || new Promise((ok, erro) => {
+        const pedido = indexedDB.open('aurora-audios', 1);
+        pedido.onupgradeneeded = () => pedido.result.createObjectStore('audios');
+        pedido.onsuccess = () => ok(pedido.result);
+        pedido.onerror = () => { bancoAudios = null; erro(pedido.error); };
+      });
+      return bancoAudios;
+    }
+    async function noBancoAudios(modo, fazer) {
+      const banco = await abrirAudios();
+      return new Promise((ok, erro) => {
+        const transacao = banco.transaction('audios', modo);
+        const pedido = fazer(transacao.objectStore('audios'));
+        transacao.oncomplete = () => ok(pedido.result);
+        transacao.onerror = () => erro(transacao.error);
+        transacao.onabort = () => erro(transacao.error);
+      });
+    }
+    window.auroraAudios = {
+      // slice(): guarda só estes bytes, não o buffer inteiro por trás da vista.
+      gravar: (nome, bytes) => noBancoAudios('readwrite', (s) => s.put(bytes.slice(), nome)).then(() => null),
+      ler: (nome) => noBancoAudios('readonly', (s) => s.get(nome)).then((v) => v ? new Uint8Array(v) : null),
+      apagar: (nome) => noBancoAudios('readwrite', (s) => s.delete(nome)).then(() => null),
+      existe: (nome) => noBancoAudios('readonly', (s) => s.count(nome)).then((n) => n > 0),
+      // Só os nomes (JSON), sem ler os áudios.
+      nomes: () => noBancoAudios('readonly', (s) => s.getAllKeys()).then((k) => JSON.stringify(k)),
+    };
+
     function ajustarTela() {
       // Avisa o Flutter (lib/core/area_segura_web.dart) para ler o safe-area de novo.
       if (window.auroraAreaMudou) window.auroraAreaMudou();

@@ -106,9 +106,14 @@ class _PlayerAudioState extends State<PlayerAudio> {
   Future<AudioPlayer?> _preparar() async {
     if (_player != null) return _player;
     setState(() => _carregando = true);
-    final arquivo = await widget.repo.cofreAudios.obter(widget.anexo.refAudio);
+    final cofre = widget.repo.cofreAudios;
+    final ref = widget.anexo.refAudio;
+    // No aparelho toca do arquivo; na web (sem pasta), dos bytes guardados no navegador.
+    final pronto = await cofre.obter(ref);
+    final caminho = pronto ? await cofre.caminho(ref) : null;
+    final bytes = pronto && caminho == null ? await cofre.ler(ref) : null;
     if (!mounted) return null;
-    if (arquivo == null) {
+    if (caminho == null && bytes == null) {
       setState(() {
         _carregando = false;
         _aviso = !widget.anexo.naNuvem
@@ -136,7 +141,11 @@ class _PlayerAudioState extends State<PlayerAudio> {
           }
         }),
       );
-    await p.setSource(DeviceFileSource(arquivo.path, mimeType: widget.anexo.formato));
+    await p.setSource(
+      caminho != null
+          ? DeviceFileSource(caminho, mimeType: widget.anexo.formato)
+          : BytesSource(bytes!, mimeType: widget.anexo.formato),
+    );
     _player = p;
     if (mounted) setState(() => _carregando = false);
     return p;
@@ -574,5 +583,6 @@ Future<Uint8List?> escolherImagem(BuildContext context) async {
   return arquivo?.readAsBytes();
 }
 
-/// Fotos e áudios dependem de arquivos no aparelho: na versão web ainda não.
-const anexosDisponiveis = !kIsWeb;
+/// Fotos dependem de arquivos no aparelho: na versão web ainda não. Áudios
+/// funcionam em todo lugar (na web ficam no IndexedDB, ver DiscoAudiosNavegador).
+const fotosDisponiveis = !kIsWeb;

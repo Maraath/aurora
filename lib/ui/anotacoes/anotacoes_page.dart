@@ -154,8 +154,8 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
 
   Future<void> _nova(TipoNota tipo) async {
     final repo = _repo!;
-    if (!anexosDisponiveis && (tipo == TipoNota.foto || tipo == TipoNota.audio)) {
-      _avisar('Fotos e áudios nas notas ainda não funcionam na versão web.');
+    if (!fotosDisponiveis && tipo == TipoNota.foto) {
+      _avisar('Fotos nas notas ainda não funcionam na versão web.');
       return;
     }
     switch (tipo) {
@@ -184,7 +184,6 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
   }
 
   Future<void> _gravarNova() async {
-    if (!anexosDisponiveis) return _avisar('Áudios nas notas ainda não funcionam na versão web.');
     final audio = await gravarAudio(context, gravador: widget.gravador);
     if (audio == null || !mounted) return;
     final repo = _repo!;
@@ -642,9 +641,7 @@ class GradeTiposNota extends StatelessWidget {
       icone: tipo == TipoNota.audio ? Icons.mic_none_rounded : iconeTipoNota(tipo),
       cor: corTipoNota(c, tipo),
       nome: nome,
-      detalhe: anexosDisponiveis || tipo == TipoNota.texto || tipo == TipoNota.lista
-          ? detalhe
-          : 'Ainda não na versão web',
+      detalhe: fotosDisponiveis || tipo != TipoNota.foto ? detalhe : 'Ainda não na versão web',
       tecla: teclas ? tecla : null,
       aoTocar: () => aoEscolher(tipo),
     );

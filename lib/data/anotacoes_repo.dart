@@ -343,9 +343,9 @@ class AnotacoesRepo {
   Future<String> transcrever(AnexoNota a) async {
     final transcrever = _transcrever();
     if (transcrever == null) throw StateError('Para transcrever, entre na sua conta (em Conta).');
-    final arquivo = await cofreAudios.obter(a.refAudio);
-    if (arquivo == null) throw StateError('O áudio não está neste aparelho.');
-    final texto = await transcrever(await arquivo.readAsBytes(), a.formato ?? 'audio/wav');
+    final bytes = await cofreAudios.ler(a.refAudio);
+    if (bytes == null) throw StateError('O áudio não está neste aparelho.');
+    final texto = await transcrever(bytes, a.formato ?? 'audio/wav');
     await (db.update(db.anexosNota)..where((x) => x.id.equals(a.id)))
         .write(AnexosNotaCompanion(transcricao: Value(texto), atualizadoEm: Value(DateTime.now())));
     return texto;

@@ -55,6 +55,10 @@ class GravadorNotaDoAparelho implements GravadorDeNota {
     if (await _gravador.isEncoderSupported(AudioEncoder.aacLc)) {
       return (AudioEncoder.aacLc, 'audio/mp4', 'm4a', 44100);
     }
+    // Navegador sem AAC (Firefox): Opus em WebM, ainda pequeno (o WAV passaria do limite em 10 min).
+    if (kIsWeb && await _gravador.isEncoderSupported(AudioEncoder.opus)) {
+      return (AudioEncoder.opus, 'audio/webm', 'webm', 48000);
+    }
     if (await _gravador.isEncoderSupported(AudioEncoder.flac)) return (AudioEncoder.flac, 'audio/flac', 'flac', 16000);
     return (AudioEncoder.wav, 'audio/wav', 'wav', 16000);
   }
@@ -208,8 +212,9 @@ class ControleGravacao extends ChangeNotifier {
     _mudou();
   }
 
-  static const _semMicrofone =
-      'Não consegui usar o microfone. No Windows, libere em Configurações › Privacidade › Microfone.';
+  static const _semMicrofone = kIsWeb
+      ? 'Não consegui usar o microfone. Libere o microfone para este site no navegador e tente de novo.'
+      : 'Não consegui usar o microfone. No Windows, libere em Configurações › Privacidade › Microfone.';
 
   void _avisar(String texto) {
     aviso = texto;
