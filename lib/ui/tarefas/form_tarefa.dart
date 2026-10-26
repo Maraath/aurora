@@ -1,48 +1,37 @@
-import 'package:drift/drift.dart' show BooleanExpressionOperators, Value;
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
-import '../../app.dart';
-import '../../core/recorrencia.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/banco.dart';
 import '../../data/tarefas_repo.dart';
 import '../formulario.dart';
+import '../rotina/contexto_form.dart';
+import '../rotina/form_rotina.dart';
 
-/// Abre o formulário de nova tarefa ou de edição de [tarefa].
+/// Abre o formulário de nova tarefa ou de edição de [tarefa] (a folha única da
+/// Rotina, já no tipo tarefa). Etapa de projeto não troca de tipo.
 Future<void> abrirFormTarefa(BuildContext context,
-    {Tarefa? tarefa, DateTime? dataInicial, String? projetoInicial}) async {
-  final db = AuroraEscopo.de(context).db;
-  final repo = TarefasRepo(db);
-  final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
-  final projetos = await (db.select(db.projetos)
-        ..where((p) => p.apagadoEm.isNull() & p.status.equals('ativo')))
-      .get();
-  final avisar = tarefa != null && await repo.temLembrete(tarefa.id);
-  if (!context.mounted) return;
-  await abrirFolha<void>(
-    context,
-    (_) => _FormTarefa(
-      repo: repo,
-      tarefa: tarefa,
-      metas: metas,
-      projetos: projetos,
+        {Tarefa? tarefa, DateTime? dataInicial, String? projetoInicial}) =>
+    abrirFormRotina(
+      context,
+      tipo: TipoRotina.tarefa,
+      item: tarefa,
+      dia: dataInicial,
       projetoInicial: projetoInicial,
-      avisarInicial: avisar,
-      dataInicial: dataInicial,
-    ),
-  );
-}
+      trocarTipo: projetoInicial == null,
+    );
 
-class _FormTarefa extends StatefulWidget {
-  const _FormTarefa({
+class FormTarefa extends StatefulWidget {
+  const FormTarefa({
+    super.key,
     required this.repo,
     required this.tarefa,
     required this.metas,
     required this.projetos,
     this.projetoInicial,
     required this.avisarInicial,
-    this.dataInicial,
+    this.contexto = const ContextoForm(),
   });
 
   final TarefasRepo repo;
@@ -51,40 +40,37 @@ class _FormTarefa extends StatefulWidget {
   final List<Projeto> projetos;
   final String? projetoInicial;
   final bool avisarInicial;
-  final DateTime? dataInicial;
+  final ContextoForm contexto;
 
   @override
-  State<_FormTarefa> createState() => _FormTarefaState();
+  State<FormTarefa> createState() => _FormTarefaState();
 }
 
-class _FormTarefaState extends State<_FormTarefa> {
+class _FormTarefaState extends State<FormTarefa> {
   late final TextEditingController _titulo;
   late DateTime? _data;
   TimeOfDay? _hora;
-  late Prioridade _prioridade;
-  late OpcaoRepeticao _repetir;
-  Regra? _regraAtual;
   String? _metaId;
   String? _projetoId;
   late bool _avisar;
   String? _erro;
   final _hoje = hojeLocal();
 
+  ContextoForm get _ctx => widget.contexto;
+
   @override
   void initState() {
     super.initState();
     final t = widget.tarefa;
-    _titulo = TextEditingController(text: t?.titulo ?? '');
+    _titulo = _ctx.titulo ?? TextEditingController(text: t?.titulo ?? '');
     if (t?.prazo != null) {
       final p = emLocal(t!.prazo!);
       _data = DateTime(p.year, p.month, p.day);
       if (t.prazoTemHora) _hora = TimeOfDay(hour: p.hour, minute: p.minute);
     } else {
-      _data = t == null ? (widget.dataInicial ?? _hoje) : null;
+      _data = t == null ? (_ctx.data ?? _hoje) : null;
+      if (t == null) _hora = _ctx.hora;
     }
-    _prioridade = t?.prioridade ?? Prioridade.media;
-    _regraAtual = Regra.ler(t?.regraRepeticao);
-    _repetir = OpcaoRepeticao.de(_regraAtual);
     _metaId = t?.metaId;
     _projetoId = t?.projetoId ?? widget.projetoInicial;
     _avisar = widget.avisarInicial;
@@ -92,7 +78,7 @@ class _FormTarefaState extends State<_FormTarefa> {
 
   @override
   void dispose() {
-    _titulo.dispose();
+    if (_ctx.titulo == null) _titulo.dispose();
     super.dispose();
   }
 
@@ -102,20 +88,18 @@ class _FormTarefaState extends State<_FormTarefa> {
       setState(() => _erro = 'Dê um nome para a tarefa.');
       return;
     }
-    // Repetir precisa de uma data de início.
-    var data = _data;
-    if (data == null && _repetir != OpcaoRepeticao.nao) data = _hoje;
-    final regra = data == null ? null : _repetir.regra(data, _regraAtual);
+    // Tarefa não repete (o que repete é hábito ou lembrete); a prioridade saiu
+    // da tela e fica como está no banco.
+    final data = _data;
     final dados = TarefasCompanion(
       titulo: Value(titulo),
       prazo: Value(data == null ? null : instanteLocal(data, _hora?.hour ?? 0, _hora?.minute ?? 0)),
       prazoTemHora: Value(data != null && _hora != null),
-      prioridade: Value(_prioridade),
-      regraRepeticao: Value(regra?.rrule),
       metaId: Value(_metaId),
       projetoId: Value(_projetoId),
     );
-    await widget.repo.salvar(dados, id: widget.tarefa?.id, avisar: _avisar && data != null);
+    final id = await widget.repo.salvar(dados, id: widget.tarefa?.id, avisar: _avisar && data != null);
+    await _ctx.aoSalvo?.call(id);
     if (mounted) Navigator.pop(context);
   }
 
@@ -126,12 +110,7 @@ class _FormTarefaState extends State<_FormTarefa> {
       builder: (ctx) => AlertDialog(
         backgroundColor: c.surface,
         title: Text('Excluir tarefa?', style: sora(18)),
-        content: Text(
-          widget.tarefa!.regraRepeticao != null
-              ? 'A tarefa e todas as repetições saem da lista.'
-              : '“${widget.tarefa!.titulo}” sai da lista.',
-          style: manrope(14, cor: c.text),
-        ),
+        content: Text('“${widget.tarefa!.titulo}” sai da lista.', style: manrope(14, cor: c.text)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
           TextButton(
@@ -148,17 +127,13 @@ class _FormTarefaState extends State<_FormTarefa> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.cores;
-    final opcoesRepetir = [
-      ...OpcaoRepeticao.padrao,
-      if (_repetir == OpcaoRepeticao.personalizada) OpcaoRepeticao.personalizada,
-    ];
     return Folha(
-      titulo: widget.tarefa == null ? 'Nova tarefa' : 'Editar tarefa',
+      titulo: _ctx.tituloFolha ?? (widget.tarefa == null ? 'Nova tarefa' : 'Editar tarefa'),
       textoSalvar: 'Salvar tarefa',
       aoSalvar: _salvar,
       aoExcluir: widget.tarefa == null ? null : _excluir,
       campos: [
+        ?_ctx.cabecalho,
         Campo(
           rotulo: 'O que precisa ser feito?',
           child: CampoTexto(
@@ -172,9 +147,14 @@ class _FormTarefaState extends State<_FormTarefa> {
         Campo(
           rotulo: 'Quando',
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              EscolhaData(data: _data, hoje: _hoje, aoMudar: (d) => setState(() => _data = d)),
+              EscolhaData(
+                data: _data,
+                hoje: _hoje,
+                marcado: _ctx.marcado,
+                aoMudar: (d) => setState(() => _data = d),
+              ),
               if (_data != null) ...[
                 const SizedBox(height: 10),
                 CampoHorario(
@@ -184,34 +164,6 @@ class _FormTarefaState extends State<_FormTarefa> {
                 ),
               ],
             ],
-          ),
-        ),
-        Campo(
-          rotulo: 'Prioridade',
-          child: GradeChips(filhos: [
-            for (final (p, texto, cor) in [
-              (Prioridade.alta, 'Alta', c.bad),
-              (Prioridade.media, 'Média', c.warn),
-              (Prioridade.baixa, 'Baixa', c.muted),
-            ])
-              OpcaoChip(
-                texto: texto,
-                cor: cor,
-                quadrado: true,
-                selecionado: _prioridade == p,
-                aoTocar: () => setState(() => _prioridade = p),
-              ),
-          ]),
-        ),
-        Campo(
-          rotulo: 'Repetir',
-          child: GrupoChips<OpcaoRepeticao>(
-            opcoes: opcoesRepetir,
-            selecionado: _repetir,
-            rotulo: (o) => o == OpcaoRepeticao.personalizada
-                ? (_regraAtual?.descricao ?? o.rotulo)
-                : o.rotulo,
-            aoEscolher: (o) => setState(() => _repetir = o),
           ),
         ),
         if (widget.metas.isNotEmpty)
@@ -240,7 +192,7 @@ class _FormTarefaState extends State<_FormTarefa> {
           ),
         LinhaInterruptor(
           titulo: 'Me avisar',
-          detalhe: _data == null && _repetir == OpcaoRepeticao.nao
+          detalhe: _data == null
               ? 'escolha uma data para ser avisado'
               : 'cria um lembrete no horário (ou às 09:00)',
           valor: _avisar,

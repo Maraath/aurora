@@ -7,10 +7,14 @@ import {
   createUIMessageStreamResponse,
   type ModelMessage,
   streamText,
+  type ToolSet,
   type UIMessageChunk,
 } from "ai";
 import { type Escolha, ferramentas } from "./agente.ts";
 import { cors } from "./comum.ts";
+
+/// O conjunto de ferramentas oferecido (o app da Rotina recebe mais).
+type Ferramentas = ToolSet;
 
 /// Status HTTP do erro do fornecedor (RetryError guarda o último erro).
 export function statusDoErro(e: unknown): number | undefined {
@@ -111,7 +115,13 @@ function esgotadoAte(e: unknown, agora: number): number | undefined {
 /// Pede ao modelo e lê só o começo: até o primeiro pedaço de verdade (texto,
 /// ferramenta, fim) ou um erro. "start"/"start-step" não contam. Sem começo em
 /// [config.tempoParaComecarMs], desiste deste modelo.
-async function comecar(escolha: Escolha, sistema: string, mensagens: ModelMessage[], sinal: AbortSignal): Promise<Inicio> {
+async function comecar(
+  escolha: Escolha,
+  sistema: string,
+  mensagens: ModelMessage[],
+  sinal: AbortSignal,
+  uteis: Ferramentas,
+): Promise<Inicio> {
   let erro: unknown;
   const semFerramentas = escolha.semFerramentas ?? false;
   // Cancela se o app desistir OU se o modelo demorar demais para começar.
@@ -127,7 +137,7 @@ async function comecar(escolha: Escolha, sistema: string, mensagens: ModelMessag
     model: escolha.model,
     system: semFerramentas ? `${sistema}\n\n${AVISO_SEM_FERRAMENTAS}` : sistema,
     messages: semFerramentas ? emTexto(mensagens) : mensagens,
-    tools: semFerramentas ? undefined : ferramentas,
+    tools: semFerramentas ? undefined : uteis,
     temperature: escolha.temperature,
     providerOptions: escolha.providerOptions,
     maxOutputTokens: 4000,
@@ -185,6 +195,7 @@ async function primeiroQueResponde(
   sistema: string,
   mensagens: ModelMessage[],
   sinal: AbortSignal,
+  uteis: Ferramentas,
 ): Promise<Inicio | null> {
   // Pula os que já se sabe sem cota (se sobrar nenhum, tenta todos mesmo).
   const comeco = Date.now();
@@ -200,7 +211,7 @@ async function primeiroQueResponde(
     const controle = new AbortController();
     sinal.addEventListener("abort", () => controle.abort(), { once: true });
     const t = { i, controle } as Tentativa;
-    t.fim = comecar(fila[i], sistema, mensagens, controle.signal).then((inicio) => ({ t, inicio }));
+    t.fim = comecar(fila[i], sistema, mensagens, controle.signal, uteis).then((inicio) => ({ t, inicio }));
     ativas.add(t);
     ultimoLancamento = Date.now();
   };
@@ -275,6 +286,7 @@ export function responderComCadeia(
   sistema: string,
   mensagens: ModelMessage[],
   sinal: AbortSignal,
+  uteis: Ferramentas = ferramentas,
 ): Response {
   let leitor: ReadableStreamDefaultReader<UIMessageChunk> | undefined;
   const stream = new ReadableStream<UIMessageChunk>({
@@ -292,7 +304,7 @@ export function responderComCadeia(
       const vida = setInterval(sinalDeVida, config.sinalDeVidaMs);
       let inicio: Inicio | null;
       try {
-        inicio = await primeiroQueResponde(cadeia, sistema, mensagens, sinal);
+        inicio = await primeiroQueResponde(cadeia, sistema, mensagens, sinal, uteis);
       } finally {
         clearInterval(vida);
       }

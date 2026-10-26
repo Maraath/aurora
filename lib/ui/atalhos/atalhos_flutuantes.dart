@@ -14,6 +14,7 @@ import '../assistente/assistente_page.dart';
 import '../financas/form_lancamento.dart';
 import '../habitos/form_habito.dart';
 import '../lembretes/form_lembrete.dart';
+import '../rotina/form_rotina.dart';
 import '../tarefas/form_tarefa.dart';
 import '../vidro.dart';
 import 'captura.dart';
@@ -143,6 +144,7 @@ class _AtalhosFlutuantesState extends State<AtalhosFlutuantes> {
         LogicalKeyboardKey.keyT: _novaTarefa,
         LogicalKeyboardKey.keyL: _novoLancamento,
         LogicalKeyboardKey.keyR: _novoLembrete,
+        LogicalKeyboardKey.keyC: _novoCompromisso,
         LogicalKeyboardKey.keyH: () => _abrir(_Painel.habitos),
         if (widget.aoNovaNota != null) ...{
           LogicalKeyboardKey.keyN: () => _novaNota(TipoNota.texto),
@@ -191,6 +193,11 @@ class _AtalhosFlutuantesState extends State<AtalhosFlutuantes> {
     await abrirFormLembrete(context);
   }
 
+  Future<void> _novoCompromisso() async {
+    _fechar();
+    await abrirFormCompromisso(context);
+  }
+
   void _novaNota(TipoNota tipo) {
     _fechar();
     widget.aoNovaNota?.call(tipo);
@@ -214,6 +221,7 @@ class _AtalhosFlutuantesState extends State<AtalhosFlutuantes> {
             aoTarefa: _novaTarefa,
             aoLancamento: _novoLancamento,
             aoLembrete: _novoLembrete,
+            aoCompromisso: _novoCompromisso,
             aoHabito: () => _abrir(_Painel.habitos),
             aoNota: widget.aoNovaNota == null ? null : () => _novaNota(TipoNota.texto),
             aoGravar: widget.aoNovaNota == null ? null : () => _novaNota(TipoNota.audio),
@@ -539,11 +547,12 @@ class _MenuMais extends StatelessWidget {
     required this.aoTarefa,
     required this.aoLancamento,
     required this.aoLembrete,
+    required this.aoCompromisso,
     required this.aoHabito,
     this.aoNota,
     this.aoGravar,
   });
-  final VoidCallback aoCaptura, aoTarefa, aoLancamento, aoLembrete, aoHabito;
+  final VoidCallback aoCaptura, aoTarefa, aoLancamento, aoLembrete, aoCompromisso, aoHabito;
   final VoidCallback? aoNota, aoGravar;
 
   @override
@@ -553,10 +562,11 @@ class _MenuMais extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         _Opcao(icone: Icons.bolt_rounded, cor: c.accent, titulo: 'Captura rápida', sub: 'escreva, a Aurora organiza', tecla: 'Q', aoTocar: aoCaptura),
-        _Opcao(icone: Icons.task_alt_rounded, cor: c.violeta, titulo: 'Nova tarefa', sub: 'criar aqui mesmo', tecla: 'T', aoTocar: aoTarefa),
+        _Opcao(icone: Icons.task_alt_rounded, cor: c.corTarefa, titulo: 'Nova tarefa', sub: 'criar aqui mesmo', tecla: 'T', aoTocar: aoTarefa),
         _Opcao(icone: Icons.attach_money_rounded, cor: c.teal, titulo: 'Novo lançamento', sub: 'gasto ou receita', tecla: 'L', aoTocar: aoLancamento),
-        _Opcao(icone: Icons.notifications_none_rounded, cor: c.warn, titulo: 'Novo lembrete', sub: 'com hora para avisar', tecla: 'R', aoTocar: aoLembrete),
-        _Opcao(icone: Icons.repeat_rounded, cor: c.bad, titulo: 'Marcar hábito', sub: 'feito hoje', tecla: 'H', aoTocar: aoHabito),
+        _Opcao(icone: Icons.notifications_none_rounded, cor: c.corLembrete, titulo: 'Novo lembrete', sub: 'com hora para avisar', tecla: 'R', aoTocar: aoLembrete),
+        _Opcao(icone: Icons.event_rounded, cor: c.corCompromisso, titulo: 'Novo compromisso', sub: 'dia e hora marcados', tecla: 'C', aoTocar: aoCompromisso),
+        _Opcao(icone: Icons.donut_large_rounded, cor: c.corHabito, titulo: 'Marcar hábito', sub: 'feito hoje', tecla: 'H', aoTocar: aoHabito),
         if (aoNota != null)
           _Opcao(icone: Icons.sticky_note_2_outlined, cor: c.violeta, titulo: 'Nova anotação', sub: 'nota ou lista', tecla: 'N', aoTocar: aoNota!),
         if (aoGravar != null)

@@ -12,6 +12,7 @@ import 'core/nuvem.dart';
 import 'core/relogio.dart';
 import 'data/alimentacao_repo.dart';
 import 'data/banco.dart';
+import 'data/conversao_tarefas.dart';
 import 'data/exemplo.dart';
 import 'data/servico_automacoes.dart';
 import 'data/servico_sync.dart';
@@ -32,6 +33,8 @@ Future<void> main() async {
 
   runApp(AuroraApp(db: db, escuro: ValueNotifier(tema != 'claro'), primeiraVez: primeiraVez));
 
+  // Tarefas que repetem (de antes da Rotina) viram hábito ou lembrete.
+  await converterTarefasRepetidas(db);
   // Depois da primeira tela: pede permissão e agenda os avisos.
   unawaited(Notificador.instancia.iniciar(db));
   // Com conta conectada, sincroniza ao abrir e a cada mudança.

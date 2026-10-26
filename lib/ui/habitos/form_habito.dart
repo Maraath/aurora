@@ -1,40 +1,41 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
-import '../../app.dart';
 import '../../core/recorrencia.dart';
 import '../../core/tema.dart';
 import '../../data/banco.dart';
 import '../../data/habitos_repo.dart';
 import '../formulario.dart';
+import '../rotina/contexto_form.dart';
+import '../rotina/form_rotina.dart';
 
+/// Abre o formulário de novo hábito ou de edição de [habito] (a folha única da
+/// Rotina, já no tipo hábito). As metas e o aviso a folha lê sozinha.
 Future<void> abrirFormHabito(BuildContext context,
-    {Habito? habito, required List<Meta> metas, bool avisar = false}) {
-  final repo = HabitosRepo(AuroraEscopo.de(context).db);
-  return abrirFolha<void>(
-    context,
-    (_) => _FormHabito(repo: repo, habito: habito, metas: metas, avisarInicial: avisar),
-  );
-}
+        {Habito? habito, List<Meta> metas = const [], bool avisar = false}) =>
+    abrirFormRotina(context, tipo: TipoRotina.habito, item: habito);
 
-class _FormHabito extends StatefulWidget {
-  const _FormHabito({
+class FormHabito extends StatefulWidget {
+  const FormHabito({
+    super.key,
     required this.repo,
     required this.habito,
     required this.metas,
     required this.avisarInicial,
+    this.contexto = const ContextoForm(),
   });
 
   final HabitosRepo repo;
   final Habito? habito;
   final List<Meta> metas;
   final bool avisarInicial;
+  final ContextoForm contexto;
 
   @override
-  State<_FormHabito> createState() => _FormHabitoState();
+  State<FormHabito> createState() => _FormHabitoState();
 }
 
-class _FormHabitoState extends State<_FormHabito> {
+class _FormHabitoState extends State<FormHabito> {
   late final TextEditingController _nome;
   late final TextEditingController _alvo;
   late final TextEditingController _unidade;
@@ -45,11 +46,13 @@ class _FormHabitoState extends State<_FormHabito> {
   late bool _avisar;
   String? _erro;
 
+  ContextoForm get _ctx => widget.contexto;
+
   @override
   void initState() {
     super.initState();
     final h = widget.habito;
-    _nome = TextEditingController(text: h?.nome ?? '');
+    _nome = _ctx.titulo ?? TextEditingController(text: h?.nome ?? '');
     _tipo = h?.tipo ?? TipoHabito.marcar;
     _alvo = TextEditingController(text: '${h?.alvo ?? (_tipo == TipoHabito.quantidade ? 8 : 30)}');
     _unidade = TextEditingController(text: h?.unidade ?? '');
@@ -57,6 +60,8 @@ class _FormHabitoState extends State<_FormHabito> {
     if (h?.horario != null) {
       final p = h!.horario!.split(':');
       _hora = TimeOfDay(hour: int.parse(p[0]), minute: int.parse(p[1]));
+    } else if (h == null) {
+      _hora = _ctx.hora;
     }
     _metaId = h?.metaId;
     _avisar = widget.avisarInicial;
@@ -64,7 +69,7 @@ class _FormHabitoState extends State<_FormHabito> {
 
   @override
   void dispose() {
-    _nome.dispose();
+    if (_ctx.titulo == null) _nome.dispose();
     _alvo.dispose();
     _unidade.dispose();
     super.dispose();
@@ -94,7 +99,8 @@ class _FormHabitoState extends State<_FormHabito> {
           : null),
       metaId: Value(_metaId),
     );
-    await widget.repo.salvar(dados, id: widget.habito?.id, avisar: _avisar);
+    final id = await widget.repo.salvar(dados, id: widget.habito?.id, avisar: _avisar);
+    await _ctx.aoSalvo?.call(id);
     if (mounted) Navigator.pop(context);
   }
 
@@ -143,11 +149,12 @@ class _FormHabitoState extends State<_FormHabito> {
         );
 
     return Folha(
-      titulo: widget.habito == null ? 'Novo hábito' : 'Editar hábito',
+      titulo: _ctx.tituloFolha ?? (widget.habito == null ? 'Novo hábito' : 'Editar hábito'),
       textoSalvar: 'Salvar hábito',
       aoSalvar: _salvar,
       aoExcluir: widget.habito == null ? null : _excluir,
       campos: [
+        ?_ctx.cabecalho,
         Campo(
           rotulo: 'Qual hábito?',
           child: CampoTexto(

@@ -53,6 +53,13 @@ class AuroraCores extends ThemeExtension<AuroraCores> {
   /// Verde → violeta, como a aurora sobe no céu. Só no botão principal.
   LinearGradient get gradiente => LinearGradient(colors: [gradIni, gradFim]);
 
+  /// Cor fixa de cada tipo da Rotina (marcador, coluna, calendário). O magenta
+  /// ([bad]) fica só para o que está atrasado.
+  Color get corTarefa => warn;
+  Color get corHabito => accent;
+  Color get corLembrete => violeta;
+  Color get corCompromisso => teal;
+
   static const escuro = AuroraCores(
     bg: Color(0xFF080716),
     surface: Color(0xFF100F28),

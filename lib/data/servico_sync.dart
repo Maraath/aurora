@@ -10,6 +10,7 @@ import 'banco.dart';
 import 'fotos_sync.dart';
 import 'shape_repo.dart';
 import 'sincronizacao.dart';
+import 'conversao_tarefas.dart';
 
 /// O servidor de verdade: as tabelas do Supabase, protegidas por RLS.
 class RemotoSupabase implements RemotoSync {
@@ -143,6 +144,9 @@ class ServicoSync {
     try {
       final r = await acao(s);
       debugPrint('Sincronização: ${r.enviadas} enviadas, ${r.recebidas} recebidas');
+      // Tarefa repetida que chegou de um app antigo vira hábito ou lembrete
+      // (e a conversão sai na próxima rodada).
+      if (r.recebidas > 0 && await converterTarefasRepetidas(s.db) > 0) _deNovo = true;
       await _sincronizarFotos(s);
       estado.value = EstadoSync(FaseSync.ocioso, ultima: DateTime.now());
     } on PrecisaEscolher {

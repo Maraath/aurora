@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../core/formato.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
-import '../../data/banco.dart';
 import '../../data/tarefas_repo.dart';
 import '../componentes.dart';
 
@@ -26,11 +25,6 @@ class LinhaTarefa extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     final o = ocorrencia;
-    final (prio, corPrio) = switch (o.tarefa.prioridade) {
-      Prioridade.alta => ('Alta', c.bad),
-      Prioridade.media => ('Média', c.warn),
-      Prioridade.baixa => ('Baixa', c.muted),
-    };
     final corDetalhe = o.feita ? c.teal : (o.atrasada ? c.bad : c.muted);
 
     return Semantics(
@@ -44,7 +38,7 @@ class LinhaTarefa extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 40),
           child: Row(
             children: [
-              MarcaConcluir(feito: o.feita),
+              MarcaConcluir(feito: o.feita, cor: o.atrasada ? c.bad : c.corTarefa, quadrado: true),
               const SizedBox(width: 12),
               Expanded(
                 child: AnimatedOpacity(
@@ -67,15 +61,7 @@ class LinhaTarefa extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: corPrio),
-                ),
-                child: Text(prio, style: manrope(11, peso: FontWeight.w700, cor: corPrio)),
-              ),
+              const SizedBox(width: 4),
               IconButton(
                 tooltip: 'Editar',
                 onPressed: aoEditar,

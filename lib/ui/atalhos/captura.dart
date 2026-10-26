@@ -36,7 +36,13 @@ import '../../data/tarefas_repo.dart';
               '${c.dia == null ? 'sem data' : diaRelativo(c.dia!, hoje)}'
               '${c.hora == null ? '' : ' às ${horaDe(c.hora!, c.minuto)}'}',
         ),
-      CmdHabito() => (Icons.repeat_rounded, 'Marcar hábito · ${c.nome} · hoje'),
+      CmdCompromisso() => (
+          Icons.event_rounded,
+          'Compromisso · ${c.titulo} · ${diaRelativo(c.dia, hoje)}'
+              '${c.diaInteiro || c.hora == null ? ' · dia todo' : ' às ${horaDe(c.hora!, c.minuto)}'}'
+              '${c.regra != null ? ' · ${c.regra!.descricao.toLowerCase()}' : ''}',
+        ),
+      CmdHabito() => (Icons.donut_large_rounded, 'Marcar hábito · ${c.nome} · hoje'),
       CmdMedida() => (Icons.straighten_rounded, 'Medida · ${c.tipo} ${numero(c.valor)} ${c.unidade} · hoje'),
       CmdComida() => (
           Icons.restaurant_rounded,

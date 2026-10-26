@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
-import '../../app.dart';
 import '../../core/notificacoes.dart';
 import '../../core/recorrencia.dart';
 import '../../core/relogio.dart';
@@ -9,22 +8,35 @@ import '../../core/tema.dart';
 import '../../data/banco.dart';
 import '../../data/lembretes_repo.dart';
 import '../formulario.dart';
+import '../rotina/contexto_form.dart';
+import '../rotina/form_rotina.dart';
 
-Future<void> abrirFormLembrete(BuildContext context, {Lembrete? lembrete}) {
-  final repo = LembretesRepo(AuroraEscopo.de(context).db);
-  return abrirFolha<void>(context, (_) => _FormLembrete(repo: repo, lembrete: lembrete));
-}
+/// Abre o formulário de novo lembrete ou de edição de [lembrete] (a folha única
+/// da Rotina, já no tipo lembrete). Lembrete criado por tarefa ou hábito não
+/// troca de tipo: ele segue o item.
+Future<void> abrirFormLembrete(BuildContext context, {Lembrete? lembrete}) => abrirFormRotina(
+      context,
+      tipo: TipoRotina.lembrete,
+      item: lembrete,
+      trocarTipo: lembrete?.itemTipo == null,
+    );
 
-class _FormLembrete extends StatefulWidget {
-  const _FormLembrete({required this.repo, required this.lembrete});
+class FormLembrete extends StatefulWidget {
+  const FormLembrete({
+    super.key,
+    required this.repo,
+    required this.lembrete,
+    this.contexto = const ContextoForm(),
+  });
   final LembretesRepo repo;
   final Lembrete? lembrete;
+  final ContextoForm contexto;
 
   @override
-  State<_FormLembrete> createState() => _FormLembreteState();
+  State<FormLembrete> createState() => _FormLembreteState();
 }
 
-class _FormLembreteState extends State<_FormLembrete> {
+class _FormLembreteState extends State<FormLembrete> {
   late final TextEditingController _texto;
   late DateTime? _data;
   late TimeOfDay? _hora;
@@ -34,21 +46,23 @@ class _FormLembreteState extends State<_FormLembrete> {
   String? _erro;
   final _hoje = hojeLocal();
 
+  ContextoForm get _ctx => widget.contexto;
   bool get _ligadoAItem => widget.lembrete?.itemTipo != null;
 
   @override
   void initState() {
     super.initState();
     final l = widget.lembrete;
-    _texto = TextEditingController(text: l?.texto ?? '');
+    _texto = _ctx.titulo ?? TextEditingController(text: l?.texto ?? '');
     if (l != null) {
       final q = emLocal(l.quando);
       _data = DateTime(q.year, q.month, q.day);
       _hora = TimeOfDay(hour: q.hour, minute: q.minute);
     } else {
-      _data = _hoje;
+      final data = _ctx.data;
+      _data = data == null || data.isBefore(_hoje) ? _hoje : data;
       final agora = agoraLocal();
-      _hora = TimeOfDay(hour: (agora.hour + 1) % 24, minute: 0);
+      _hora = _ctx.hora ?? TimeOfDay(hour: (agora.hour + 1) % 24, minute: 0);
     }
     _regraAtual = Regra.ler(l?.regraRepeticao);
     _repetir = OpcaoRepeticao.de(_regraAtual);
@@ -63,7 +77,7 @@ class _FormLembreteState extends State<_FormLembrete> {
 
   @override
   void dispose() {
-    _texto.dispose();
+    if (_ctx.titulo == null) _texto.dispose();
     super.dispose();
   }
 
@@ -81,7 +95,7 @@ class _FormLembreteState extends State<_FormLembrete> {
       setState(() => _erro = 'Esse horário já passou. Escolha outro ou repita.');
       return;
     }
-    await widget.repo.salvar(
+    final id = await widget.repo.salvar(
       LembretesCompanion(
         texto: Value(texto),
         quando: Value(quando),
@@ -91,6 +105,7 @@ class _FormLembreteState extends State<_FormLembrete> {
       ),
       id: widget.lembrete?.id,
     );
+    await _ctx.aoSalvo?.call(id);
     if (mounted) Navigator.pop(context);
   }
 
@@ -104,14 +119,16 @@ class _FormLembreteState extends State<_FormLembrete> {
     final c = context.cores;
     final opcoes = [
       ...OpcaoRepeticao.padrao,
+      OpcaoRepeticao.todoAno,
       if (_repetir == OpcaoRepeticao.personalizada) OpcaoRepeticao.personalizada,
     ];
     return Folha(
-      titulo: widget.lembrete == null ? 'Novo lembrete' : 'Editar lembrete',
+      titulo: _ctx.tituloFolha ?? (widget.lembrete == null ? 'Novo lembrete' : 'Editar lembrete'),
       textoSalvar: 'Salvar lembrete',
       aoSalvar: _salvar,
       aoExcluir: widget.lembrete == null ? null : _excluir,
       campos: [
+        ?_ctx.cabecalho,
         if (_ligadoAItem)
           Text(
             'Este lembrete foi criado por ${widget.lembrete!.itemTipo == 'habito' ? 'um hábito' : 'uma tarefa'}. '
@@ -129,14 +146,17 @@ class _FormLembreteState extends State<_FormLembrete> {
           ),
         ),
         Campo(
-          rotulo: 'Quando',
+          rotulo: 'Em que dia',
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               EscolhaData(
                 data: _data,
                 hoje: _hoje,
                 permiteSemData: false,
+                permitePassado: widget.lembrete != null,
+                calendarioAberto: widget.lembrete == null,
+                marcado: _ctx.marcado,
                 aoMudar: (d) => setState(() {
                   _data = d;
                   _erro = null;

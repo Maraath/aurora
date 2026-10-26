@@ -6360,6 +6360,773 @@ class LembretesCompanion extends UpdateCompanion<Lembrete> {
   }
 }
 
+class $CompromissosTable extends Compromissos
+    with TableInfo<$CompromissosTable, Compromisso> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CompromissosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tituloMeta = const VerificationMeta('titulo');
+  @override
+  late final GeneratedColumn<String> titulo = GeneratedColumn<String>(
+    'titulo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _inicioMeta = const VerificationMeta('inicio');
+  @override
+  late final GeneratedColumn<DateTime> inicio = GeneratedColumn<DateTime>(
+    'inicio',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fimMeta = const VerificationMeta('fim');
+  @override
+  late final GeneratedColumn<DateTime> fim = GeneratedColumn<DateTime>(
+    'fim',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _diaInteiroMeta = const VerificationMeta(
+    'diaInteiro',
+  );
+  @override
+  late final GeneratedColumn<bool> diaInteiro = GeneratedColumn<bool>(
+    'dia_inteiro',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dia_inteiro" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _localMeta = const VerificationMeta('local');
+  @override
+  late final GeneratedColumn<String> local = GeneratedColumn<String>(
+    'local',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _regraRepeticaoMeta = const VerificationMeta(
+    'regraRepeticao',
+  );
+  @override
+  late final GeneratedColumn<String> regraRepeticao = GeneratedColumn<String>(
+    'regra_repeticao',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _avisoAntesMinMeta = const VerificationMeta(
+    'avisoAntesMin',
+  );
+  @override
+  late final GeneratedColumn<int> avisoAntesMin = GeneratedColumn<int>(
+    'aviso_antes_min',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _despertarMeta = const VerificationMeta(
+    'despertar',
+  );
+  @override
+  late final GeneratedColumn<bool> despertar = GeneratedColumn<bool>(
+    'despertar',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("despertar" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _notasMeta = const VerificationMeta('notas');
+  @override
+  late final GeneratedColumn<String> notas = GeneratedColumn<String>(
+    'notas',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    titulo,
+    inicio,
+    fim,
+    diaInteiro,
+    local,
+    regraRepeticao,
+    avisoAntesMin,
+    despertar,
+    notas,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'compromissos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Compromisso> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('titulo')) {
+      context.handle(
+        _tituloMeta,
+        titulo.isAcceptableOrUnknown(data['titulo']!, _tituloMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tituloMeta);
+    }
+    if (data.containsKey('inicio')) {
+      context.handle(
+        _inicioMeta,
+        inicio.isAcceptableOrUnknown(data['inicio']!, _inicioMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_inicioMeta);
+    }
+    if (data.containsKey('fim')) {
+      context.handle(
+        _fimMeta,
+        fim.isAcceptableOrUnknown(data['fim']!, _fimMeta),
+      );
+    }
+    if (data.containsKey('dia_inteiro')) {
+      context.handle(
+        _diaInteiroMeta,
+        diaInteiro.isAcceptableOrUnknown(data['dia_inteiro']!, _diaInteiroMeta),
+      );
+    }
+    if (data.containsKey('local')) {
+      context.handle(
+        _localMeta,
+        local.isAcceptableOrUnknown(data['local']!, _localMeta),
+      );
+    }
+    if (data.containsKey('regra_repeticao')) {
+      context.handle(
+        _regraRepeticaoMeta,
+        regraRepeticao.isAcceptableOrUnknown(
+          data['regra_repeticao']!,
+          _regraRepeticaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('aviso_antes_min')) {
+      context.handle(
+        _avisoAntesMinMeta,
+        avisoAntesMin.isAcceptableOrUnknown(
+          data['aviso_antes_min']!,
+          _avisoAntesMinMeta,
+        ),
+      );
+    }
+    if (data.containsKey('despertar')) {
+      context.handle(
+        _despertarMeta,
+        despertar.isAcceptableOrUnknown(data['despertar']!, _despertarMeta),
+      );
+    }
+    if (data.containsKey('notas')) {
+      context.handle(
+        _notasMeta,
+        notas.isAcceptableOrUnknown(data['notas']!, _notasMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Compromisso map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Compromisso(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      titulo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}titulo'],
+      )!,
+      inicio: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}inicio'],
+      )!,
+      fim: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fim'],
+      ),
+      diaInteiro: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}dia_inteiro'],
+      )!,
+      local: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local'],
+      ),
+      regraRepeticao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}regra_repeticao'],
+      ),
+      avisoAntesMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}aviso_antes_min'],
+      ),
+      despertar: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}despertar'],
+      )!,
+      notas: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notas'],
+      ),
+    );
+  }
+
+  @override
+  $CompromissosTable createAlias(String alias) {
+    return $CompromissosTable(attachedDatabase, alias);
+  }
+}
+
+class Compromisso extends DataClass implements Insertable<Compromisso> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String titulo;
+
+  /// Começo (instante). No dia inteiro, a meia-noite do dia no fuso do aparelho.
+  final DateTime inicio;
+  final DateTime? fim;
+  final bool diaInteiro;
+  final String? local;
+  final String? regraRepeticao;
+
+  /// Minutos de antecedência do aviso; nulo = sem aviso.
+  final int? avisoAntesMin;
+  final bool despertar;
+  final String? notas;
+  const Compromisso({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.titulo,
+    required this.inicio,
+    this.fim,
+    required this.diaInteiro,
+    this.local,
+    this.regraRepeticao,
+    this.avisoAntesMin,
+    required this.despertar,
+    this.notas,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['titulo'] = Variable<String>(titulo);
+    map['inicio'] = Variable<DateTime>(inicio);
+    if (!nullToAbsent || fim != null) {
+      map['fim'] = Variable<DateTime>(fim);
+    }
+    map['dia_inteiro'] = Variable<bool>(diaInteiro);
+    if (!nullToAbsent || local != null) {
+      map['local'] = Variable<String>(local);
+    }
+    if (!nullToAbsent || regraRepeticao != null) {
+      map['regra_repeticao'] = Variable<String>(regraRepeticao);
+    }
+    if (!nullToAbsent || avisoAntesMin != null) {
+      map['aviso_antes_min'] = Variable<int>(avisoAntesMin);
+    }
+    map['despertar'] = Variable<bool>(despertar);
+    if (!nullToAbsent || notas != null) {
+      map['notas'] = Variable<String>(notas);
+    }
+    return map;
+  }
+
+  CompromissosCompanion toCompanion(bool nullToAbsent) {
+    return CompromissosCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      titulo: Value(titulo),
+      inicio: Value(inicio),
+      fim: fim == null && nullToAbsent ? const Value.absent() : Value(fim),
+      diaInteiro: Value(diaInteiro),
+      local: local == null && nullToAbsent
+          ? const Value.absent()
+          : Value(local),
+      regraRepeticao: regraRepeticao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(regraRepeticao),
+      avisoAntesMin: avisoAntesMin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(avisoAntesMin),
+      despertar: Value(despertar),
+      notas: notas == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notas),
+    );
+  }
+
+  factory Compromisso.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Compromisso(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      titulo: serializer.fromJson<String>(json['titulo']),
+      inicio: serializer.fromJson<DateTime>(json['inicio']),
+      fim: serializer.fromJson<DateTime?>(json['fim']),
+      diaInteiro: serializer.fromJson<bool>(json['diaInteiro']),
+      local: serializer.fromJson<String?>(json['local']),
+      regraRepeticao: serializer.fromJson<String?>(json['regraRepeticao']),
+      avisoAntesMin: serializer.fromJson<int?>(json['avisoAntesMin']),
+      despertar: serializer.fromJson<bool>(json['despertar']),
+      notas: serializer.fromJson<String?>(json['notas']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'titulo': serializer.toJson<String>(titulo),
+      'inicio': serializer.toJson<DateTime>(inicio),
+      'fim': serializer.toJson<DateTime?>(fim),
+      'diaInteiro': serializer.toJson<bool>(diaInteiro),
+      'local': serializer.toJson<String?>(local),
+      'regraRepeticao': serializer.toJson<String?>(regraRepeticao),
+      'avisoAntesMin': serializer.toJson<int?>(avisoAntesMin),
+      'despertar': serializer.toJson<bool>(despertar),
+      'notas': serializer.toJson<String?>(notas),
+    };
+  }
+
+  Compromisso copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? titulo,
+    DateTime? inicio,
+    Value<DateTime?> fim = const Value.absent(),
+    bool? diaInteiro,
+    Value<String?> local = const Value.absent(),
+    Value<String?> regraRepeticao = const Value.absent(),
+    Value<int?> avisoAntesMin = const Value.absent(),
+    bool? despertar,
+    Value<String?> notas = const Value.absent(),
+  }) => Compromisso(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    titulo: titulo ?? this.titulo,
+    inicio: inicio ?? this.inicio,
+    fim: fim.present ? fim.value : this.fim,
+    diaInteiro: diaInteiro ?? this.diaInteiro,
+    local: local.present ? local.value : this.local,
+    regraRepeticao: regraRepeticao.present
+        ? regraRepeticao.value
+        : this.regraRepeticao,
+    avisoAntesMin: avisoAntesMin.present
+        ? avisoAntesMin.value
+        : this.avisoAntesMin,
+    despertar: despertar ?? this.despertar,
+    notas: notas.present ? notas.value : this.notas,
+  );
+  Compromisso copyWithCompanion(CompromissosCompanion data) {
+    return Compromisso(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      titulo: data.titulo.present ? data.titulo.value : this.titulo,
+      inicio: data.inicio.present ? data.inicio.value : this.inicio,
+      fim: data.fim.present ? data.fim.value : this.fim,
+      diaInteiro: data.diaInteiro.present
+          ? data.diaInteiro.value
+          : this.diaInteiro,
+      local: data.local.present ? data.local.value : this.local,
+      regraRepeticao: data.regraRepeticao.present
+          ? data.regraRepeticao.value
+          : this.regraRepeticao,
+      avisoAntesMin: data.avisoAntesMin.present
+          ? data.avisoAntesMin.value
+          : this.avisoAntesMin,
+      despertar: data.despertar.present ? data.despertar.value : this.despertar,
+      notas: data.notas.present ? data.notas.value : this.notas,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Compromisso(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('titulo: $titulo, ')
+          ..write('inicio: $inicio, ')
+          ..write('fim: $fim, ')
+          ..write('diaInteiro: $diaInteiro, ')
+          ..write('local: $local, ')
+          ..write('regraRepeticao: $regraRepeticao, ')
+          ..write('avisoAntesMin: $avisoAntesMin, ')
+          ..write('despertar: $despertar, ')
+          ..write('notas: $notas')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    titulo,
+    inicio,
+    fim,
+    diaInteiro,
+    local,
+    regraRepeticao,
+    avisoAntesMin,
+    despertar,
+    notas,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Compromisso &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.titulo == this.titulo &&
+          other.inicio == this.inicio &&
+          other.fim == this.fim &&
+          other.diaInteiro == this.diaInteiro &&
+          other.local == this.local &&
+          other.regraRepeticao == this.regraRepeticao &&
+          other.avisoAntesMin == this.avisoAntesMin &&
+          other.despertar == this.despertar &&
+          other.notas == this.notas);
+}
+
+class CompromissosCompanion extends UpdateCompanion<Compromisso> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> titulo;
+  final Value<DateTime> inicio;
+  final Value<DateTime?> fim;
+  final Value<bool> diaInteiro;
+  final Value<String?> local;
+  final Value<String?> regraRepeticao;
+  final Value<int?> avisoAntesMin;
+  final Value<bool> despertar;
+  final Value<String?> notas;
+  final Value<int> rowid;
+  const CompromissosCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.titulo = const Value.absent(),
+    this.inicio = const Value.absent(),
+    this.fim = const Value.absent(),
+    this.diaInteiro = const Value.absent(),
+    this.local = const Value.absent(),
+    this.regraRepeticao = const Value.absent(),
+    this.avisoAntesMin = const Value.absent(),
+    this.despertar = const Value.absent(),
+    this.notas = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CompromissosCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String titulo,
+    required DateTime inicio,
+    this.fim = const Value.absent(),
+    this.diaInteiro = const Value.absent(),
+    this.local = const Value.absent(),
+    this.regraRepeticao = const Value.absent(),
+    this.avisoAntesMin = const Value.absent(),
+    this.despertar = const Value.absent(),
+    this.notas = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : titulo = Value(titulo),
+       inicio = Value(inicio);
+  static Insertable<Compromisso> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? titulo,
+    Expression<DateTime>? inicio,
+    Expression<DateTime>? fim,
+    Expression<bool>? diaInteiro,
+    Expression<String>? local,
+    Expression<String>? regraRepeticao,
+    Expression<int>? avisoAntesMin,
+    Expression<bool>? despertar,
+    Expression<String>? notas,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (titulo != null) 'titulo': titulo,
+      if (inicio != null) 'inicio': inicio,
+      if (fim != null) 'fim': fim,
+      if (diaInteiro != null) 'dia_inteiro': diaInteiro,
+      if (local != null) 'local': local,
+      if (regraRepeticao != null) 'regra_repeticao': regraRepeticao,
+      if (avisoAntesMin != null) 'aviso_antes_min': avisoAntesMin,
+      if (despertar != null) 'despertar': despertar,
+      if (notas != null) 'notas': notas,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CompromissosCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? titulo,
+    Value<DateTime>? inicio,
+    Value<DateTime?>? fim,
+    Value<bool>? diaInteiro,
+    Value<String?>? local,
+    Value<String?>? regraRepeticao,
+    Value<int?>? avisoAntesMin,
+    Value<bool>? despertar,
+    Value<String?>? notas,
+    Value<int>? rowid,
+  }) {
+    return CompromissosCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      titulo: titulo ?? this.titulo,
+      inicio: inicio ?? this.inicio,
+      fim: fim ?? this.fim,
+      diaInteiro: diaInteiro ?? this.diaInteiro,
+      local: local ?? this.local,
+      regraRepeticao: regraRepeticao ?? this.regraRepeticao,
+      avisoAntesMin: avisoAntesMin ?? this.avisoAntesMin,
+      despertar: despertar ?? this.despertar,
+      notas: notas ?? this.notas,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (titulo.present) {
+      map['titulo'] = Variable<String>(titulo.value);
+    }
+    if (inicio.present) {
+      map['inicio'] = Variable<DateTime>(inicio.value);
+    }
+    if (fim.present) {
+      map['fim'] = Variable<DateTime>(fim.value);
+    }
+    if (diaInteiro.present) {
+      map['dia_inteiro'] = Variable<bool>(diaInteiro.value);
+    }
+    if (local.present) {
+      map['local'] = Variable<String>(local.value);
+    }
+    if (regraRepeticao.present) {
+      map['regra_repeticao'] = Variable<String>(regraRepeticao.value);
+    }
+    if (avisoAntesMin.present) {
+      map['aviso_antes_min'] = Variable<int>(avisoAntesMin.value);
+    }
+    if (despertar.present) {
+      map['despertar'] = Variable<bool>(despertar.value);
+    }
+    if (notas.present) {
+      map['notas'] = Variable<String>(notas.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CompromissosCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('titulo: $titulo, ')
+          ..write('inicio: $inicio, ')
+          ..write('fim: $fim, ')
+          ..write('diaInteiro: $diaInteiro, ')
+          ..write('local: $local, ')
+          ..write('regraRepeticao: $regraRepeticao, ')
+          ..write('avisoAntesMin: $avisoAntesMin, ')
+          ..write('despertar: $despertar, ')
+          ..write('notas: $notas, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ExerciciosTable extends Exercicios
     with TableInfo<$ExerciciosTable, Exercicio> {
   @override
@@ -15381,6 +16148,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   late final $PagamentosTransacaoTable pagamentosTransacao =
       $PagamentosTransacaoTable(this);
   late final $LembretesTable lembretes = $LembretesTable(this);
+  late final $CompromissosTable compromissos = $CompromissosTable(this);
   late final $ExerciciosTable exercicios = $ExerciciosTable(this);
   late final $TreinosTable treinos = $TreinosTable(this);
   late final $ItensTreinoTable itensTreino = $ItensTreinoTable(this);
@@ -15434,6 +16202,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
     transacoes,
     pagamentosTransacao,
     lembretes,
+    compromissos,
     exercicios,
     treinos,
     itensTreino,
@@ -20432,6 +21201,375 @@ typedef $$LembretesTableProcessedTableManager =
       $$LembretesTableUpdateCompanionBuilder,
       (Lembrete, BaseReferences<_$BancoAurora, $LembretesTable, Lembrete>),
       Lembrete,
+      PrefetchHooks Function()
+    >;
+typedef $$CompromissosTableCreateCompanionBuilder =
+    CompromissosCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      required String titulo,
+      required DateTime inicio,
+      Value<DateTime?> fim,
+      Value<bool> diaInteiro,
+      Value<String?> local,
+      Value<String?> regraRepeticao,
+      Value<int?> avisoAntesMin,
+      Value<bool> despertar,
+      Value<String?> notas,
+      Value<int> rowid,
+    });
+typedef $$CompromissosTableUpdateCompanionBuilder =
+    CompromissosCompanion Function({
+      Value<String> id,
+      Value<DateTime> criadoEm,
+      Value<DateTime> atualizadoEm,
+      Value<DateTime?> apagadoEm,
+      Value<String> titulo,
+      Value<DateTime> inicio,
+      Value<DateTime?> fim,
+      Value<bool> diaInteiro,
+      Value<String?> local,
+      Value<String?> regraRepeticao,
+      Value<int?> avisoAntesMin,
+      Value<bool> despertar,
+      Value<String?> notas,
+      Value<int> rowid,
+    });
+
+class $$CompromissosTableFilterComposer
+    extends Composer<_$BancoAurora, $CompromissosTable> {
+  $$CompromissosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get titulo => $composableBuilder(
+    column: $table.titulo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get inicio => $composableBuilder(
+    column: $table.inicio,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fim => $composableBuilder(
+    column: $table.fim,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get diaInteiro => $composableBuilder(
+    column: $table.diaInteiro,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get local => $composableBuilder(
+    column: $table.local,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get regraRepeticao => $composableBuilder(
+    column: $table.regraRepeticao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get avisoAntesMin => $composableBuilder(
+    column: $table.avisoAntesMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get despertar => $composableBuilder(
+    column: $table.despertar,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notas => $composableBuilder(
+    column: $table.notas,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CompromissosTableOrderingComposer
+    extends Composer<_$BancoAurora, $CompromissosTable> {
+  $$CompromissosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get titulo => $composableBuilder(
+    column: $table.titulo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get inicio => $composableBuilder(
+    column: $table.inicio,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fim => $composableBuilder(
+    column: $table.fim,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get diaInteiro => $composableBuilder(
+    column: $table.diaInteiro,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get local => $composableBuilder(
+    column: $table.local,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get regraRepeticao => $composableBuilder(
+    column: $table.regraRepeticao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get avisoAntesMin => $composableBuilder(
+    column: $table.avisoAntesMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get despertar => $composableBuilder(
+    column: $table.despertar,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notas => $composableBuilder(
+    column: $table.notas,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CompromissosTableAnnotationComposer
+    extends Composer<_$BancoAurora, $CompromissosTable> {
+  $$CompromissosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get titulo =>
+      $composableBuilder(column: $table.titulo, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get inicio =>
+      $composableBuilder(column: $table.inicio, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fim =>
+      $composableBuilder(column: $table.fim, builder: (column) => column);
+
+  GeneratedColumn<bool> get diaInteiro => $composableBuilder(
+    column: $table.diaInteiro,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get local =>
+      $composableBuilder(column: $table.local, builder: (column) => column);
+
+  GeneratedColumn<String> get regraRepeticao => $composableBuilder(
+    column: $table.regraRepeticao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get avisoAntesMin => $composableBuilder(
+    column: $table.avisoAntesMin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get despertar =>
+      $composableBuilder(column: $table.despertar, builder: (column) => column);
+
+  GeneratedColumn<String> get notas =>
+      $composableBuilder(column: $table.notas, builder: (column) => column);
+}
+
+class $$CompromissosTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $CompromissosTable,
+          Compromisso,
+          $$CompromissosTableFilterComposer,
+          $$CompromissosTableOrderingComposer,
+          $$CompromissosTableAnnotationComposer,
+          $$CompromissosTableCreateCompanionBuilder,
+          $$CompromissosTableUpdateCompanionBuilder,
+          (
+            Compromisso,
+            BaseReferences<_$BancoAurora, $CompromissosTable, Compromisso>,
+          ),
+          Compromisso,
+          PrefetchHooks Function()
+        > {
+  $$CompromissosTableTableManager(_$BancoAurora db, $CompromissosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CompromissosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CompromissosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CompromissosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> titulo = const Value.absent(),
+                Value<DateTime> inicio = const Value.absent(),
+                Value<DateTime?> fim = const Value.absent(),
+                Value<bool> diaInteiro = const Value.absent(),
+                Value<String?> local = const Value.absent(),
+                Value<String?> regraRepeticao = const Value.absent(),
+                Value<int?> avisoAntesMin = const Value.absent(),
+                Value<bool> despertar = const Value.absent(),
+                Value<String?> notas = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CompromissosCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                titulo: titulo,
+                inicio: inicio,
+                fim: fim,
+                diaInteiro: diaInteiro,
+                local: local,
+                regraRepeticao: regraRepeticao,
+                avisoAntesMin: avisoAntesMin,
+                despertar: despertar,
+                notas: notas,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String titulo,
+                required DateTime inicio,
+                Value<DateTime?> fim = const Value.absent(),
+                Value<bool> diaInteiro = const Value.absent(),
+                Value<String?> local = const Value.absent(),
+                Value<String?> regraRepeticao = const Value.absent(),
+                Value<int?> avisoAntesMin = const Value.absent(),
+                Value<bool> despertar = const Value.absent(),
+                Value<String?> notas = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CompromissosCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                titulo: titulo,
+                inicio: inicio,
+                fim: fim,
+                diaInteiro: diaInteiro,
+                local: local,
+                regraRepeticao: regraRepeticao,
+                avisoAntesMin: avisoAntesMin,
+                despertar: despertar,
+                notas: notas,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CompromissosTable, Compromisso>(table),
+                  BaseReferences<
+                    _$BancoAurora,
+                    $CompromissosTable,
+                    Compromisso
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CompromissosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $CompromissosTable,
+      Compromisso,
+      $$CompromissosTableFilterComposer,
+      $$CompromissosTableOrderingComposer,
+      $$CompromissosTableAnnotationComposer,
+      $$CompromissosTableCreateCompanionBuilder,
+      $$CompromissosTableUpdateCompanionBuilder,
+      (
+        Compromisso,
+        BaseReferences<_$BancoAurora, $CompromissosTable, Compromisso>,
+      ),
+      Compromisso,
       PrefetchHooks Function()
     >;
 typedef $$ExerciciosTableCreateCompanionBuilder = ExerciciosCompanion Function({
@@ -26639,6 +27777,8 @@ class $BancoAuroraManager {
       $$PagamentosTransacaoTableTableManager(_db, _db.pagamentosTransacao);
   $$LembretesTableTableManager get lembretes =>
       $$LembretesTableTableManager(_db, _db.lembretes);
+  $$CompromissosTableTableManager get compromissos =>
+      $$CompromissosTableTableManager(_db, _db.compromissos);
   $$ExerciciosTableTableManager get exercicios =>
       $$ExerciciosTableTableManager(_db, _db.exercicios);
   $$TreinosTableTableManager get treinos =>

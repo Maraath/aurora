@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../core/relogio.dart';
 import 'banco.dart';
+import 'compromissos_repo.dart';
 import 'financas_repo.dart';
 import 'habitos_repo.dart';
 import 'lembretes_repo.dart';
@@ -20,7 +21,7 @@ class ItemFoco {
   final String detalhe;
 }
 
-enum TipoItemLinha { tarefa, lembrete, conta, habito }
+enum TipoItemLinha { compromisso, tarefa, lembrete, conta, habito }
 
 /// Um compromisso de hoje na "Linha do dia".
 class ItemLinha {
@@ -47,12 +48,13 @@ class ItemLinha {
 
 /// Quantos compromissos cada dia da semana tem.
 class DiaSemana {
-  const DiaSemana(this.dia, {this.tarefas = 0, this.lembretes = 0, this.contas = 0});
+  const DiaSemana(this.dia, {this.compromissos = 0, this.tarefas = 0, this.lembretes = 0, this.contas = 0});
   final DateTime dia;
+  final int compromissos;
   final int tarefas;
   final int lembretes;
   final int contas;
-  int get total => tarefas + lembretes + contas;
+  int get total => compromissos + tarefas + lembretes + contas;
 }
 
 class ResumoVisao {
@@ -65,6 +67,7 @@ class ResumoVisao {
     required this.aPagarCentavos,
     required this.contasAPagar,
     required this.meta,
+    this.compromissosHoje = const [],
     this.linha = const [],
     this.semana = const [],
     this.insights = const [],
@@ -80,6 +83,9 @@ class ResumoVisao {
   final int aPagarCentavos;
   final int contasAPagar;
   final Meta? meta;
+
+  /// Compromissos de hoje, em ordem (dia inteiro primeiro).
+  final List<OcorrenciaCompromisso> compromissosHoje;
 
   /// Hoje em ordem de horário; o que não tem hora vai para o fim.
   final List<ItemLinha> linha;
@@ -113,6 +119,7 @@ class VisaoRepo {
         db.contasFinanceiras,
         db.metas,
         db.lembretes,
+        db.compromissos,
       ], carregar);
 
   Future<ResumoVisao> carregar() async {
@@ -134,6 +141,7 @@ class VisaoRepo {
           ..limit(1))
         .getSingleOrNull();
     final pedidoNome = db.preferencia('nome');
+    final pedidoCompromissos = CompromissosRepo(db).carregar();
 
     final quadroHabitos = await pedidoHabitos;
     final habitosHoje = [
@@ -166,8 +174,16 @@ class VisaoRepo {
     }
 
     final meta = await pedidoMeta;
+    final compromissos = (await pedidoCompromissos).porDia(hoje, fimSemana);
 
     final linha = <ItemLinha>[
+      for (final o in compromissos[hoje] ?? const <OcorrenciaCompromisso>[])
+        ItemLinha(
+          tipo: TipoItemLinha.compromisso,
+          titulo: o.compromisso.titulo,
+          hora: o.diaInteiro ? null : o.inicio,
+          feito: o.terminou(agora),
+        ),
       for (final o in tarefasPorDia[hoje] ?? const <OcorrenciaTarefa>[])
         ItemLinha(
           tipo: TipoItemLinha.tarefa,
@@ -202,6 +218,7 @@ class VisaoRepo {
           final d = somarDias(hoje, i);
           return DiaSemana(
             d,
+            compromissos: (compromissos[d] ?? const []).length,
             tarefas: (tarefasPorDia[d] ?? const []).where((o) => !o.feita).length,
             lembretes: (disparos[d] ?? const []).length,
             contas: contas.where((o) => o.vencimento == d && !o.paga).length,
@@ -218,6 +235,7 @@ class VisaoRepo {
       aPagarCentavos: mes.faltaPagarCentavos,
       contasAPagar: mes.contasAbertas,
       meta: meta,
+      compromissosHoje: compromissos[hoje] ?? const [],
       linha: linha,
       semana: semana,
       insights: _insights(
@@ -279,7 +297,7 @@ List<String> _insights({
   if (melhor != null) lista.add('${melhor.value} dias seguidos de ${melhor.key}.');
   final cheio = semana.skip(1).fold<DiaSemana?>(null, (m, d) => m == null || d.total > m.total ? d : m);
   if (cheio != null && cheio.total >= 3) {
-    lista.add('${_diasSemana[cheio.dia.weekday - 1]} é o dia mais cheio da semana (${cheio.total} compromissos).');
+    lista.add('${_diasSemana[cheio.dia.weekday - 1]} é o dia mais cheio da semana (${cheio.total} itens).');
   }
   return lista.take(3).toList();
 }

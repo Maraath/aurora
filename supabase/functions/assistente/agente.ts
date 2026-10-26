@@ -300,6 +300,111 @@ export const ferramentas = {
   }),
 };
 
+// ----------------------------------------------------- rotina (app 1.12+)
+
+/// O app da Rotina (1.12+) manda `recursos: ["rotina"]`: só ele recebe o
+/// compromisso e as telas novas (app antigo não conhece essas ferramentas).
+export const PERSONA_ROTINA = `
+
+Rotina (tarefas, hábitos, lembretes e compromissos juntos numa área "Rotina"):
+- COMPROMISSO = algo com dia e hora marcados, às vezes com lugar (dentista, reunião, aniversário,
+  cinema): use "criar_compromisso" / "editar_compromisso". TAREFA = algo a fazer que termina
+  (não repete). LEMBRETE = só um aviso. O que se repete para criar constância é HÁBITO.
+- Compromisso tem aviso antes (padrão 30 min); "aviso_min" muda (0 = na hora). Para ver ou achar o
+  id, "consultar" área "compromissos" ou "buscar". "excluir_item" aceita tipo "compromisso".
+- "abrir_tela": "rotina" (hoje), "calendario" (mês e semana) e "habitos".`;
+
+const repeticaoCompromisso = z
+  .enum(["nao", "semana", "quinzena", "mes", "ano"])
+  .describe("nao = não repete; semana; quinzena = a cada 2 semanas; mes; ano (aniversário)");
+
+export const ferramentasRotina = {
+  ...ferramentas,
+  criar_compromisso: tool({
+    description:
+      "Cria um compromisso: algo com dia e hora marcados (consulta, reunião, aniversário, evento). " +
+      "Sem 'hora', pergunte, a não ser que seja de dia inteiro (aniversário, viagem, feriado).",
+    inputSchema: z.object({
+      titulo: z.string().min(1),
+      data: data.describe("Dia do compromisso"),
+      hora: hora.optional().describe("Começo"),
+      fim: hora.optional().describe("Fim; sem ele, dura 1 hora"),
+      dia_inteiro: z.boolean().optional(),
+      local: z.string().optional().describe("Endereço, sala ou link"),
+      repeticao: repeticaoCompromisso.optional(),
+      aviso_min: z.number().int().min(0).max(10080).optional().describe(
+        "Minutos de antecedência do aviso (0 = na hora, 1440 = 1 dia antes); padrão 30",
+      ),
+    }),
+  }),
+  editar_compromisso: tool({
+    description:
+      "Muda um compromisso (id vindo de 'buscar' ou 'consultar' compromissos). Só os campos informados " +
+      "mudam; a mudança vale para todas as repetições.",
+    inputSchema: z.object({
+      id: z.string().min(1),
+      titulo: z.string().min(1).optional(),
+      data: data.optional(),
+      hora: hora.optional(),
+      fim: hora.optional(),
+      dia_inteiro: z.boolean().optional(),
+      local: z.string().optional().describe("Texto vazio tira o local"),
+      repeticao: repeticaoCompromisso.optional(),
+      aviso_min: z.number().int().min(-1).max(10080).optional().describe("-1 tira o aviso"),
+    }),
+  }),
+  excluir_item: tool({
+    description: ferramentas.excluir_item.description + " Também exclui um compromisso (com todas as repetições).",
+    inputSchema: z.object({
+      tipo: z.enum(["lancamento", "tarefa", "lembrete", "treino", "compromisso"]),
+      id: z.string().min(1),
+      apagar_pagos: z.boolean().optional().describe(
+        "Só para lançamento que repete: true apaga de vez, com os pagamentos já feitos (teste, lançado errado)",
+      ),
+    }),
+  }),
+  consultar: tool({
+    description: ferramentas.consultar.description + " Compromissos vêm com ids (próximos e recentes).",
+    inputSchema: z.object({
+      area: z.enum([
+        "tarefas",
+        "habitos",
+        "compromissos",
+        "financas",
+        "treino",
+        "medidas",
+        "alimentacao",
+        "metas",
+        "projetos",
+        "lembretes",
+        "shape",
+      ]),
+      periodo_dias: z.number().int().min(1).max(365).optional().describe("Quantos dias para trás; padrão 30"),
+    }),
+  }),
+  abrir_tela: tool({
+    description: "Abre uma tela do app para a pessoa ver (a conversa continua aberta).",
+    inputSchema: z.object({
+      tela: z.enum([
+        "visao",
+        "rotina",
+        "calendario",
+        "habitos",
+        "automacoes",
+        "treino",
+        "medidas",
+        "exercicios",
+        "shape",
+        "alimentacao",
+        "metas",
+        "projetos",
+        "financas",
+        "conta",
+      ]),
+    }),
+  }),
+};
+
 // ------------------------------------------------------------------- modelo
 
 export type Escolha = {

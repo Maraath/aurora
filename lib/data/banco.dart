@@ -181,6 +181,24 @@ class Lembretes extends Table with Sincronizavel {
   TextColumn get itemId => text().nullable()();
 }
 
+/// Compromisso: tem dia e hora marcados (e às vezes um lugar). Repetição é
+/// REGRA (RRULE, como nos lembretes); editar vale para a série inteira.
+class Compromissos extends Table with Sincronizavel {
+  TextColumn get titulo => text()();
+
+  /// Começo (instante). No dia inteiro, a meia-noite do dia no fuso do aparelho.
+  DateTimeColumn get inicio => dateTime()();
+  DateTimeColumn get fim => dateTime().nullable()();
+  BoolColumn get diaInteiro => boolean().withDefault(const Constant(false))();
+  TextColumn get local => text().nullable()();
+  TextColumn get regraRepeticao => text().nullable()();
+
+  /// Minutos de antecedência do aviso; nulo = sem aviso.
+  IntColumn get avisoAntesMin => integer().nullable()();
+  BoolColumn get despertar => boolean().withDefault(const Constant(false))();
+  TextColumn get notas => text().nullable()();
+}
+
 /// Exercício do catálogo pessoal. [midia] fica para a biblioteca de GIFs do
 /// dono (convertidos para WebP/MP4 curto), que vem depois.
 class Exercicios extends Table with Sincronizavel {
@@ -414,6 +432,7 @@ class Preferencias extends Table {
   Transacoes,
   PagamentosTransacao,
   Lembretes,
+  Compromissos,
   Exercicios,
   Treinos,
   ItensTreino,
@@ -446,7 +465,7 @@ class BancoAurora extends _$BancoAurora {
             ));
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -508,6 +527,10 @@ class BancoAurora extends _$BancoAurora {
             await m.createTable(pastasNotas);
             await m.createTable(notas);
             await m.createTable(anexosNota);
+          }
+          if (de < 14) {
+            // CREATE TABLE IF NOT EXISTS: aguenta rodar de novo (ver o passo 10).
+            await m.createTable(compromissos);
           }
         },
         beforeOpen: (detalhes) async {

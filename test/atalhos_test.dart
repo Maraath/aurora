@@ -142,7 +142,7 @@ void main() {
       expect(find.text('IR PARA'), findsOneWidget);
       await t.enterText(find.byType(TextField).last, 'formula');
       await assentar(t);
-      expect(find.text('TAREFAS E LEMBRETES'), findsOneWidget);
+      expect(find.text('ROTINA'), findsOneWidget);
       await t.sendKeyEvent(LogicalKeyboardKey.enter);
       await assentar(t);
       // Abre a tarefa para editar, já na área Tarefas.

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../core/relogio.dart';
 
 import '../core/formato.dart';
 import '../core/recorrencia.dart';
 import '../core/recorrencia.dart' as rec show diasUteis;
 import '../core/tema.dart';
+import 'calendario.dart';
 import 'vidro.dart';
 
 /// Abre uma folha de formulário (de baixo para cima), como no protótipo.
@@ -536,14 +538,18 @@ class SeletorDias extends StatelessWidget {
   }
 }
 
-/// Escolha de data: Hoje, Amanhã, outra data (calendário) e, opcionalmente, Sem data.
-class EscolhaData extends StatelessWidget {
+/// Escolha de data: a data escolhida num botão que abre o calendário DENTRO da
+/// folha, e atalhos (Hoje, Amanhã, Sábado, Próx. segunda e, se permitido, Sem data).
+class EscolhaData extends StatefulWidget {
   const EscolhaData({
     super.key,
     required this.data,
     required this.hoje,
     required this.aoMudar,
     this.permiteSemData = true,
+    this.permitePassado = true,
+    this.calendarioAberto = false,
+    this.marcado,
   });
 
   final DateTime? data;
@@ -551,37 +557,125 @@ class EscolhaData extends StatelessWidget {
   final ValueChanged<DateTime?> aoMudar;
   final bool permiteSemData;
 
+  /// Falso: dias antes de hoje ficam apagados no calendário (lembrete, compromisso).
+  final bool permitePassado;
+
+  /// Começa com o calendário aberto (lembrete).
+  final bool calendarioAberto;
+
+  /// Dias com um pontinho no calendário (os que já têm compromisso).
+  final bool Function(DateTime dia)? marcado;
+
+  @override
+  State<EscolhaData> createState() => _EscolhaDataState();
+}
+
+class _EscolhaDataState extends State<EscolhaData> {
+  late bool _aberto = widget.calendarioAberto;
+  late DateTime _mes = widget.data ?? widget.hoje;
+
+  DateTime _proximo(int diaDaSemana) {
+    var d = somarDias(widget.hoje, 1);
+    while (d.weekday != diaDaSemana) {
+      d = somarDias(d, 1);
+    }
+    return d;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final c = context.cores;
+    final hoje = widget.hoje;
+    final data = widget.data;
     final amanha = somarDias(hoje, 1);
-    final outra = data != null && data != hoje && data != amanha;
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    final atalhos = <(String, DateTime)>[
+      ('Hoje', hoje),
+      ('Amanhã', amanha),
+      if (_proximo(DateTime.saturday) != amanha) ('Sábado', _proximo(DateTime.saturday)),
+      if (_proximo(DateTime.monday) != amanha) ('Próx. segunda', _proximo(DateTime.monday)),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        OpcaoChip(texto: 'Hoje', selecionado: data == hoje, aoTocar: () => aoMudar(hoje)),
-        OpcaoChip(texto: 'Amanhã', selecionado: data == amanha, aoTocar: () => aoMudar(amanha)),
-        OpcaoChip(
-          texto: outra ? diaSemanaCurto(data!) : 'Outra data',
-          selecionado: outra,
-          aoTocar: () async {
-            final escolhida = await showDatePicker(
-              context: context,
-              initialDate: data ?? hoje,
-              firstDate: DateTime(hoje.year - 1),
-              lastDate: DateTime(hoje.year + 5),
-              locale: const Locale('pt', 'BR'),
-            );
-            if (escolhida != null) {
-              aoMudar(DateTime(escolhida.year, escolhida.month, escolhida.day));
-            }
-          },
+        Material(
+          color: c.bg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Raio.controle),
+            side: BorderSide(color: _aberto ? c.violeta : c.line, width: _aberto ? 1.5 : 1),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => setState(() {
+              _aberto = !_aberto;
+              _mes = data ?? hoje;
+            }),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_month_rounded, size: 20, color: c.violeta),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(data == null ? 'Sem data' : dataPorExtenso(data, hoje),
+                        style: manrope(15, peso: FontWeight.w700)),
+                  ),
+                  Text(_aberto ? 'Fechar' : 'Escolher no calendário',
+                      style: manrope(12, peso: FontWeight.w600, cor: c.muted)),
+                ],
+              ),
+            ),
+          ),
         ),
-        if (permiteSemData)
-          OpcaoChip(texto: 'Sem data', selecionado: data == null, aoTocar: () => aoMudar(null)),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final (texto, dia) in atalhos)
+              OpcaoChip(
+                texto: texto,
+                selecionado: data == dia,
+                aoTocar: () {
+                  _mes = dia;
+                  widget.aoMudar(dia);
+                },
+              ),
+            if (widget.permiteSemData)
+              OpcaoChip(texto: 'Sem data', selecionado: data == null, aoTocar: () => widget.aoMudar(null)),
+          ],
+        ),
+        if (_aberto) ...[
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.fromLTRB(10, 2, 10, 8),
+            decoration: BoxDecoration(
+              color: c.bg,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: c.line),
+            ),
+            child: CalendarioMes(
+              mes: _mes,
+              hoje: hoje,
+              selecionado: data,
+              aoSelecionar: widget.aoMudar,
+              aoMudarMes: (m) => setState(() => _mes = m),
+              habilitado: widget.permitePassado ? null : (d) => !d.isBefore(hoje),
+              marcador: (d) => widget.marcado?.call(d) ?? false ? Ponto(c.corCompromisso) : null,
+            ),
+          ),
+        ],
       ],
     );
   }
+}
+
+/// "Hoje, domingo", "Amanhã, segunda", "Sexta, 30 de outubro".
+String dataPorExtenso(DateTime data, DateTime hoje) {
+  final semana = DateFormat('EEEE', 'pt_BR').format(data);
+  if (data == hoje) return 'Hoje, $semana';
+  if (data == somarDias(hoje, 1)) return 'Amanhã, $semana';
+  final texto = DateFormat("EEEE, d 'de' MMMM", 'pt_BR').format(data);
+  return texto[0].toUpperCase() + texto.substring(1);
 }
 
 /// Opções de repetição dos formulários de tarefa e lembrete.
@@ -591,6 +685,7 @@ enum OpcaoRepeticao {
   diasUteis('Dias úteis'),
   todaSemana('Toda semana'),
   todoMes('Todo mês'),
+  todoAno('Todo ano'),
   personalizada('Personalizada');
 
   const OpcaoRepeticao(this.rotulo);
@@ -605,6 +700,7 @@ enum OpcaoRepeticao {
         diasUteis => const Regra.semanal(rec.diasUteis),
         todaSemana => Regra.semanal(bitDoDiaDaSemana(inicio)),
         todoMes => Regra.mensal(inicio.day),
+        todoAno => const Regra.anual(),
         personalizada => atual,
       };
 
@@ -613,6 +709,7 @@ enum OpcaoRepeticao {
     if (r.intervalo == 1) {
       if (r.frequencia == Frequencia.diaria) return todoDia;
       if (r.frequencia == Frequencia.mensal) return todoMes;
+      if (r.frequencia == Frequencia.anual) return todoAno;
       if (r.dias == rec.diasUteis) return OpcaoRepeticao.diasUteis;
       if (r.dias != 0 && r.dias & (r.dias - 1) == 0) return todaSemana; // um dia só
     }

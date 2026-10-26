@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurora · Rotina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080716;--surface:#0F0E26;--surface2:#18173A;--line:#232250;--text:#EEF0FB;--muted:#A3A6C8;
+  --accent:#5CF0B0;--accentFill:#3EDB9A;--gradIni:#3EDB9A;--gradFim:#7E7BFF;--noAccent:#06061A;
+  --violeta:#9D8CFF;--teal:#42E3C8;--warn:#F5C35B;--bad:#E77BFF;
+  --vidro:rgba(24,23,58,.55);--vidroForte:rgba(15,14,38,.86);--borda:rgba(157,140,255,.16);
+  /* uma cor fixa por tipo */
+  --cTarefa:#F5C35B;--cHabito:#5CF0B0;--cLembrete:#9D8CFF;--cComp:#42E3C8;
+}
+[data-tema="claro"]{
+  --bg:#F4F3FB;--surface:#FFFFFF;--surface2:#E9E8F6;--line:#D6D4EA;--text:#0D0B26;--muted:#55557A;
+  --accent:#0B8A5C;--accentFill:#0B8A5C;--gradIni:#0B8A5C;--gradFim:#5B45D6;--noAccent:#FFFFFF;
+  --violeta:#5B45D6;--teal:#0A7C70;--warn:#9A5B06;--bad:#A8259A;
+  --vidro:#FFFFFF;--vidroForte:#FFFFFF;--borda:#D6D4EA;
+  --cTarefa:#9A5B06;--cHabito:#0B8A5C;--cLembrete:#5B45D6;--cComp:#0A7C70;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05040f;color:#EEF0FB;font-family:Manrope,system-ui,sans-serif;font-size:14px;min-height:100vh}
+body[data-tema="claro"]{background:#DCDAEE;color:#0D0B26}
+.ms{font-family:'Material Symbols Rounded';font-size:20px;line-height:1;font-weight:400;font-style:normal;display:inline-block;user-select:none;font-variation-settings:'FILL' 0}
+.ms.f{font-variation-settings:'FILL' 1}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+h1,h2,h3,h4{font-family:Sora,sans-serif}
+
+/* controles do protótipo */
+.controle{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center;justify-content:center;padding:14px 16px}
+.controle .grupo{display:flex;flex-wrap:wrap;justify-content:center;max-width:100%;gap:4px;background:#14132e;border:1px solid #2a2960;border-radius:999px;padding:4px}
+.controle button{padding:7px 13px;border-radius:999px;font-weight:600;font-size:13px;color:#A3A6C8}
+.controle button.on{background:linear-gradient(90deg,#3EDB9A,#7E7BFF);color:#06061A}
+.controle .rot{font-size:11px;color:#7d80a8;text-transform:uppercase;letter-spacing:.08em}
+.explica{max-width:860px;margin:0 auto 14px;text-align:center;color:#A3A6C8;font-size:13.5px;line-height:1.55;padding:0 16px}
+.explica b{color:#EEF0FB}
+body[data-tema="claro"] .explica{color:#55557A}body[data-tema="claro"] .explica b{color:#0D0B26}
+
+.palco{display:flex;justify-content:center;padding:0 16px 40px}
+.app{position:relative;overflow:hidden;background:var(--bg);color:var(--text);border-radius:18px;border:1px solid var(--line);
+  width:1260px;flex:none;height:800px;display:flex}
+.app.cel{width:390px;height:812px;border-radius:38px;border:8px solid #1b1a33}
+.ceu{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 60% at 20% -10%,rgba(62,219,154,.16),transparent 60%),
+             radial-gradient(90% 50% at 85% -5%,rgba(126,123,255,.18),transparent 60%),
+             radial-gradient(60% 40% at 55% 0%,rgba(231,123,255,.08),transparent 70%),var(--bg)}
+[data-tema="claro"] .ceu{background:var(--bg)}
+.estrela{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff}
+[data-tema="claro"] .estrela{display:none}
+
+.dock{position:relative;width:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:2}
+.dock .it{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:var(--muted);position:relative}
+.dock .it.on{color:var(--text)}
+.dock .it.on::before{content:"";position:absolute;left:-12px;top:10px;bottom:10px;width:3px;border-radius:3px;background:linear-gradient(var(--gradIni),var(--gradFim))}
+.dock .sep{width:22px;height:1px;background:var(--line);margin:4px 0}
+.dock .conta{position:absolute;bottom:18px}
+
+.corpo{position:relative;flex:1;display:flex;flex-direction:column;min-width:0;z-index:1}
+.topo{padding:24px 30px 0;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.cel .topo{padding:12px 18px 0}
+.topo h1{font-size:28px;font-weight:600;letter-spacing:-.01em}
+.cel .topo h1{font-size:22px}
+.topo .dia{color:var(--muted);font-size:13px;margin-top:4px}
+.esp{flex:1}
+.btnPri{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:12px;font-weight:700;color:var(--noAccent);background:linear-gradient(90deg,var(--gradIni),var(--gradFim))}
+.btnSec{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:12px;font-weight:600;border:1px solid var(--line);background:var(--vidro)}
+.cabCel{display:flex;align-items:center;gap:12px;padding:16px 18px 0}
+.logo{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--gradIni),var(--violeta),var(--bad))}
+.cabCel .ms{color:var(--muted)}
+
+.segs{display:flex;gap:4px;margin:16px 30px 0;padding:4px;border-radius:14px;background:var(--vidro);border:1px solid var(--borda);width:max-content;max-width:calc(100% - 36px);overflow-x:auto;scrollbar-width:none}
+.cel .segs{margin:14px 18px 0}
+.segs button{padding:8px 15px;border-radius:10px;color:var(--muted);font-weight:600;white-space:nowrap;position:relative;display:flex;gap:6px;align-items:center}
+.segs button .ms{font-size:17px}
+.segs button.on{color:var(--text);background:linear-gradient(90deg,rgba(62,219,154,.14),rgba(126,123,255,.18));box-shadow:inset 0 0 0 1px rgba(157,140,255,.5)}
+.segs button.on::after{content:"";position:absolute;left:14px;right:14px;bottom:3px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--gradIni),var(--gradFim))}
+
+.rolar{flex:1;overflow-y:auto;padding:18px 30px 40px}
+.cel .rolar{padding:16px 16px 120px}
+.rolar::-webkit-scrollbar{width:6px}.rolar::-webkit-scrollbar-thumb{background:linear-gradient(var(--gradIni),var(--gradFim));border-radius:6px}
+
+/* resumo */
+.resumo{display:flex;gap:16px;align-items:center;padding:14px 18px;border-radius:18px;background:var(--vidro);border:1px solid var(--borda);margin-bottom:16px}
+.resumo h3{font-size:16px;font-weight:600}
+.resumo p{color:var(--muted);font-size:13px;margin-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;background:var(--surface2);color:var(--muted);white-space:nowrap}
+.chip .ms{font-size:15px}
+.chip.bad{color:var(--bad);background:rgba(231,123,255,.12)}
+.chip.warn{color:var(--warn);background:rgba(245,195,91,.12)}
+.chip.vi{color:var(--violeta);background:rgba(157,140,255,.13)}
+.chip.ok{color:var(--teal);background:rgba(66,227,200,.12)}
+
+/* cartões */
+.lista{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:14px;background:var(--vidro);border:1px solid var(--borda);transition:.18s}
+.item:hover{border-color:rgba(66,227,200,.45)}
+.item .ci{flex:1;min-width:0;cursor:pointer}
+.item .tit{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .sub{display:flex;flex-wrap:wrap;gap:4px 9px;margin-top:3px;color:var(--muted);font-size:12px;align-items:center}
+.item .sub span{display:inline-flex;align-items:center;gap:3px}
+.item .sub .ms{font-size:14px}
+.item .hora{font-family:Sora;font-size:12.5px;color:var(--muted);text-align:right;line-height:1.35;flex:none}
+.item .hora small{display:block;font-size:11px;opacity:.75}
+.item.feito .tit{text-decoration:line-through;color:var(--muted)}
+.item.feito{opacity:.7}
+.item.atrasado{border-color:rgba(231,123,255,.45)}
+.item.comp{border-left:3px solid var(--c)}
+.item.agora{background:color-mix(in srgb,var(--c) 14%,var(--surface));box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 50%,transparent)}
+.mk{flex:none;width:30px;height:30px;display:grid;place-items:center;position:relative}
+.mk.tarefa i{width:22px;height:22px;border-radius:7px;border:2px solid var(--cTarefa);display:grid;place-items:center;transition:.15s}
+.mk.tarefa.ok i{background:var(--cTarefa);border-color:var(--cTarefa);color:var(--noAccent)}
+.mk.tarefa i .ms{font-size:17px;font-weight:700}
+.mk.habito svg{position:absolute;inset:0}
+.mk.habito b{font-size:10.5px;font-family:Sora;font-weight:600;position:relative}
+.mk.habito.ok b{color:var(--cHabito)}
+.mk.lembrete i,.mk.comp i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--cLembrete) 16%,transparent);color:var(--cLembrete)}
+.mk.comp i{border-radius:9px;background:color-mix(in srgb,var(--c) 20%,transparent);color:var(--c)}
+.mk.lembrete.passou i,.mk.lembrete.off i{background:var(--surface2);color:var(--muted)}
+.mk .ms{font-size:17px}
+.tipo{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.tipo.tarefa{color:var(--cTarefa)}.tipo.habito{color:var(--cHabito)}.tipo.lembrete{color:var(--cLembrete)}.tipo.comp{color:var(--cComp)}
+.item.atrasado .mk.tarefa i{border-color:var(--bad)}
+.st{font-weight:700}.st.agora{color:var(--cComp)}
+.chip.comp{color:var(--cComp);background:color-mix(in srgb,var(--cComp) 14%,transparent)}
+
+/* colunas */
+.colunas{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:14px;align-items:start}
+.coluna{border-radius:18px;background:rgba(15,14,38,.35);border:1px solid var(--borda);padding:12px;min-width:0}
+[data-tema="claro"] .coluna{background:rgba(255,255,255,.55)}
+.coluna .cab{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.coluna .cab h3{font-size:15px;font-weight:600}
+.coluna .desc{color:var(--muted);font-size:12px;margin-bottom:10px}
+.barra{height:5px;border-radius:5px;background:var(--surface2);overflow:hidden;margin-bottom:12px}
+.barra i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--gradIni),var(--gradFim))}
+.addCol{margin-top:10px;width:100%;justify-content:center;color:var(--muted)}
+.filtros{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}
+.filtros button{padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:12.5px;white-space:nowrap;display:inline-flex;gap:5px;align-items:center}
+.filtros button .ms{font-size:15px}
+.filtros button.on{color:var(--text);border-color:var(--violeta);background:rgba(157,140,255,.14)}
+.filtros button.des{opacity:.45;text-decoration:line-through}
+
+/* faixa de compromissos (B2) */
+.faixa{border-radius:18px;background:var(--vidro);border:1px solid var(--borda);margin-bottom:16px;padding:12px 0 10px;overflow-x:auto}
+.faixa .cabF{display:flex;align-items:center;gap:8px;padding:0 16px 8px;font-weight:600}
+.faixa .cabF .ms{color:var(--accent)}
+.trilho{position:relative;height:74px;min-width:760px;margin:0 16px}
+.trilho .tick{position:absolute;top:0;bottom:0;border-left:1px dashed var(--line);font-size:10.5px;color:var(--muted);padding-left:4px;font-family:Sora}
+.trilho .bloco{position:absolute;top:20px;height:50px;border-radius:10px;padding:6px 8px;font-size:12px;background:color-mix(in srgb,var(--c) 22%,transparent);border-left:3px solid var(--c);overflow:hidden;white-space:nowrap;cursor:pointer}
+.trilho .bloco b{display:block;overflow:hidden;text-overflow:ellipsis}
+.trilho .bloco span{color:var(--muted);font-size:11px}
+.trilho .ag{position:absolute;top:14px;bottom:0;width:2px;background:var(--text);z-index:2}
+.trilho .ag::before{content:"agora";position:absolute;bottom:0;left:5px;font-size:10px;color:var(--text);font-weight:700}
+.cartoesComp{display:flex;gap:10px;overflow-x:auto;padding:0 14px 2px;scrollbar-width:none}
+.cartoesComp .cc2{flex:none;width:210px;border-radius:14px;padding:10px 12px;background:color-mix(in srgb,var(--c) 16%,var(--surface));border-left:3px solid var(--c);cursor:pointer}
+.cc2 b{display:block;font-size:13.5px}.cc2 small{color:var(--muted);font-size:12px;display:block;margin-top:2px}
+
+/* calendário */
+.calTopo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.calTopo h3{font-size:18px;font-weight:600;min-width:170px}
+.cel .calTopo h3{font-size:17px;min-width:0;flex:1}
+.navBtn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;background:var(--vidro)}
+.miniSeg{display:flex;padding:3px;border-radius:11px;background:var(--vidro);border:1px solid var(--borda)}
+.miniSeg button{padding:6px 12px;border-radius:8px;font-weight:600;font-size:12.5px;color:var(--muted)}
+.miniSeg button.on{background:rgba(157,140,255,.2);color:var(--text)}
+.calCorpo{display:flex;gap:14px;align-items:flex-start}
+.cel .calCorpo{flex-direction:column;align-items:stretch}
+.mes{flex:1;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;min-width:0}
+.mes .sem{font-size:11px;color:var(--muted);text-align:center;font-weight:700;padding:2px 0 4px;text-transform:uppercase;letter-spacing:.05em}
+.dc{min-height:94px;border-radius:12px;background:var(--vidro);border:1px solid var(--borda);padding:5px;cursor:pointer;display:flex;flex-direction:column;gap:3px;min-width:0;overflow:hidden;transition:.15s}
+.dc:hover{border-color:rgba(66,227,200,.45)}
+.cel .dc{min-height:50px;padding:4px 2px;align-items:center}
+.dc.fora{opacity:.35}
+.dc.sel{border-color:var(--violeta);box-shadow:inset 0 0 0 1px var(--violeta)}
+.dc .n{font-family:Sora;font-size:12px;font-weight:600;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;flex:none}
+.dc.hoje .n{background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:var(--noAccent)}
+.cc{font-size:11px;padding:2px 5px;border-radius:5px;background:color-mix(in srgb,var(--c) 22%,transparent);border-left:2px solid var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pts{display:flex;gap:7px;margin-top:auto;font-size:11px;color:var(--muted);padding-left:2px}
+.pts span{display:inline-flex;align-items:center;gap:1px}.pts .ms{font-size:13px}
+.pts .t{color:var(--cTarefa)}.pts .l{color:var(--cLembrete)}
+.pontos{display:flex;gap:3px;margin-top:2px}
+.ponto{width:6px;height:6px;border-radius:50%;background:var(--c)}
+.painel{width:320px;flex:none;border-radius:18px;background:var(--vidro);border:1px solid var(--borda);padding:14px}
+.cel .painel{width:auto}
+.painel h4{font-size:15px;font-weight:600;margin-bottom:2px}
+.painel .q{color:var(--muted);font-size:12px;margin-bottom:12px}
+.painel .grp{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin:12px 0 6px}
+.painel .nada{color:var(--muted);font-size:13px;padding:14px 0;text-align:center}
+
+.semana{flex:1;min-width:0;display:grid;grid-template-columns:44px repeat(7,minmax(0,1fr));border-radius:16px;border:1px solid var(--borda);background:rgba(15,14,38,.35);overflow:hidden}
+[data-tema="claro"] .semana{background:rgba(255,255,255,.55)}
+.semana .cd{padding:8px 4px;text-align:center;border-bottom:1px solid var(--line);cursor:pointer}
+.semana .cd small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.semana .cd b{font-family:Sora;font-size:16px;display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;margin-top:2px}
+.semana .cd.hoje b{background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:var(--noAccent)}
+.semana .cd.sel{background:rgba(157,140,255,.1)}
+.semana .td{padding:4px 3px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:3px;min-height:30px;min-width:0}
+.semana .td .cc{cursor:pointer}
+.semana .td.rot,.semana .horas{font-size:10px;color:var(--muted);text-align:right;padding-right:6px}
+.horas{position:relative;height:680px}
+.horas span{position:absolute;right:6px;font-family:Sora;transform:translateY(-6px)}
+.colDia{position:relative;height:680px;border-left:1px solid var(--line);background:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px 40px)}
+.colDia.hoje{background-color:rgba(62,219,154,.04)}
+.bl{position:absolute;left:3px;right:3px;border-radius:8px;padding:4px 6px;font-size:11px;line-height:1.3;background:color-mix(in srgb,var(--c) 26%,var(--surface));border-left:3px solid var(--c);overflow:hidden;cursor:pointer}
+.bl b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bl span{color:var(--muted)}
+.pill{position:absolute;left:3px;right:3px;height:19px;border-radius:6px;font-size:10.5px;padding:0 5px;display:flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;background:var(--surface2);cursor:pointer;z-index:1}
+.pill .ms{font-size:12px}
+.pill.t{color:var(--cTarefa)}.pill.l{color:var(--cLembrete)}
+.linhaAgora{position:absolute;left:0;right:0;height:2px;background:var(--bad);z-index:3}
+.linhaAgora::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--bad)}
+.listaSem .dg{display:flex;align-items:baseline;gap:8px;margin:14px 2px 6px;font-weight:700}
+.listaSem .dg small{color:var(--muted);font-weight:600}
+.listaSem .dg.hoje{color:var(--accent)}
+
+/* celular */
+.barraCel{position:absolute;left:12px;right:12px;bottom:16px;z-index:5;display:flex;align-items:center;gap:8px}
+.pilula{flex:1;height:62px;border-radius:999px;background:var(--vidroForte);backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--borda);display:flex;align-items:center;justify-content:space-around;padding:0 6px}
+.pilula .ms{color:var(--muted)}
+.pilula .on{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--gradIni),var(--gradFim))}
+.pilula .on .ms{color:var(--noAccent)}
+.orbe{width:62px;height:62px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 30%,#fff7,transparent 40%),conic-gradient(from 200deg,var(--gradIni),var(--teal),var(--violeta),var(--bad),var(--gradIni));box-shadow:0 0 24px rgba(126,123,255,.45)}
+.fab{position:absolute;right:16px;bottom:94px;z-index:5;width:54px;height:54px;border-radius:18px;display:grid;place-items:center;color:var(--noAccent);background:linear-gradient(135deg,var(--gradIni),var(--gradFim));box-shadow:0 8px 24px rgba(62,219,154,.25)}
+.fab .ms{font-size:28px}
+
+/* formulário */
+.veu{position:absolute;inset:0;background:rgba(4,3,14,.55);z-index:10;display:flex;align-items:center;justify-content:center;animation:fade .18s}
+[data-tema="claro"] .veu{background:rgba(13,11,38,.25)}
+.cel .veu{align-items:flex-end}
+.folha{width:620px;max-height:94%;overflow-y:auto;border-radius:22px;background:var(--vidroForte);backdrop-filter:blur(24px) saturate(1.5);border:1px solid var(--borda);padding:22px;animation:sobe .22s}
+.cel .folha{width:100%;border-radius:26px 26px 0 0;max-height:90%;padding:18px}
+@keyframes fade{from{opacity:0}}@keyframes sobe{from{transform:translateY(14px);opacity:0}}
+.folha h2{font-size:19px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.folha h2 .x{margin-left:auto;color:var(--muted)}
+.escolha{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.cel .escolha{grid-template-columns:repeat(2,1fr)}
+.escolha button .ms{color:var(--c)}
+.escolha button.on{border-color:var(--c)!important;background:color-mix(in srgb,var(--c) 16%,var(--surface2))!important}
+.escolha button{padding:11px 6px;border-radius:14px;border:1px solid var(--line);background:var(--surface2);text-align:center;color:var(--muted);transition:.15s;position:relative}
+.escolha button .ms{font-size:22px;display:block;margin:0 auto 4px}
+.escolha button b{display:block;font-size:12.5px;color:var(--text)}
+.escolha button.on{border-color:var(--violeta);background:linear-gradient(135deg,rgba(62,219,154,.14),rgba(126,123,255,.2));color:var(--text)}
+.escolha .novo{position:absolute;top:-7px;right:-4px;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:999px;background:var(--bad);color:var(--noAccent);text-transform:uppercase}
+.dica{font-size:12.5px;color:var(--muted);margin-bottom:16px;min-height:18px}
+.sugestao{display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(245,195,91,.1);color:var(--warn);font-size:12.5px;margin:-6px 0 14px}
+.sugestao button{margin-left:auto;font-weight:700;text-decoration:underline;white-space:nowrap}
+.campo{margin-bottom:14px}
+.campo>label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.campo input,.campo select{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-size:14.5px;outline:none;color-scheme:dark}
+[data-tema="claro"] .campo input,[data-tema="claro"] .campo select{color-scheme:light}
+.campo input:focus{border-color:var(--violeta)}
+.linha2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.diasS{display:flex;gap:6px}
+.diasS button{flex:1;height:36px;border-radius:10px;border:1px solid var(--line);font-weight:700;font-size:12px;color:var(--muted)}
+.diasS button.on{color:var(--noAccent);background:var(--accentFill);border-color:var(--accentFill)}
+.mini{display:flex;gap:6px;flex-wrap:wrap}
+.mini button{padding:7px 12px;border-radius:999px;border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--muted);display:inline-flex;gap:5px;align-items:center}
+.mini button .ms{font-size:16px}
+.mini button.on{border-color:var(--violeta);color:var(--text);background:rgba(157,140,255,.14)}
+.cores{display:flex;gap:10px}
+.cores button{width:30px;height:30px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px var(--surface),0 0 0 2px transparent}
+.cores button.on{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--c)}
+.caixa{border-radius:14px;border:1px solid var(--line);padding:12px;margin-bottom:14px}
+.alterna{display:flex;align-items:center;gap:10px;font-weight:600}
+.alterna small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.chave{margin-left:auto;width:42px;height:24px;border-radius:24px;background:var(--surface2);position:relative;flex:none;border:1px solid var(--line)}
+.chave::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.15s}
+.chave.on{background:var(--accentFill);border-color:var(--accentFill)}.chave.on::after{left:20px;background:var(--noAccent)}
+.caixa .det{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.dataLinha{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dataEsc{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:700;flex:1;min-width:200px;text-align:left}
+.dataEsc .ms{color:var(--violeta)}
+.dataEsc small{margin-left:auto;color:var(--muted);font-weight:600;font-size:12px}
+.dataEsc.aberto{border-color:var(--violeta)}
+.miniCal{margin-top:10px;border-radius:14px;border:1px solid var(--line);padding:10px;background:var(--surface);animation:sobe .18s}
+.miniCal .cabM{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-weight:700;font-family:Sora;font-size:14px}
+.miniCal .cabM button{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:var(--muted)}
+.miniCal .g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.miniCal .g span{font-size:11px;color:var(--muted);padding:4px 0;font-weight:700}
+.miniCal .g button{height:36px;border-radius:10px;font-size:13px;position:relative;font-weight:600}
+.miniCal .g button:hover{background:var(--surface2)}
+.miniCal .g button.fora{opacity:.3}
+.miniCal .g button.pass{opacity:.25;cursor:not-allowed}
+.miniCal .g button.hj{box-shadow:inset 0 0 0 1px var(--teal);color:var(--teal)}
+.miniCal .g button.sel{background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:var(--noAccent);font-weight:800;box-shadow:none}
+.miniCal .g button i{position:absolute;bottom:4px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--c,var(--violeta))}
+.miniCal .leg{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-top:8px;align-items:center}
+.miniCal .leg i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:4px}
+.rodape{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;align-items:center;flex-wrap:wrap}
+.rodape .conv{margin-right:auto;font-size:12.5px;color:var(--muted)}
+.rodape .conv button{color:var(--teal);font-weight:700}
+.vazio{padding:60px 20px;text-align:center;color:var(--muted)}
+.toast{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;padding:10px 16px;border-radius:12px;background:var(--surface2);border:1px solid var(--borda);font-weight:600;display:flex;gap:12px;align-items:center;animation:sobe .2s;white-space:nowrap}
+.cel .toast{bottom:96px;white-space:normal;width:86%}
+.toast button{color:var(--accent);font-weight:700}
+</style>
+</head>
+<body>
+<div class="controle" id="controle"></div>
+<p class="explica" id="explica"></p>
+<div class="palco"><div id="raiz"></div></div>
+
+<script>
+/* ---------- datas ---------- */
+const HOJE = '2026-10-25', AGORA = 13*60+20;
+const SEM = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const SEMLONGO = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const deIso = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+const somar = (s,n) => { const d = deIso(s); d.setDate(d.getDate()+n); return iso(d); };
+const inicioSemana = s => somar(s, -((deIso(s).getDay()+6)%7));
+const min = h => h ? (+h.slice(0,2))*60 + (+h.slice(3)) : null;
+function nomeDia(s, longo){
+  if (s===HOJE) return longo?'Hoje, domingo':'Hoje';
+  if (s===somar(HOJE,1)) return 'Amanhã';
+  if (s===somar(HOJE,-1)) return 'Ontem';
+  const d = deIso(s);
+  return longo ? `${SEMLONGO[d.getDay()][0].toUpperCase()+SEMLONGO[d.getDay()].slice(1)}, ${d.getDate()} de ${MESES[d.getMonth()]}` : `${SEM[d.getDay()]}, ${d.getDate()}/${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function falta(m){ const h=Math.floor(m/60), r=m%60; return h ? `em ${h} h${r?' '+r+' min':''}` : `em ${r} min`; }
+
+/* ---------- dados ---------- */
+const COR_TIPO = {tarefa:'var(--cTarefa)',habito:'var(--cHabito)',lembrete:'var(--cLembrete)',compromisso:'var(--cComp)'};
+const E = {
+  posComp: 'coluna', aparelho: 'pc', tema: 'escuro', aba: 'Hoje', filtro: 'Tudo', form: null, toast: null,
+  cal: { vista:'mes', mes: new Date(2026,9,1), dia: HOJE, mostrar:{compromisso:1,tarefa:1,lembrete:1} },
+  itens: [
+    {id:1,tipo:'tarefa',titulo:'Pagar a fatura do cartão',dia:'2026-10-24',atrasado:true,sub:['Era para ontem']},
+    {id:5,tipo:'tarefa',titulo:'Revisar o orçamento do mês',dia:HOJE,hora:'09:30',feito:true,sub:['Meta: guardar R$ 5 mil']},
+    {id:7,tipo:'tarefa',titulo:'Comprar ração da Luna',dia:HOJE,hora:'15:00',avisar:'14:45'},
+    {id:9,tipo:'tarefa',titulo:'Montar a apresentação',dia:HOJE,hora:'17:00',sub:['Projeto: Site novo']},
+    {id:12,tipo:'tarefa',titulo:'Responder o e-mail do síndico',dia:HOJE},
+    {id:13,tipo:'tarefa',titulo:'Levar o carro na revisão',dia:'2026-10-28',hora:'08:00'},
+    {id:14,tipo:'tarefa',titulo:'Entregar o relatório',dia:'2026-10-30'},
+    {id:2,tipo:'lembrete',titulo:'Tomar o remédio',dia:HOJE,hora:'07:00',despertar:true,repete:'Todo dia',ativo:true},
+    {id:6,tipo:'lembrete',titulo:'Ligar para a mãe',dia:HOJE,hora:'14:00',repete:'Domingos',ativo:true},
+    {id:11,tipo:'lembrete',titulo:'Preparar a mochila',dia:HOJE,hora:'22:30',ativo:true},
+    {id:15,tipo:'lembrete',titulo:'Boleto do condomínio vence',dia:'2026-10-27',hora:'10:00',ativo:true},
+    {id:16,tipo:'lembrete',titulo:'Renovar a CNH',dia:'2026-11-05',hora:'09:00',ativo:true},
+    {id:3,tipo:'habito',titulo:'Beber água',feitoN:5,alvo:8,unidade:'copos',seq:12},
+    {id:4,tipo:'habito',titulo:'Cardio',hora:'08:00',feitoN:30,alvo:30,unidade:'min',seq:4},
+    {id:8,tipo:'habito',titulo:'Ler',feitoN:0,alvo:20,unidade:'páginas',seq:0},
+    {id:10,tipo:'habito',titulo:'Alongar',hora:'21:00',feitoN:0,alvo:1,seq:7},
+    {id:20,tipo:'compromisso',titulo:'Almoço na casa da vó',dia:HOJE,hora:'12:00',fim:'14:00',local:'Casa da vó'},
+    {id:21,tipo:'compromisso',titulo:'Cinema com a Ana',dia:HOJE,hora:'19:30',fim:'22:00',local:'Shopping Center',avisar:'30 min antes'},
+    {id:22,tipo:'compromisso',titulo:'Dentista',dia:'2026-10-26',hora:'09:00',fim:'10:00',local:'Clínica Sorriso',avisar:'1 h antes'},
+    {id:23,tipo:'compromisso',titulo:'Reunião com o cliente',dia:'2026-10-27',hora:'14:00',fim:'15:30',local:'Online'},
+    {id:24,tipo:'compromisso',titulo:'Aniversário do Pedro',dia:'2026-10-29',diaInteiro:true,repete:'Todo ano'},
+    {id:25,tipo:'compromisso',titulo:'Festa à fantasia',dia:'2026-10-31',hora:'20:00',fim:'23:30',local:'Casa do Lucas'},
+    {id:26,tipo:'compromisso',titulo:'Exame de sangue',dia:'2026-11-03',hora:'07:30',fim:'08:00',local:'Laboratório'},
+    {id:27,tipo:'compromisso',titulo:'Corte de cabelo',dia:'2026-10-21',hora:'18:00',fim:'18:45'},
+    {id:28,tipo:'compromisso',titulo:'Avaliação na academia',dia:'2026-10-23',hora:'07:00',fim:'08:00'},
+    {id:29,tipo:'compromisso',titulo:'Aula de inglês',dia:'2026-10-28',hora:'19:00',fim:'20:00',local:'Online',repete:'Toda semana'},
+  ],
+};
+let proximoId = 100;
+
+const cor = it => COR_TIPO[it.tipo];
+const doHoje = it => it.tipo==='habito' || it.dia===HOJE || (it.atrasado && !it.feito);
+function feito(it){
+  if (it.tipo==='tarefa') return !!it.feito;
+  if (it.tipo==='habito') return it.feitoN>=it.alvo;
+  if (it.tipo==='lembrete') return it.dia<HOJE || (it.dia===HOJE && min(it.hora)<=AGORA);
+  return it.dia<HOJE || (it.dia===HOJE && !it.diaInteiro && min(it.fim)<=AGORA);
+}
+const ordenar = l => [...l].sort((a,b)=> (a.dia||HOJE).localeCompare(b.dia||HOJE) || (a.diaInteiro?-1:0)-(b.diaInteiro?-1:0) || (min(a.hora)??9999)-(min(b.hora)??9999));
+const ms = (n,f) => `<span class="ms${f?' f':''}">${n}</span>`;
+
+/* ---------- cartões ---------- */
+function anel(it, tam=30, esp=3){
+  const r=(tam-esp)/2-1, c=2*Math.PI*r, p=Math.min(1,it.feitoN/it.alvo);
+  return `<svg viewBox="0 0 ${tam} ${tam}"><defs><linearGradient id="g${it.id}_${tam}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--gradIni)"/><stop offset="1" stop-color="var(--gradFim)"/></linearGradient></defs>
+  <circle cx="${tam/2}" cy="${tam/2}" r="${r}" fill="none" stroke="var(--surface2)" stroke-width="${esp}"/>
+  <circle cx="${tam/2}" cy="${tam/2}" r="${r}" fill="none" stroke="${it.tipo==='habito'?'var(--cHabito)':`url(#g${it.id}_${tam})`}" stroke-width="${esp}" stroke-linecap="round" stroke-dasharray="${c*p} ${c}" transform="rotate(-90 ${tam/2} ${tam/2})"/></svg>`;
+}
+function marcador(it){
+  if (it.tipo==='tarefa') return `<button class="mk tarefa ${it.feito?'ok':''}" onclick="acao(${it.id})" title="Concluir"><i>${it.feito?ms('check'):''}</i></button>`;
+  if (it.tipo==='habito') return `<button class="mk habito ${feito(it)?'ok':''}" onclick="acao(${it.id})" title="Registrar">${anel(it)}<b>${feito(it)?ms('check'):it.alvo>1?it.feitoN:''}</b></button>`;
+  if (it.tipo==='compromisso') return `<button class="mk comp" style="--c:${cor(it)}" onclick="abrirForm(${it.id})"><i>${ms(it.diaInteiro?'celebration':'event',1)}</i></button>`;
+  const passou = feito(it);
+  return `<button class="mk lembrete ${!it.ativo?'off':passou?'passou':''}" onclick="acao(${it.id})" title="Ligar/desligar o sino"><i>${ms(!it.ativo?'notifications_off':it.despertar?'alarm':'notifications', it.ativo&&!passou)}</i></button>`;
+}
+function detalhes(it, contexto){
+  const d=[];
+  if (it.tipo==='tarefa'){
+    d.push(`<span class="tipo tarefa">Tarefa</span>`);
+    if (contexto==='lista' && it.dia && it.dia!==HOJE && !it.atrasado) d.push(`<span>${ms('event')}${nomeDia(it.dia)}</span>`);
+    if (it.repete) d.push(`<span>${ms('repeat')}${it.repete}</span>`);
+    if (it.avisar) d.push(`<span style="color:var(--violeta)">${ms('notifications')}${it.avisar}</span>`);
+    (it.sub||[]).forEach(s=>d.push(`<span>${s}</span>`));
+  } else if (it.tipo==='habito'){
+    d.push(`<span class="tipo habito">Hábito</span>`);
+    if (it.alvo>1) d.push(`<span>${it.feitoN} de ${it.alvo} ${it.unidade}</span>`);
+    if (it.seq) d.push(`<span style="color:var(--warn)">${ms('local_fire_department',1)}${it.seq} dias</span>`);
+  } else if (it.tipo==='compromisso'){
+    d.push(`<span class="tipo comp" style="--c:${cor(it)}">Compromisso</span>`);
+    if (it.dia===HOJE && !it.diaInteiro){
+      const i=min(it.hora), f=min(it.fim);
+      if (i<=AGORA && AGORA<f) d.push(`<span class="st agora">Agora · até ${it.fim}</span>`);
+      else if (i>AGORA) d.push(`<span class="st" style="color:var(--accent)">${falta(i-AGORA)}</span>`);
+      else d.push(`<span>Terminou</span>`);
+    }
+    if (it.local) d.push(`<span>${ms('location_on')}${it.local}</span>`);
+    if (it.repete) d.push(`<span>${ms('repeat')}${it.repete}</span>`);
+    if (it.avisar) d.push(`<span style="color:var(--violeta)">${ms('notifications')}${it.avisar}</span>`);
+  } else {
+    d.push(`<span class="tipo lembrete">Lembrete</span>`);
+    if (contexto==='lista' && it.dia!==HOJE) d.push(`<span>${ms('event')}${nomeDia(it.dia)}</span>`);
+    if (it.despertar) d.push(`<span>${ms('alarm')}Despertador</span>`);
+    if (it.repete) d.push(`<span>${ms('repeat')}${it.repete}</span>`);
+    if (it.dia===HOJE && feito(it)) d.push(`<span>Tocou às ${it.hora}</span>`);
+  }
+  return d.join('');
+}
+function horaDe(it){
+  if (it.tipo==='compromisso') return it.diaInteiro ? 'Dia todo' : `${it.hora}<small>${it.fim}</small>`;
+  return it.hora || '';
+}
+function cartao(it, contexto='lista'){
+  const agora = it.tipo==='compromisso' && it.dia===HOJE && !it.diaInteiro && min(it.hora)<=AGORA && AGORA<min(it.fim);
+  const cls = ['item', feito(it)&&it.tipo!=='lembrete'?'feito':'', it.atrasado&&!it.feito?'atrasado':'', it.tipo==='compromisso'?'comp':'', agora?'agora':''].join(' ');
+  return `<div class="${cls}" style="--c:${cor(it)}">${marcador(it)}
+    <div class="ci" onclick="abrirForm(${it.id})"><div class="tit">${it.titulo}</div><div class="sub">${detalhes(it,contexto)}</div></div>
+    <div class="hora">${horaDe(it)}</div></div>`;
+}
+
+/* ---------- aba Hoje (variação B) ---------- */
+function resumo(){
+  const hoje = E.itens.filter(doHoje);
+  const conta = hoje.filter(i=>i.tipo==='tarefa'||i.tipo==='habito'), f = conta.filter(feito).length;
+  const atras = hoje.filter(i=>i.atrasado&&!i.feito).length;
+  const comps = ordenar(hoje.filter(i=>i.tipo==='compromisso'&&!i.diaInteiro));
+  const agora = comps.find(c=>min(c.hora)<=AGORA&&AGORA<min(c.fim));
+  const prox = comps.find(c=>min(c.hora)>AGORA);
+  return `<div class="resumo"><div class="mk habito" style="width:58px;height:58px">${anel({id:'r',feitoN:f,alvo:conta.length},58,6)}<b style="font-size:14px">${f}/${conta.length}</b></div>
+   <div style="min-width:0"><h3>${f} de ${conta.length} feitos hoje</h3><p>Boa tarde! Faltam ${conta.length-f} coisas para fechar o dia.</p>
+   <div class="chips">${agora?`<span class="chip comp">${ms('event',1)}Agora: ${agora.titulo} até ${agora.fim}</span>`:''}
+   ${prox?`<span class="chip comp">${ms('event')}Depois: ${prox.titulo} às ${prox.hora}</span>`:''}
+   ${atras?`<span class="chip bad">${ms('schedule')}${atras} atrasada</span>`:''}
+   <span class="chip warn">${ms('local_fire_department',1)}Água: 12 dias seguidos</span></div></div></div>`;
+}
+const COLS = {
+  compromisso:['Compromissos','event','Com dia e hora marcados','var(--cComp)','compromisso'],
+  tarefa:['Fazer','check_box','Coisas que terminam','var(--cTarefa)','uma'],
+  habito:['Hábitos','donut_large','O que você repete para construir','var(--cHabito)','habito'],
+  lembrete:['Lembretes','notifications','Só para não esquecer','var(--cLembrete)','avisar'],
+};
+function coluna(t){
+  const [n,ic,d,c,modo] = COLS[t];
+  const l = E.itens.filter(i=>i.tipo===t && doHoje(i));
+  const ord = [...l.filter(i=>i.atrasado&&!i.feito), ...ordenar(l.filter(i=>!(i.atrasado&&!i.feito)))];
+  const f = l.filter(feito).length;
+  const cont = t==='lembrete' ? `${l.filter(i=>i.ativo&&!feito(i)).length} a tocar` : t==='compromisso' ? `${l.length} hoje` : `${f}/${l.length}`;
+  return `<div class="coluna"><div class="cab"><span class="ms" style="color:${c}">${ic}</span><h3>${n}</h3><span class="esp"></span><span class="chip">${cont}</span></div>
+    <div class="desc">${d}</div>${t==='lembrete'||t==='compromisso'?'':`<div class="barra"><i style="width:${l.length?100*f/l.length:0}%;background:${c}"></i></div>`}
+    <div class="lista">${ord.length?ord.map(i=>cartao(i,'col')).join(''):`<div class="vazio" style="padding:18px">Nada hoje</div>`}</div>
+    ${t==='compromisso'?`<button class="btnSec addCol" onclick="E.aba='Calendário';desenhar()">${ms('calendar_month')}Ver no calendário</button>`:''}
+    <button class="btnSec addCol" onclick="abrirForm(null,'${modo}')">${ms('add')}Adicionar</button></div>`;
+}
+function faixaComp(){
+  const comps = ordenar(E.itens.filter(i=>i.tipo==='compromisso'&&i.dia===HOJE));
+  const prox = E.itens.filter(i=>i.tipo==='compromisso'&&i.dia>HOJE).length;
+  const cab = `<div class="cabF">${ms('event',1)}Compromissos de hoje<span class="esp"></span><button class="chip" onclick="E.aba='Calendário';desenhar()">${ms('calendar_month')}+${prox} nos próximos dias</button></div>`;
+  if (E.aparelho==='cel') return `<div class="faixa">${cab}<div class="cartoesComp">${comps.map(c=>{
+      const ag=!c.diaInteiro&&min(c.hora)<=AGORA&&AGORA<min(c.fim);
+      return `<div class="cc2" style="--c:${cor(c)}" onclick="abrirForm(${c.id})"><b>${c.titulo}</b><small>${c.diaInteiro?'Dia todo':c.hora+'–'+c.fim}${c.local?' · '+c.local:''}</small><small class="st ${ag?'agora':''}" style="${ag?'':'color:var(--accent)'}">${ag?'Agora':min(c.hora)>AGORA?falta(min(c.hora)-AGORA):'Terminou'}</small></div>`;}).join('')}</div></div>`;
+  const I=420, F=1440, x = m => ((m-I)/(F-I)*100).toFixed(2)+'%';
+  let ticks=''; for(let h=7;h<=24;h+=2) ticks+=`<span class="tick" style="left:${x(h*60)}">${String(h%24).padStart(2,'0')}h</span>`;
+  const blocos = comps.filter(c=>!c.diaInteiro).map(c=>`<div class="bloco" style="--c:${cor(c)};left:${x(min(c.hora))};width:calc(${x(min(c.fim))} - ${x(min(c.hora))})" onclick="abrirForm(${c.id})"><b>${c.titulo}</b><span>${c.hora}–${c.fim}</span></div>`).join('');
+  return `<div class="faixa">${cab}<div class="trilho">${ticks}${blocos}<span class="ag" style="left:${x(AGORA)}"></span></div></div>`;
+}
+function abaHoje(){
+  if (E.aparelho==='cel'){
+    const mapa = {Tudo:null,Compromissos:'compromisso',Fazer:'tarefa','Hábitos':'habito',Lembretes:'lembrete'};
+    if (E.posComp==='faixa') delete mapa.Compromissos;
+    const t = mapa[E.filtro]; if (t===undefined) E.filtro='Tudo';
+    const l = E.itens.filter(i=>doHoje(i) && (!mapa[E.filtro] ? (E.posComp!=='faixa'||i.tipo!=='compromisso') : i.tipo===mapa[E.filtro]));
+    const ord = [...l.filter(i=>i.atrasado&&!i.feito), ...ordenar(l.filter(i=>!(i.atrasado&&!i.feito)))];
+    return resumo() + (E.posComp==='faixa'?faixaComp():'') +
+      `<div class="filtros">${Object.keys(mapa).map(k=>`<button class="${E.filtro===k?'on':''}" onclick="E.filtro='${k}';desenhar()">${k}</button>`).join('')}</div><div class="lista">${ord.map(i=>cartao(i)).join('')}</div>`;
+  }
+  const tipos = E.posComp==='faixa' ? ['tarefa','habito','lembrete'] : ['compromisso','tarefa','habito','lembrete'];
+  return resumo() + (E.posComp==='faixa'?faixaComp():'') + `<div class="colunas" style="--n:${tipos.length}">${tipos.map(coluna).join('')}</div>`;
+}
+
+/* ---------- aba Calendário ---------- */
+const doDia = s => ordenar(E.itens.filter(i=>i.tipo!=='habito' && i.dia===s && E.cal.mostrar[i.tipo]));
+function calTopo(){
+  const c=E.cal, cel=E.aparelho==='cel';
+  let titulo;
+  if (c.vista==='mes') titulo = `${MESES[c.mes.getMonth()][0].toUpperCase()+MESES[c.mes.getMonth()].slice(1)}${cel?'':' '+c.mes.getFullYear()}`;
+  else { const i=inicioSemana(c.dia), f=somar(i,6), di=deIso(i), df=deIso(f); titulo = `${di.getDate()}${di.getMonth()!==df.getMonth()?' de '+MESES[di.getMonth()].slice(0,3):''} a ${df.getDate()} de ${MESES[df.getMonth()].slice(0,3)}`; }
+  const tg = (k,n,ic,co) => `<button class="${E.cal.mostrar[k]?'on':'des'}" onclick="E.cal.mostrar.${k}=!E.cal.mostrar.${k};desenhar()"><span class="ms" style="color:${co}">${ic}</span>${n}</button>`;
+  return `<div class="calTopo"><button class="navBtn" onclick="navCal(-1)">${ms('chevron_left')}</button><button class="navBtn" onclick="navCal(1)">${ms('chevron_right')}</button>
+    <h3>${titulo}</h3>${cel?'':'<span class="esp"></span>'}
+    <button class="btnSec" style="padding:7px 12px" onclick="E.cal.dia=HOJE;E.cal.mes=new Date(2026,9,1);desenhar()">Hoje</button>
+    <div class="miniSeg"><button class="${c.vista==='mes'?'on':''}" onclick="E.cal.vista='mes';desenhar()">Mês</button><button class="${c.vista==='semana'?'on':''}" onclick="E.cal.vista='semana';desenhar()">Semana</button></div></div>
+    <div class="filtros">${tg('compromisso','Compromissos','event','var(--cComp)')}${tg('tarefa','Tarefas','check_box','var(--cTarefa)')}${tg('lembrete','Lembretes','notifications','var(--cLembrete)')}</div>`;
+}
+function navCal(n){
+  if (E.cal.vista==='mes'){ const m=E.cal.mes; E.cal.mes=new Date(m.getFullYear(),m.getMonth()+n,1); }
+  else { E.cal.dia=somar(E.cal.dia,7*n); const d=deIso(E.cal.dia); E.cal.mes=new Date(d.getFullYear(),d.getMonth(),1); }
+  desenhar();
+}
+function selDia(s){ E.cal.dia=s; desenhar(); }
+function gradeMes(){
+  const cel=E.aparelho==='cel', m=E.cal.mes, ini=new Date(m.getFullYear(),m.getMonth(),1);
+  const off=(ini.getDay()+6)%7, nd=new Date(m.getFullYear(),m.getMonth()+1,0).getDate(), tot=Math.ceil((off+nd)/7)*7;
+  let h = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(d=>`<div class="sem">${cel?d[0]:d}</div>`).join('');
+  for (let i=0;i<tot;i++){
+    const d=new Date(m.getFullYear(),m.getMonth(),1-off+i), s=iso(d), l=doDia(s);
+    const comps=l.filter(x=>x.tipo==='compromisso'), nt=l.filter(x=>x.tipo==='tarefa').length, nl=l.filter(x=>x.tipo==='lembrete').length;
+    const cls=['dc', d.getMonth()!==m.getMonth()?'fora':'', s===HOJE?'hoje':'', s===E.cal.dia?'sel':''].join(' ');
+    if (cel){
+      const pts=[...comps.map(c=>cor(c)), ...(nt?['var(--cTarefa)']:[]), ...(nl?['var(--cLembrete)']:[])].slice(0,4);
+      h += `<div class="${cls}" onclick="selDia('${s}')"><span class="n">${d.getDate()}</span><div class="pontos">${pts.map(c=>`<i class="ponto" style="--c:${c}"></i>`).join('')}</div></div>`;
+    } else {
+      h += `<div class="${cls}" onclick="selDia('${s}')"><span class="n">${d.getDate()}</span>
+        ${comps.slice(0,2).map(c=>`<div class="cc" style="--c:${cor(c)}">${c.diaInteiro?'':c.hora+' '}${c.titulo}</div>`).join('')}
+        ${comps.length>2?`<div class="cc" style="--c:var(--muted)">+${comps.length-2}</div>`:''}
+        ${nt||nl?`<div class="pts">${nt?`<span class="t">${ms('check_box')}${nt}</span>`:''}${nl?`<span class="l">${ms('notifications')}${nl}</span>`:''}</div>`:''}</div>`;
+    }
+  }
+  return `<div class="mes">${h}</div>`;
+}
+function painelDia(){
+  const s=E.cal.dia, l=doDia(s);
+  const grupo = (t,n) => { const g=l.filter(i=>i.tipo===t); return g.length?`<div class="grp">${n}</div><div class="lista">${g.map(i=>cartao(i,'painel')).join('')}</div>`:''; };
+  const habs = s===HOJE ? `<div class="grp">Hábitos</div><div class="q" style="margin:0">Os hábitos ficam na aba Hoje e em Hábitos.</div>` : '';
+  return `<div class="painel"><h4>${nomeDia(s,true)}</h4><div class="q">${l.length?`${l.length} ${l.length>1?'itens':'item'}`:'Dia livre'}</div>
+    ${l.length?grupo('compromisso','Compromissos')+grupo('tarefa','Tarefas')+grupo('lembrete','Lembretes'):`<div class="nada">${ms('beach_access')}<br>Nada marcado para este dia.</div>`}
+    <button class="btnPri" style="width:100%;justify-content:center;margin-top:14px" onclick="abrirForm(null,'compromisso','${s}')">${ms('add')}Compromisso neste dia</button>
+    <div class="mini" style="margin-top:8px;justify-content:center"><button onclick="abrirForm(null,'uma','${s}')">${ms('check_box')}Tarefa</button><button onclick="abrirForm(null,'avisar','${s}')">${ms('notifications')}Lembrete</button></div></div>`;
+}
+function gradeSemana(){
+  const ini=inicioSemana(E.cal.dia), dias=[...Array(7)].map((_,i)=>somar(ini,i));
+  if (E.aparelho==='cel'){
+    return `<div class="listaSem">${dias.map(s=>{const l=doDia(s); return `<div class="dg ${s===HOJE?'hoje':''}">${nomeDia(s,true)}<small>${l.length||'livre'}</small></div>${l.length?`<div class="lista">${l.map(i=>cartao(i,'painel')).join('')}</div>`:''}`;}).join('')}</div>`;
+  }
+  const H0=7, PX=40, y = m => Math.max(0,(m-H0*60)/60*PX);
+  let h = `<div class="cd"></div>` + dias.map(s=>{const d=deIso(s); return `<div class="cd ${s===HOJE?'hoje':''} ${s===E.cal.dia?'sel':''}" onclick="selDia('${s}')"><small>${SEM[d.getDay()]}</small><b>${d.getDate()}</b></div>`;}).join('');
+  h += `<div class="td rot">dia<br>todo</div>` + dias.map(s=>`<div class="td">${doDia(s).filter(i=>i.diaInteiro||(i.tipo==='tarefa'&&!i.hora)).map(i=>i.tipo==='compromisso'?`<div class="cc" style="--c:${cor(i)}" onclick="abrirForm(${i.id})">${i.titulo}</div>`:`<div class="cc" style="--c:var(--cTarefa)" onclick="abrirForm(${i.id})">☐ ${i.titulo}</div>`).join('')}</div>`).join('');
+  let horas=''; for(let k=H0+1;k<=23;k++) horas+=`<span style="top:${(k-H0)*PX}px">${String(k).padStart(2,'0')}:00</span>`;
+  h += `<div class="horas">${horas}</div>` + dias.map(s=>{
+    const l=doDia(s).filter(i=>i.hora && !i.diaInteiro);
+    return `<div class="colDia ${s===HOJE?'hoje':''}">${l.map(i=> i.tipo==='compromisso'
+      ? `<div class="bl" style="--c:${cor(i)};top:${y(min(i.hora))}px;height:${Math.max(22,(min(i.fim)-min(i.hora))/60*PX-2)}px" onclick="abrirForm(${i.id})"><b>${i.titulo}</b><span>${i.hora}–${i.fim}</span></div>`
+      : `<div class="pill ${i.tipo==='tarefa'?'t':'l'}" style="top:${y(min(i.hora))}px" onclick="abrirForm(${i.id})">${ms(i.tipo==='tarefa'?'check_box':'notifications')}${i.hora} ${i.titulo}</div>`).join('')}
+      ${s===HOJE?`<span class="linhaAgora" style="top:${y(AGORA)}px"></span>`:''}</div>`;
+  }).join('');
+  return `<div class="semana">${h}</div>`;
+}
+function abaCalendario(){
+  return calTopo() + `<div class="calCorpo">${E.cal.vista==='mes'?gradeMes():gradeSemana()}${E.aparelho==='cel'&&E.cal.vista==='semana'?'':painelDia()}</div>`;
+}
+
+/* ---------- formulário ---------- */
+const MODOS = {
+  uma:['task_alt','Fazer uma vez','Uma tarefa que termina quando você marca.'],
+  habito:['donut_large','Hábito','Algo que você quer fazer com constância. Conta a sequência de dias.'],
+  compromisso:['event','Compromisso','Tem dia e hora marcados (e às vezes um lugar). Aparece no Calendário.'],
+  avisar:['notifications','Lembrete','Só um aviso no dia e na hora que você escolher, sem nada para marcar.'],
+};
+const COR_MODO = {uma:'var(--cTarefa)',habito:'var(--cHabito)',compromisso:'var(--cComp)',avisar:'var(--cLembrete)'};
+const DIAS = ['S','T','Q','Q','S','S','D'];
+function abrirForm(id, modo, dia){
+  const it = id ? E.itens.find(i=>i.id===id) : null;
+  const base = {id:null,titulo:'',modo:modo||'uma',dia:dia||HOJE,hora:'',fim:'',diaInteiro:false,local:'',repete:'Não repete',
+    avisar:false,antes:'Na hora',despertar:false,dias:[1,1,1,1,1,1,1],medir:'marcar',alvo:1,unidade:'',calAberto:false};
+  if (it){
+    Object.assign(base,{id,titulo:it.titulo,modo:it.tipo==='habito'?'habito':it.tipo==='lembrete'?'avisar':it.tipo==='compromisso'?'compromisso':'uma',
+      dia:it.dia||HOJE,hora:it.hora||'',fim:it.fim||'',diaInteiro:!!it.diaInteiro,local:it.local||'',cor:it.cor||'verde',repete:it.repete||'Não repete',
+      avisar:!!it.avisar,antes:it.avisar&&it.avisar.includes('antes')?it.avisar:'Na hora',despertar:!!it.despertar,
+      medir:it.alvo>1?(it.unidade==='min'?'duracao':'quantidade'):'marcar',alvo:it.alvo||1,unidade:it.unidade||''});
+  } else trocarModo(base.modo, base);
+  const d=deIso(base.dia); base.calMes=new Date(d.getFullYear(),d.getMonth(),1);
+  E.form=base; desenhar();
+  setTimeout(()=>document.getElementById('fTitulo')?.focus(),40);
+}
+function trocarModo(k, F=E.form){
+  F.modo=k;
+  if (k==='compromisso'){ if(!F.hora) F.hora='19:00'; if(!F.fim) F.fim='20:00'; F.avisar=true; F.antes='30 min antes'; }
+  if (k==='avisar'){ if(!F.hora) F.hora='09:00'; F.calAberto=true; }
+  if (F===E.form) desenhar();
+}
+function f(k,v){ E.form[k]=v; desenhar(); }
+function navMini(n){ const m=E.form.calMes; E.form.calMes=new Date(m.getFullYear(),m.getMonth()+n,1); desenhar(); }
+
+function campoData(rotulo, permiteSemData){
+  const F=E.form;
+  const amanha=somar(HOJE,1);
+  const prxSab = (()=>{ let s=somar(HOJE,1); while(deIso(s).getDay()!==6) s=somar(s,1); return s; })();
+  const prxSeg = (()=>{ let s=somar(HOJE,1); while(deIso(s).getDay()!==1) s=somar(s,1); return s; })();
+  const atalhos = [[HOJE,'Hoje'],[amanha,'Amanhã'],[prxSab,'Sábado'],[prxSeg,'Próx. segunda']];
+  const txt = F.dia ? nomeDia(F.dia,true) : 'Sem data';
+  let cal='';
+  if (F.calAberto){
+    const m=F.calMes, ini=new Date(m.getFullYear(),m.getMonth(),1), off=(ini.getDay()+6)%7, nd=new Date(m.getFullYear(),m.getMonth()+1,0).getDate(), tot=Math.ceil((off+nd)/7)*7;
+    let g=['S','T','Q','Q','S','S','D'].map(d=>`<span>${d}</span>`).join('');
+    for (let i=0;i<tot;i++){
+      const d=new Date(m.getFullYear(),m.getMonth(),1-off+i), s=iso(d), pass=s<HOJE;
+      const c=E.itens.find(x=>x.tipo==='compromisso'&&x.dia===s);
+      g+=`<button class="${d.getMonth()!==m.getMonth()?'fora':''} ${pass?'pass':''} ${s===HOJE?'hj':''} ${s===F.dia?'sel':''}" ${pass?'disabled':`onclick="E.form.dia='${s}';desenhar()"`} title="${c?c.titulo:''}">${d.getDate()}${c&&s!==F.dia?`<i style="--c:${cor(c)}"></i>`:''}</button>`;
+    }
+    cal = `<div class="miniCal"><div class="cabM"><button onclick="navMini(-1)">${ms('chevron_left')}</button>${MESES[m.getMonth()][0].toUpperCase()+MESES[m.getMonth()].slice(1)} ${m.getFullYear()}<button onclick="navMini(1)">${ms('chevron_right')}</button></div>
+      <div class="g">${g}</div><div class="leg"><span><i></i>tem compromisso</span><span style="margin-left:auto">Toque num dia para escolher</span></div></div>`;
+  }
+  return `<div class="campo"><label>${rotulo}</label>
+    <div class="dataLinha"><button class="dataEsc ${F.calAberto?'aberto':''}" onclick="f('calAberto',${!F.calAberto})">${ms('calendar_month')}${txt}<small>${F.calAberto?'Fechar':'Escolher no calendário'}</small></button></div>
+    <div class="mini" style="margin-top:8px">${atalhos.map(([s,n])=>`<button class="${F.dia===s?'on':''}" onclick="E.form.dia='${s}';desenhar()">${n}</button>`).join('')}${permiteSemData?`<button class="${!F.dia?'on':''}" onclick="f('dia','')">Sem data</button>`:''}</div>
+    ${cal}</div>`;
+}
+function formulario(){
+  const F=E.form, m=F.modo, edit=!!F.id;
+  const avisoOpcoes = m==='compromisso' ? ['Na hora','15 min antes','30 min antes','1 h antes','1 dia antes'] : m==='habito' ? ['Na hora','Se não fiz até 20:00'] : ['Na hora','15 min antes','1 h antes'];
+  return `<div class="veu" onclick="if(event.target===this){E.form=null;desenhar()}"><div class="folha">
+   <h2>${edit?'Editar':'Novo'}<button class="x" onclick="E.form=null;desenhar()">${ms('close')}</button></h2>
+   <div class="escolha">${Object.entries(MODOS).map(([k,[ic,n]])=>`<button class="${m===k?'on':''}" style="--c:${COR_MODO[k]}" onclick="trocarModo('${k}')">${k==='compromisso'?'<span class="novo">novo</span>':''}${ms(ic)}<b>${n}</b></button>`).join('')}</div>
+   <div class="dica">${MODOS[m][2]}</div>
+   <div class="campo"><label>${{avisar:'Me lembrar de',habito:'Hábito',compromisso:'Compromisso'}[m]||'O que fazer'}</label>
+     <input id="fTitulo" value="${F.titulo.replace(/"/g,'&quot;')}" placeholder="${{habito:'Ex.: beber água',avisar:'Ex.: renovar a CNH',compromisso:'Ex.: dentista'}[m]||'Ex.: comprar ração'}" oninput="E.form.titulo=this.value" onchange="desenhar()"></div>
+
+   ${m==='uma'?campoData('Quando',true)+`<div class="campo"><label>Hora (opcional)</label><input type="time" value="${F.hora}" oninput="E.form.hora=this.value"></div>`:''}
+
+   ${m==='avisar'?campoData('Em que dia')+`<div class="linha2"><div class="campo"><label>Hora</label><input type="time" value="${F.hora}" oninput="E.form.hora=this.value"></div>
+     <div class="campo"><label>Repetir</label><select onchange="E.form.repete=this.value">${['Não repete','Todo dia','Toda semana','Todo mês','Todo ano'].map(o=>`<option ${F.repete===o?'selected':''}>${o}</option>`).join('')}</select></div></div>`:''}
+
+   ${m==='compromisso'?campoData('Dia')+`
+     <div class="caixa" style="margin-bottom:14px"><div class="alterna">${ms('wb_sunny')}<div>Dia inteiro<small>Aniversário, viagem, feriado</small></div><button class="chave ${F.diaInteiro?'on':''}" onclick="f('diaInteiro',${!F.diaInteiro})"></button></div>
+     ${F.diaInteiro?'':`<div class="linha2" style="margin-top:12px"><div class="campo" style="margin:0"><label>Começa</label><input type="time" value="${F.hora}" oninput="E.form.hora=this.value"></div><div class="campo" style="margin:0"><label>Termina</label><input type="time" value="${F.fim}" oninput="E.form.fim=this.value"></div></div>`}</div>
+     <div class="campo"><label>Local (opcional)</label><input value="${F.local}" placeholder="Endereço, sala ou link da reunião" oninput="E.form.local=this.value"></div>
+     <div class="campo"><label>Repetir</label><select onchange="E.form.repete=this.value">${['Não repete','Toda semana','A cada 2 semanas','Todo mês','Todo ano'].map(o=>`<option ${F.repete===o?'selected':''}>${o}</option>`).join('')}</select></div>`:''}
+
+   ${m==='habito'?`<div class="campo"><label>Em quais dias</label><div class="diasS">${DIAS.map((d,i)=>`<button class="${F.dias[i]?'on':''}" onclick="E.form.dias[${i}]=E.form.dias[${i}]?0:1;desenhar()">${d}</button>`).join('')}</div></div>
+     <div class="campo"><label>Horário (opcional)</label><input type="time" value="${F.hora}" oninput="E.form.hora=this.value"></div>`:''}
+   ${m==='habito'?`<div class="campo"><label>Como medir</label><div class="mini">${[['marcar','Só marcar'],['quantidade','Quantidade'],['duracao','Tempo']].map(([k,n])=>`<button class="${F.medir===k?'on':''}" onclick="f('medir','${k}')">${n}</button>`).join('')}</div></div>
+     ${F.medir!=='marcar'?`<div class="linha2"><div class="campo"><label>Meta por dia</label><input value="${F.alvo>1?F.alvo:''}" placeholder="8" oninput="E.form.alvo=+this.value||1"></div><div class="campo"><label>Unidade</label><input value="${F.medir==='duracao'?'min':F.unidade}" placeholder="copos" oninput="E.form.unidade=this.value"></div></div>`:''}`:''}
+
+   <div class="caixa">
+     ${m==='avisar'?`<div class="alterna">${ms('alarm')}<div>Me despertar<small>Toca como alarme, mesmo no silencioso (Android)</small></div><button class="chave ${F.despertar?'on':''}" onclick="f('despertar',${!F.despertar})"></button></div>`
+     :`<div class="alterna">${ms('notifications')}<div>Me avisar<small>${m==='habito'?'Um empurrão se ainda não fez':'Sem criar um lembrete separado'}</small></div><button class="chave ${F.avisar?'on':''}" onclick="f('avisar',${!F.avisar})"></button></div>
+      ${F.avisar?`<div class="det"><div class="mini">${avisoOpcoes.map(n=>`<button class="${F.antes===n?'on':''}" onclick="f('antes','${n}')">${n}</button>`).join('')}</div>
+      <div class="alterna" style="font-size:13px">${ms('alarm')}<div>Me despertar</div><button class="chave ${F.despertar?'on':''}" onclick="f('despertar',${!F.despertar})"></button></div></div>`:''}`}
+   </div>
+   ${m!=='avisar'?`<div class="campo"><label>Ligar a (opcional)</label><select><option>Nenhuma meta ou projeto</option><option>Meta: guardar R$ 5 mil</option><option>Projeto: Site novo</option></select></div>`:''}
+   <div class="rodape">${edit?`<span class="conv">Converter: ${Object.entries(MODOS).filter(([k])=>k!==m).map(([k,[,n]])=>`<button onclick="trocarModo('${k}')">${n}</button>`).join(' · ')}</span>`:''}
+     <button class="btnSec" onclick="E.form=null;desenhar()">Cancelar</button><button class="btnPri" onclick="salvar()">${ms('check')}Salvar</button></div>
+  </div></div>`;
+}
+function salvar(){
+  const F=E.form; if(!F.titulo.trim()){ document.getElementById('fTitulo').focus(); return; }
+  const tipo = {habito:'habito',avisar:'lembrete',compromisso:'compromisso'}[F.modo]||'tarefa';
+  const hora = /^\d{2}:\d{2}$/.test(F.hora) ? F.hora : null;
+  const novo = {tipo,titulo:F.titulo.trim(),dia:tipo==='habito'?null:(F.dia||(tipo==='tarefa'?HOJE:HOJE)),hora:tipo==='compromisso'&&F.diaInteiro?null:(hora||(tipo==='lembrete'?'09:00':tipo==='compromisso'?'19:00':null)),
+    fim:F.fim||'20:00',diaInteiro:tipo==='compromisso'&&F.diaInteiro,local:F.local,
+    repete:F.repete!=='Não repete'&&(tipo==='lembrete'||tipo==='compromisso')?F.repete:null,
+    avisar:F.avisar&&tipo!=='lembrete'?(F.antes==='Na hora'?'Na hora':F.antes):null,despertar:F.despertar,ativo:true,
+    feitoN:0,alvo:tipo==='habito'&&F.medir!=='marcar'?F.alvo:1,unidade:F.medir==='duracao'?'min':F.unidade,seq:0};
+  if (F.id){ const i=E.itens.findIndex(x=>x.id===F.id); E.itens[i]={...E.itens[i],...novo,id:F.id,feitoN:E.itens[i].feitoN??0,seq:E.itens[i].seq??0}; aviso('Alterado'); }
+  else {
+    E.itens.push({id:proximoId++,...novo});
+    aviso(novo.dia && novo.dia!==HOJE ? `${MODOS[F.modo][1]} criado para ${nomeDia(novo.dia,true).toLowerCase()} · aparece no Calendário` : `${MODOS[F.modo][1]}: "${novo.titulo}" criado`);
+    if (novo.dia){ E.cal.dia=novo.dia; const d=deIso(novo.dia); E.cal.mes=new Date(d.getFullYear(),d.getMonth(),1); }
+  }
+  E.form=null; desenhar();
+}
+function aviso(t){ E.toast=t; clearTimeout(aviso.t); aviso.t=setTimeout(()=>{E.toast=null;desenhar()},3200); }
+function acao(id){
+  const it=E.itens.find(i=>i.id===id);
+  if (it.tipo==='tarefa'){ it.feito=!it.feito; if(it.feito) aviso('Tarefa concluída'); }
+  else if (it.tipo==='habito'){
+    if (it.feitoN>=it.alvo){ it.feitoN=0; it.seq=Math.max(0,it.seq-1); }
+    else { const p=it.unidade==='min'?10:it.unidade==='páginas'?5:1; it.feitoN=Math.min(it.alvo,it.feitoN+p); if(it.feitoN>=it.alvo){ it.seq++; aviso(`🔥 ${it.titulo}: ${it.seq} dias seguidos`); } }
+  } else if (it.tipo==='lembrete'){ it.ativo=!it.ativo; aviso(it.ativo?'Aviso ligado':'Aviso desligado'); }
+  desenhar();
+}
+
+/* ---------- moldura ---------- */
+const MENU = [['auto_awesome','Assistente'],['dashboard','Visão'],'|',['event_available','Rotina',1],['monitor_heart','Saúde'],'|',['flag','Metas'],['view_kanban','Projetos'],['sticky_note_2','Anotações'],['account_balance_wallet','Finanças']];
+const ABAS = [['Hoje','today'],['Calendário','calendar_month'],['Hábitos','donut_large'],['Análise','insights']];
+const EXPLICA = {
+  Hoje: () => E.posComp==='coluna'
+    ? '<b>Hoje · compromissos como 4ª coluna.</b> Compromissos, Fazer, Hábitos e Lembretes lado a lado, cada tipo com a sua cor. O compromisso que está acontecendo agora fica destacado.'
+    : '<b>Hoje · compromissos numa faixa do dia.</b> Uma régua de horas no topo com os compromissos e a linha do "agora"; embaixo, as três colunas. No celular a faixa vira cartões que rolam de lado.',
+  Calendário: () => '<b>Calendário (novo, dentro da Rotina).</b> Mês ou semana com compromissos, tarefas com data e avisos (os filtros ligam e desligam cada tipo). Toque num dia para ver o painel e criar algo já com aquela data. Hábitos não entram: ficam em Hoje e Hábitos.',
+};
+function estrelas(n){ let s=''; for(let i=0;i<n;i++) s+=`<i class="estrela" style="left:${(i*73.13)%100}%;top:${(i*41.7)%100}%;opacity:${.12+((i*7)%10)/20}"></i>`; return s; }
+function desenhar(){
+  const cel=E.aparelho==='cel';
+  document.body.dataset.tema = E.tema==='claro'?'claro':'';
+  const bt = (cond,txt,js) => `<button class="${cond?'on':''}" onclick="${js};desenhar()">${txt}</button>`;
+  document.getElementById('controle').innerHTML =
+   `<span class="rot">Ir para</span><div class="grupo">${bt(E.aba==='Hoje'&&!E.form,'Hoje',"E.form=null;E.aba='Hoje'")}${bt(E.aba==='Calendário'&&!E.form,'Calendário',"E.form=null;E.aba='Calendário'")}${bt(E.form&&E.form.modo==='compromisso','Novo compromisso',"abrirForm(null,'compromisso')")}${bt(E.form&&E.form.modo==='avisar','Novo lembrete',"abrirForm(null,'avisar')")}</div>
+    <span class="rot">Compromissos no Hoje</span><div class="grupo">${bt(E.posComp==='coluna','4ª coluna',"E.posComp='coluna'")}${bt(E.posComp==='faixa','Faixa do dia',"E.posComp='faixa'")}</div>
+    <div class="grupo">${bt(!cel,'Computador',"E.aparelho='pc'")}${bt(cel,'Celular',"E.aparelho='cel'")}</div>
+    <div class="grupo">${bt(E.tema==='escuro','Escuro',"E.tema='escuro'")}${bt(E.tema==='claro','Claro',"E.tema='claro'")}</div>`;
+  document.getElementById('explica').innerHTML = (E.form
+    ? (E.form.modo==='avisar' ? '<b>Lembrete com data.</b> Atalhos (Hoje, Amanhã, Sábado, Próx. segunda) e o calendário aberto para escolher qualquer dia; pontinhos mostram os dias com compromisso.'
+      : E.form.modo==='compromisso' ? '<b>Compromisso (novo tipo).</b> Dia no calendário, começo e fim (ou dia inteiro), local, repetição, cor e aviso antes (padrão: 30 min). Depois de salvar ele aparece em Hoje e no Calendário.'
+      : '<b>Formulário único.</b> Troque o tipo no topo; os campos mudam. Ao editar, "Converter" passa o item para outro tipo.')
+    : (EXPLICA[E.aba]?.() || '')) + '<br>Clicável: marcadores concluem/somam/ligam o aviso; o texto do item abre para editar.';
+  const conteudo = E.aba==='Hoje' ? abaHoje() : E.aba==='Calendário' ? abaCalendario()
+    : `<div class="vazio">${ms('construction')}<br><br>No protótipo só <b>Hoje</b> e <b>Calendário</b> estão desenhados.<br>${{'Hábitos':'Sequências, mapa de constância e metas de cada hábito.','Análise':'Junta as análises de Tarefas e Hábitos.'}[E.aba]}</div>`;
+  const rol = document.querySelector('.rolar')?.scrollTop || 0;
+  document.getElementById('raiz').innerHTML = `<div class="app ${cel?'cel':''}" data-tema="${E.tema==='claro'?'claro':''}">
+    <div class="ceu">${estrelas(cel?40:90)}</div>
+    ${cel?'':`<nav class="dock">${MENU.map(m=>m==='|'?'<span class="sep"></span>':`<span class="it ${m[2]?'on':''}" title="${m[1]}">${ms(m[0],m[2])}</span>`).join('')}<span class="it conta" title="Conta">${ms('account_circle')}</span></nav>`}
+    <div class="corpo">
+      ${cel?`<div class="cabCel"><span class="logo"></span><span class="esp"></span>${ms('search')}${ms('dark_mode')}</div>`:''}
+      <div class="topo"><div><h1>Rotina</h1><div class="dia">Domingo, 25 de outubro</div></div><span class="esp"></span>
+        ${cel?'':`<button class="btnPri" onclick="abrirForm()">${ms('add')}Novo</button>`}</div>
+      <div class="segs">${ABAS.map(([a,ic])=>`<button class="${E.aba===a?'on':''}" onclick="E.aba='${a}';desenhar()">${ms(ic)}${a}</button>`).join('')}</div>
+      <div class="rolar">${conteudo}</div>
+    </div>
+    ${cel?`<button class="fab" onclick="abrirForm(null,null,E.aba==='Calendário'?E.cal.dia:null)" title="Novo">${ms('add')}</button>
+      <div class="barraCel"><div class="pilula">${ms('dashboard')}<span class="on">${ms('event_available',1)}</span>${ms('account_balance_wallet')}${ms('monitor_heart')}${ms('flag')}</div><span class="orbe"></span></div>`:''}
+    ${E.form?formulario():''}
+    ${E.toast?`<div class="toast">${E.toast}</div>`:''}
+  </div>`;
+  const r=document.querySelector('.rolar'); if(r) r.scrollTop=rol;
+  ajustarZoom();
+}
+// A moldura do computador tem largura fixa e encolhe inteira quando a janela é estreita.
+function ajustarZoom(){
+  const app=document.querySelector('.app'); if(!app) return;
+  const larg = E.aparelho==='cel' ? 406 : 1260;
+  app.style.zoom = Math.min(1, (window.innerWidth-32)/larg);
+}
+window.addEventListener('resize', ajustarZoom);
+// Atalhos pelo endereço, ex.: rotina.html#aba=Calendário&vista=semana&ap=cel&pos=faixa&form=compromisso
+const P = new URLSearchParams(decodeURIComponent(location.hash.slice(1)));
+if (P.get('aba')) E.aba = P.get('aba');
+if (P.get('vista')) E.cal.vista = P.get('vista');
+if (P.get('ap')) E.aparelho = P.get('ap');
+if (P.get('pos')) E.posComp = P.get('pos');
+if (P.get('tema')) E.tema = P.get('tema');
+if (P.get('form')) abrirForm(null, P.get('form')); else desenhar();
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@ import '../core/formato.dart';
 import '../core/relogio.dart';
 import 'alimentacao_repo.dart';
 import 'banco.dart';
+import 'compromissos_repo.dart';
 import 'financas_repo.dart';
 import 'habitos_repo.dart';
 import 'metas_repo.dart';
@@ -36,6 +37,15 @@ Future<String> montarContexto(BancoAurora db) async {
   final abertas = tarefas.pendentes.take(15).map(tarefa).toList();
   l.add('Tarefas em aberto (${tarefas.abertas}, ${tarefas.atrasadas} atrasadas): '
       '${abertas.isEmpty ? 'nenhuma' : abertas.join('; ')}.');
+
+  final compromissos = (await CompromissosRepo(db).carregar()).porDia(hoje, somarDias(hoje, 1));
+  final agenda = [
+    for (final d in [hoje, somarDias(hoje, 1)])
+      for (final o in compromissos[d] ?? const <OcorrenciaCompromisso>[])
+        '${o.compromisso.titulo} (${diaRelativo(d, hoje)} ${o.horario.toLowerCase()}'
+            '${o.compromisso.local == null ? '' : ', ${o.compromisso.local}'})',
+  ];
+  if (agenda.isNotEmpty) l.add('Compromissos de hoje e amanhã: ${agenda.join('; ')}.');
 
   final financas = await FinancasRepo(db).carregar();
   final mes = financas.mes(hoje);

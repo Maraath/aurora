@@ -18,7 +18,16 @@
 // volta com resultados de ferramenta é parte da mesma resposta.
 
 import { createClient } from "@supabase/supabase-js";
-import { cadeiaDeModelos, type Escolha, esquemaMensagens, janela, PERSONA } from "./agente.ts";
+import {
+  cadeiaDeModelos,
+  type Escolha,
+  esquemaMensagens,
+  ferramentas,
+  ferramentasRotina,
+  janela,
+  PERSONA,
+  PERSONA_ROTINA,
+} from "./agente.ts";
 import { mensagemDeErro, responderComCadeia } from "./cadeia.ts";
 import { cors, ErroParaPessoa, json } from "./comum.ts";
 import { type MensagemLegada, responderLegado } from "./legado.ts";
@@ -47,6 +56,8 @@ Deno.serve(async (req) => {
     audio?: unknown;
     formato?: unknown;
     uso?: unknown;
+    /// O que o app sabe fazer além do básico (app 1.12+: ["rotina"]).
+    recursos?: unknown;
   };
   try {
     corpo = await req.json();
@@ -134,6 +145,8 @@ Deno.serve(async (req) => {
   } catch (e) {
     return json({ erro: mensagemDeErro(e) }, 500);
   }
-  const sistema = `${PERSONA}\n\nRESUMO DOS DADOS (montado pelo app agora):\n${contexto}`;
-  return responderComCadeia(cadeia, sistema, mensagens!, req.signal);
+  // App da Rotina (1.12+): compromisso, calendário e as telas novas.
+  const comRotina = Array.isArray(corpo.recursos) && corpo.recursos.includes("rotina");
+  const sistema = `${PERSONA}${comRotina ? PERSONA_ROTINA : ""}\n\nRESUMO DOS DADOS (montado pelo app agora):\n${contexto}`;
+  return responderComCadeia(cadeia, sistema, mensagens!, req.signal, comRotina ? ferramentasRotina : ferramentas);
 });

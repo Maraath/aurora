@@ -86,13 +86,12 @@ class LembretesRepo {
     ]);
   }
 
-  Future<void> salvar(LembretesCompanion dados, {String? id}) async {
-    if (id == null) {
-      await db.into(db.lembretes).insert(dados);
-    } else {
-      await (db.update(db.lembretes)..where((l) => l.id.equals(id)))
-          .write(dados.copyWith(atualizadoEm: Value(DateTime.now())));
-    }
+  /// Cria ou atualiza; devolve o id.
+  Future<String> salvar(LembretesCompanion dados, {String? id}) async {
+    if (id == null) return (await db.into(db.lembretes).insertReturning(dados)).id;
+    await (db.update(db.lembretes)..where((l) => l.id.equals(id)))
+        .write(dados.copyWith(atualizadoEm: Value(DateTime.now())));
+    return id;
   }
 
   Future<void> alternarAtivo(String id, bool ativo) =>

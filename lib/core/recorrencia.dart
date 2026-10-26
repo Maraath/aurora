@@ -1,12 +1,13 @@
 /// Regras de repetição no padrão RRULE de calendário (subconjunto):
 /// `FREQ=DAILY`, `FREQ=WEEKLY;BYDAY=MO,WE,FR`, `FREQ=MONTHLY;BYMONTHDAY=11`,
+/// `FREQ=YEARLY` (no mesmo dia e mês da data inicial),
 /// com `INTERVAL=n` e `UNTIL=aaaammdd` (última data possível) opcionais.
 ///
 /// Uma regra NUNCA vira uma linha por dia no banco: as ocorrências são
 /// calculadas a partir da data inicial (o "prazo" ou "quando" do item).
 library;
 
-enum Frequencia { diaria, semanal, mensal }
+enum Frequencia { diaria, semanal, mensal, anual }
 
 const _siglas = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
 const _nomesDia = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
@@ -29,6 +30,9 @@ class Regra {
 
   const Regra.mensal(int diaDoMes, {int intervalo = 1})
       : this._(Frequencia.mensal, diaDoMes: diaDoMes, intervalo: intervalo);
+
+  /// Todo ano no dia e mês da data inicial (aniversário).
+  const Regra.anual({int intervalo = 1}) : this._(Frequencia.anual, intervalo: intervalo);
 
   final Frequencia frequencia;
   final int intervalo;
@@ -67,6 +71,8 @@ class Regra {
         return dia == null
             ? null
             : Regra._(Frequencia.mensal, diaDoMes: dia, intervalo: intervalo, fim: fim);
+      case 'YEARLY':
+        return Regra._(Frequencia.anual, intervalo: intervalo, fim: fim);
     }
     return null;
   }
@@ -82,6 +88,7 @@ class Regra {
       Frequencia.semanal =>
         'FREQ=WEEKLY;BYDAY=${[for (var i = 0; i < 7; i++) if (dias & (1 << i) != 0) _siglas[i]].join(',')}$intervaloTxt$fimTxt',
       Frequencia.mensal => 'FREQ=MONTHLY;BYMONTHDAY=$diaDoMes$intervaloTxt$fimTxt',
+      Frequencia.anual => 'FREQ=YEARLY$intervaloTxt$fimTxt',
     };
   }
 
@@ -116,6 +123,10 @@ class Regra {
         final ultimo = DateTime(d.year, d.month + 1, 0).day;
         final alvo = (diaDoMes ?? i.day).clamp(1, ultimo);
         return d.day == alvo;
+      case Frequencia.anual:
+        if ((d.year - i.year) % intervalo != 0 || d.month != i.month) return false;
+        // 29 de fevereiro cai no dia 28 nos anos comuns.
+        return d.day == i.day.clamp(1, DateTime(d.year, d.month + 1, 0).day);
     }
   }
 
@@ -153,6 +164,8 @@ class Regra {
         return descreverDias(dias);
       case Frequencia.mensal:
         return cada ? 'A cada $intervalo meses, dia $diaDoMes' : 'Todo dia $diaDoMes';
+      case Frequencia.anual:
+        return cada ? 'A cada $intervalo anos' : 'Todo ano';
     }
   }
 }

@@ -1,5 +1,5 @@
 /// Busca em tudo (Ctrl+K): procura no banco local, sem internet, em tarefas,
-/// hábitos, lançamentos, categorias, lembretes, metas, projetos, exercícios e
+/// compromissos, hábitos, lançamentos, categorias, lembretes, metas, projetos, exercícios e
 /// treinos. A comparação ignora maiúsculas e acentos.
 library;
 
@@ -13,7 +13,7 @@ import 'banco.dart';
 
 enum GrupoBusca {
   financas('Finanças'),
-  tarefas('Tarefas e lembretes'),
+  tarefas('Rotina'),
   habitos('Hábitos'),
   planos('Metas e projetos'),
   notas('Anotações'),
@@ -26,6 +26,7 @@ enum GrupoBusca {
 enum TipoResultado {
   tarefa(GrupoBusca.tarefas),
   lembrete(GrupoBusca.tarefas),
+  compromisso(GrupoBusca.tarefas),
   transacao(GrupoBusca.financas),
   categoria(GrupoBusca.financas),
   habito(GrupoBusca.habitos),
@@ -129,6 +130,20 @@ Future<List<ResultadoBusca>> buscarTudo(BancoAurora db, String termo,
     for (final l in lembretes) {
       final q = l.quando.toLocal();
       add(TipoResultado.lembrete, l.texto, 'Lembrete · ${rotuloDiaLembrete(dataLocal(q), dia)}, ${hora(q)}', l);
+    }
+    final compromissos = await (db.select(db.compromissos)
+          ..where((x) => x.apagadoEm.isNull())
+          ..orderBy([(x) => OrderingTerm.asc(x.inicio)]))
+        .get();
+    for (final c in compromissos) {
+      final q = emLocal(c.inicio);
+      add(
+        TipoResultado.compromisso,
+        c.titulo,
+        'Compromisso · ${diaRelativo(dataLocal(q), dia)}${c.diaInteiro ? '' : ', ${hora(q)}'}',
+        c,
+        tambem: c.local,
+      );
     }
   }
 

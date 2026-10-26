@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-/// Percorre as áreas pelo menu lateral (computador) e pela tela "Mais"
+/// Percorre as áreas pelo menu lateral (computador) e pela barra flutuante
 /// (celular), conferindo que cada uma monta sem erro de layout.
 void main() {
   late BancoAurora db;
@@ -37,14 +37,25 @@ void main() {
 
   testWidgets('computador: todas as áreas no menu lateral', (tester) async {
     await abrirApp(tester, const Size(1280, 860));
-    for (final area in ['Tarefas', 'Hábitos', 'Metas', 'Projetos', 'Anotações', 'Finanças', 'Assistente', 'Visão']) {
+    for (final area in ['Rotina', 'Metas', 'Projetos', 'Anotações', 'Finanças', 'Assistente', 'Visão']) {
       await tocar(tester, find.bySemanticsLabel(area));
     }
-    // Abas novas (Análise e Parceladas).
-    await tocar(tester, find.bySemanticsLabel('Tarefas'));
+    // Rotina: as abas, o calendário em mês e semana e a análise dos dois tipos.
+    await tocar(tester, find.bySemanticsLabel('Rotina'));
+    // Hoje: as quatro colunas lado a lado.
+    for (final coluna in ['Compromissos', 'Fazer', 'Hábitos', 'Lembretes']) {
+      expect(find.text(coluna), findsWidgets);
+    }
+    await tocar(tester, find.text('Calendário'));
+    expect(find.text('Compromisso neste dia'), findsOneWidget);
+    await tocar(tester, find.text('Semana'));
+    expect(find.text('dia\ntodo'), findsOneWidget);
+    await tocar(tester, find.text('Hábitos'));
+    expect(find.text('Constância'), findsOneWidget);
     await tocar(tester, find.text('Análise'));
-    await tocar(tester, find.bySemanticsLabel('Hábitos'));
-    await tocar(tester, find.text('Análise'));
+    expect(find.text('Concluídas nos últimos 7 dias'), findsOneWidget);
+    await tocar(tester, find.text('Hábitos').last);
+    expect(find.text('Constância nos últimos 30 dias'), findsOneWidget);
     await tocar(tester, find.bySemanticsLabel('Finanças'));
     await tocar(tester, find.text('Parceladas'));
     await tocar(tester, find.text('Análise'));
@@ -88,22 +99,36 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('computador: Lembretes e Conta', (tester) async {
+  testWidgets('computador: Rotina › Automações e Conta', (tester) async {
     await abrirApp(tester, const Size(1280, 860));
-    await tocar(tester, find.bySemanticsLabel('Lembretes'));
+    await tocar(tester, find.bySemanticsLabel('Rotina'));
     await tocar(tester, find.text('Automações'));
     await tocar(tester, find.bySemanticsLabel('Conta e sincronização'));
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets('celular: Rotina › Hoje vira lista com filtros', (tester) async {
+    await abrirApp(tester, const Size(390, 844));
+    await tocar(tester, find.bySemanticsLabel('Rotina'));
+    await assentar(tester); // a Rotina lê quatro tabelas
+    // Os filtros ficam abaixo das abas ("Hábitos" também é uma aba).
+    for (final filtro in ['Compromissos', 'Fazer', 'Hábitos', 'Lembretes', 'Tudo']) {
+      await tester.ensureVisible(find.text(filtro).last);
+      await tocar(tester, find.text(filtro).last);
+    }
+    await tocar(tester, find.text('Calendário'));
+    expect(find.text('Compromisso neste dia'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('celular: a barra rolável leva a todas as áreas e a orbe ao assistente', (tester) async {
     await abrirApp(tester, const Size(390, 844));
-    for (final area in ['Visão', 'Tarefas', 'Finanças', 'Hábitos', 'Saúde']) {
+    for (final area in ['Visão', 'Rotina', 'Finanças', 'Saúde', 'Metas']) {
       await tocar(tester, find.bySemanticsLabel(area));
     }
     // A 2ª página da barra (pelos pontinhos): o resto das áreas.
     await tocar(tester, find.bySemanticsLabel('Página 2 do menu'));
-    for (final area in ['Metas', 'Lembretes', 'Projetos', 'Anotações', 'Conta']) {
+    for (final area in ['Projetos', 'Anotações', 'Conta']) {
       await tocar(tester, find.bySemanticsLabel(area));
     }
     expect(find.text('Conta e sincronização'), findsWidgets);

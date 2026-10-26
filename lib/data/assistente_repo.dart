@@ -11,6 +11,7 @@ import '../core/relogio.dart';
 import 'alimentacao_repo.dart';
 import 'banco.dart';
 import 'catalogo_taco.dart';
+import 'compromissos_repo.dart';
 import 'contexto_ia.dart';
 import 'financas_repo.dart';
 import 'habitos_repo.dart';
@@ -444,8 +445,40 @@ class AssistenteRepo {
         final quando = c.regra != null
             ? '${c.regra!.descricao.toLowerCase()} às ${horaDe(c.hora, c.minuto)}, a partir de ${diaRelativo(c.dia, hoje)}'
             : '${diaRelativo(c.dia, hoje)} às ${horaDe(c.hora, c.minuto)}';
-        return Resposta('Pronto: lembrete “${c.texto}” $quando. Está em Mais › Lembretes.',
+        return Resposta('Pronto: lembrete “${c.texto}” $quando. Está na Rotina.',
             itemTipo: 'lembrete', itemId: l.id);
+
+      case CmdCompromisso():
+        final inicio = c.diaInteiro || c.hora == null ? instanteLocal(c.dia) : instanteLocal(c.dia, c.hora!, c.minuto);
+        DateTime? fim;
+        if (!c.diaInteiro && c.hora != null) {
+          fim = c.fimHora == null
+              ? inicio.add(const Duration(hours: 1))
+              : instanteLocal(c.dia, c.fimHora!, c.fimMinuto);
+          if (!fim.isAfter(inicio)) fim = instanteLocal(somarDias(c.dia, 1), c.fimHora!, c.fimMinuto);
+        }
+        final id = await CompromissosRepo(db).salvar(CompromissosCompanion.insert(
+          titulo: c.titulo,
+          inicio: inicio,
+          fim: Value(fim),
+          diaInteiro: Value(c.diaInteiro || c.hora == null),
+          local: Value(c.local),
+          regraRepeticao: Value(c.regra?.rrule),
+          avisoAntesMin: Value(c.avisoMin),
+        ));
+        final quando = [
+          diaRelativo(c.dia, hoje),
+          if (c.diaInteiro || c.hora == null) 'o dia todo' else 'às ${horaDe(c.hora!, c.minuto)}',
+          if (c.regra != null) c.regra!.descricao.toLowerCase(),
+          if (c.local != null) 'em ${c.local}',
+        ].join(', ');
+        return Resposta(
+          'Marquei o compromisso “${c.titulo}”, $quando'
+          '${c.avisoMin == null ? '' : ', com aviso ${c.avisoMin == 0 ? 'na hora' : '${c.avisoMin} min antes'}'}. '
+          'Está na Rotina e no Calendário.',
+          itemTipo: 'compromisso',
+          itemId: id,
+        );
 
       case CmdTarefa():
         final prazo = c.dia == null ? null : instanteLocal(c.dia!, c.hora ?? 0, c.minuto);
@@ -610,6 +643,8 @@ class AssistenteRepo {
         await LembretesRepo(db).excluir(id);
       case 'tarefa':
         await TarefasRepo(db).excluir(id);
+      case 'compromisso':
+        await CompromissosRepo(db).excluir(id);
       case 'habito':
         final [habitoId, dia] = id.split('|');
         await HabitosRepo(db).alternar(habitoId, DateTime.parse(dia), false);

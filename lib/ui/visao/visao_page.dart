@@ -16,8 +16,9 @@ import 'foco.dart';
 /// Visão: o dia inteiro numa tela, em cinco blocos fixos: em
 /// foco, linha do dia, semana, painel das áreas e insights.
 class VisaoPage extends StatefulWidget {
-  const VisaoPage({super.key, required this.ir});
+  const VisaoPage({super.key, required this.ir, required this.irRotina});
   final ValueChanged<Secao> ir;
+  final ValueChanged<AbaRotina> irRotina;
 
   @override
   State<VisaoPage> createState() => _VisaoPageState();
@@ -47,17 +48,18 @@ class _VisaoPageState extends State<VisaoPage> {
         }
         final r = snap.data;
         if (r == null) return const SizedBox(height: 200);
-        return _Conteudo(resumo: r, repo: _repo!, ir: widget.ir);
+        return _Conteudo(resumo: r, repo: _repo!, ir: widget.ir, irRotina: widget.irRotina);
       },
     );
   }
 }
 
 class _Conteudo extends StatelessWidget {
-  const _Conteudo({required this.resumo, required this.repo, required this.ir});
+  const _Conteudo({required this.resumo, required this.repo, required this.ir, required this.irRotina});
   final ResumoVisao resumo;
   final VisaoRepo repo;
   final ValueChanged<Secao> ir;
+  final ValueChanged<AbaRotina> irRotina;
 
   @override
   Widget build(BuildContext context) {
@@ -90,13 +92,13 @@ class _Conteudo extends StatelessWidget {
         _Bloco(
           titulo: 'Semana',
           descricao: 'Compromissos de hoje e dos próximos 6 dias.',
-          child: _Semana(dias: resumo.semana, aoTocar: () => ir(Secao.tarefas)),
+          child: _Semana(dias: resumo.semana, aoTocar: () => irRotina(AbaRotina.calendario)),
         ),
         const SizedBox(height: Espaco.xl),
         _Bloco(
           titulo: 'Painel das áreas',
           descricao: 'Toque num cartão para abrir a área.',
-          child: _Panorama(resumo: resumo, ir: ir),
+          child: _Panorama(resumo: resumo, ir: ir, irRotina: irRotina),
         ),
         if (resumo.insights.isNotEmpty) ...[
           const SizedBox(height: Espaco.xl),
@@ -107,6 +109,14 @@ class _Conteudo extends StatelessWidget {
   }
 
   List<ItemFoco> _itensFoco(ResumoVisao r) => [
+        for (final o in r.compromissosHoje)
+          if (!o.terminou(agoraLocal()))
+            ItemFoco(
+              o.compromisso.titulo,
+              o.emAndamento(agoraLocal())
+                  ? 'Agora · Compromisso'
+                  : (o.diaInteiro ? 'Hoje · Compromisso' : 'Hoje às ${hora(emLocal(o.inicio))} · Compromisso'),
+            ),
         for (final h in r.habitos)
           if (!h.feito) ItemFoco(h.habito.nome, 'Para hoje · Hábitos'),
         for (final o in r.tarefasHoje)
@@ -233,10 +243,11 @@ class _LinhaDoDia extends StatelessWidget {
   Widget _linha(BuildContext context, ItemLinha item) {
     final c = context.cores;
     final (icone, tipo) = switch (item.tipo) {
+      TipoItemLinha.compromisso => (Icons.event_rounded, 'Compromisso'),
       TipoItemLinha.tarefa => (Icons.check_box_outlined, 'Tarefa'),
       TipoItemLinha.lembrete => (Icons.notifications_none_rounded, 'Lembrete'),
       TipoItemLinha.conta => (Icons.receipt_long_outlined, 'Conta'),
-      TipoItemLinha.habito => (Icons.repeat_rounded, 'Hábito'),
+      TipoItemLinha.habito => (Icons.donut_large_rounded, 'Hábito'),
     };
     final habito = item.habitoId;
     return InkWell(
@@ -369,9 +380,10 @@ class _Insights extends StatelessWidget {
 }
 
 class _Panorama extends StatelessWidget {
-  const _Panorama({required this.resumo, required this.ir});
+  const _Panorama({required this.resumo, required this.ir, required this.irRotina});
   final ResumoVisao resumo;
   final ValueChanged<Secao> ir;
+  final ValueChanged<AbaRotina> irRotina;
 
   @override
   Widget build(BuildContext context) {
@@ -386,14 +398,14 @@ class _Panorama extends StatelessWidget {
         valor: '${resumo.tarefasAtrasadas}',
         corValor: resumo.tarefasAtrasadas > 0 ? c.bad : null,
         detalhe: 'atrasadas · ${resumo.tarefasAbertas} abertas',
-        aoTocar: () => ir(Secao.tarefas),
+        aoTocar: () => irRotina(AbaRotina.hoje),
       ),
       _CartaoNumero(
         icone: Icons.repeat_rounded,
         rotulo: 'Hábitos',
         valor: '${resumo.habitosFeitos}/${resumo.habitos.length}',
         detalhe: 'feitos hoje',
-        aoTocar: () => ir(Secao.habitos),
+        aoTocar: () => irRotina(AbaRotina.habitos),
       ),
       _CartaoNumero(
         icone: Icons.account_balance_wallet_outlined,

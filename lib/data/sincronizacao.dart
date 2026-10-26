@@ -25,6 +25,7 @@ List<TableInfo<Table, dynamic>> tabelasSincronizadas(BancoAurora db) => [
       db.transacoes,
       db.pagamentosTransacao,
       db.lembretes,
+      db.compromissos,
       db.exercicios,
       db.treinos,
       db.itensTreino,

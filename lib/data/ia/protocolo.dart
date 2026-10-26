@@ -27,6 +27,10 @@ sealed class EventoIa {
 }
 
 /// Mais um pedaço do texto da resposta.
+/// O que este app sabe fazer além do básico: o servidor só oferece as
+/// ferramentas de compromisso e as telas da Rotina a quem manda "rotina".
+const recursosDoApp = ['rotina'];
+
 class TextoIa extends EventoIa {
   const TextoIa(this.delta);
   final String delta;
@@ -131,7 +135,7 @@ TransporteIa? iaDaNuvem() {
           ..contentType = ContentType.json
           ..set(HttpHeaders.acceptHeader, 'text/event-stream');
         if (reserva) pedido.headers.set('x-ia-reserva', '1');
-        pedido.add(utf8.encode(jsonEncode({'mensagens': mensagens, 'contexto': contexto})));
+        pedido.add(utf8.encode(jsonEncode({'mensagens': mensagens, 'contexto': contexto, 'recursos': recursosDoApp})));
         r = await pedido.close().timeout(const Duration(seconds: 30));
       } on SocketException catch (e) {
         debugPrint('IA: sem conexão ($e)');
@@ -169,7 +173,7 @@ Stream<EventoIa> _pelaWeb(SupabaseClient cliente, Session sessao, List<Map<Strin
         'Accept': 'text/event-stream',
         if (reserva) 'x-ia-reserva': '1',
       })
-      ..body = jsonEncode({'mensagens': mensagens, 'contexto': contexto});
+      ..body = jsonEncode({'mensagens': mensagens, 'contexto': contexto, 'recursos': recursosDoApp});
     final pkg.StreamedResponse r;
     try {
       r = await rede.send(pedido).timeout(const Duration(seconds: 30));

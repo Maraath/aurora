@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../data/automacoes_repo.dart';
 import '../data/banco.dart';
+import '../data/compromissos_repo.dart';
 import '../data/lembretes_repo.dart';
 import 'avisos_push.dart';
 import 'despertador.dart';
@@ -74,6 +75,42 @@ List<AvisoPlanejado> planejarAvisos({
   avisos.sort((a, b) => a.quando.compareTo(b.quando));
   return avisos.take(limite).toList();
 }
+
+/// Avisos dos compromissos nos próximos [dias]: cada ocorrência avisa
+/// `avisoAntesMin` minutos antes (sem aviso quando é nulo). No dia inteiro,
+/// a conta parte das 09:00 do dia ("1 dia antes" = 09:00 da véspera).
+List<AvisoPlanejado> avisosDeCompromissos(List<Compromisso> compromissos, DateTime agora, {int dias = 14}) {
+  final hoje = dataLocal(agora);
+  final avisos = <AvisoPlanejado>[];
+  for (final c in compromissos) {
+    final antes = c.avisoAntesMin;
+    if (antes == null || c.apagadoEm != null) continue;
+    // O aviso de "1 dia antes" de um compromisso daqui a [dias] + 1 ainda cai na janela.
+    for (final o in ocorrenciasCompromisso(c, hoje, somarDias(hoje, dias + 1))) {
+      final base = o.diaInteiro ? instanteLocal(o.dia, 9) : o.inicio;
+      final quando = base.subtract(Duration(minutes: antes));
+      if (!quando.isAfter(agora) || quando.isAfter(agora.add(Duration(days: dias)))) continue;
+      avisos.add(AvisoPlanejado(
+        quando: quando,
+        titulo: c.titulo,
+        corpo: [
+          if (antes == 0) 'Compromisso agora' else 'Compromisso ${_falta(antes)}',
+          o.horario,
+          ?c.local,
+        ].join(' · '),
+        despertar: c.despertar,
+      ));
+    }
+  }
+  return avisos;
+}
+
+/// "em 15 min", "em 1 h", "amanhã".
+String _falta(int minutos) => switch (minutos) {
+      1440 => 'amanhã',
+      >= 60 when minutos % 60 == 0 => 'em ${minutos ~/ 60} h',
+      _ => 'em $minutos min',
+    };
 
 /// Avisos das automações ligadas nos próximos [dias] (com a chave geral ligada).
 List<AvisoPlanejado> avisosDeAutomacoes(List<Automacao> automacoes, DateTime agora, {int dias = 14}) => [
@@ -235,6 +272,7 @@ class Notificador {
           db.conclusoesTarefa,
           db.habitos,
           db.registrosHabito,
+          db.compromissos,
           db.automacoes,
         ]))
         .listen((_) {
@@ -317,6 +355,10 @@ class Notificador {
         tarefasFeitasNoDia: tarefasFeitas,
         habitosFeitosNoDia: habitosFeitos,
         agora: agora,
+      ),
+      ...avisosDeCompromissos(
+        await (db.select(db.compromissos)..where((c) => c.apagadoEm.isNull())).get(),
+        agora,
       ),
       if (await automacoes.ligadas()) ...avisosDeAutomacoes(await automacoes.listar(), agora),
     ]..sort((a, b) => a.quando.compareTo(b.quando));

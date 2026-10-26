@@ -21,7 +21,8 @@ import 'package:aurora/ui/metas/metas_page.dart';
 import 'package:aurora/data/projetos_repo.dart';
 import 'package:aurora/ui/projetos/projetos_page.dart';
 import 'package:aurora/data/saude_repo.dart';
-import 'package:aurora/ui/habitos/habitos_page.dart';
+import 'package:aurora/ui/rotina/form_rotina.dart';
+import 'package:aurora/ui/rotina/habitos_rotina.dart';
 import 'package:aurora/ui/formulario.dart' show OpcaoChip;
 import 'package:aurora/ui/saude/biblioteca_ui.dart';
 import 'package:aurora/ui/saude/ficha_page.dart';
@@ -100,6 +101,44 @@ void main() {
     await abrir(tester, (c) => abrirFormLembrete(c, lembrete: l));
     expect(tester.takeException(), isNull);
     expect(find.text('Editar lembrete'), findsOneWidget);
+  });
+
+  testWidgets('folha única: novo compromisso grava com aviso de 30 min', (tester) async {
+    await abrir(tester, (c) => abrirFormRotina(c, tipo: TipoRotina.compromisso));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.pumpAndSettle();
+    expect(find.text('Novo compromisso'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).first, 'Dentista');
+    await tester.ensureVisible(find.text('Salvar compromisso'));
+    await tester.tap(find.text('Salvar compromisso'));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    final c = (await tester.runAsync(() => db.select(db.compromissos).getSingle()))!;
+    expect(c.titulo, 'Dentista');
+    expect(c.avisoAntesMin, 30);
+    expect(c.fim!.difference(c.inicio), const Duration(hours: 1));
+  });
+
+  testWidgets('folha única: converter tarefa em hábito apaga a tarefa', (tester) async {
+    final tarefa = (await tester.runAsync(
+        () => db.into(db.tarefas).insertReturning(TarefasCompanion.insert(titulo: 'Ler 20 páginas'))))!;
+    await abrir(tester, (c) => abrirFormTarefa(c, tarefa: tarefa));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.pumpAndSettle();
+    expect(find.text('Editar tarefa'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel('Tipo: Hábito'));
+    await tester.pumpAndSettle();
+    expect(find.text('Converter em hábito'), findsOneWidget);
+    await tester.ensureVisible(find.text('Salvar hábito'));
+    await tester.tap(find.text('Salvar hábito'));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    final habito = (await tester.runAsync(() => db.select(db.habitos).getSingle()))!;
+    expect(habito.nome, 'Ler 20 páginas');
+    final t = (await tester.runAsync(() => db.select(db.tarefas).getSingle()))!;
+    expect(t.apagadoEm, isNotNull);
   });
 
   testWidgets('"Me despertar" fica gravado no lembrete', (tester) async {
@@ -245,7 +284,7 @@ void main() {
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
       tester.view.devicePixelRatio = 1;
-      for (final pagina in const [HabitosPage(), FichaPage(), MedidasPage()]) {
+      for (final pagina in const [HabitosRotina(), FichaPage(), MedidasPage()]) {
         await tester.pumpWidget(AuroraEscopo(
           db: db,
           escuro: ValueNotifier(true),

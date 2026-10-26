@@ -17,6 +17,7 @@ import '../alimentacao_repo.dart';
 import '../assistente_repo.dart';
 import '../banco.dart';
 import '../busca.dart';
+import '../compromissos_repo.dart';
 import '../financas_repo.dart';
 import '../habitos_repo.dart';
 import '../lembretes_repo.dart';
@@ -58,6 +59,8 @@ class FerramentasIa {
             minuto: _hora(e['hora'])?.$2 ?? 0,
           )),
         'criar_lembrete' => _lembrete(e),
+        'criar_compromisso' => _acao(_compromisso(e)),
+        'editar_compromisso' => _editarCompromisso(e),
         'marcar_habito' => _acao(CmdHabito(_texto(e, 'nome'))),
         'registrar_medida' => _acao(CmdMedida(
             tipo: _capitalizar(_texto(e, 'tipo')),
@@ -131,6 +134,91 @@ class FerramentasIa {
     return _acao(CmdLembrete(texto: texto, dia: _data(e['data']) ?? hojeLocal(), hora: h, minuto: m));
   }
 
+  CmdCompromisso _compromisso(Map<String, Object?> e) {
+    final dia = _data(e['data']) ?? hojeLocal();
+    final hora = _hora(e['hora']);
+    final fim = _hora(e['fim']);
+    final aviso = _numero(e['aviso_min']);
+    final local = (e['local'] as String?)?.trim();
+    return CmdCompromisso(
+      titulo: _capitalizar(_texto(e, 'titulo')),
+      dia: dia,
+      hora: hora?.$1,
+      minuto: hora?.$2 ?? 0,
+      fimHora: fim?.$1,
+      fimMinuto: fim?.$2 ?? 0,
+      diaInteiro: e['dia_inteiro'] == true || hora == null,
+      local: local == null || local.isEmpty ? null : local,
+      regra: _regraCompromisso(e['repeticao'], dia),
+      avisoMin: aviso == null ? 30 : aviso.round(),
+    );
+  }
+
+  /// "semana", "quinzena", "mes", "ano" (o dia da semana e do mês vêm de [dia]).
+  static Regra? _regraCompromisso(Object? repeticao, DateTime dia) => switch (repeticao) {
+        'semana' => Regra.semanal(bitDoDiaDaSemana(dia)),
+        'quinzena' => Regra.semanal(bitDoDiaDaSemana(dia), intervalo: 2),
+        'mes' => Regra.mensal(dia.day),
+        'ano' => const Regra.anual(),
+        _ => null,
+      };
+
+  Future<ResultadoFerramenta> _editarCompromisso(Map<String, Object?> e) async {
+    final c = await _compromissoDe(_texto(e, 'id'));
+    if (c == null) return const ResultadoFerramenta(_naoAchei, erro: true);
+    final titulo = (e['titulo'] as String?)?.trim();
+    final dia = _data(e['data']);
+    final hora = _hora(e['hora']);
+    final fim = _hora(e['fim']);
+    final diaInteiro = e['dia_inteiro'] is bool ? e['dia_inteiro'] as bool : null;
+    final local = e['local'] is String ? (e['local'] as String).trim() : null;
+    final repeticao = e['repeticao'] as String?;
+    final aviso = _numero(e['aviso_min'])?.round();
+    if ((titulo == null || titulo.isEmpty) &&
+        [dia, hora, fim, diaInteiro, local, repeticao, aviso].every((x) => x == null)) {
+      return const ResultadoFerramenta(
+          'Diga o que mudar no compromisso: título, dia, hora, fim, local, repetição ou aviso.',
+          erro: true);
+    }
+    final ini = emLocal(c.inicio);
+    final novoDia = dia ?? DateTime(ini.year, ini.month, ini.day);
+    final inteiro = diaInteiro ?? (hora == null ? c.diaInteiro : false);
+    final (h, m) = hora ?? (ini.hour, ini.minute);
+    final inicio = inteiro ? instanteLocal(novoDia) : instanteLocal(novoDia, h, m);
+    DateTime? novoFim;
+    if (!inteiro) {
+      if (fim != null) {
+        novoFim = instanteLocal(novoDia, fim.$1, fim.$2);
+        if (!novoFim.isAfter(inicio)) novoFim = instanteLocal(somarDias(novoDia, 1), fim.$1, fim.$2);
+      } else {
+        // Sem fim novo: mantém a duração de antes (1 hora se não tinha).
+        novoFim = inicio.add(c.fim == null || c.diaInteiro ? const Duration(hours: 1) : c.fim!.difference(c.inicio));
+      }
+    }
+    await CompromissosRepo(db).salvar(
+      CompromissosCompanion(
+        titulo: titulo == null || titulo.isEmpty ? const Value.absent() : Value(_capitalizar(titulo)),
+        inicio: Value(inicio),
+        fim: Value(novoFim),
+        diaInteiro: Value(inteiro),
+        local: local == null ? const Value.absent() : Value(local.isEmpty ? null : local),
+        regraRepeticao: repeticao == null ? const Value.absent() : Value(_regraCompromisso(repeticao, novoDia)?.rrule),
+        avisoAntesMin: aviso == null ? const Value.absent() : Value(aviso < 0 ? null : aviso),
+      ),
+      id: c.id,
+    );
+    final partes = [
+      if (titulo != null && titulo.isNotEmpty) 'título “${_capitalizar(titulo)}”',
+      if (dia != null || hora != null || diaInteiro != null)
+        '${diaRelativo(novoDia, hojeLocal())}${inteiro ? ', o dia todo' : ' às ${horaDe(h, m)}'}',
+      if (fim != null) 'até ${horaDe(fim.$1, fim.$2)}',
+      if (local != null) local.isEmpty ? 'sem local' : 'em $local',
+      if (repeticao != null) repeticao == 'nao' ? 'sem repetição' : 'repete (${_regraCompromisso(repeticao, novoDia)?.descricao.toLowerCase()})',
+      if (aviso != null) aviso < 0 ? 'sem aviso' : (aviso == 0 ? 'aviso na hora' : 'aviso $aviso min antes'),
+    ];
+    return _comDesfazer('Atualizei o compromisso “${c.titulo}”: ${partes.join(', ')}.', 'compromissos', c.toJson());
+  }
+
   Future<ResultadoFerramenta> _treino(Map<String, Object?> e) async {
     final dias = _diasSemana(e['dias']);
     final itens = _exercicios(e['exercicios']);
@@ -163,6 +251,8 @@ class FerramentasIa {
       (db.select(db.lembretes)..where((x) => x.id.equals(id) & x.apagadoEm.isNull())).getSingleOrNull();
   Future<Treino?> _treinoDe(String id) =>
       (db.select(db.treinos)..where((x) => x.id.equals(id) & x.apagadoEm.isNull())).getSingleOrNull();
+  Future<Compromisso?> _compromissoDe(String id) =>
+      (db.select(db.compromissos)..where((x) => x.id.equals(id) & x.apagadoEm.isNull())).getSingleOrNull();
 
   static const _naoAchei = 'Não achei esse registro (o id não confere ou ele foi excluído). '
       'Procure de novo com "buscar" ou "consultar".';
@@ -472,6 +562,12 @@ class FerramentasIa {
           final t = await _treinoDe(id);
           if (t == null) return null;
           return 'Excluir o ${t.nome} da ficha? As sessões já feitas continuam no histórico.';
+        case 'compromisso':
+          final c = await _compromissoDe(id);
+          if (c == null) return null;
+          final i = emLocal(c.inicio);
+          return 'Excluir o compromisso “${c.titulo}” (${diaRelativo(DateTime(i.year, i.month, i.day), hojeLocal())}'
+              '${c.diaInteiro ? '' : ', ${hora(i)}'}${c.regraRepeticao == null ? '' : ', e todas as repetições'})?';
       }
       return null;
     }
@@ -534,6 +630,11 @@ class FerramentasIa {
         if (t == null) break;
         await SaudeRepo(db).excluirTreino(t.id);
         return _comDesfazer('Excluí o ${t.nome} da ficha.', 'treinos', t.toJson());
+      case 'compromisso':
+        final c = await _compromissoDe(id);
+        if (c == null) break;
+        await CompromissosRepo(db).excluir(c.id);
+        return _comDesfazer('Excluí o compromisso “${c.titulo}”.', 'compromissos', c.toJson());
     }
     return const ResultadoFerramenta(_naoAchei, erro: true);
   }
@@ -641,6 +742,7 @@ class FerramentasIa {
   static String? _idDe(Object? item) => switch (item) {
         Tarefa(:final id) ||
         Lembrete(:final id) ||
+        Compromisso(:final id) ||
         Transacao(:final id) ||
         Habito(:final id) ||
         Meta(:final id) ||
@@ -763,6 +865,8 @@ Future<void> restaurar(BancoAurora db, String json) async {
       await TarefasRepo(db).salvar(t.toCompanion(false), id: t.id, avisar: e['avisar'] == true);
     case 'lembretes':
       await db.update(db.lembretes).replace(Lembrete.fromJson(linha).copyWith(atualizadoEm: agora));
+    case 'compromissos':
+      await db.update(db.compromissos).replace(Compromisso.fromJson(linha).copyWith(atualizadoEm: agora));
     case 'treinos':
       final t = Treino.fromJson(linha);
       await db.transaction(() async {
@@ -922,6 +1026,20 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
       for (final x in q.proximos.take(30)) {
         final p = x.proxima!.toLocal();
         l.add('- ${x.lembrete.texto}: ${rotuloDiaLembrete(dataLocal(p), hoje)} ${hora(p)}${x.recorrente ? ' (repete)' : ''} (id ${x.lembrete.id})');
+      }
+
+    case 'compromissos':
+      final q = await CompromissosRepo(db).carregar();
+      if (q.todos.isEmpty) l.add('Nenhum compromisso.');
+      // Os do período (para trás) e os dos próximos 60 dias.
+      final mapa = q.porDia(desde, somarDias(hoje, 60));
+      for (final d in mapa.keys.toList()..sort()) {
+        for (final o in mapa[d]!.take(40)) {
+          final c = o.compromisso;
+          l.add('- ${c.titulo}: ${diaRelativo(d, hoje)}, ${o.horario.toLowerCase()}'
+              '${c.local == null ? '' : ', em ${c.local}'}${o.regra == null ? '' : ', ${o.regra!.descricao.toLowerCase()}'}'
+              '${c.avisoAntesMin == null ? ', sem aviso' : ', aviso ${c.avisoAntesMin} min antes'} (id ${c.id})');
+        }
       }
 
     default:

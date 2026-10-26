@@ -14,7 +14,7 @@ void main() {
       expect(Regra.ler(texto)!.rrule, texto);
     }
     expect(Regra.ler(null), isNull);
-    expect(Regra.ler('FREQ=YEARLY'), isNull);
+    expect(Regra.ler('FREQ=MINUTELY'), isNull);
   });
 
   test('todo dia, a cada 2 dias', () {

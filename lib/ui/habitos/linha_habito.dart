@@ -55,7 +55,7 @@ class LinhaHabito extends StatelessWidget {
           child: Row(
             children: [
               if (aoAlternar != null) ...[
-                MarcaConcluir(feito: feito),
+                MarcaConcluir(feito: feito, cor: c.corHabito),
                 const SizedBox(width: 12),
               ],
               Expanded(

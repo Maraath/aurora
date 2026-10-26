@@ -14,7 +14,11 @@ class CalendarioMes extends StatelessWidget {
     required this.marcador,
     this.selecionado,
     this.aoSelecionar,
+    this.habilitado,
   });
+
+  /// Dias que podem ser escolhidos (os outros ficam apagados); nulo = todos.
+  final bool Function(DateTime dia)? habilitado;
 
   /// Qualquer dia do mês mostrado.
   final DateTime mes;
@@ -85,9 +89,12 @@ class CalendarioMes extends StatelessWidget {
     final ehHoje = dia == hoje;
     final ehSelecionado = dia == selecionado;
     final marca = marcador(dia);
+    final pode = habilitado?.call(dia) ?? true;
     return Padding(
       padding: const EdgeInsets.all(2),
-      child: Material(
+      child: Opacity(
+        opacity: pode ? 1 : 0.3,
+        child: Material(
         color: ehSelecionado ? c.accentSoft : Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -95,7 +102,7 @@ class CalendarioMes extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: aoSelecionar == null ? null : () => aoSelecionar!(dia),
+          onTap: aoSelecionar == null || !pode ? null : () => aoSelecionar!(dia),
           child: SizedBox(
             height: 44,
             child: Column(
@@ -111,6 +118,7 @@ class CalendarioMes extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

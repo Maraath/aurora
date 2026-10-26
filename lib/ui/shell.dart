@@ -20,11 +20,8 @@ import 'componentes.dart';
 import 'alimentacao/alimentacao_page.dart';
 import 'anotacoes/anotacoes_page.dart';
 import 'financas/form_lancamento.dart';
-import 'habitos/form_habito.dart';
-import 'lembretes/form_lembrete.dart';
 import 'metas/form_meta.dart';
 import 'projetos/form_projeto.dart';
-import 'tarefas/form_tarefa.dart';
 import 'atualizacao_ui.dart';
 import 'boas_vindas_page.dart';
 import 'ceu_estrelado.dart';
@@ -32,19 +29,21 @@ import 'assistente/assistente_page.dart';
 import 'automacoes/automacoes_page.dart';
 import 'conta/conta_page.dart';
 import 'financas/financas_page.dart';
-import 'habitos/habitos_page.dart';
-import 'lembretes/lembretes_page.dart';
 import 'menu_dock.dart';
 import 'metas/metas_page.dart';
 import 'projetos/projetos_page.dart';
 import 'saude/treino_page.dart';
 import 'vidro.dart';
-import 'tarefas/tarefas_page.dart';
+import 'rotina/analise_rotina.dart';
+import 'rotina/calendario_rotina.dart';
+import 'rotina/form_rotina.dart';
+import 'rotina/habitos_rotina.dart';
+import 'rotina/hoje_rotina.dart';
 import 'visao/visao_page.dart';
 
 /// Áreas do app. Cada uma aparece direto no menu lateral (computador) e na
 /// barra rolável de baixo (celular), e organiza o conteúdo em abas no topo.
-enum Secao { visao, assistente, tarefas, habitos, saude, lembretes, metas, projetos, anotacoes, financas, conta }
+enum Secao { visao, assistente, rotina, saude, metas, projetos, anotacoes, financas, conta }
 
 class _ItemNav {
   const _ItemNav(this.secao, this.rotulo, this.icone);
@@ -58,14 +57,12 @@ class _ItemNav {
 const _paginasBarra = [
   [
     _ItemNav(Secao.visao, 'Visão', Icons.home_outlined),
-    _ItemNav(Secao.tarefas, 'Tarefas', Icons.check_box_outlined),
+    _ItemNav(Secao.rotina, 'Rotina', Icons.event_available_outlined),
     _ItemNav(Secao.financas, 'Finanças', Icons.account_balance_wallet_outlined),
-    _ItemNav(Secao.habitos, 'Hábitos', Icons.repeat_rounded),
     _ItemNav(Secao.saude, 'Saúde', Icons.monitor_heart_outlined),
+    _ItemNav(Secao.metas, 'Metas', Icons.flag_outlined),
   ],
   [
-    _ItemNav(Secao.metas, 'Metas', Icons.flag_outlined),
-    _ItemNav(Secao.lembretes, 'Lembretes', Icons.notifications_none_rounded),
     _ItemNav(Secao.projetos, 'Projetos', Icons.folder_outlined),
     _ItemNav(Secao.anotacoes, 'Anotações', Icons.sticky_note_2_outlined),
     _ItemNav(Secao.conta, 'Conta', Icons.person_outline_rounded),
@@ -76,10 +73,8 @@ const _paginasBarra = [
 const _gruposLateral = [
   [_ItemNav(Secao.assistente, 'Assistente', iconeIa), _ItemNav(Secao.visao, 'Visão', Icons.home_outlined)],
   [
-    _ItemNav(Secao.tarefas, 'Tarefas', Icons.check_box_outlined),
-    _ItemNav(Secao.habitos, 'Hábitos', Icons.repeat_rounded),
+    _ItemNav(Secao.rotina, 'Rotina', Icons.event_available_outlined),
     _ItemNav(Secao.saude, 'Saúde', Icons.monitor_heart_outlined),
-    _ItemNav(Secao.lembretes, 'Lembretes', Icons.notifications_none_rounded),
   ],
   [
     _ItemNav(Secao.metas, 'Metas', Icons.flag_outlined),
@@ -96,7 +91,18 @@ const larguraDesktop = 840.0;
 /// Abas das áreas que juntam várias telas. Medidas e Exercícios ficam dentro
 /// de Treino (ver TreinoPage).
 const abasSaude = ['Treino', 'Alimentação'];
-const abasLembretes = ['Lembretes', 'Automações'];
+
+/// Rotina: tarefas, hábitos, lembretes e compromissos num lugar só.
+enum AbaRotina {
+  hoje('Hoje'),
+  calendario('Calendário'),
+  habitos('Hábitos'),
+  automacoes('Automações'),
+  analise('Análise');
+
+  const AbaRotina(this.rotulo);
+  final String rotulo;
+}
 
 class Shell extends StatefulWidget {
   const Shell({super.key, this.primeiraVez = false});
@@ -112,7 +118,7 @@ class _ShellState extends State<Shell> {
   Secao _secao = Secao.visao;
   int _abaSaude = 0;
   SubTreino _subTreino = SubTreino.ficha;
-  int _abaLembretes = 0;
+  AbaRotina _abaRotina = AbaRotina.hoje;
   late bool _boasVindas = widget.primeiraVez;
 
   Future<void> _sairDasBoasVindas(String nome, Secao destino) async {
@@ -158,9 +164,20 @@ class _ShellState extends State<Shell> {
         case 'alimentacao':
           _secao = Secao.saude;
           _abaSaude = 1;
-        case 'lembretes' || 'automacoes':
-          _secao = Secao.lembretes;
-          _abaLembretes = tela == 'automacoes' ? 1 : 0;
+        // Nomes antigos (tarefas, hábitos, lembretes) seguem valendo: apps e
+        // servidor de antes da Rotina ainda pedem por eles.
+        case 'rotina' || 'tarefas' || 'lembretes':
+          _secao = Secao.rotina;
+          _abaRotina = AbaRotina.hoje;
+        case 'calendario' || 'compromissos':
+          _secao = Secao.rotina;
+          _abaRotina = AbaRotina.calendario;
+        case 'habitos':
+          _secao = Secao.rotina;
+          _abaRotina = AbaRotina.habitos;
+        case 'automacoes':
+          _secao = Secao.rotina;
+          _abaRotina = AbaRotina.automacoes;
         default:
           _secao = Secao.values.firstWhere((s) => s.name == tela, orElse: () => _secao);
       }
@@ -168,6 +185,11 @@ class _ShellState extends State<Shell> {
   }
 
   void _ir(Secao s) => setState(() => _secao = s);
+
+  void _irRotina(AbaRotina aba) => setState(() {
+        _secao = Secao.rotina;
+        _abaRotina = aba;
+      });
 
   final _atalhos = ControleAtalhos();
 
@@ -193,14 +215,9 @@ class _ShellState extends State<Shell> {
           _subTreino = s;
         }),
       ),
-    AtalhoArea(
-      'Automações',
-      Icons.bolt_rounded,
-      () => setState(() {
-        _secao = Secao.lembretes;
-        _abaLembretes = 1;
-      }),
-    ),
+    AtalhoArea('Calendário', Icons.calendar_month_rounded, () => _irRotina(AbaRotina.calendario)),
+    AtalhoArea('Hábitos', Icons.donut_large_rounded, () => _irRotina(AbaRotina.habitos)),
+    AtalhoArea('Automações', Icons.bolt_rounded, () => _irRotina(AbaRotina.automacoes)),
     AtalhoArea(_itemConta.rotulo, _itemConta.icone, () => _ir(Secao.conta)),
   ];
 
@@ -230,15 +247,9 @@ class _ShellState extends State<Shell> {
   Future<void> _abrirResultado(ResultadoBusca r) async {
     final db = AuroraEscopo.de(context).db;
     switch (r.tipo) {
-      case TipoResultado.tarefa:
-        _ir(Secao.tarefas);
-        await abrirFormTarefa(context, tarefa: r.item as Tarefa);
-      case TipoResultado.lembrete:
-        setState(() {
-          _secao = Secao.lembretes;
-          _abaLembretes = 0;
-        });
-        await abrirFormLembrete(context, lembrete: r.item as Lembrete);
+      case TipoResultado.tarefa || TipoResultado.lembrete || TipoResultado.compromisso:
+        _irRotina(r.tipo == TipoResultado.compromisso ? AbaRotina.calendario : AbaRotina.hoje);
+        await abrirFormRotina(context, item: r.item);
       case TipoResultado.transacao:
         _ir(Secao.financas);
         final q = await FinancasRepo(db).carregar();
@@ -252,10 +263,8 @@ class _ShellState extends State<Shell> {
       case TipoResultado.categoria:
         _ir(Secao.financas);
       case TipoResultado.habito:
-        _ir(Secao.habitos);
-        final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
-        if (!mounted) return;
-        await abrirFormHabito(context, habito: r.item as Habito, metas: metas);
+        _irRotina(AbaRotina.habitos);
+        await abrirFormRotina(context, item: r.item);
       case TipoResultado.meta:
         _ir(Secao.metas);
         await abrirFormMeta(context, meta: r.item as Meta);
@@ -274,10 +283,24 @@ class _ShellState extends State<Shell> {
     }
   }
 
+  bool get _largo =>
+      _secao == Secao.anotacoes ||
+      (_secao == Secao.rotina && (_abaRotina == AbaRotina.hoje || _abaRotina == AbaRotina.calendario));
+
   Widget _pagina(bool desktop) => switch (_secao) {
-    Secao.visao => VisaoPage(ir: _ir),
-    Secao.tarefas => const TarefasPage(),
-    Secao.habitos => const HabitosPage(),
+    Secao.visao => VisaoPage(ir: _ir, irRotina: _irRotina),
+    Secao.rotina => AbasArea(
+      abas: [for (final a in AbaRotina.values) a.rotulo],
+      atual: _abaRotina.index,
+      aoEscolher: (i) => setState(() => _abaRotina = AbaRotina.values[i]),
+      child: switch (_abaRotina) {
+        AbaRotina.hoje => HojeRotina(verCalendario: () => _irRotina(AbaRotina.calendario)),
+        AbaRotina.calendario => const CalendarioRotina(),
+        AbaRotina.habitos => const HabitosRotina(),
+        AbaRotina.automacoes => AutomacoesPage(abrirAssistente: () => _ir(Secao.assistente)),
+        AbaRotina.analise => const AnaliseRotina(),
+      },
+    ),
     Secao.saude => AbasArea(
       abas: abasSaude,
       atual: _abaSaude,
@@ -285,12 +308,6 @@ class _ShellState extends State<Shell> {
       child: _abaSaude == 0
           ? TreinoPage(sub: _subTreino, aoEscolher: (s) => setState(() => _subTreino = s))
           : const AlimentacaoPage(),
-    ),
-    Secao.lembretes => AbasArea(
-      abas: abasLembretes,
-      atual: _abaLembretes,
-      aoEscolher: (i) => setState(() => _abaLembretes = i),
-      child: _abaLembretes == 0 ? const LembretesPage() : AutomacoesPage(abrirAssistente: () => _ir(Secao.assistente)),
     ),
     Secao.financas => const FinancasPage(),
     Secao.metas => const MetasPage(),
@@ -315,7 +332,7 @@ class _ShellState extends State<Shell> {
     final cabecalho = desktop ? null : _Cabecalho(buscar: _buscar);
     final pagina = AnimatedSwitcher(
       duration: const Duration(milliseconds: 160),
-      child: KeyedSubtree(key: ValueKey((_secao, _abaSaude, _abaLembretes)), child: _pagina(desktop)),
+      child: KeyedSubtree(key: ValueKey((_secao, _abaSaude, _abaRotina)), child: _pagina(desktop)),
     );
     // No celular o conteúdo passa por baixo da barra de vidro (extendBody): a
     // margem de baixo soma a altura da barra, que o Scaffold põe no MediaQuery.
@@ -326,8 +343,9 @@ class _ShellState extends State<Shell> {
         child: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
-            // Anotações usa a largura da janela (mural e colunas da Lista).
-            constraints: BoxConstraints(maxWidth: _secao == Secao.anotacoes ? 1320 : 820),
+            // Anotações (mural) e Rotina › Hoje e Calendário (colunas, grade)
+            // usam a largura da janela.
+            constraints: BoxConstraints(maxWidth: _largo ? 1320 : 820),
             // O assistente e as anotações ocupam a altura toda (rolam por dentro,
             // com o campo ou os botões fixos); as outras áreas rolam inteiras.
             child: _secao == Secao.assistente || _secao == Secao.anotacoes

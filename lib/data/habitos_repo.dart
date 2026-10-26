@@ -105,7 +105,7 @@ class HabitosRepo {
 
   /// Cria ou atualiza o hábito. Com [avisar], mantém um lembrete recorrente
   /// nos dias escolhidos, no horário do hábito (08:00 se não tiver).
-  Future<void> salvar(HabitosCompanion dados, {String? id, required bool avisar}) {
+  Future<String> salvar(HabitosCompanion dados, {String? id, required bool avisar}) {
     return db.transaction(() async {
       final agora = DateTime.now();
       late final String habitoId;
@@ -132,6 +132,7 @@ class HabitosRepo {
               itemId: Value(habitoId),
             ));
       }
+      return habitoId;
     });
   }
 

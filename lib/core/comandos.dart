@@ -51,6 +51,34 @@ class CmdTarefa extends Comando {
   final int minuto;
 }
 
+/// Compromisso com dia (e hora, ou dia inteiro). Sem [fimHora], dura 1 hora.
+class CmdCompromisso extends Comando {
+  const CmdCompromisso({
+    required this.titulo,
+    required this.dia,
+    this.hora,
+    this.minuto = 0,
+    this.fimHora,
+    this.fimMinuto = 0,
+    this.diaInteiro = false,
+    this.local,
+    this.regra,
+    this.avisoMin = 30,
+  });
+  final String titulo;
+  final DateTime dia;
+  final int? hora;
+  final int minuto;
+  final int? fimHora;
+  final int fimMinuto;
+  final bool diaInteiro;
+  final String? local;
+  final Regra? regra;
+
+  /// Minutos de antecedência do aviso; nulo = sem aviso.
+  final int? avisoMin;
+}
+
 /// Marcar um hábito como feito hoje (o nome é procurado entre os hábitos).
 class CmdHabito extends Comando {
   const CmdHabito(this.nome);
@@ -107,6 +135,7 @@ Comando? interpretar(String texto, {required DateTime hoje, required DateTime ag
 
   return _dinheiro(original, n, hoje) ??
       _lembrete(original, n, hoje, agora) ??
+      _compromisso(original, n, hoje) ??
       _tarefa(original, n, hoje, agora) ??
       _medida(n) ??
       _comida(original, n) ??
@@ -204,6 +233,31 @@ Comando? _lembrete(String o, String n, DateTime hoje, DateTime agora) {
     dia ??= temHora && !passou ? hoje : somarDias(hoje, 1);
   }
   return CmdLembrete(texto: texto, dia: dia, hora: hora, minuto: minuto, regra: regra);
+}
+
+// -------------------------------------------------------------- compromisso
+
+/// "compromisso: dentista amanhã às 9", "agenda reunião sexta às 14h",
+/// "marca um compromisso: cinema sábado às 19h". ("marca o cardio" sem a
+/// palavra compromisso é hábito.) Sem dia, hoje; sem hora, dia inteiro.
+Comando? _compromisso(String o, String n, DateTime hoje) {
+  final m = RegExp(r'^(?:(?:novo )?compromisso:? |agend(?:a|e|ar) (?:um |uma |o |a )?(?:compromisso:? )?'
+          r'(?:(?:de|com|para|pra) )?|marc(?:a|e|ar) (?:um |o )?compromisso:? (?:(?:de|com|para|pra) )?)(.+)$')
+      .firstMatch(n);
+  if (m == null) return null;
+  final ini = n.length - m.group(1)!.length;
+  final q = _Quando.extrair(o.substring(ini), n.substring(ini), hoje);
+  final titulo = _capitalizar(_limparLigacoes(q.resto));
+  if (titulo.isEmpty) return null;
+  final hora = q.hora ?? q.periodo;
+  return CmdCompromisso(
+    titulo: titulo,
+    dia: q.dia ?? hoje,
+    hora: hora,
+    minuto: q.hora == null ? 0 : q.minuto,
+    diaInteiro: hora == null,
+    regra: q.regra,
+  );
 }
 
 // ------------------------------------------------------------------- tarefa
