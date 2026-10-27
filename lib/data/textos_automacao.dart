@@ -6,7 +6,7 @@ import 'banco.dart';
 import 'financas_repo.dart';
 import 'habitos_repo.dart';
 import 'lembretes_repo.dart';
-import 'metas_repo.dart';
+import 'objetivos_repo.dart';
 import 'saude_repo.dart';
 import 'tarefas_repo.dart';
 
@@ -74,10 +74,10 @@ Future<String> _briefing(BancoAurora db, DateTime agora) async {
         '${comida.alvo!.kcal.round()} kcal, ${comida.alvo!.proteina.round()} g de proteína.');
   }
 
-  final emRisco = (await MetasRepo(db).carregar())
-      .where((p) => p.estado == EstadoMeta.emRisco || p.estado == EstadoMeta.parada)
-      .map((p) => '${p.meta.nome} (${p.estado.rotulo.toLowerCase()})');
-  if (emRisco.isNotEmpty) linhas.add('• Atenção nas metas: ${_lista(emRisco)}.');
+  final emRisco = (await ObjetivosRepo(db).carregar())
+      .where((p) => p.estado == EstadoObjetivo.emRisco || p.estado == EstadoObjetivo.parada)
+      .map((p) => '${p.objetivo.nome} (${p.estado.rotulo.toLowerCase()})');
+  if (emRisco.isNotEmpty) linhas.add('• Atenção nos objetivos: ${_lista(emRisco)}.');
 
   if (linhas.length == 1) linhas.add('Nada marcado para hoje. Bom dia livre!');
   return linhas.join('\n');
@@ -137,13 +137,13 @@ Future<String> _dinheiroSemana(BancoAurora db, DateTime agora) async {
 
 Future<String> _metasDomingo(BancoAurora db, DateTime agora) async {
   final hoje = dataLocal(agora);
-  final metas = await MetasRepo(db).carregar();
+  final objetivos = await ObjetivosRepo(db).carregar();
   final q = await FinancasRepo(db).carregar();
   final mes = q.mes(hoje);
   return [
-    if (metas.isEmpty) 'Você ainda não tem metas. Que tal criar uma em Mais › Metas?',
-    for (final p in metas.where((p) => p.estado != EstadoMeta.concluida))
-      '• ${p.meta.nome}: ${(p.progresso * 100).round()}% (${p.estado.rotulo.toLowerCase()})'
+    if (objetivos.isEmpty) 'Você ainda não tem objetivos. Que tal criar um em Objetivos?',
+    for (final p in objetivos.where((p) => p.estado != EstadoObjetivo.concluida))
+      '• ${p.objetivo.nome}: ${(p.progresso * 100).round()}% (${p.estado.rotulo.toLowerCase()})'
           '${p.ritmo == null ? '' : '. ${p.ritmo}'}',
     'Mês até agora: entrou ${reais(mes.entrouCentavos)}, saiu ${reais(mes.saiuCentavos)}'
         '${mes.contasAbertas > 0 ? ', faltam ${reais(mes.faltaPagarCentavos)} em contas' : ''}.',

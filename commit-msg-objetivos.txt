@@ -1,0 +1,10 @@
+Objetivos: metas e projetos numa área só, com linha do tempo
+
+A área Objetivos substitui Metas e Projetos no menu e na barra do celular:
+um objetivo pode ser número (valor inicial → alvo, com ritmo) e/ou etapas
+(tarefas ligadas), com prazo, pausar, concluir, arquivar e linha do tempo.
+
+No banco vira uma tabela só (objetivos, migração 20261026220000), com os
+dados das antigas metas e projetos copiados pelos mesmos ids. Os atalhos, a
+busca, a Visão e as ferramentas da IA passam a falar de objetivo. Versão
+1.13.0+43.

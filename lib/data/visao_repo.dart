@@ -66,7 +66,7 @@ class ResumoVisao {
     required this.tarefasAbertas,
     required this.aPagarCentavos,
     required this.contasAPagar,
-    required this.meta,
+    required this.objetivo,
     this.compromissosHoje = const [],
     this.linha = const [],
     this.semana = const [],
@@ -82,7 +82,7 @@ class ResumoVisao {
   final int tarefasAbertas;
   final int aPagarCentavos;
   final int contasAPagar;
-  final Meta? meta;
+  final Objetivo? objetivo;
 
   /// Compromissos de hoje, em ordem (dia inteiro primeiro).
   final List<OcorrenciaCompromisso> compromissosHoje;
@@ -117,7 +117,7 @@ class VisaoRepo {
         db.transacoes,
         db.pagamentosTransacao,
         db.contasFinanceiras,
-        db.metas,
+        db.objetivos,
         db.lembretes,
         db.compromissos,
       ], carregar);
@@ -135,9 +135,9 @@ class VisaoRepo {
     final pedidoLembretes = (db.select(db.lembretes)
           ..where((l) => l.apagadoEm.isNull() & l.ativo.equals(true) & l.itemTipo.isNull()))
         .get();
-    final pedidoMeta = (db.select(db.metas)
-          ..where((m) => m.status.equals('ativa') & m.apagadoEm.isNull())
-          ..orderBy([(m) => OrderingTerm(expression: m.dataAlvo)])
+    final pedidoObjetivo = (db.select(db.objetivos)
+          ..where((o) => o.status.equals('ativa') & o.unidade.isNotValue('') & o.apagadoEm.isNull())
+          ..orderBy([(o) => OrderingTerm(expression: o.dataAlvo)])
           ..limit(1))
         .getSingleOrNull();
     final pedidoNome = db.preferencia('nome');
@@ -173,7 +173,7 @@ class VisaoRepo {
       }
     }
 
-    final meta = await pedidoMeta;
+    final objetivo = await pedidoObjetivo;
     final compromissos = (await pedidoCompromissos).porDia(hoje, fimSemana);
 
     final linha = <ItemLinha>[
@@ -234,7 +234,7 @@ class VisaoRepo {
       tarefasAbertas: quadro.abertas,
       aPagarCentavos: mes.faltaPagarCentavos,
       contasAPagar: mes.contasAbertas,
-      meta: meta,
+      objetivo: objetivo,
       compromissosHoje: compromissos[hoje] ?? const [],
       linha: linha,
       semana: semana,

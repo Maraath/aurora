@@ -21,8 +21,7 @@ import '../compromissos_repo.dart';
 import '../financas_repo.dart';
 import '../habitos_repo.dart';
 import '../lembretes_repo.dart';
-import '../metas_repo.dart';
-import '../projetos_repo.dart';
+import '../objetivos_repo.dart';
 import '../saude_repo.dart';
 import '../shape_repo.dart';
 import '../tarefas_repo.dart';
@@ -693,37 +692,37 @@ class FerramentasIa {
     return ResultadoFerramenta(texto, aviso: Resposta(texto, itemTipo: 'alvo_dieta', itemId: antes.join(';')));
   }
 
-  /// Uma meta do app pelo nome: valor atual, alvo e/ou data.
+  /// Um objetivo do app pelo nome: valor atual, alvo e/ou data.
   Future<ResultadoFerramenta> _metaApp(Map<String, Object?> e) async {
     final nome = _texto(e, 'nome_meta');
-    final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
+    final objetivos = await (db.select(db.objetivos)..where((o) => o.apagadoEm.isNull())).get();
     final alvo = normalizar(nome);
-    final meta = metas.where((m) => normalizar(m.nome) == alvo).firstOrNull ??
-        metas.where((m) => normalizar(m.nome).contains(alvo) || alvo.contains(normalizar(m.nome))).firstOrNull;
-    if (meta == null) {
+    final objetivo = objetivos.where((o) => normalizar(o.nome) == alvo).firstOrNull ??
+        objetivos.where((o) => normalizar(o.nome).contains(alvo) || alvo.contains(normalizar(o.nome))).firstOrNull;
+    if (objetivo == null) {
       return ResultadoFerramenta(
-          'Não achei a meta "$nome". As metas são: ${metas.map((m) => m.nome).join(', ')}.',
+          'Não achei o objetivo "$nome". Os objetivos são: ${objetivos.map((o) => o.nome).join(', ')}.',
           erro: true);
     }
     final atual = _numero(e['valor_atual']), valorAlvo = _numero(e['valor_alvo']), data = _data(e['data_alvo']);
     if (atual == null && valorAlvo == null && data == null) {
-      return const ResultadoFerramenta('Diga o que mudar na meta: valor atual, alvo ou data.', erro: true);
+      return const ResultadoFerramenta('Diga o que mudar no objetivo: valor atual, alvo ou data.', erro: true);
     }
-    await MetasRepo(db).salvar(
-      MetasCompanion(
+    await ObjetivosRepo(db).salvar(
+      ObjetivosCompanion(
         valorAtual: atual == null ? const Value.absent() : Value(atual),
         valorAlvo: valorAlvo == null ? const Value.absent() : Value(valorAlvo),
         dataAlvo: data == null ? const Value.absent() : Value(instanteLocal(data, 12)),
       ),
-      id: meta.id,
+      id: objetivo.id,
     );
     final partes = [
-      if (atual != null) 'agora em ${valorMeta(atual, meta.unidade)}',
-      if (valorAlvo != null) 'alvo ${valorMeta(valorAlvo, meta.unidade)}',
+      if (atual != null) 'agora em ${valorMeta(atual, objetivo.unidade)}',
+      if (valorAlvo != null) 'alvo ${valorMeta(valorAlvo, objetivo.unidade)}',
       if (data != null) 'até ${diaMesLongo(data)}',
     ];
-    final texto = 'Meta “${meta.nome}” atualizada: ${partes.join(', ')}.';
-    final antes = '${meta.id}|${meta.valorAtual}|${meta.valorAlvo}|${meta.dataAlvo?.toIso8601String() ?? ''}';
+    final texto = 'Objetivo “${objetivo.nome}” atualizado: ${partes.join(', ')}.';
+    final antes = '${objetivo.id}|${objetivo.valorAtual}|${objetivo.valorAlvo}|${objetivo.dataAlvo?.toIso8601String() ?? ''}';
     return ResultadoFerramenta(texto, aviso: Resposta(texto, itemTipo: 'meta', itemId: antes));
   }
 
@@ -745,8 +744,7 @@ class FerramentasIa {
         Compromisso(:final id) ||
         Transacao(:final id) ||
         Habito(:final id) ||
-        Meta(:final id) ||
-        Projeto(:final id) ||
+        Objetivo(:final id) ||
         Treino(:final id) ||
         Exercicio(:final id) =>
           id,
@@ -1002,22 +1000,16 @@ Future<String> consultar(BancoAurora db, String area, {int dias = 30}) async {
             ', ${dia.registros.length} registros.');
       }
 
-    case 'metas':
-      final metas = await MetasRepo(db).carregar();
-      if (metas.isEmpty) l.add('Nenhuma meta.');
-      for (final p in metas) {
-        final m = p.meta;
-        l.add('- ${m.nome}: ${valorMeta(m.valorAtual, m.unidade)} de ${valorMeta(m.valorAlvo, m.unidade)}'
-            '${m.dataAlvo == null ? '' : ' até ${diaMesCurto(dataLocal(m.dataAlvo!))}'}, ${p.estado.rotulo.toLowerCase()}.');
-      }
-
-    case 'projetos':
-      final projetos = await ProjetosRepo(db).carregar();
-      if (projetos.isEmpty) l.add('Nenhum projeto.');
-      for (final p in projetos) {
-        final feitas = p.etapas.where((e) => e.tarefa.feitaEm != null).length;
-        l.add('- ${p.projeto.nome}: ${p.estado.rotulo.toLowerCase()}, $feitas de ${p.etapas.length} etapas feitas, '
-            'até ${diaMesCurto(dataLocal(p.projeto.fim))}.');
+    case 'metas' || 'projetos' || 'objetivos':
+      final objetivos = await ObjetivosRepo(db).carregar();
+      if (objetivos.isEmpty) l.add('Nenhum objetivo.');
+      for (final p in objetivos) {
+        final o = p.objetivo;
+        final medida = p.temNumero
+            ? '${valorMeta(o.valorAtual, o.unidade)} de ${valorMeta(o.valorAlvo, o.unidade)}'
+            : '${p.feitas} de ${p.total} etapas feitas';
+        l.add('- ${o.nome}: $medida'
+            '${o.dataAlvo == null ? '' : ' até ${diaMesCurto(dataLocal(o.dataAlvo!))}'}, ${p.estado.rotulo.toLowerCase()}.');
       }
 
     case 'lembretes':

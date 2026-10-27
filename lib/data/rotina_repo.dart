@@ -75,7 +75,7 @@ class RotinaRepo {
           db.registrosHabito,
           db.lembretes,
           db.compromissos,
-          db.metas,
+          db.objetivos,
         ],
         carregar,
       );

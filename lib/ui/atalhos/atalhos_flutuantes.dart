@@ -711,8 +711,8 @@ class _PainelHabitos extends StatelessWidget {
                 child: TextButton.icon(
                   onPressed: () async {
                     aoFechar();
-                    final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
-                    if (context.mounted) await abrirFormHabito(context, metas: metas);
+                    final objetivos = await (db.select(db.objetivos)..where((o) => o.apagadoEm.isNull())).get();
+                    if (context.mounted) await abrirFormHabito(context, objetivos: objetivos);
                   },
                   icon: const Icon(Icons.add_rounded, size: 18),
                   label: const Text('Criar hábito'),

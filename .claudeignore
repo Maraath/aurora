@@ -1,0 +1,12 @@
+build/
+.dart_tool/
+.pub-cache/
+ios/Pods/
+macos/Pods/
+*.log
+android/
+ios/
+windows/
+linux/
+macos/
+web/

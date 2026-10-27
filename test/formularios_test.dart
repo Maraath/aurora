@@ -16,10 +16,9 @@ import 'package:aurora/ui/financas/financas_page.dart';
 import 'package:aurora/ui/financas/form_conta.dart';
 import 'package:aurora/ui/financas/form_lancamento.dart';
 import 'package:aurora/ui/habitos/form_habito.dart';
-import 'package:aurora/ui/metas/form_meta.dart';
-import 'package:aurora/ui/metas/metas_page.dart';
-import 'package:aurora/data/projetos_repo.dart';
-import 'package:aurora/ui/projetos/projetos_page.dart';
+import 'package:aurora/ui/objetivos/form_objetivo.dart';
+import 'package:aurora/ui/objetivos/objetivos_page.dart';
+import 'package:aurora/data/objetivos_repo.dart';
 import 'package:aurora/data/saude_repo.dart';
 import 'package:aurora/ui/rotina/form_rotina.dart';
 import 'package:aurora/ui/rotina/habitos_rotina.dart';
@@ -79,7 +78,7 @@ void main() {
   testWidgets('editar hábito', (tester) async {
     await tester.runAsync(() => semearExemplo(db));
     final q = (await tester.runAsync(() => HabitosRepo(db).carregar()))!;
-    await abrir(tester, (c) => abrirFormHabito(c, habito: q.habitos.first, metas: q.metas));
+    await abrir(tester, (c) => abrirFormHabito(c, habito: q.habitos.first, objetivos: q.objetivos));
     expect(tester.takeException(), isNull);
     expect(find.text('Editar hábito'), findsOneWidget);
     expect(find.text('Excluir'), findsOneWidget);
@@ -169,6 +168,8 @@ void main() {
     await abrir(tester, (c) => abrirFormLancamento(c, contas: contas));
     expect(tester.takeException(), isNull);
     expect(find.text('Salvar gasto'), findsOneWidget);
+    await tester.ensureVisible(find.text('Parcelada'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Parcelada'));
     await tester.pumpAndSettle();
     expect(find.text('Valor total da compra'), findsOneWidget);
@@ -194,21 +195,21 @@ void main() {
     expect(find.text('Vence no dia'), findsOneWidget);
   });
 
-  testWidgets('editar meta mostra o ritmo', (tester) async {
+  testWidgets('editar objetivo mostra o ritmo', (tester) async {
     await tester.runAsync(() => semearExemplo(db));
-    final meta = (await tester.runAsync(() => db.select(db.metas).get()))!.first;
-    await abrir(tester, (c) => abrirFormMeta(c, meta: meta));
+    final objetivo = (await tester.runAsync(() => db.select(db.objetivos).get()))!.first;
+    await abrir(tester, (c) => abrirFormObjetivo(c, objetivo: objetivo));
     expect(tester.takeException(), isNull);
-    expect(find.text('Editar meta'), findsOneWidget);
+    expect(find.text('Editar objetivo'), findsOneWidget);
     expect(find.textContaining('Para aumentar 6 kg'), findsOneWidget);
   });
 
-  testWidgets('telas de Finanças e Metas montam no celular e no desktop', (tester) async {
+  testWidgets('telas de Finanças e Objetivos montam no celular e no desktop', (tester) async {
     await tester.runAsync(() => semearExemplo(db));
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
       tester.view.devicePixelRatio = 1;
-      for (final pagina in [const FinancasPage(), const MetasPage()]) {
+      for (final pagina in [const FinancasPage(), const ObjetivosPage()]) {
         await tester.pumpWidget(AuroraEscopo(
           db: db,
           escuro: ValueNotifier(true),
@@ -334,15 +335,15 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('projetos: tela, linha do tempo e formulário', (tester) async {
+  testWidgets('objetivos: tela, linha do tempo e formulário', (tester) async {
     await tester.runAsync(() async {
       await semearExemplo(db);
       final hoje = hojeLocal();
-      final repo = ProjetosRepo(db);
-      final id = await repo.salvar(ProjetosCompanion.insert(
+      final repo = ObjetivosRepo(db);
+      final id = await repo.salvar(ObjetivosCompanion.insert(
         nome: 'Estágio',
-        inicio: instanteLocal(hoje.subtract(const Duration(days: 40))),
-        fim: instanteLocal(hoje.add(const Duration(days: 45))),
+        inicio: Value(instanteLocal(hoje.subtract(const Duration(days: 40)))),
+        dataAlvo: Value(instanteLocal(hoje.add(const Duration(days: 45)))),
       ));
       await repo.novaEtapa(id, 'Pesquisar vagas');
       await repo.novaEtapa(id, 'Entrevista', dia: hoje.subtract(const Duration(days: 2)));
@@ -355,19 +356,18 @@ void main() {
         escuro: ValueNotifier(true),
         child: MaterialApp(
           theme: temaAurora(Brightness.dark),
-          home: const Scaffold(body: SingleChildScrollView(child: ProjetosPage())),
+          home: const Scaffold(body: SingleChildScrollView(child: ObjetivosPage())),
         ),
       ));
       await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: '$tamanho');
-      expect(find.text('Em risco'), findsOneWidget);
-      expect(find.text('atrasada 2 dias'), findsOneWidget);
+      expect(find.text('Estágio'), findsOneWidget);
     }
-    await tester.tap(find.byTooltip('Editar projeto'));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    // Linha do tempo: as barras aparecem com o nome de cada objetivo.
+    await tester.tap(find.text('Linha do tempo'));
     await tester.pumpAndSettle();
-    expect(find.text('Editar projeto'), findsOneWidget);
+    expect(find.text('Estágio'), findsOneWidget);
     expect(tester.takeException(), isNull);
     tester.view.reset();
     await tester.pumpWidget(const SizedBox());

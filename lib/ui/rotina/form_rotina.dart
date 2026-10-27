@@ -56,7 +56,7 @@ Future<void> abrirFormCompromisso(BuildContext context, {Compromisso? compromiss
 
 /// A folha única da Rotina: os quatro tipos no topo e os campos do escolhido.
 /// Ao editar, tocar em outro tipo CONVERTE o item (cria o novo, apaga o antigo,
-/// com "Desfazer"). [trocarTipo] falso esconde o seletor (etapa de projeto,
+/// com "Desfazer"). [trocarTipo] falso esconde o seletor (etapa de objetivo,
 /// lembrete criado por um item).
 Future<void> abrirFormRotina(
   BuildContext context, {
@@ -64,13 +64,12 @@ Future<void> abrirFormRotina(
   Object? item,
   DateTime? dia,
   TimeOfDay? hora,
-  String? projetoInicial,
+  String? objetivoInicial,
   bool trocarTipo = true,
 }) async {
   final db = AuroraEscopo.de(context).db;
-  final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
-  final projetos = await (db.select(db.projetos)
-        ..where((p) => p.apagadoEm.isNull() & p.status.equals('ativo')))
+  final objetivos = await (db.select(db.objetivos)
+        ..where((o) => o.apagadoEm.isNull() & o.status.equals('ativa')))
       .get();
   final avisoTarefa = item is Tarefa && await TarefasRepo(db).temLembrete(item.id);
   final avisoHabito = item is Habito &&
@@ -94,9 +93,8 @@ Future<void> abrirFormRotina(
       item: item,
       dia: dia,
       hora: hora,
-      metas: metas,
-      projetos: projetos,
-      projetoInicial: projetoInicial,
+      objetivos: objetivos,
+      objetivoInicial: objetivoInicial,
       avisoTarefa: avisoTarefa,
       avisoHabito: avisoHabito,
       trocarTipo: trocarTipo,
@@ -113,9 +111,8 @@ class _FormRotina extends StatefulWidget {
     required this.item,
     required this.dia,
     required this.hora,
-    required this.metas,
-    required this.projetos,
-    required this.projetoInicial,
+    required this.objetivos,
+    required this.objetivoInicial,
     required this.avisoTarefa,
     required this.avisoHabito,
     required this.trocarTipo,
@@ -128,9 +125,8 @@ class _FormRotina extends StatefulWidget {
   final Object? item;
   final DateTime? dia;
   final TimeOfDay? hora;
-  final List<Meta> metas;
-  final List<Projeto> projetos;
-  final String? projetoInicial;
+  final List<Objetivo> objetivos;
+  final String? objetivoInicial;
   final bool avisoTarefa;
   final bool avisoHabito;
   final bool trocarTipo;
@@ -226,16 +222,15 @@ class _FormRotinaState extends State<_FormRotina> {
         TipoRotina.tarefa => FormTarefa(
             repo: TarefasRepo(db),
             tarefa: original as Tarefa?,
-            metas: widget.metas,
-            projetos: widget.projetos,
-            projetoInicial: widget.projetoInicial,
+            objetivos: widget.objetivos,
+            objetivoInicial: widget.objetivoInicial,
             avisarInicial: original != null && widget.avisoTarefa,
             contexto: ctx,
           ),
         TipoRotina.habito => FormHabito(
             repo: HabitosRepo(db),
             habito: original as Habito?,
-            metas: widget.metas,
+            objetivos: widget.objetivos,
             avisarInicial: original != null && widget.avisoHabito,
             contexto: ctx,
           ),

@@ -15,8 +15,7 @@ import 'banco.dart';
 
 /// Tabelas sincronizadas, pais antes dos filhos (por causa das chaves locais).
 List<TableInfo<Table, dynamic>> tabelasSincronizadas(BancoAurora db) => [
-      db.metas,
-      db.projetos,
+      db.objetivos,
       db.tarefas,
       db.habitos,
       db.conclusoesTarefa,

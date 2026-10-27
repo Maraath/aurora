@@ -3,11 +3,12 @@
 part of 'banco.dart';
 
 // ignore_for_file: type=lint
-class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
+class $ObjetivosTable extends Objetivos
+    with TableInfo<$ObjetivosTable, Objetivo> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $MetasTable(this.attachedDatabase, [this._alias]);
+  $ObjetivosTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -62,38 +63,16 @@ class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _valorInicialMeta = const VerificationMeta(
-    'valorInicial',
+  static const VerificationMeta _descricaoMeta = const VerificationMeta(
+    'descricao',
   );
   @override
-  late final GeneratedColumn<double> valorInicial = GeneratedColumn<double>(
-    'valor_inicial',
+  late final GeneratedColumn<String> descricao = GeneratedColumn<String>(
+    'descricao',
     aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _valorAtualMeta = const VerificationMeta(
-    'valorAtual',
-  );
-  @override
-  late final GeneratedColumn<double> valorAtual = GeneratedColumn<double>(
-    'valor_atual',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _valorAlvoMeta = const VerificationMeta(
-    'valorAlvo',
-  );
-  @override
-  late final GeneratedColumn<double> valorAlvo = GeneratedColumn<double>(
-    'valor_alvo',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _unidadeMeta = const VerificationMeta(
     'unidade',
@@ -107,12 +86,57 @@ class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _valorInicialMeta = const VerificationMeta(
+    'valorInicial',
+  );
+  @override
+  late final GeneratedColumn<double> valorInicial = GeneratedColumn<double>(
+    'valor_inicial',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _valorAtualMeta = const VerificationMeta(
+    'valorAtual',
+  );
+  @override
+  late final GeneratedColumn<double> valorAtual = GeneratedColumn<double>(
+    'valor_atual',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _valorAlvoMeta = const VerificationMeta(
+    'valorAlvo',
+  );
+  @override
+  late final GeneratedColumn<double> valorAlvo = GeneratedColumn<double>(
+    'valor_alvo',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _dataAlvoMeta = const VerificationMeta(
     'dataAlvo',
   );
   @override
   late final GeneratedColumn<DateTime> dataAlvo = GeneratedColumn<DateTime>(
     'data_alvo',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _inicioMeta = const VerificationMeta('inicio');
+  @override
+  late final GeneratedColumn<DateTime> inicio = GeneratedColumn<DateTime>(
+    'inicio',
     aliasedName,
     true,
     type: DriftSqlType.dateTime,
@@ -128,6 +152,15 @@ class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
     requiredDuringInsert: false,
     defaultValue: const Constant('ativa'),
   );
+  static const VerificationMeta _corMeta = const VerificationMeta('cor');
+  @override
+  late final GeneratedColumn<String> cor = GeneratedColumn<String>(
+    'cor',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -135,21 +168,24 @@ class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
     atualizadoEm,
     apagadoEm,
     nome,
+    descricao,
+    unidade,
     valorInicial,
     valorAtual,
     valorAlvo,
-    unidade,
     dataAlvo,
+    inicio,
     status,
+    cor,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'metas';
+  static const String $name = 'objetivos';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Meta> instance, {
+    Insertable<Objetivo> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -186,6 +222,18 @@ class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
     } else if (isInserting) {
       context.missing(_nomeMeta);
     }
+    if (data.containsKey('descricao')) {
+      context.handle(
+        _descricaoMeta,
+        descricao.isAcceptableOrUnknown(data['descricao']!, _descricaoMeta),
+      );
+    }
+    if (data.containsKey('unidade')) {
+      context.handle(
+        _unidadeMeta,
+        unidade.isAcceptableOrUnknown(data['unidade']!, _unidadeMeta),
+      );
+    }
     if (data.containsKey('valor_inicial')) {
       context.handle(
         _valorInicialMeta,
@@ -194,29 +242,17 @@ class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
           _valorInicialMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_valorInicialMeta);
     }
     if (data.containsKey('valor_atual')) {
       context.handle(
         _valorAtualMeta,
         valorAtual.isAcceptableOrUnknown(data['valor_atual']!, _valorAtualMeta),
       );
-    } else if (isInserting) {
-      context.missing(_valorAtualMeta);
     }
     if (data.containsKey('valor_alvo')) {
       context.handle(
         _valorAlvoMeta,
         valorAlvo.isAcceptableOrUnknown(data['valor_alvo']!, _valorAlvoMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_valorAlvoMeta);
-    }
-    if (data.containsKey('unidade')) {
-      context.handle(
-        _unidadeMeta,
-        unidade.isAcceptableOrUnknown(data['unidade']!, _unidadeMeta),
       );
     }
     if (data.containsKey('data_alvo')) {
@@ -225,10 +261,22 @@ class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
         dataAlvo.isAcceptableOrUnknown(data['data_alvo']!, _dataAlvoMeta),
       );
     }
+    if (data.containsKey('inicio')) {
+      context.handle(
+        _inicioMeta,
+        inicio.isAcceptableOrUnknown(data['inicio']!, _inicioMeta),
+      );
+    }
     if (data.containsKey('status')) {
       context.handle(
         _statusMeta,
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('cor')) {
+      context.handle(
+        _corMeta,
+        cor.isAcceptableOrUnknown(data['cor']!, _corMeta),
       );
     }
     return context;
@@ -237,9 +285,9 @@ class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Meta map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Objetivo map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Meta(
+    return Objetivo(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -259,6 +307,14 @@ class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
       nome: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}nome'],
+      )!,
+      descricao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}descricao'],
+      ),
+      unidade: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unidade'],
       )!,
       valorInicial: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
@@ -272,51 +328,61 @@ class $MetasTable extends Metas with TableInfo<$MetasTable, Meta> {
         DriftSqlType.double,
         data['${effectivePrefix}valor_alvo'],
       )!,
-      unidade: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}unidade'],
-      )!,
       dataAlvo: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}data_alvo'],
+      ),
+      inicio: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}inicio'],
       ),
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      cor: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cor'],
+      ),
     );
   }
 
   @override
-  $MetasTable createAlias(String alias) {
-    return $MetasTable(attachedDatabase, alias);
+  $ObjetivosTable createAlias(String alias) {
+    return $ObjetivosTable(attachedDatabase, alias);
   }
 }
 
-class Meta extends DataClass implements Insertable<Meta> {
+class Objetivo extends DataClass implements Insertable<Objetivo> {
   final String id;
   final DateTime criadoEm;
   final DateTime atualizadoEm;
   final DateTime? apagadoEm;
   final String nome;
+  final String? descricao;
+  final String unidade;
   final double valorInicial;
   final double valorAtual;
   final double valorAlvo;
-  final String unidade;
   final DateTime? dataAlvo;
+  final DateTime? inicio;
   final String status;
-  const Meta({
+  final String? cor;
+  const Objetivo({
     required this.id,
     required this.criadoEm,
     required this.atualizadoEm,
     this.apagadoEm,
     required this.nome,
+    this.descricao,
+    required this.unidade,
     required this.valorInicial,
     required this.valorAtual,
     required this.valorAlvo,
-    required this.unidade,
     this.dataAlvo,
+    this.inicio,
     required this.status,
+    this.cor,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -328,19 +394,28 @@ class Meta extends DataClass implements Insertable<Meta> {
       map['apagado_em'] = Variable<DateTime>(apagadoEm);
     }
     map['nome'] = Variable<String>(nome);
+    if (!nullToAbsent || descricao != null) {
+      map['descricao'] = Variable<String>(descricao);
+    }
+    map['unidade'] = Variable<String>(unidade);
     map['valor_inicial'] = Variable<double>(valorInicial);
     map['valor_atual'] = Variable<double>(valorAtual);
     map['valor_alvo'] = Variable<double>(valorAlvo);
-    map['unidade'] = Variable<String>(unidade);
     if (!nullToAbsent || dataAlvo != null) {
       map['data_alvo'] = Variable<DateTime>(dataAlvo);
     }
+    if (!nullToAbsent || inicio != null) {
+      map['inicio'] = Variable<DateTime>(inicio);
+    }
     map['status'] = Variable<String>(status);
+    if (!nullToAbsent || cor != null) {
+      map['cor'] = Variable<String>(cor);
+    }
     return map;
   }
 
-  MetasCompanion toCompanion(bool nullToAbsent) {
-    return MetasCompanion(
+  ObjetivosCompanion toCompanion(bool nullToAbsent) {
+    return ObjetivosCompanion(
       id: Value(id),
       criadoEm: Value(criadoEm),
       atualizadoEm: Value(atualizadoEm),
@@ -348,34 +423,44 @@ class Meta extends DataClass implements Insertable<Meta> {
           ? const Value.absent()
           : Value(apagadoEm),
       nome: Value(nome),
+      descricao: descricao == null && nullToAbsent
+          ? const Value.absent()
+          : Value(descricao),
+      unidade: Value(unidade),
       valorInicial: Value(valorInicial),
       valorAtual: Value(valorAtual),
       valorAlvo: Value(valorAlvo),
-      unidade: Value(unidade),
       dataAlvo: dataAlvo == null && nullToAbsent
           ? const Value.absent()
           : Value(dataAlvo),
+      inicio: inicio == null && nullToAbsent
+          ? const Value.absent()
+          : Value(inicio),
       status: Value(status),
+      cor: cor == null && nullToAbsent ? const Value.absent() : Value(cor),
     );
   }
 
-  factory Meta.fromJson(
+  factory Objetivo.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Meta(
+    return Objetivo(
       id: serializer.fromJson<String>(json['id']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
       apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
       nome: serializer.fromJson<String>(json['nome']),
+      descricao: serializer.fromJson<String?>(json['descricao']),
+      unidade: serializer.fromJson<String>(json['unidade']),
       valorInicial: serializer.fromJson<double>(json['valorInicial']),
       valorAtual: serializer.fromJson<double>(json['valorAtual']),
       valorAlvo: serializer.fromJson<double>(json['valorAlvo']),
-      unidade: serializer.fromJson<String>(json['unidade']),
       dataAlvo: serializer.fromJson<DateTime?>(json['dataAlvo']),
+      inicio: serializer.fromJson<DateTime?>(json['inicio']),
       status: serializer.fromJson<String>(json['status']),
+      cor: serializer.fromJson<String?>(json['cor']),
     );
   }
   @override
@@ -387,42 +472,51 @@ class Meta extends DataClass implements Insertable<Meta> {
       'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
       'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
       'nome': serializer.toJson<String>(nome),
+      'descricao': serializer.toJson<String?>(descricao),
+      'unidade': serializer.toJson<String>(unidade),
       'valorInicial': serializer.toJson<double>(valorInicial),
       'valorAtual': serializer.toJson<double>(valorAtual),
       'valorAlvo': serializer.toJson<double>(valorAlvo),
-      'unidade': serializer.toJson<String>(unidade),
       'dataAlvo': serializer.toJson<DateTime?>(dataAlvo),
+      'inicio': serializer.toJson<DateTime?>(inicio),
       'status': serializer.toJson<String>(status),
+      'cor': serializer.toJson<String?>(cor),
     };
   }
 
-  Meta copyWith({
+  Objetivo copyWith({
     String? id,
     DateTime? criadoEm,
     DateTime? atualizadoEm,
     Value<DateTime?> apagadoEm = const Value.absent(),
     String? nome,
+    Value<String?> descricao = const Value.absent(),
+    String? unidade,
     double? valorInicial,
     double? valorAtual,
     double? valorAlvo,
-    String? unidade,
     Value<DateTime?> dataAlvo = const Value.absent(),
+    Value<DateTime?> inicio = const Value.absent(),
     String? status,
-  }) => Meta(
+    Value<String?> cor = const Value.absent(),
+  }) => Objetivo(
     id: id ?? this.id,
     criadoEm: criadoEm ?? this.criadoEm,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
     apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
     nome: nome ?? this.nome,
+    descricao: descricao.present ? descricao.value : this.descricao,
+    unidade: unidade ?? this.unidade,
     valorInicial: valorInicial ?? this.valorInicial,
     valorAtual: valorAtual ?? this.valorAtual,
     valorAlvo: valorAlvo ?? this.valorAlvo,
-    unidade: unidade ?? this.unidade,
     dataAlvo: dataAlvo.present ? dataAlvo.value : this.dataAlvo,
+    inicio: inicio.present ? inicio.value : this.inicio,
     status: status ?? this.status,
+    cor: cor.present ? cor.value : this.cor,
   );
-  Meta copyWithCompanion(MetasCompanion data) {
-    return Meta(
+  Objetivo copyWithCompanion(ObjetivosCompanion data) {
+    return Objetivo(
       id: data.id.present ? data.id.value : this.id,
       criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
       atualizadoEm: data.atualizadoEm.present
@@ -430,6 +524,8 @@ class Meta extends DataClass implements Insertable<Meta> {
           : this.atualizadoEm,
       apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
       nome: data.nome.present ? data.nome.value : this.nome,
+      descricao: data.descricao.present ? data.descricao.value : this.descricao,
+      unidade: data.unidade.present ? data.unidade.value : this.unidade,
       valorInicial: data.valorInicial.present
           ? data.valorInicial.value
           : this.valorInicial,
@@ -437,26 +533,30 @@ class Meta extends DataClass implements Insertable<Meta> {
           ? data.valorAtual.value
           : this.valorAtual,
       valorAlvo: data.valorAlvo.present ? data.valorAlvo.value : this.valorAlvo,
-      unidade: data.unidade.present ? data.unidade.value : this.unidade,
       dataAlvo: data.dataAlvo.present ? data.dataAlvo.value : this.dataAlvo,
+      inicio: data.inicio.present ? data.inicio.value : this.inicio,
       status: data.status.present ? data.status.value : this.status,
+      cor: data.cor.present ? data.cor.value : this.cor,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('Meta(')
+    return (StringBuffer('Objetivo(')
           ..write('id: $id, ')
           ..write('criadoEm: $criadoEm, ')
           ..write('atualizadoEm: $atualizadoEm, ')
           ..write('apagadoEm: $apagadoEm, ')
           ..write('nome: $nome, ')
+          ..write('descricao: $descricao, ')
+          ..write('unidade: $unidade, ')
           ..write('valorInicial: $valorInicial, ')
           ..write('valorAtual: $valorAtual, ')
           ..write('valorAlvo: $valorAlvo, ')
-          ..write('unidade: $unidade, ')
           ..write('dataAlvo: $dataAlvo, ')
-          ..write('status: $status')
+          ..write('inicio: $inicio, ')
+          ..write('status: $status, ')
+          ..write('cor: $cor')
           ..write(')'))
         .toString();
   }
@@ -468,86 +568,101 @@ class Meta extends DataClass implements Insertable<Meta> {
     atualizadoEm,
     apagadoEm,
     nome,
+    descricao,
+    unidade,
     valorInicial,
     valorAtual,
     valorAlvo,
-    unidade,
     dataAlvo,
+    inicio,
     status,
+    cor,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Meta &&
+      (other is Objetivo &&
           other.id == this.id &&
           other.criadoEm == this.criadoEm &&
           other.atualizadoEm == this.atualizadoEm &&
           other.apagadoEm == this.apagadoEm &&
           other.nome == this.nome &&
+          other.descricao == this.descricao &&
+          other.unidade == this.unidade &&
           other.valorInicial == this.valorInicial &&
           other.valorAtual == this.valorAtual &&
           other.valorAlvo == this.valorAlvo &&
-          other.unidade == this.unidade &&
           other.dataAlvo == this.dataAlvo &&
-          other.status == this.status);
+          other.inicio == this.inicio &&
+          other.status == this.status &&
+          other.cor == this.cor);
 }
 
-class MetasCompanion extends UpdateCompanion<Meta> {
+class ObjetivosCompanion extends UpdateCompanion<Objetivo> {
   final Value<String> id;
   final Value<DateTime> criadoEm;
   final Value<DateTime> atualizadoEm;
   final Value<DateTime?> apagadoEm;
   final Value<String> nome;
+  final Value<String?> descricao;
+  final Value<String> unidade;
   final Value<double> valorInicial;
   final Value<double> valorAtual;
   final Value<double> valorAlvo;
-  final Value<String> unidade;
   final Value<DateTime?> dataAlvo;
+  final Value<DateTime?> inicio;
   final Value<String> status;
+  final Value<String?> cor;
   final Value<int> rowid;
-  const MetasCompanion({
+  const ObjetivosCompanion({
     this.id = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
     this.apagadoEm = const Value.absent(),
     this.nome = const Value.absent(),
+    this.descricao = const Value.absent(),
+    this.unidade = const Value.absent(),
     this.valorInicial = const Value.absent(),
     this.valorAtual = const Value.absent(),
     this.valorAlvo = const Value.absent(),
-    this.unidade = const Value.absent(),
     this.dataAlvo = const Value.absent(),
+    this.inicio = const Value.absent(),
     this.status = const Value.absent(),
+    this.cor = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  MetasCompanion.insert({
+  ObjetivosCompanion.insert({
     this.id = const Value.absent(),
     this.criadoEm = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
     this.apagadoEm = const Value.absent(),
     required String nome,
-    required double valorInicial,
-    required double valorAtual,
-    required double valorAlvo,
+    this.descricao = const Value.absent(),
     this.unidade = const Value.absent(),
+    this.valorInicial = const Value.absent(),
+    this.valorAtual = const Value.absent(),
+    this.valorAlvo = const Value.absent(),
     this.dataAlvo = const Value.absent(),
+    this.inicio = const Value.absent(),
     this.status = const Value.absent(),
+    this.cor = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : nome = Value(nome),
-       valorInicial = Value(valorInicial),
-       valorAtual = Value(valorAtual),
-       valorAlvo = Value(valorAlvo);
-  static Insertable<Meta> custom({
+  }) : nome = Value(nome);
+  static Insertable<Objetivo> custom({
     Expression<String>? id,
     Expression<DateTime>? criadoEm,
     Expression<DateTime>? atualizadoEm,
     Expression<DateTime>? apagadoEm,
     Expression<String>? nome,
+    Expression<String>? descricao,
+    Expression<String>? unidade,
     Expression<double>? valorInicial,
     Expression<double>? valorAtual,
     Expression<double>? valorAlvo,
-    Expression<String>? unidade,
     Expression<DateTime>? dataAlvo,
+    Expression<DateTime>? inicio,
     Expression<String>? status,
+    Expression<String>? cor,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -556,42 +671,51 @@ class MetasCompanion extends UpdateCompanion<Meta> {
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
       if (apagadoEm != null) 'apagado_em': apagadoEm,
       if (nome != null) 'nome': nome,
+      if (descricao != null) 'descricao': descricao,
+      if (unidade != null) 'unidade': unidade,
       if (valorInicial != null) 'valor_inicial': valorInicial,
       if (valorAtual != null) 'valor_atual': valorAtual,
       if (valorAlvo != null) 'valor_alvo': valorAlvo,
-      if (unidade != null) 'unidade': unidade,
       if (dataAlvo != null) 'data_alvo': dataAlvo,
+      if (inicio != null) 'inicio': inicio,
       if (status != null) 'status': status,
+      if (cor != null) 'cor': cor,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  MetasCompanion copyWith({
+  ObjetivosCompanion copyWith({
     Value<String>? id,
     Value<DateTime>? criadoEm,
     Value<DateTime>? atualizadoEm,
     Value<DateTime?>? apagadoEm,
     Value<String>? nome,
+    Value<String?>? descricao,
+    Value<String>? unidade,
     Value<double>? valorInicial,
     Value<double>? valorAtual,
     Value<double>? valorAlvo,
-    Value<String>? unidade,
     Value<DateTime?>? dataAlvo,
+    Value<DateTime?>? inicio,
     Value<String>? status,
+    Value<String?>? cor,
     Value<int>? rowid,
   }) {
-    return MetasCompanion(
+    return ObjetivosCompanion(
       id: id ?? this.id,
       criadoEm: criadoEm ?? this.criadoEm,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
       apagadoEm: apagadoEm ?? this.apagadoEm,
       nome: nome ?? this.nome,
+      descricao: descricao ?? this.descricao,
+      unidade: unidade ?? this.unidade,
       valorInicial: valorInicial ?? this.valorInicial,
       valorAtual: valorAtual ?? this.valorAtual,
       valorAlvo: valorAlvo ?? this.valorAlvo,
-      unidade: unidade ?? this.unidade,
       dataAlvo: dataAlvo ?? this.dataAlvo,
+      inicio: inicio ?? this.inicio,
       status: status ?? this.status,
+      cor: cor ?? this.cor,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -613,6 +737,12 @@ class MetasCompanion extends UpdateCompanion<Meta> {
     }
     if (nome.present) {
       map['nome'] = Variable<String>(nome.value);
+    }
+    if (descricao.present) {
+      map['descricao'] = Variable<String>(descricao.value);
+    }
+    if (unidade.present) {
+      map['unidade'] = Variable<String>(unidade.value);
     }
     if (valorInicial.present) {
       map['valor_inicial'] = Variable<double>(valorInicial.value);
@@ -623,569 +753,17 @@ class MetasCompanion extends UpdateCompanion<Meta> {
     if (valorAlvo.present) {
       map['valor_alvo'] = Variable<double>(valorAlvo.value);
     }
-    if (unidade.present) {
-      map['unidade'] = Variable<String>(unidade.value);
-    }
     if (dataAlvo.present) {
       map['data_alvo'] = Variable<DateTime>(dataAlvo.value);
-    }
-    if (status.present) {
-      map['status'] = Variable<String>(status.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('MetasCompanion(')
-          ..write('id: $id, ')
-          ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm, ')
-          ..write('apagadoEm: $apagadoEm, ')
-          ..write('nome: $nome, ')
-          ..write('valorInicial: $valorInicial, ')
-          ..write('valorAtual: $valorAtual, ')
-          ..write('valorAlvo: $valorAlvo, ')
-          ..write('unidade: $unidade, ')
-          ..write('dataAlvo: $dataAlvo, ')
-          ..write('status: $status, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $ProjetosTable extends Projetos with TableInfo<$ProjetosTable, Projeto> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $ProjetosTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    clientDefault: () => _uuid.v4(),
-  );
-  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
-    'criadoEm',
-  );
-  @override
-  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
-    'criado_em',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    clientDefault: DateTime.now,
-  );
-  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
-    'atualizadoEm',
-  );
-  @override
-  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
-    'atualizado_em',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    clientDefault: DateTime.now,
-  );
-  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
-    'apagadoEm',
-  );
-  @override
-  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
-    'apagado_em',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
-  @override
-  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
-    'nome',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _inicioMeta = const VerificationMeta('inicio');
-  @override
-  late final GeneratedColumn<DateTime> inicio = GeneratedColumn<DateTime>(
-    'inicio',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _fimMeta = const VerificationMeta('fim');
-  @override
-  late final GeneratedColumn<DateTime> fim = GeneratedColumn<DateTime>(
-    'fim',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _metaIdMeta = const VerificationMeta('metaId');
-  @override
-  late final GeneratedColumn<String> metaId = GeneratedColumn<String>(
-    'meta_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES metas (id)',
-    ),
-  );
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
-  @override
-  late final GeneratedColumn<String> status = GeneratedColumn<String>(
-    'status',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('ativo'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    criadoEm,
-    atualizadoEm,
-    apagadoEm,
-    nome,
-    inicio,
-    fim,
-    metaId,
-    status,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'projetos';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<Projeto> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('criado_em')) {
-      context.handle(
-        _criadoEmMeta,
-        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
-      );
-    }
-    if (data.containsKey('atualizado_em')) {
-      context.handle(
-        _atualizadoEmMeta,
-        atualizadoEm.isAcceptableOrUnknown(
-          data['atualizado_em']!,
-          _atualizadoEmMeta,
-        ),
-      );
-    }
-    if (data.containsKey('apagado_em')) {
-      context.handle(
-        _apagadoEmMeta,
-        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
-      );
-    }
-    if (data.containsKey('nome')) {
-      context.handle(
-        _nomeMeta,
-        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nomeMeta);
-    }
-    if (data.containsKey('inicio')) {
-      context.handle(
-        _inicioMeta,
-        inicio.isAcceptableOrUnknown(data['inicio']!, _inicioMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_inicioMeta);
-    }
-    if (data.containsKey('fim')) {
-      context.handle(
-        _fimMeta,
-        fim.isAcceptableOrUnknown(data['fim']!, _fimMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_fimMeta);
-    }
-    if (data.containsKey('meta_id')) {
-      context.handle(
-        _metaIdMeta,
-        metaId.isAcceptableOrUnknown(data['meta_id']!, _metaIdMeta),
-      );
-    }
-    if (data.containsKey('status')) {
-      context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Projeto map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Projeto(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      criadoEm: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}criado_em'],
-      )!,
-      atualizadoEm: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}atualizado_em'],
-      )!,
-      apagadoEm: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}apagado_em'],
-      ),
-      nome: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}nome'],
-      )!,
-      inicio: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}inicio'],
-      )!,
-      fim: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}fim'],
-      )!,
-      metaId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}meta_id'],
-      ),
-      status: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}status'],
-      )!,
-    );
-  }
-
-  @override
-  $ProjetosTable createAlias(String alias) {
-    return $ProjetosTable(attachedDatabase, alias);
-  }
-}
-
-class Projeto extends DataClass implements Insertable<Projeto> {
-  final String id;
-  final DateTime criadoEm;
-  final DateTime atualizadoEm;
-  final DateTime? apagadoEm;
-  final String nome;
-  final DateTime inicio;
-  final DateTime fim;
-  final String? metaId;
-
-  /// 'ativo' ou 'arquivado'.
-  final String status;
-  const Projeto({
-    required this.id,
-    required this.criadoEm,
-    required this.atualizadoEm,
-    this.apagadoEm,
-    required this.nome,
-    required this.inicio,
-    required this.fim,
-    this.metaId,
-    required this.status,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['criado_em'] = Variable<DateTime>(criadoEm);
-    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
-    if (!nullToAbsent || apagadoEm != null) {
-      map['apagado_em'] = Variable<DateTime>(apagadoEm);
-    }
-    map['nome'] = Variable<String>(nome);
-    map['inicio'] = Variable<DateTime>(inicio);
-    map['fim'] = Variable<DateTime>(fim);
-    if (!nullToAbsent || metaId != null) {
-      map['meta_id'] = Variable<String>(metaId);
-    }
-    map['status'] = Variable<String>(status);
-    return map;
-  }
-
-  ProjetosCompanion toCompanion(bool nullToAbsent) {
-    return ProjetosCompanion(
-      id: Value(id),
-      criadoEm: Value(criadoEm),
-      atualizadoEm: Value(atualizadoEm),
-      apagadoEm: apagadoEm == null && nullToAbsent
-          ? const Value.absent()
-          : Value(apagadoEm),
-      nome: Value(nome),
-      inicio: Value(inicio),
-      fim: Value(fim),
-      metaId: metaId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(metaId),
-      status: Value(status),
-    );
-  }
-
-  factory Projeto.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Projeto(
-      id: serializer.fromJson<String>(json['id']),
-      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
-      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
-      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
-      nome: serializer.fromJson<String>(json['nome']),
-      inicio: serializer.fromJson<DateTime>(json['inicio']),
-      fim: serializer.fromJson<DateTime>(json['fim']),
-      metaId: serializer.fromJson<String?>(json['metaId']),
-      status: serializer.fromJson<String>(json['status']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'criadoEm': serializer.toJson<DateTime>(criadoEm),
-      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
-      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
-      'nome': serializer.toJson<String>(nome),
-      'inicio': serializer.toJson<DateTime>(inicio),
-      'fim': serializer.toJson<DateTime>(fim),
-      'metaId': serializer.toJson<String?>(metaId),
-      'status': serializer.toJson<String>(status),
-    };
-  }
-
-  Projeto copyWith({
-    String? id,
-    DateTime? criadoEm,
-    DateTime? atualizadoEm,
-    Value<DateTime?> apagadoEm = const Value.absent(),
-    String? nome,
-    DateTime? inicio,
-    DateTime? fim,
-    Value<String?> metaId = const Value.absent(),
-    String? status,
-  }) => Projeto(
-    id: id ?? this.id,
-    criadoEm: criadoEm ?? this.criadoEm,
-    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
-    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
-    nome: nome ?? this.nome,
-    inicio: inicio ?? this.inicio,
-    fim: fim ?? this.fim,
-    metaId: metaId.present ? metaId.value : this.metaId,
-    status: status ?? this.status,
-  );
-  Projeto copyWithCompanion(ProjetosCompanion data) {
-    return Projeto(
-      id: data.id.present ? data.id.value : this.id,
-      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
-      atualizadoEm: data.atualizadoEm.present
-          ? data.atualizadoEm.value
-          : this.atualizadoEm,
-      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
-      nome: data.nome.present ? data.nome.value : this.nome,
-      inicio: data.inicio.present ? data.inicio.value : this.inicio,
-      fim: data.fim.present ? data.fim.value : this.fim,
-      metaId: data.metaId.present ? data.metaId.value : this.metaId,
-      status: data.status.present ? data.status.value : this.status,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Projeto(')
-          ..write('id: $id, ')
-          ..write('criadoEm: $criadoEm, ')
-          ..write('atualizadoEm: $atualizadoEm, ')
-          ..write('apagadoEm: $apagadoEm, ')
-          ..write('nome: $nome, ')
-          ..write('inicio: $inicio, ')
-          ..write('fim: $fim, ')
-          ..write('metaId: $metaId, ')
-          ..write('status: $status')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    criadoEm,
-    atualizadoEm,
-    apagadoEm,
-    nome,
-    inicio,
-    fim,
-    metaId,
-    status,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Projeto &&
-          other.id == this.id &&
-          other.criadoEm == this.criadoEm &&
-          other.atualizadoEm == this.atualizadoEm &&
-          other.apagadoEm == this.apagadoEm &&
-          other.nome == this.nome &&
-          other.inicio == this.inicio &&
-          other.fim == this.fim &&
-          other.metaId == this.metaId &&
-          other.status == this.status);
-}
-
-class ProjetosCompanion extends UpdateCompanion<Projeto> {
-  final Value<String> id;
-  final Value<DateTime> criadoEm;
-  final Value<DateTime> atualizadoEm;
-  final Value<DateTime?> apagadoEm;
-  final Value<String> nome;
-  final Value<DateTime> inicio;
-  final Value<DateTime> fim;
-  final Value<String?> metaId;
-  final Value<String> status;
-  final Value<int> rowid;
-  const ProjetosCompanion({
-    this.id = const Value.absent(),
-    this.criadoEm = const Value.absent(),
-    this.atualizadoEm = const Value.absent(),
-    this.apagadoEm = const Value.absent(),
-    this.nome = const Value.absent(),
-    this.inicio = const Value.absent(),
-    this.fim = const Value.absent(),
-    this.metaId = const Value.absent(),
-    this.status = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  ProjetosCompanion.insert({
-    this.id = const Value.absent(),
-    this.criadoEm = const Value.absent(),
-    this.atualizadoEm = const Value.absent(),
-    this.apagadoEm = const Value.absent(),
-    required String nome,
-    required DateTime inicio,
-    required DateTime fim,
-    this.metaId = const Value.absent(),
-    this.status = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : nome = Value(nome),
-       inicio = Value(inicio),
-       fim = Value(fim);
-  static Insertable<Projeto> custom({
-    Expression<String>? id,
-    Expression<DateTime>? criadoEm,
-    Expression<DateTime>? atualizadoEm,
-    Expression<DateTime>? apagadoEm,
-    Expression<String>? nome,
-    Expression<DateTime>? inicio,
-    Expression<DateTime>? fim,
-    Expression<String>? metaId,
-    Expression<String>? status,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (criadoEm != null) 'criado_em': criadoEm,
-      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
-      if (apagadoEm != null) 'apagado_em': apagadoEm,
-      if (nome != null) 'nome': nome,
-      if (inicio != null) 'inicio': inicio,
-      if (fim != null) 'fim': fim,
-      if (metaId != null) 'meta_id': metaId,
-      if (status != null) 'status': status,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  ProjetosCompanion copyWith({
-    Value<String>? id,
-    Value<DateTime>? criadoEm,
-    Value<DateTime>? atualizadoEm,
-    Value<DateTime?>? apagadoEm,
-    Value<String>? nome,
-    Value<DateTime>? inicio,
-    Value<DateTime>? fim,
-    Value<String?>? metaId,
-    Value<String>? status,
-    Value<int>? rowid,
-  }) {
-    return ProjetosCompanion(
-      id: id ?? this.id,
-      criadoEm: criadoEm ?? this.criadoEm,
-      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
-      apagadoEm: apagadoEm ?? this.apagadoEm,
-      nome: nome ?? this.nome,
-      inicio: inicio ?? this.inicio,
-      fim: fim ?? this.fim,
-      metaId: metaId ?? this.metaId,
-      status: status ?? this.status,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (criadoEm.present) {
-      map['criado_em'] = Variable<DateTime>(criadoEm.value);
-    }
-    if (atualizadoEm.present) {
-      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
-    }
-    if (apagadoEm.present) {
-      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
-    }
-    if (nome.present) {
-      map['nome'] = Variable<String>(nome.value);
     }
     if (inicio.present) {
       map['inicio'] = Variable<DateTime>(inicio.value);
     }
-    if (fim.present) {
-      map['fim'] = Variable<DateTime>(fim.value);
-    }
-    if (metaId.present) {
-      map['meta_id'] = Variable<String>(metaId.value);
-    }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
+    }
+    if (cor.present) {
+      map['cor'] = Variable<String>(cor.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1195,16 +773,21 @@ class ProjetosCompanion extends UpdateCompanion<Projeto> {
 
   @override
   String toString() {
-    return (StringBuffer('ProjetosCompanion(')
+    return (StringBuffer('ObjetivosCompanion(')
           ..write('id: $id, ')
           ..write('criadoEm: $criadoEm, ')
           ..write('atualizadoEm: $atualizadoEm, ')
           ..write('apagadoEm: $apagadoEm, ')
           ..write('nome: $nome, ')
+          ..write('descricao: $descricao, ')
+          ..write('unidade: $unidade, ')
+          ..write('valorInicial: $valorInicial, ')
+          ..write('valorAtual: $valorAtual, ')
+          ..write('valorAlvo: $valorAlvo, ')
+          ..write('dataAlvo: $dataAlvo, ')
           ..write('inicio: $inicio, ')
-          ..write('fim: $fim, ')
-          ..write('metaId: $metaId, ')
           ..write('status: $status, ')
+          ..write('cor: $cor, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1335,30 +918,18 @@ class $TarefasTable extends Tarefas with TableInfo<$TarefasTable, Tarefa> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _metaIdMeta = const VerificationMeta('metaId');
+  static const VerificationMeta _objetivoIdMeta = const VerificationMeta(
+    'objetivoId',
+  );
   @override
-  late final GeneratedColumn<String> metaId = GeneratedColumn<String>(
-    'meta_id',
+  late final GeneratedColumn<String> objetivoId = GeneratedColumn<String>(
+    'objetivo_id',
     aliasedName,
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES metas (id)',
-    ),
-  );
-  static const VerificationMeta _projetoIdMeta = const VerificationMeta(
-    'projetoId',
-  );
-  @override
-  late final GeneratedColumn<String> projetoId = GeneratedColumn<String>(
-    'projeto_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES projetos (id)',
+      'REFERENCES objetivos (id)',
     ),
   );
   @override
@@ -1374,8 +945,7 @@ class $TarefasTable extends Tarefas with TableInfo<$TarefasTable, Tarefa> {
     prioridade,
     feitaEm,
     regraRepeticao,
-    metaId,
-    projetoId,
+    objetivoId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1457,16 +1027,10 @@ class $TarefasTable extends Tarefas with TableInfo<$TarefasTable, Tarefa> {
         ),
       );
     }
-    if (data.containsKey('meta_id')) {
+    if (data.containsKey('objetivo_id')) {
       context.handle(
-        _metaIdMeta,
-        metaId.isAcceptableOrUnknown(data['meta_id']!, _metaIdMeta),
-      );
-    }
-    if (data.containsKey('projeto_id')) {
-      context.handle(
-        _projetoIdMeta,
-        projetoId.isAcceptableOrUnknown(data['projeto_id']!, _projetoIdMeta),
+        _objetivoIdMeta,
+        objetivoId.isAcceptableOrUnknown(data['objetivo_id']!, _objetivoIdMeta),
       );
     }
     return context;
@@ -1524,13 +1088,9 @@ class $TarefasTable extends Tarefas with TableInfo<$TarefasTable, Tarefa> {
         DriftSqlType.string,
         data['${effectivePrefix}regra_repeticao'],
       ),
-      metaId: attachedDatabase.typeMapping.read(
+      objetivoId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}meta_id'],
-      ),
-      projetoId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}projeto_id'],
+        data['${effectivePrefix}objetivo_id'],
       ),
     );
   }
@@ -1556,10 +1116,9 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
   final Prioridade prioridade;
   final DateTime? feitaEm;
   final String? regraRepeticao;
-  final String? metaId;
 
-  /// Etapa de um projeto.
-  final String? projetoId;
+  /// Etapa de um objetivo.
+  final String? objetivoId;
   const Tarefa({
     required this.id,
     required this.criadoEm,
@@ -1572,8 +1131,7 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
     required this.prioridade,
     this.feitaEm,
     this.regraRepeticao,
-    this.metaId,
-    this.projetoId,
+    this.objetivoId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1603,11 +1161,8 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
     if (!nullToAbsent || regraRepeticao != null) {
       map['regra_repeticao'] = Variable<String>(regraRepeticao);
     }
-    if (!nullToAbsent || metaId != null) {
-      map['meta_id'] = Variable<String>(metaId);
-    }
-    if (!nullToAbsent || projetoId != null) {
-      map['projeto_id'] = Variable<String>(projetoId);
+    if (!nullToAbsent || objetivoId != null) {
+      map['objetivo_id'] = Variable<String>(objetivoId);
     }
     return map;
   }
@@ -1635,12 +1190,9 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
       regraRepeticao: regraRepeticao == null && nullToAbsent
           ? const Value.absent()
           : Value(regraRepeticao),
-      metaId: metaId == null && nullToAbsent
+      objetivoId: objetivoId == null && nullToAbsent
           ? const Value.absent()
-          : Value(metaId),
-      projetoId: projetoId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(projetoId),
+          : Value(objetivoId),
     );
   }
 
@@ -1663,8 +1215,7 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
       ),
       feitaEm: serializer.fromJson<DateTime?>(json['feitaEm']),
       regraRepeticao: serializer.fromJson<String?>(json['regraRepeticao']),
-      metaId: serializer.fromJson<String?>(json['metaId']),
-      projetoId: serializer.fromJson<String?>(json['projetoId']),
+      objetivoId: serializer.fromJson<String?>(json['objetivoId']),
     );
   }
   @override
@@ -1684,8 +1235,7 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
       ),
       'feitaEm': serializer.toJson<DateTime?>(feitaEm),
       'regraRepeticao': serializer.toJson<String?>(regraRepeticao),
-      'metaId': serializer.toJson<String?>(metaId),
-      'projetoId': serializer.toJson<String?>(projetoId),
+      'objetivoId': serializer.toJson<String?>(objetivoId),
     };
   }
 
@@ -1701,8 +1251,7 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
     Prioridade? prioridade,
     Value<DateTime?> feitaEm = const Value.absent(),
     Value<String?> regraRepeticao = const Value.absent(),
-    Value<String?> metaId = const Value.absent(),
-    Value<String?> projetoId = const Value.absent(),
+    Value<String?> objetivoId = const Value.absent(),
   }) => Tarefa(
     id: id ?? this.id,
     criadoEm: criadoEm ?? this.criadoEm,
@@ -1717,8 +1266,7 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
     regraRepeticao: regraRepeticao.present
         ? regraRepeticao.value
         : this.regraRepeticao,
-    metaId: metaId.present ? metaId.value : this.metaId,
-    projetoId: projetoId.present ? projetoId.value : this.projetoId,
+    objetivoId: objetivoId.present ? objetivoId.value : this.objetivoId,
   );
   Tarefa copyWithCompanion(TarefasCompanion data) {
     return Tarefa(
@@ -1741,8 +1289,9 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
       regraRepeticao: data.regraRepeticao.present
           ? data.regraRepeticao.value
           : this.regraRepeticao,
-      metaId: data.metaId.present ? data.metaId.value : this.metaId,
-      projetoId: data.projetoId.present ? data.projetoId.value : this.projetoId,
+      objetivoId: data.objetivoId.present
+          ? data.objetivoId.value
+          : this.objetivoId,
     );
   }
 
@@ -1760,8 +1309,7 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
           ..write('prioridade: $prioridade, ')
           ..write('feitaEm: $feitaEm, ')
           ..write('regraRepeticao: $regraRepeticao, ')
-          ..write('metaId: $metaId, ')
-          ..write('projetoId: $projetoId')
+          ..write('objetivoId: $objetivoId')
           ..write(')'))
         .toString();
   }
@@ -1779,8 +1327,7 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
     prioridade,
     feitaEm,
     regraRepeticao,
-    metaId,
-    projetoId,
+    objetivoId,
   );
   @override
   bool operator ==(Object other) =>
@@ -1797,8 +1344,7 @@ class Tarefa extends DataClass implements Insertable<Tarefa> {
           other.prioridade == this.prioridade &&
           other.feitaEm == this.feitaEm &&
           other.regraRepeticao == this.regraRepeticao &&
-          other.metaId == this.metaId &&
-          other.projetoId == this.projetoId);
+          other.objetivoId == this.objetivoId);
 }
 
 class TarefasCompanion extends UpdateCompanion<Tarefa> {
@@ -1813,8 +1359,7 @@ class TarefasCompanion extends UpdateCompanion<Tarefa> {
   final Value<Prioridade> prioridade;
   final Value<DateTime?> feitaEm;
   final Value<String?> regraRepeticao;
-  final Value<String?> metaId;
-  final Value<String?> projetoId;
+  final Value<String?> objetivoId;
   final Value<int> rowid;
   const TarefasCompanion({
     this.id = const Value.absent(),
@@ -1828,8 +1373,7 @@ class TarefasCompanion extends UpdateCompanion<Tarefa> {
     this.prioridade = const Value.absent(),
     this.feitaEm = const Value.absent(),
     this.regraRepeticao = const Value.absent(),
-    this.metaId = const Value.absent(),
-    this.projetoId = const Value.absent(),
+    this.objetivoId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TarefasCompanion.insert({
@@ -1844,8 +1388,7 @@ class TarefasCompanion extends UpdateCompanion<Tarefa> {
     this.prioridade = const Value.absent(),
     this.feitaEm = const Value.absent(),
     this.regraRepeticao = const Value.absent(),
-    this.metaId = const Value.absent(),
-    this.projetoId = const Value.absent(),
+    this.objetivoId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : titulo = Value(titulo);
   static Insertable<Tarefa> custom({
@@ -1860,8 +1403,7 @@ class TarefasCompanion extends UpdateCompanion<Tarefa> {
     Expression<String>? prioridade,
     Expression<DateTime>? feitaEm,
     Expression<String>? regraRepeticao,
-    Expression<String>? metaId,
-    Expression<String>? projetoId,
+    Expression<String>? objetivoId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1876,8 +1418,7 @@ class TarefasCompanion extends UpdateCompanion<Tarefa> {
       if (prioridade != null) 'prioridade': prioridade,
       if (feitaEm != null) 'feita_em': feitaEm,
       if (regraRepeticao != null) 'regra_repeticao': regraRepeticao,
-      if (metaId != null) 'meta_id': metaId,
-      if (projetoId != null) 'projeto_id': projetoId,
+      if (objetivoId != null) 'objetivo_id': objetivoId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1894,8 +1435,7 @@ class TarefasCompanion extends UpdateCompanion<Tarefa> {
     Value<Prioridade>? prioridade,
     Value<DateTime?>? feitaEm,
     Value<String?>? regraRepeticao,
-    Value<String?>? metaId,
-    Value<String?>? projetoId,
+    Value<String?>? objetivoId,
     Value<int>? rowid,
   }) {
     return TarefasCompanion(
@@ -1910,8 +1450,7 @@ class TarefasCompanion extends UpdateCompanion<Tarefa> {
       prioridade: prioridade ?? this.prioridade,
       feitaEm: feitaEm ?? this.feitaEm,
       regraRepeticao: regraRepeticao ?? this.regraRepeticao,
-      metaId: metaId ?? this.metaId,
-      projetoId: projetoId ?? this.projetoId,
+      objetivoId: objetivoId ?? this.objetivoId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1954,11 +1493,8 @@ class TarefasCompanion extends UpdateCompanion<Tarefa> {
     if (regraRepeticao.present) {
       map['regra_repeticao'] = Variable<String>(regraRepeticao.value);
     }
-    if (metaId.present) {
-      map['meta_id'] = Variable<String>(metaId.value);
-    }
-    if (projetoId.present) {
-      map['projeto_id'] = Variable<String>(projetoId.value);
+    if (objetivoId.present) {
+      map['objetivo_id'] = Variable<String>(objetivoId.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1980,8 +1516,7 @@ class TarefasCompanion extends UpdateCompanion<Tarefa> {
           ..write('prioridade: $prioridade, ')
           ..write('feitaEm: $feitaEm, ')
           ..write('regraRepeticao: $regraRepeticao, ')
-          ..write('metaId: $metaId, ')
-          ..write('projetoId: $projetoId, ')
+          ..write('objetivoId: $objetivoId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2514,16 +2049,18 @@ class $HabitosTable extends Habitos with TableInfo<$HabitosTable, Habito> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _metaIdMeta = const VerificationMeta('metaId');
+  static const VerificationMeta _objetivoIdMeta = const VerificationMeta(
+    'objetivoId',
+  );
   @override
-  late final GeneratedColumn<String> metaId = GeneratedColumn<String>(
-    'meta_id',
+  late final GeneratedColumn<String> objetivoId = GeneratedColumn<String>(
+    'objetivo_id',
     aliasedName,
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES metas (id)',
+      'REFERENCES objetivos (id)',
     ),
   );
   @override
@@ -2538,7 +2075,7 @@ class $HabitosTable extends Habitos with TableInfo<$HabitosTable, Habito> {
     horario,
     alvo,
     unidade,
-    metaId,
+    objetivoId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2608,10 +2145,10 @@ class $HabitosTable extends Habitos with TableInfo<$HabitosTable, Habito> {
         unidade.isAcceptableOrUnknown(data['unidade']!, _unidadeMeta),
       );
     }
-    if (data.containsKey('meta_id')) {
+    if (data.containsKey('objetivo_id')) {
       context.handle(
-        _metaIdMeta,
-        metaId.isAcceptableOrUnknown(data['meta_id']!, _metaIdMeta),
+        _objetivoIdMeta,
+        objetivoId.isAcceptableOrUnknown(data['objetivo_id']!, _objetivoIdMeta),
       );
     }
     return context;
@@ -2665,9 +2202,9 @@ class $HabitosTable extends Habitos with TableInfo<$HabitosTable, Habito> {
         DriftSqlType.string,
         data['${effectivePrefix}unidade'],
       ),
-      metaId: attachedDatabase.typeMapping.read(
+      objetivoId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}meta_id'],
+        data['${effectivePrefix}objetivo_id'],
       ),
     );
   }
@@ -2700,7 +2237,7 @@ class Habito extends DataClass implements Insertable<Habito> {
 
   /// Unidade da quantidade ("copos", "páginas").
   final String? unidade;
-  final String? metaId;
+  final String? objetivoId;
   const Habito({
     required this.id,
     required this.criadoEm,
@@ -2712,7 +2249,7 @@ class Habito extends DataClass implements Insertable<Habito> {
     this.horario,
     this.alvo,
     this.unidade,
-    this.metaId,
+    this.objetivoId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2737,8 +2274,8 @@ class Habito extends DataClass implements Insertable<Habito> {
     if (!nullToAbsent || unidade != null) {
       map['unidade'] = Variable<String>(unidade);
     }
-    if (!nullToAbsent || metaId != null) {
-      map['meta_id'] = Variable<String>(metaId);
+    if (!nullToAbsent || objetivoId != null) {
+      map['objetivo_id'] = Variable<String>(objetivoId);
     }
     return map;
   }
@@ -2761,9 +2298,9 @@ class Habito extends DataClass implements Insertable<Habito> {
       unidade: unidade == null && nullToAbsent
           ? const Value.absent()
           : Value(unidade),
-      metaId: metaId == null && nullToAbsent
+      objetivoId: objetivoId == null && nullToAbsent
           ? const Value.absent()
-          : Value(metaId),
+          : Value(objetivoId),
     );
   }
 
@@ -2785,7 +2322,7 @@ class Habito extends DataClass implements Insertable<Habito> {
       horario: serializer.fromJson<String?>(json['horario']),
       alvo: serializer.fromJson<int?>(json['alvo']),
       unidade: serializer.fromJson<String?>(json['unidade']),
-      metaId: serializer.fromJson<String?>(json['metaId']),
+      objetivoId: serializer.fromJson<String?>(json['objetivoId']),
     );
   }
   @override
@@ -2804,7 +2341,7 @@ class Habito extends DataClass implements Insertable<Habito> {
       'horario': serializer.toJson<String?>(horario),
       'alvo': serializer.toJson<int?>(alvo),
       'unidade': serializer.toJson<String?>(unidade),
-      'metaId': serializer.toJson<String?>(metaId),
+      'objetivoId': serializer.toJson<String?>(objetivoId),
     };
   }
 
@@ -2819,7 +2356,7 @@ class Habito extends DataClass implements Insertable<Habito> {
     Value<String?> horario = const Value.absent(),
     Value<int?> alvo = const Value.absent(),
     Value<String?> unidade = const Value.absent(),
-    Value<String?> metaId = const Value.absent(),
+    Value<String?> objetivoId = const Value.absent(),
   }) => Habito(
     id: id ?? this.id,
     criadoEm: criadoEm ?? this.criadoEm,
@@ -2831,7 +2368,7 @@ class Habito extends DataClass implements Insertable<Habito> {
     horario: horario.present ? horario.value : this.horario,
     alvo: alvo.present ? alvo.value : this.alvo,
     unidade: unidade.present ? unidade.value : this.unidade,
-    metaId: metaId.present ? metaId.value : this.metaId,
+    objetivoId: objetivoId.present ? objetivoId.value : this.objetivoId,
   );
   Habito copyWithCompanion(HabitosCompanion data) {
     return Habito(
@@ -2849,7 +2386,9 @@ class Habito extends DataClass implements Insertable<Habito> {
       horario: data.horario.present ? data.horario.value : this.horario,
       alvo: data.alvo.present ? data.alvo.value : this.alvo,
       unidade: data.unidade.present ? data.unidade.value : this.unidade,
-      metaId: data.metaId.present ? data.metaId.value : this.metaId,
+      objetivoId: data.objetivoId.present
+          ? data.objetivoId.value
+          : this.objetivoId,
     );
   }
 
@@ -2866,7 +2405,7 @@ class Habito extends DataClass implements Insertable<Habito> {
           ..write('horario: $horario, ')
           ..write('alvo: $alvo, ')
           ..write('unidade: $unidade, ')
-          ..write('metaId: $metaId')
+          ..write('objetivoId: $objetivoId')
           ..write(')'))
         .toString();
   }
@@ -2883,7 +2422,7 @@ class Habito extends DataClass implements Insertable<Habito> {
     horario,
     alvo,
     unidade,
-    metaId,
+    objetivoId,
   );
   @override
   bool operator ==(Object other) =>
@@ -2899,7 +2438,7 @@ class Habito extends DataClass implements Insertable<Habito> {
           other.horario == this.horario &&
           other.alvo == this.alvo &&
           other.unidade == this.unidade &&
-          other.metaId == this.metaId);
+          other.objetivoId == this.objetivoId);
 }
 
 class HabitosCompanion extends UpdateCompanion<Habito> {
@@ -2913,7 +2452,7 @@ class HabitosCompanion extends UpdateCompanion<Habito> {
   final Value<String?> horario;
   final Value<int?> alvo;
   final Value<String?> unidade;
-  final Value<String?> metaId;
+  final Value<String?> objetivoId;
   final Value<int> rowid;
   const HabitosCompanion({
     this.id = const Value.absent(),
@@ -2926,7 +2465,7 @@ class HabitosCompanion extends UpdateCompanion<Habito> {
     this.horario = const Value.absent(),
     this.alvo = const Value.absent(),
     this.unidade = const Value.absent(),
-    this.metaId = const Value.absent(),
+    this.objetivoId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   HabitosCompanion.insert({
@@ -2940,7 +2479,7 @@ class HabitosCompanion extends UpdateCompanion<Habito> {
     this.horario = const Value.absent(),
     this.alvo = const Value.absent(),
     this.unidade = const Value.absent(),
-    this.metaId = const Value.absent(),
+    this.objetivoId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : nome = Value(nome);
   static Insertable<Habito> custom({
@@ -2954,7 +2493,7 @@ class HabitosCompanion extends UpdateCompanion<Habito> {
     Expression<String>? horario,
     Expression<int>? alvo,
     Expression<String>? unidade,
-    Expression<String>? metaId,
+    Expression<String>? objetivoId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2968,7 +2507,7 @@ class HabitosCompanion extends UpdateCompanion<Habito> {
       if (horario != null) 'horario': horario,
       if (alvo != null) 'alvo': alvo,
       if (unidade != null) 'unidade': unidade,
-      if (metaId != null) 'meta_id': metaId,
+      if (objetivoId != null) 'objetivo_id': objetivoId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2984,7 +2523,7 @@ class HabitosCompanion extends UpdateCompanion<Habito> {
     Value<String?>? horario,
     Value<int?>? alvo,
     Value<String?>? unidade,
-    Value<String?>? metaId,
+    Value<String?>? objetivoId,
     Value<int>? rowid,
   }) {
     return HabitosCompanion(
@@ -2998,7 +2537,7 @@ class HabitosCompanion extends UpdateCompanion<Habito> {
       horario: horario ?? this.horario,
       alvo: alvo ?? this.alvo,
       unidade: unidade ?? this.unidade,
-      metaId: metaId ?? this.metaId,
+      objetivoId: objetivoId ?? this.objetivoId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3038,8 +2577,8 @@ class HabitosCompanion extends UpdateCompanion<Habito> {
     if (unidade.present) {
       map['unidade'] = Variable<String>(unidade.value);
     }
-    if (metaId.present) {
-      map['meta_id'] = Variable<String>(metaId.value);
+    if (objetivoId.present) {
+      map['objetivo_id'] = Variable<String>(objetivoId.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -3060,7 +2599,7 @@ class HabitosCompanion extends UpdateCompanion<Habito> {
           ..write('horario: $horario, ')
           ..write('alvo: $alvo, ')
           ..write('unidade: $unidade, ')
-          ..write('metaId: $metaId, ')
+          ..write('objetivoId: $objetivoId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -16132,8 +15671,7 @@ class PreferenciasCompanion extends UpdateCompanion<Preferencia> {
 abstract class _$BancoAurora extends GeneratedDatabase {
   _$BancoAurora(QueryExecutor e) : super(e);
   $BancoAuroraManager get managers => $BancoAuroraManager(this);
-  late final $MetasTable metas = $MetasTable(this);
-  late final $ProjetosTable projetos = $ProjetosTable(this);
+  late final $ObjetivosTable objetivos = $ObjetivosTable(this);
   late final $TarefasTable tarefas = $TarefasTable(this);
   late final $ConclusoesTarefaTable conclusoesTarefa = $ConclusoesTarefaTable(
     this,
@@ -16192,8 +15730,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    metas,
-    projetos,
+    objetivos,
     tarefas,
     conclusoesTarefa,
     habitos,
@@ -16227,70 +15764,57 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   ];
 }
 
-typedef $$MetasTableCreateCompanionBuilder = MetasCompanion Function({
+typedef $$ObjetivosTableCreateCompanionBuilder = ObjetivosCompanion Function({
   Value<String> id,
   Value<DateTime> criadoEm,
   Value<DateTime> atualizadoEm,
   Value<DateTime?> apagadoEm,
   required String nome,
-  required double valorInicial,
-  required double valorAtual,
-  required double valorAlvo,
+  Value<String?> descricao,
   Value<String> unidade,
+  Value<double> valorInicial,
+  Value<double> valorAtual,
+  Value<double> valorAlvo,
   Value<DateTime?> dataAlvo,
+  Value<DateTime?> inicio,
   Value<String> status,
+  Value<String?> cor,
   Value<int> rowid,
 });
-typedef $$MetasTableUpdateCompanionBuilder = MetasCompanion Function({
+typedef $$ObjetivosTableUpdateCompanionBuilder = ObjetivosCompanion Function({
   Value<String> id,
   Value<DateTime> criadoEm,
   Value<DateTime> atualizadoEm,
   Value<DateTime?> apagadoEm,
   Value<String> nome,
+  Value<String?> descricao,
+  Value<String> unidade,
   Value<double> valorInicial,
   Value<double> valorAtual,
   Value<double> valorAlvo,
-  Value<String> unidade,
   Value<DateTime?> dataAlvo,
+  Value<DateTime?> inicio,
   Value<String> status,
+  Value<String?> cor,
   Value<int> rowid,
 });
 
-final class $$MetasTableReferences
-    extends BaseReferences<_$BancoAurora, $MetasTable, Meta> {
-  $$MetasTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$ProjetosTable, List<Projeto>> _projetosRefsTable(
-    _$BancoAurora db,
-  ) => MultiTypedResultKey.fromTable(
-    db.projetos,
-    aliasName: 'metas__id__projetos__meta_id',
-  );
-
-  $$ProjetosTableProcessedTableManager get projetosRefs {
-    final manager = $$ProjetosTableTableManager(
-      $_db,
-      $_db.projetos,
-    ).filter((f) => f.metaId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_projetosRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
+final class $$ObjetivosTableReferences
+    extends BaseReferences<_$BancoAurora, $ObjetivosTable, Objetivo> {
+  $$ObjetivosTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<$TarefasTable, List<Tarefa>> _tarefasRefsTable(
     _$BancoAurora db,
   ) => MultiTypedResultKey.fromTable(
     db.tarefas,
-    aliasName: 'metas__id__tarefas__meta_id',
+    aliasName: 'objetivos__id__tarefas__objetivo_id',
   );
 
   $$TarefasTableProcessedTableManager get tarefasRefs {
     final manager = $$TarefasTableTableManager(
       $_db,
       $_db.tarefas,
-    ).filter((f) => f.metaId.id.sqlEquals($_itemColumn<String>('id')!));
+    ).filter((f) => f.objetivoId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_tarefasRefsTable($_db));
     return ProcessedTableManager(
@@ -16302,14 +15826,14 @@ final class $$MetasTableReferences
     _$BancoAurora db,
   ) => MultiTypedResultKey.fromTable(
     db.habitos,
-    aliasName: 'metas__id__habitos__meta_id',
+    aliasName: 'objetivos__id__habitos__objetivo_id',
   );
 
   $$HabitosTableProcessedTableManager get habitosRefs {
     final manager = $$HabitosTableTableManager(
       $_db,
       $_db.habitos,
-    ).filter((f) => f.metaId.id.sqlEquals($_itemColumn<String>('id')!));
+    ).filter((f) => f.objetivoId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_habitosRefsTable($_db));
     return ProcessedTableManager(
@@ -16318,8 +15842,9 @@ final class $$MetasTableReferences
   }
 }
 
-class $$MetasTableFilterComposer extends Composer<_$BancoAurora, $MetasTable> {
-  $$MetasTableFilterComposer({
+class $$ObjetivosTableFilterComposer
+    extends Composer<_$BancoAurora, $ObjetivosTable> {
+  $$ObjetivosTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -16351,6 +15876,16 @@ class $$MetasTableFilterComposer extends Composer<_$BancoAurora, $MetasTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get descricao => $composableBuilder(
+    column: $table.descricao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unidade => $composableBuilder(
+    column: $table.unidade,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<double> get valorInicial => $composableBuilder(
     column: $table.valorInicial,
     builder: (column) => ColumnFilters(column),
@@ -16366,13 +15901,13 @@ class $$MetasTableFilterComposer extends Composer<_$BancoAurora, $MetasTable> {
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get unidade => $composableBuilder(
-    column: $table.unidade,
+  ColumnFilters<DateTime> get dataAlvo => $composableBuilder(
+    column: $table.dataAlvo,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get dataAlvo => $composableBuilder(
-    column: $table.dataAlvo,
+  ColumnFilters<DateTime> get inicio => $composableBuilder(
+    column: $table.inicio,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -16381,30 +15916,10 @@ class $$MetasTableFilterComposer extends Composer<_$BancoAurora, $MetasTable> {
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> projetosRefs(
-    Expression<bool> Function($$ProjetosTableFilterComposer f) f,
-  ) {
-    final $$ProjetosTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.projetos,
-      getReferencedColumn: (t) => t.metaId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjetosTableFilterComposer(
-            $db: $db,
-            $table: $db.projetos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
+  ColumnFilters<String> get cor => $composableBuilder(
+    column: $table.cor,
+    builder: (column) => ColumnFilters(column),
+  );
 
   Expression<bool> tarefasRefs(
     Expression<bool> Function($$TarefasTableFilterComposer f) f,
@@ -16413,7 +15928,7 @@ class $$MetasTableFilterComposer extends Composer<_$BancoAurora, $MetasTable> {
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.tarefas,
-      getReferencedColumn: (t) => t.metaId,
+      getReferencedColumn: (t) => t.objetivoId,
       builder:
           (
             joinBuilder, {
@@ -16438,7 +15953,7 @@ class $$MetasTableFilterComposer extends Composer<_$BancoAurora, $MetasTable> {
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.habitos,
-      getReferencedColumn: (t) => t.metaId,
+      getReferencedColumn: (t) => t.objetivoId,
       builder:
           (
             joinBuilder, {
@@ -16457,9 +15972,9 @@ class $$MetasTableFilterComposer extends Composer<_$BancoAurora, $MetasTable> {
   }
 }
 
-class $$MetasTableOrderingComposer
-    extends Composer<_$BancoAurora, $MetasTable> {
-  $$MetasTableOrderingComposer({
+class $$ObjetivosTableOrderingComposer
+    extends Composer<_$BancoAurora, $ObjetivosTable> {
+  $$ObjetivosTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -16491,6 +16006,16 @@ class $$MetasTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get descricao => $composableBuilder(
+    column: $table.descricao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unidade => $composableBuilder(
+    column: $table.unidade,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get valorInicial => $composableBuilder(
     column: $table.valorInicial,
     builder: (column) => ColumnOrderings(column),
@@ -16506,13 +16031,13 @@ class $$MetasTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get unidade => $composableBuilder(
-    column: $table.unidade,
+  ColumnOrderings<DateTime> get dataAlvo => $composableBuilder(
+    column: $table.dataAlvo,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get dataAlvo => $composableBuilder(
-    column: $table.dataAlvo,
+  ColumnOrderings<DateTime> get inicio => $composableBuilder(
+    column: $table.inicio,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -16520,11 +16045,16 @@ class $$MetasTableOrderingComposer
     column: $table.status,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get cor => $composableBuilder(
+    column: $table.cor,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
-class $$MetasTableAnnotationComposer
-    extends Composer<_$BancoAurora, $MetasTable> {
-  $$MetasTableAnnotationComposer({
+class $$ObjetivosTableAnnotationComposer
+    extends Composer<_$BancoAurora, $ObjetivosTable> {
+  $$ObjetivosTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -16548,6 +16078,12 @@ class $$MetasTableAnnotationComposer
   GeneratedColumn<String> get nome =>
       $composableBuilder(column: $table.nome, builder: (column) => column);
 
+  GeneratedColumn<String> get descricao =>
+      $composableBuilder(column: $table.descricao, builder: (column) => column);
+
+  GeneratedColumn<String> get unidade =>
+      $composableBuilder(column: $table.unidade, builder: (column) => column);
+
   GeneratedColumn<double> get valorInicial => $composableBuilder(
     column: $table.valorInicial,
     builder: (column) => column,
@@ -16561,39 +16097,17 @@ class $$MetasTableAnnotationComposer
   GeneratedColumn<double> get valorAlvo =>
       $composableBuilder(column: $table.valorAlvo, builder: (column) => column);
 
-  GeneratedColumn<String> get unidade =>
-      $composableBuilder(column: $table.unidade, builder: (column) => column);
-
   GeneratedColumn<DateTime> get dataAlvo =>
       $composableBuilder(column: $table.dataAlvo, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get inicio =>
+      $composableBuilder(column: $table.inicio, builder: (column) => column);
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
-  Expression<T> projetosRefs<T extends Object>(
-    Expression<T> Function($$ProjetosTableAnnotationComposer a) f,
-  ) {
-    final $$ProjetosTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.projetos,
-      getReferencedColumn: (t) => t.metaId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjetosTableAnnotationComposer(
-            $db: $db,
-            $table: $db.projetos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
+  GeneratedColumn<String> get cor =>
+      $composableBuilder(column: $table.cor, builder: (column) => column);
 
   Expression<T> tarefasRefs<T extends Object>(
     Expression<T> Function($$TarefasTableAnnotationComposer a) f,
@@ -16602,7 +16116,7 @@ class $$MetasTableAnnotationComposer
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.tarefas,
-      getReferencedColumn: (t) => t.metaId,
+      getReferencedColumn: (t) => t.objetivoId,
       builder:
           (
             joinBuilder, {
@@ -16627,7 +16141,7 @@ class $$MetasTableAnnotationComposer
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.habitos,
-      getReferencedColumn: (t) => t.metaId,
+      getReferencedColumn: (t) => t.objetivoId,
       builder:
           (
             joinBuilder, {
@@ -16646,36 +16160,32 @@ class $$MetasTableAnnotationComposer
   }
 }
 
-class $$MetasTableTableManager
+class $$ObjetivosTableTableManager
     extends
         RootTableManager<
           _$BancoAurora,
-          $MetasTable,
-          Meta,
-          $$MetasTableFilterComposer,
-          $$MetasTableOrderingComposer,
-          $$MetasTableAnnotationComposer,
-          $$MetasTableCreateCompanionBuilder,
-          $$MetasTableUpdateCompanionBuilder,
-          (Meta, $$MetasTableReferences),
-          Meta,
-          PrefetchHooks Function({
-            bool projetosRefs,
-            bool tarefasRefs,
-            bool habitosRefs,
-          })
+          $ObjetivosTable,
+          Objetivo,
+          $$ObjetivosTableFilterComposer,
+          $$ObjetivosTableOrderingComposer,
+          $$ObjetivosTableAnnotationComposer,
+          $$ObjetivosTableCreateCompanionBuilder,
+          $$ObjetivosTableUpdateCompanionBuilder,
+          (Objetivo, $$ObjetivosTableReferences),
+          Objetivo,
+          PrefetchHooks Function({bool tarefasRefs, bool habitosRefs})
         > {
-  $$MetasTableTableManager(_$BancoAurora db, $MetasTable table)
+  $$ObjetivosTableTableManager(_$BancoAurora db, $ObjetivosTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$MetasTableFilterComposer($db: db, $table: table),
+              $$ObjetivosTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$MetasTableOrderingComposer($db: db, $table: table),
+              $$ObjetivosTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$MetasTableAnnotationComposer($db: db, $table: table),
+              $$ObjetivosTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -16683,25 +16193,31 @@ class $$MetasTableTableManager
                 Value<DateTime> atualizadoEm = const Value.absent(),
                 Value<DateTime?> apagadoEm = const Value.absent(),
                 Value<String> nome = const Value.absent(),
+                Value<String?> descricao = const Value.absent(),
+                Value<String> unidade = const Value.absent(),
                 Value<double> valorInicial = const Value.absent(),
                 Value<double> valorAtual = const Value.absent(),
                 Value<double> valorAlvo = const Value.absent(),
-                Value<String> unidade = const Value.absent(),
                 Value<DateTime?> dataAlvo = const Value.absent(),
+                Value<DateTime?> inicio = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> cor = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => MetasCompanion(
+              }) => ObjetivosCompanion(
                 id: id,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
                 apagadoEm: apagadoEm,
                 nome: nome,
+                descricao: descricao,
+                unidade: unidade,
                 valorInicial: valorInicial,
                 valorAtual: valorAtual,
                 valorAlvo: valorAlvo,
-                unidade: unidade,
                 dataAlvo: dataAlvo,
+                inicio: inicio,
                 status: status,
+                cor: cor,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -16711,569 +16227,79 @@ class $$MetasTableTableManager
                 Value<DateTime> atualizadoEm = const Value.absent(),
                 Value<DateTime?> apagadoEm = const Value.absent(),
                 required String nome,
-                required double valorInicial,
-                required double valorAtual,
-                required double valorAlvo,
+                Value<String?> descricao = const Value.absent(),
                 Value<String> unidade = const Value.absent(),
+                Value<double> valorInicial = const Value.absent(),
+                Value<double> valorAtual = const Value.absent(),
+                Value<double> valorAlvo = const Value.absent(),
                 Value<DateTime?> dataAlvo = const Value.absent(),
+                Value<DateTime?> inicio = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<String?> cor = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => MetasCompanion.insert(
+              }) => ObjetivosCompanion.insert(
                 id: id,
                 criadoEm: criadoEm,
                 atualizadoEm: atualizadoEm,
                 apagadoEm: apagadoEm,
                 nome: nome,
+                descricao: descricao,
+                unidade: unidade,
                 valorInicial: valorInicial,
                 valorAtual: valorAtual,
                 valorAlvo: valorAlvo,
-                unidade: unidade,
                 dataAlvo: dataAlvo,
+                inicio: inicio,
                 status: status,
+                cor: cor,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable<$MetasTable, Meta>(table),
-                  $$MetasTableReferences(db, table, e),
+                  e.readTable<$ObjetivosTable, Objetivo>(table),
+                  $$ObjetivosTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback:
-              ({
-                projetosRefs = false,
-                tarefasRefs = false,
-                habitosRefs = false,
-              }) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (projetosRefs) db.projetos,
-                    if (tarefasRefs) db.tarefas,
-                    if (habitosRefs) db.habitos,
-                  ],
-                  addJoins: null,
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (projetosRefs)
-                        await $_getPrefetchedData<Meta, $MetasTable, Projeto>(
-                          currentTable: table,
-                          referencedTable: $$MetasTableReferences
-                              ._projetosRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$MetasTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).projetosRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.metaId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (tarefasRefs)
-                        await $_getPrefetchedData<Meta, $MetasTable, Tarefa>(
-                          currentTable: table,
-                          referencedTable: $$MetasTableReferences
-                              ._tarefasRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$MetasTableReferences(db, table, p0).tarefasRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.metaId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (habitosRefs)
-                        await $_getPrefetchedData<Meta, $MetasTable, Habito>(
-                          currentTable: table,
-                          referencedTable: $$MetasTableReferences
-                              ._habitosRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$MetasTableReferences(db, table, p0).habitosRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.metaId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
-              },
-        ),
-      );
-}
-
-typedef $$MetasTableProcessedTableManager =
-    ProcessedTableManager<
-      _$BancoAurora,
-      $MetasTable,
-      Meta,
-      $$MetasTableFilterComposer,
-      $$MetasTableOrderingComposer,
-      $$MetasTableAnnotationComposer,
-      $$MetasTableCreateCompanionBuilder,
-      $$MetasTableUpdateCompanionBuilder,
-      (Meta, $$MetasTableReferences),
-      Meta,
-      PrefetchHooks Function({
-        bool projetosRefs,
-        bool tarefasRefs,
-        bool habitosRefs,
-      })
-    >;
-typedef $$ProjetosTableCreateCompanionBuilder = ProjetosCompanion Function({
-  Value<String> id,
-  Value<DateTime> criadoEm,
-  Value<DateTime> atualizadoEm,
-  Value<DateTime?> apagadoEm,
-  required String nome,
-  required DateTime inicio,
-  required DateTime fim,
-  Value<String?> metaId,
-  Value<String> status,
-  Value<int> rowid,
-});
-typedef $$ProjetosTableUpdateCompanionBuilder = ProjetosCompanion Function({
-  Value<String> id,
-  Value<DateTime> criadoEm,
-  Value<DateTime> atualizadoEm,
-  Value<DateTime?> apagadoEm,
-  Value<String> nome,
-  Value<DateTime> inicio,
-  Value<DateTime> fim,
-  Value<String?> metaId,
-  Value<String> status,
-  Value<int> rowid,
-});
-
-final class $$ProjetosTableReferences
-    extends BaseReferences<_$BancoAurora, $ProjetosTable, Projeto> {
-  $$ProjetosTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $MetasTable _metaIdTable(_$BancoAurora db) =>
-      db.metas.createAlias('projetos__meta_id__metas__id');
-
-  $$MetasTableProcessedTableManager? get metaId {
-    final $_column = $_itemColumn<String>('meta_id');
-    if ($_column == null) return null;
-    final manager = $$MetasTableTableManager(
-      $_db,
-      $_db.metas,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_metaIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static MultiTypedResultKey<$TarefasTable, List<Tarefa>> _tarefasRefsTable(
-    _$BancoAurora db,
-  ) => MultiTypedResultKey.fromTable(
-    db.tarefas,
-    aliasName: 'projetos__id__tarefas__projeto_id',
-  );
-
-  $$TarefasTableProcessedTableManager get tarefasRefs {
-    final manager = $$TarefasTableTableManager(
-      $_db,
-      $_db.tarefas,
-    ).filter((f) => f.projetoId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_tarefasRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$ProjetosTableFilterComposer
-    extends Composer<_$BancoAurora, $ProjetosTable> {
-  $$ProjetosTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
-    column: $table.criadoEm,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
-    column: $table.atualizadoEm,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
-    column: $table.apagadoEm,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get nome => $composableBuilder(
-    column: $table.nome,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get inicio => $composableBuilder(
-    column: $table.inicio,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get fim => $composableBuilder(
-    column: $table.fim,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$MetasTableFilterComposer get metaId {
-    final $$MetasTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.metaId,
-      referencedTable: $db.metas,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MetasTableFilterComposer(
-            $db: $db,
-            $table: $db.metas,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<bool> tarefasRefs(
-    Expression<bool> Function($$TarefasTableFilterComposer f) f,
-  ) {
-    final $$TarefasTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.tarefas,
-      getReferencedColumn: (t) => t.projetoId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TarefasTableFilterComposer(
-            $db: $db,
-            $table: $db.tarefas,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$ProjetosTableOrderingComposer
-    extends Composer<_$BancoAurora, $ProjetosTable> {
-  $$ProjetosTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
-    column: $table.criadoEm,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
-    column: $table.atualizadoEm,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
-    column: $table.apagadoEm,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get nome => $composableBuilder(
-    column: $table.nome,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get inicio => $composableBuilder(
-    column: $table.inicio,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get fim => $composableBuilder(
-    column: $table.fim,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$MetasTableOrderingComposer get metaId {
-    final $$MetasTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.metaId,
-      referencedTable: $db.metas,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MetasTableOrderingComposer(
-            $db: $db,
-            $table: $db.metas,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$ProjetosTableAnnotationComposer
-    extends Composer<_$BancoAurora, $ProjetosTable> {
-  $$ProjetosTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get criadoEm =>
-      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
-    column: $table.atualizadoEm,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get apagadoEm =>
-      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
-
-  GeneratedColumn<String> get nome =>
-      $composableBuilder(column: $table.nome, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get inicio =>
-      $composableBuilder(column: $table.inicio, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get fim =>
-      $composableBuilder(column: $table.fim, builder: (column) => column);
-
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
-
-  $$MetasTableAnnotationComposer get metaId {
-    final $$MetasTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.metaId,
-      referencedTable: $db.metas,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MetasTableAnnotationComposer(
-            $db: $db,
-            $table: $db.metas,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  Expression<T> tarefasRefs<T extends Object>(
-    Expression<T> Function($$TarefasTableAnnotationComposer a) f,
-  ) {
-    final $$TarefasTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.tarefas,
-      getReferencedColumn: (t) => t.projetoId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TarefasTableAnnotationComposer(
-            $db: $db,
-            $table: $db.tarefas,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$ProjetosTableTableManager
-    extends
-        RootTableManager<
-          _$BancoAurora,
-          $ProjetosTable,
-          Projeto,
-          $$ProjetosTableFilterComposer,
-          $$ProjetosTableOrderingComposer,
-          $$ProjetosTableAnnotationComposer,
-          $$ProjetosTableCreateCompanionBuilder,
-          $$ProjetosTableUpdateCompanionBuilder,
-          (Projeto, $$ProjetosTableReferences),
-          Projeto,
-          PrefetchHooks Function({bool metaId, bool tarefasRefs})
-        > {
-  $$ProjetosTableTableManager(_$BancoAurora db, $ProjetosTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$ProjetosTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ProjetosTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ProjetosTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<DateTime> criadoEm = const Value.absent(),
-                Value<DateTime> atualizadoEm = const Value.absent(),
-                Value<DateTime?> apagadoEm = const Value.absent(),
-                Value<String> nome = const Value.absent(),
-                Value<DateTime> inicio = const Value.absent(),
-                Value<DateTime> fim = const Value.absent(),
-                Value<String?> metaId = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ProjetosCompanion(
-                id: id,
-                criadoEm: criadoEm,
-                atualizadoEm: atualizadoEm,
-                apagadoEm: apagadoEm,
-                nome: nome,
-                inicio: inicio,
-                fim: fim,
-                metaId: metaId,
-                status: status,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<DateTime> criadoEm = const Value.absent(),
-                Value<DateTime> atualizadoEm = const Value.absent(),
-                Value<DateTime?> apagadoEm = const Value.absent(),
-                required String nome,
-                required DateTime inicio,
-                required DateTime fim,
-                Value<String?> metaId = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ProjetosCompanion.insert(
-                id: id,
-                criadoEm: criadoEm,
-                atualizadoEm: atualizadoEm,
-                apagadoEm: apagadoEm,
-                nome: nome,
-                inicio: inicio,
-                fim: fim,
-                metaId: metaId,
-                status: status,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$ProjetosTable, Projeto>(table),
-                  $$ProjetosTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({metaId = false, tarefasRefs = false}) {
+          prefetchHooksCallback: ({tarefasRefs = false, habitosRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (tarefasRefs) db.tarefas],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (metaId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.metaId,
-                        referencedTable: $$ProjetosTableReferences._metaIdTable(
-                          db,
-                        ),
-                        referencedColumn: $$ProjetosTableReferences
-                            ._metaIdTable(db)
-                            .id,
-                      ) as T;
-                    }
-
-                    return state;
-                  },
+              explicitlyWatchedTables: [
+                if (tarefasRefs) db.tarefas,
+                if (habitosRefs) db.habitos,
+              ],
+              addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (tarefasRefs)
-                    await $_getPrefetchedData<Projeto, $ProjetosTable, Tarefa>(
+                    await $_getPrefetchedData<
+                      Objetivo,
+                      $ObjetivosTable,
+                      Tarefa
+                    >(
                       currentTable: table,
-                      referencedTable: $$ProjetosTableReferences
+                      referencedTable: $$ObjetivosTableReferences
                           ._tarefasRefsTable(db),
                       managerFromTypedResult: (p0) =>
-                          $$ProjetosTableReferences(db, table, p0).tarefasRefs,
+                          $$ObjetivosTableReferences(db, table, p0).tarefasRefs,
                       referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.projetoId == item.id),
+                          referencedItems.where((e) => e.objetivoId == item.id),
+                      typedResults: items,
+                    ),
+                  if (habitosRefs)
+                    await $_getPrefetchedData<
+                      Objetivo,
+                      $ObjetivosTable,
+                      Habito
+                    >(
+                      currentTable: table,
+                      referencedTable: $$ObjetivosTableReferences
+                          ._habitosRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$ObjetivosTableReferences(db, table, p0).habitosRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.objetivoId == item.id),
                       typedResults: items,
                     ),
                 ];
@@ -17284,19 +16310,19 @@ class $$ProjetosTableTableManager
       );
 }
 
-typedef $$ProjetosTableProcessedTableManager =
+typedef $$ObjetivosTableProcessedTableManager =
     ProcessedTableManager<
       _$BancoAurora,
-      $ProjetosTable,
-      Projeto,
-      $$ProjetosTableFilterComposer,
-      $$ProjetosTableOrderingComposer,
-      $$ProjetosTableAnnotationComposer,
-      $$ProjetosTableCreateCompanionBuilder,
-      $$ProjetosTableUpdateCompanionBuilder,
-      (Projeto, $$ProjetosTableReferences),
-      Projeto,
-      PrefetchHooks Function({bool metaId, bool tarefasRefs})
+      $ObjetivosTable,
+      Objetivo,
+      $$ObjetivosTableFilterComposer,
+      $$ObjetivosTableOrderingComposer,
+      $$ObjetivosTableAnnotationComposer,
+      $$ObjetivosTableCreateCompanionBuilder,
+      $$ObjetivosTableUpdateCompanionBuilder,
+      (Objetivo, $$ObjetivosTableReferences),
+      Objetivo,
+      PrefetchHooks Function({bool tarefasRefs, bool habitosRefs})
     >;
 typedef $$TarefasTableCreateCompanionBuilder = TarefasCompanion Function({
   Value<String> id,
@@ -17310,8 +16336,7 @@ typedef $$TarefasTableCreateCompanionBuilder = TarefasCompanion Function({
   Value<Prioridade> prioridade,
   Value<DateTime?> feitaEm,
   Value<String?> regraRepeticao,
-  Value<String?> metaId,
-  Value<String?> projetoId,
+  Value<String?> objetivoId,
   Value<int> rowid,
 });
 typedef $$TarefasTableUpdateCompanionBuilder = TarefasCompanion Function({
@@ -17326,8 +16351,7 @@ typedef $$TarefasTableUpdateCompanionBuilder = TarefasCompanion Function({
   Value<Prioridade> prioridade,
   Value<DateTime?> feitaEm,
   Value<String?> regraRepeticao,
-  Value<String?> metaId,
-  Value<String?> projetoId,
+  Value<String?> objetivoId,
   Value<int> rowid,
 });
 
@@ -17335,34 +16359,17 @@ final class $$TarefasTableReferences
     extends BaseReferences<_$BancoAurora, $TarefasTable, Tarefa> {
   $$TarefasTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $MetasTable _metaIdTable(_$BancoAurora db) =>
-      db.metas.createAlias('tarefas__meta_id__metas__id');
+  static $ObjetivosTable _objetivoIdTable(_$BancoAurora db) =>
+      db.objetivos.createAlias('tarefas__objetivo_id__objetivos__id');
 
-  $$MetasTableProcessedTableManager? get metaId {
-    final $_column = $_itemColumn<String>('meta_id');
+  $$ObjetivosTableProcessedTableManager? get objetivoId {
+    final $_column = $_itemColumn<String>('objetivo_id');
     if ($_column == null) return null;
-    final manager = $$MetasTableTableManager(
+    final manager = $$ObjetivosTableTableManager(
       $_db,
-      $_db.metas,
+      $_db.objetivos,
     ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_metaIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-
-  static $ProjetosTable _projetoIdTable(_$BancoAurora db) =>
-      db.projetos.createAlias('tarefas__projeto_id__projetos__id');
-
-  $$ProjetosTableProcessedTableManager? get projetoId {
-    final $_column = $_itemColumn<String>('projeto_id');
-    if ($_column == null) return null;
-    final manager = $$ProjetosTableTableManager(
-      $_db,
-      $_db.projetos,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_projetoIdTable($_db));
+    final item = $_typedResult.readTableOrNull(_objetivoIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -17455,43 +16462,20 @@ class $$TarefasTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$MetasTableFilterComposer get metaId {
-    final $$MetasTableFilterComposer composer = $composerBuilder(
+  $$ObjetivosTableFilterComposer get objetivoId {
+    final $$ObjetivosTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.metaId,
-      referencedTable: $db.metas,
+      getCurrentColumn: (t) => t.objetivoId,
+      referencedTable: $db.objetivos,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$MetasTableFilterComposer(
+          }) => $$ObjetivosTableFilterComposer(
             $db: $db,
-            $table: $db.metas,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$ProjetosTableFilterComposer get projetoId {
-    final $$ProjetosTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projetoId,
-      referencedTable: $db.projetos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjetosTableFilterComposer(
-            $db: $db,
-            $table: $db.projetos,
+            $table: $db.objetivos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -17591,43 +16575,20 @@ class $$TarefasTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$MetasTableOrderingComposer get metaId {
-    final $$MetasTableOrderingComposer composer = $composerBuilder(
+  $$ObjetivosTableOrderingComposer get objetivoId {
+    final $$ObjetivosTableOrderingComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.metaId,
-      referencedTable: $db.metas,
+      getCurrentColumn: (t) => t.objetivoId,
+      referencedTable: $db.objetivos,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$MetasTableOrderingComposer(
+          }) => $$ObjetivosTableOrderingComposer(
             $db: $db,
-            $table: $db.metas,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$ProjetosTableOrderingComposer get projetoId {
-    final $$ProjetosTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projetoId,
-      referencedTable: $db.projetos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjetosTableOrderingComposer(
-            $db: $db,
-            $table: $db.projetos,
+            $table: $db.objetivos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -17689,43 +16650,20 @@ class $$TarefasTableAnnotationComposer
     builder: (column) => column,
   );
 
-  $$MetasTableAnnotationComposer get metaId {
-    final $$MetasTableAnnotationComposer composer = $composerBuilder(
+  $$ObjetivosTableAnnotationComposer get objetivoId {
+    final $$ObjetivosTableAnnotationComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.metaId,
-      referencedTable: $db.metas,
+      getCurrentColumn: (t) => t.objetivoId,
+      referencedTable: $db.objetivos,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$MetasTableAnnotationComposer(
+          }) => $$ObjetivosTableAnnotationComposer(
             $db: $db,
-            $table: $db.metas,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$ProjetosTableAnnotationComposer get projetoId {
-    final $$ProjetosTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.projetoId,
-      referencedTable: $db.projetos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ProjetosTableAnnotationComposer(
-            $db: $db,
-            $table: $db.projetos,
+            $table: $db.objetivos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -17774,11 +16712,7 @@ class $$TarefasTableTableManager
           $$TarefasTableUpdateCompanionBuilder,
           (Tarefa, $$TarefasTableReferences),
           Tarefa,
-          PrefetchHooks Function({
-            bool metaId,
-            bool projetoId,
-            bool conclusoesTarefaRefs,
-          })
+          PrefetchHooks Function({bool objetivoId, bool conclusoesTarefaRefs})
         > {
   $$TarefasTableTableManager(_$BancoAurora db, $TarefasTable table)
     : super(
@@ -17804,8 +16738,7 @@ class $$TarefasTableTableManager
                 Value<Prioridade> prioridade = const Value.absent(),
                 Value<DateTime?> feitaEm = const Value.absent(),
                 Value<String?> regraRepeticao = const Value.absent(),
-                Value<String?> metaId = const Value.absent(),
-                Value<String?> projetoId = const Value.absent(),
+                Value<String?> objetivoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TarefasCompanion(
                 id: id,
@@ -17819,8 +16752,7 @@ class $$TarefasTableTableManager
                 prioridade: prioridade,
                 feitaEm: feitaEm,
                 regraRepeticao: regraRepeticao,
-                metaId: metaId,
-                projetoId: projetoId,
+                objetivoId: objetivoId,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -17836,8 +16768,7 @@ class $$TarefasTableTableManager
                 Value<Prioridade> prioridade = const Value.absent(),
                 Value<DateTime?> feitaEm = const Value.absent(),
                 Value<String?> regraRepeticao = const Value.absent(),
-                Value<String?> metaId = const Value.absent(),
-                Value<String?> projetoId = const Value.absent(),
+                Value<String?> objetivoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TarefasCompanion.insert(
                 id: id,
@@ -17851,8 +16782,7 @@ class $$TarefasTableTableManager
                 prioridade: prioridade,
                 feitaEm: feitaEm,
                 regraRepeticao: regraRepeticao,
-                metaId: metaId,
-                projetoId: projetoId,
+                objetivoId: objetivoId,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -17864,11 +16794,7 @@ class $$TarefasTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({
-                metaId = false,
-                projetoId = false,
-                conclusoesTarefaRefs = false,
-              }) {
+              ({objetivoId = false, conclusoesTarefaRefs = false}) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
@@ -17890,25 +16816,14 @@ class $$TarefasTableTableManager
                           dynamic
                         >
                       >(state) {
-                        if (metaId) {
+                        if (objetivoId) {
                           state = state.withJoin(
                             currentTable: table,
-                            currentColumn: table.metaId,
+                            currentColumn: table.objetivoId,
                             referencedTable: $$TarefasTableReferences
-                                ._metaIdTable(db),
+                                ._objetivoIdTable(db),
                             referencedColumn: $$TarefasTableReferences
-                                ._metaIdTable(db)
-                                .id,
-                          ) as T;
-                        }
-                        if (projetoId) {
-                          state = state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.projetoId,
-                            referencedTable: $$TarefasTableReferences
-                                ._projetoIdTable(db),
-                            referencedColumn: $$TarefasTableReferences
-                                ._projetoIdTable(db)
+                                ._objetivoIdTable(db)
                                 .id,
                           ) as T;
                         }
@@ -17958,11 +16873,7 @@ typedef $$TarefasTableProcessedTableManager =
       $$TarefasTableUpdateCompanionBuilder,
       (Tarefa, $$TarefasTableReferences),
       Tarefa,
-      PrefetchHooks Function({
-        bool metaId,
-        bool projetoId,
-        bool conclusoesTarefaRefs,
-      })
+      PrefetchHooks Function({bool objetivoId, bool conclusoesTarefaRefs})
     >;
 typedef $$ConclusoesTarefaTableCreateCompanionBuilder =
     ConclusoesTarefaCompanion Function({
@@ -18324,7 +17235,7 @@ typedef $$HabitosTableCreateCompanionBuilder = HabitosCompanion Function({
   Value<String?> horario,
   Value<int?> alvo,
   Value<String?> unidade,
-  Value<String?> metaId,
+  Value<String?> objetivoId,
   Value<int> rowid,
 });
 typedef $$HabitosTableUpdateCompanionBuilder = HabitosCompanion Function({
@@ -18338,7 +17249,7 @@ typedef $$HabitosTableUpdateCompanionBuilder = HabitosCompanion Function({
   Value<String?> horario,
   Value<int?> alvo,
   Value<String?> unidade,
-  Value<String?> metaId,
+  Value<String?> objetivoId,
   Value<int> rowid,
 });
 
@@ -18346,17 +17257,17 @@ final class $$HabitosTableReferences
     extends BaseReferences<_$BancoAurora, $HabitosTable, Habito> {
   $$HabitosTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $MetasTable _metaIdTable(_$BancoAurora db) =>
-      db.metas.createAlias('habitos__meta_id__metas__id');
+  static $ObjetivosTable _objetivoIdTable(_$BancoAurora db) =>
+      db.objetivos.createAlias('habitos__objetivo_id__objetivos__id');
 
-  $$MetasTableProcessedTableManager? get metaId {
-    final $_column = $_itemColumn<String>('meta_id');
+  $$ObjetivosTableProcessedTableManager? get objetivoId {
+    final $_column = $_itemColumn<String>('objetivo_id');
     if ($_column == null) return null;
-    final manager = $$MetasTableTableManager(
+    final manager = $$ObjetivosTableTableManager(
       $_db,
-      $_db.metas,
+      $_db.objetivos,
     ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_metaIdTable($_db));
+    final item = $_typedResult.readTableOrNull(_objetivoIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -18444,20 +17355,20 @@ class $$HabitosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$MetasTableFilterComposer get metaId {
-    final $$MetasTableFilterComposer composer = $composerBuilder(
+  $$ObjetivosTableFilterComposer get objetivoId {
+    final $$ObjetivosTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.metaId,
-      referencedTable: $db.metas,
+      getCurrentColumn: (t) => t.objetivoId,
+      referencedTable: $db.objetivos,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$MetasTableFilterComposer(
+          }) => $$ObjetivosTableFilterComposer(
             $db: $db,
-            $table: $db.metas,
+            $table: $db.objetivos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -18552,20 +17463,20 @@ class $$HabitosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$MetasTableOrderingComposer get metaId {
-    final $$MetasTableOrderingComposer composer = $composerBuilder(
+  $$ObjetivosTableOrderingComposer get objetivoId {
+    final $$ObjetivosTableOrderingComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.metaId,
-      referencedTable: $db.metas,
+      getCurrentColumn: (t) => t.objetivoId,
+      referencedTable: $db.objetivos,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$MetasTableOrderingComposer(
+          }) => $$ObjetivosTableOrderingComposer(
             $db: $db,
-            $table: $db.metas,
+            $table: $db.objetivos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -18619,20 +17530,20 @@ class $$HabitosTableAnnotationComposer
   GeneratedColumn<String> get unidade =>
       $composableBuilder(column: $table.unidade, builder: (column) => column);
 
-  $$MetasTableAnnotationComposer get metaId {
-    final $$MetasTableAnnotationComposer composer = $composerBuilder(
+  $$ObjetivosTableAnnotationComposer get objetivoId {
+    final $$ObjetivosTableAnnotationComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.metaId,
-      referencedTable: $db.metas,
+      getCurrentColumn: (t) => t.objetivoId,
+      referencedTable: $db.objetivos,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$MetasTableAnnotationComposer(
+          }) => $$ObjetivosTableAnnotationComposer(
             $db: $db,
-            $table: $db.metas,
+            $table: $db.objetivos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -18681,7 +17592,7 @@ class $$HabitosTableTableManager
           $$HabitosTableUpdateCompanionBuilder,
           (Habito, $$HabitosTableReferences),
           Habito,
-          PrefetchHooks Function({bool metaId, bool registrosHabitoRefs})
+          PrefetchHooks Function({bool objetivoId, bool registrosHabitoRefs})
         > {
   $$HabitosTableTableManager(_$BancoAurora db, $HabitosTable table)
     : super(
@@ -18706,7 +17617,7 @@ class $$HabitosTableTableManager
                 Value<String?> horario = const Value.absent(),
                 Value<int?> alvo = const Value.absent(),
                 Value<String?> unidade = const Value.absent(),
-                Value<String?> metaId = const Value.absent(),
+                Value<String?> objetivoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => HabitosCompanion(
                 id: id,
@@ -18719,7 +17630,7 @@ class $$HabitosTableTableManager
                 horario: horario,
                 alvo: alvo,
                 unidade: unidade,
-                metaId: metaId,
+                objetivoId: objetivoId,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -18734,7 +17645,7 @@ class $$HabitosTableTableManager
                 Value<String?> horario = const Value.absent(),
                 Value<int?> alvo = const Value.absent(),
                 Value<String?> unidade = const Value.absent(),
-                Value<String?> metaId = const Value.absent(),
+                Value<String?> objetivoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => HabitosCompanion.insert(
                 id: id,
@@ -18747,7 +17658,7 @@ class $$HabitosTableTableManager
                 horario: horario,
                 alvo: alvo,
                 unidade: unidade,
-                metaId: metaId,
+                objetivoId: objetivoId,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -18759,7 +17670,7 @@ class $$HabitosTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({metaId = false, registrosHabitoRefs = false}) {
+              ({objetivoId = false, registrosHabitoRefs = false}) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
@@ -18781,14 +17692,14 @@ class $$HabitosTableTableManager
                           dynamic
                         >
                       >(state) {
-                        if (metaId) {
+                        if (objetivoId) {
                           state = state.withJoin(
                             currentTable: table,
-                            currentColumn: table.metaId,
+                            currentColumn: table.objetivoId,
                             referencedTable: $$HabitosTableReferences
-                                ._metaIdTable(db),
+                                ._objetivoIdTable(db),
                             referencedColumn: $$HabitosTableReferences
-                                ._metaIdTable(db)
+                                ._objetivoIdTable(db)
                                 .id,
                           ) as T;
                         }
@@ -18838,7 +17749,7 @@ typedef $$HabitosTableProcessedTableManager =
       $$HabitosTableUpdateCompanionBuilder,
       (Habito, $$HabitosTableReferences),
       Habito,
-      PrefetchHooks Function({bool metaId, bool registrosHabitoRefs})
+      PrefetchHooks Function({bool objetivoId, bool registrosHabitoRefs})
     >;
 typedef $$RegistrosHabitoTableCreateCompanionBuilder =
     RegistrosHabitoCompanion Function({
@@ -27757,10 +26668,8 @@ typedef $$PreferenciasTableProcessedTableManager =
 class $BancoAuroraManager {
   final _$BancoAurora _db;
   $BancoAuroraManager(this._db);
-  $$MetasTableTableManager get metas =>
-      $$MetasTableTableManager(_db, _db.metas);
-  $$ProjetosTableTableManager get projetos =>
-      $$ProjetosTableTableManager(_db, _db.projetos);
+  $$ObjetivosTableTableManager get objetivos =>
+      $$ObjetivosTableTableManager(_db, _db.objetivos);
   $$TarefasTableTableManager get tarefas =>
       $$TarefasTableTableManager(_db, _db.tarefas);
   $$ConclusoesTarefaTableTableManager get conclusoesTarefa =>

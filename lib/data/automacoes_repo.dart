@@ -13,8 +13,8 @@ enum ModeloAutomacao {
       'Lista o que está atrasado para você decidir: fazer, reagendar ou largar.'),
   dinheiroSemana('Revisão do dinheiro', 16, '18:00',
       'Quanto entrou e saiu na semana, para onde foi e as contas dos próximos dias.'),
-  metasDomingo('Metas e dinheiro no domingo', 64, '10:00',
-      'Como estão as metas (ritmo, em risco, paradas) e o mês até agora.'),
+  metasDomingo('Objetivos e dinheiro no domingo', 64, '10:00',
+      'Como estão os objetivos (ritmo, em risco, parados) e o mês até agora.'),
   habitosSemana('Hábitos da semana', 64, '20:00',
       'Quanto de cada hábito foi feito na semana, o melhor e o que ficou para trás.'),
   personalizada('Personalizada', todosOsDias, '09:00', 'Um pedido seu para a IA no horário.');

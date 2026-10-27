@@ -7,7 +7,7 @@ import '../../core/formato.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/banco.dart';
-import '../../data/metas_repo.dart';
+import '../../data/objetivos_repo.dart';
 import '../../data/visao_repo.dart';
 import '../componentes.dart';
 import '../shell.dart';
@@ -388,7 +388,7 @@ class _Panorama extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final meta = resumo.meta;
+    final objetivo = resumo.objetivo;
     final agora = agoraLocal();
 
     final cartoes = <Widget>[
@@ -414,13 +414,13 @@ class _Panorama extends StatelessWidget {
         detalhe: 'a pagar · ${resumo.contasAPagar} ${resumo.contasAPagar == 1 ? 'conta' : 'contas'}',
         aoTocar: () => ir(Secao.financas),
       ),
-      if (meta != null)
+      if (objetivo != null)
         _CartaoNumero(
           icone: Icons.flag_outlined,
-          rotulo: meta.nome,
-          valor: valorMeta(meta.valorAtual, meta.unidade),
-          detalhe: _detalheMeta(meta),
-          aoTocar: () => ir(Secao.metas),
+          rotulo: objetivo.nome,
+          valor: valorMeta(objetivo.valorAtual, objetivo.unidade),
+          detalhe: _detalheObjetivo(objetivo),
+          aoTocar: () => ir(Secao.objetivos),
         ),
     ];
 
@@ -436,11 +436,11 @@ class _Panorama extends StatelessWidget {
     });
   }
 
-  String _detalheMeta(Meta m) {
-    final falta = (m.valorAlvo - m.valorAtual).abs();
+  String _detalheObjetivo(Objetivo o) {
+    final falta = (o.valorAlvo - o.valorAtual).abs();
     final partes = [
-      falta == 0 ? 'meta alcançada' : 'faltam ${valorMeta(falta, m.unidade)}',
-      if (m.dataAlvo != null) diaMesCurto(emLocal(m.dataAlvo!)),
+      falta == 0 ? 'objetivo alcançado' : 'faltam ${valorMeta(falta, o.unidade)}',
+      if (o.dataAlvo != null) diaMesCurto(emLocal(o.dataAlvo!)),
     ];
     return partes.join(' · ');
   }

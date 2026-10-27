@@ -10,16 +10,16 @@ import '../rotina/contexto_form.dart';
 import '../rotina/form_rotina.dart';
 
 /// Abre o formulário de nova tarefa ou de edição de [tarefa] (a folha única da
-/// Rotina, já no tipo tarefa). Etapa de projeto não troca de tipo.
+/// Rotina, já no tipo tarefa). Etapa de objetivo não troca de tipo.
 Future<void> abrirFormTarefa(BuildContext context,
-        {Tarefa? tarefa, DateTime? dataInicial, String? projetoInicial}) =>
+        {Tarefa? tarefa, DateTime? dataInicial, String? objetivoInicial}) =>
     abrirFormRotina(
       context,
       tipo: TipoRotina.tarefa,
       item: tarefa,
       dia: dataInicial,
-      projetoInicial: projetoInicial,
-      trocarTipo: projetoInicial == null,
+      objetivoInicial: objetivoInicial,
+      trocarTipo: objetivoInicial == null,
     );
 
 class FormTarefa extends StatefulWidget {
@@ -27,18 +27,16 @@ class FormTarefa extends StatefulWidget {
     super.key,
     required this.repo,
     required this.tarefa,
-    required this.metas,
-    required this.projetos,
-    this.projetoInicial,
+    required this.objetivos,
+    this.objetivoInicial,
     required this.avisarInicial,
     this.contexto = const ContextoForm(),
   });
 
   final TarefasRepo repo;
   final Tarefa? tarefa;
-  final List<Meta> metas;
-  final List<Projeto> projetos;
-  final String? projetoInicial;
+  final List<Objetivo> objetivos;
+  final String? objetivoInicial;
   final bool avisarInicial;
   final ContextoForm contexto;
 
@@ -50,8 +48,7 @@ class _FormTarefaState extends State<FormTarefa> {
   late final TextEditingController _titulo;
   late DateTime? _data;
   TimeOfDay? _hora;
-  String? _metaId;
-  String? _projetoId;
+  String? _objetivoId;
   late bool _avisar;
   String? _erro;
   final _hoje = hojeLocal();
@@ -71,8 +68,7 @@ class _FormTarefaState extends State<FormTarefa> {
       _data = t == null ? (_ctx.data ?? _hoje) : null;
       if (t == null) _hora = _ctx.hora;
     }
-    _metaId = t?.metaId;
-    _projetoId = t?.projetoId ?? widget.projetoInicial;
+    _objetivoId = t?.objetivoId ?? widget.objetivoInicial;
     _avisar = widget.avisarInicial;
   }
 
@@ -95,8 +91,7 @@ class _FormTarefaState extends State<FormTarefa> {
       titulo: Value(titulo),
       prazo: Value(data == null ? null : instanteLocal(data, _hora?.hour ?? 0, _hora?.minute ?? 0)),
       prazoTemHora: Value(data != null && _hora != null),
-      metaId: Value(_metaId),
-      projetoId: Value(_projetoId),
+      objetivoId: Value(_objetivoId),
     );
     final id = await widget.repo.salvar(dados, id: widget.tarefa?.id, avisar: _avisar && data != null);
     await _ctx.aoSalvo?.call(id);
@@ -166,28 +161,16 @@ class _FormTarefaState extends State<FormTarefa> {
             ],
           ),
         ),
-        if (widget.metas.isNotEmpty)
+        if (widget.objetivos.isNotEmpty)
           Campo(
-            rotulo: 'Ligar a uma meta',
+            rotulo: 'Etapa de um objetivo',
             child: GrupoChips<String?>(
-              opcoes: [null, ...widget.metas.map((m) => m.id)],
-              selecionado: _metaId,
-              rotulo: (id) => id == null
-                  ? 'Nenhuma'
-                  : widget.metas.firstWhere((m) => m.id == id).nome,
-              aoEscolher: (id) => setState(() => _metaId = id),
-            ),
-          ),
-        if (widget.projetos.isNotEmpty)
-          Campo(
-            rotulo: 'Etapa de um projeto',
-            child: GrupoChips<String?>(
-              opcoes: [null, ...widget.projetos.map((p) => p.id)],
-              selecionado: _projetoId,
+              opcoes: [null, ...widget.objetivos.map((o) => o.id)],
+              selecionado: _objetivoId,
               rotulo: (id) => id == null
                   ? 'Nenhum'
-                  : widget.projetos.firstWhere((p) => p.id == id).nome,
-              aoEscolher: (id) => setState(() => _projetoId = id),
+                  : widget.objetivos.firstWhere((o) => o.id == id).nome,
+              aoEscolher: (id) => setState(() => _objetivoId = id),
             ),
           ),
         LinhaInterruptor(

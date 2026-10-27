@@ -18,7 +18,7 @@ import 'habitos_repo.dart';
 import 'ia/ferramentas_ia.dart';
 import 'ia/protocolo.dart';
 import 'lembretes_repo.dart';
-import 'metas_repo.dart';
+import 'objetivos_repo.dart';
 import 'observar.dart';
 import 'saude_repo.dart';
 import 'tarefas_repo.dart';
@@ -670,14 +670,14 @@ class AssistenteRepo {
           }
         }
       case 'meta':
-        final [metaId, atual, alvo, data] = id.split('|');
-        await MetasRepo(db).salvar(
-          MetasCompanion(
+        final [objetivoId, atual, alvo, data] = id.split('|');
+        await ObjetivosRepo(db).salvar(
+          ObjetivosCompanion(
             valorAtual: Value(double.parse(atual)),
             valorAlvo: Value(double.parse(alvo)),
             dataAlvo: Value(data.isEmpty ? null : DateTime.parse(data)),
           ),
-          id: metaId,
+          id: objetivoId,
         );
       case 'alimentacao':
         await AlimentacaoRepo(db).excluirRegistro(id);

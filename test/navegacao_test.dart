@@ -1,4 +1,4 @@
-﻿import 'package:aurora/app.dart';
+import 'package:aurora/app.dart';
 import 'package:aurora/core/relogio.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
@@ -37,7 +37,7 @@ void main() {
 
   testWidgets('computador: todas as áreas no menu lateral', (tester) async {
     await abrirApp(tester, const Size(1280, 860));
-    for (final area in ['Rotina', 'Metas', 'Projetos', 'Anotações', 'Finanças', 'Assistente', 'Visão']) {
+    for (final area in ['Rotina', 'Objetivos', 'Anotações', 'Finanças', 'Assistente', 'Visão']) {
       await tocar(tester, find.bySemanticsLabel(area));
     }
     // Rotina: as abas, o calendário em mês e semana e a análise dos dois tipos.
@@ -123,12 +123,12 @@ void main() {
 
   testWidgets('celular: a barra rolável leva a todas as áreas e a orbe ao assistente', (tester) async {
     await abrirApp(tester, const Size(390, 844));
-    for (final area in ['Visão', 'Rotina', 'Finanças', 'Saúde', 'Metas']) {
+    for (final area in ['Visão', 'Rotina', 'Finanças', 'Saúde', 'Objetivos']) {
       await tocar(tester, find.bySemanticsLabel(area));
     }
     // A 2ª página da barra (pelos pontinhos): o resto das áreas.
     await tocar(tester, find.bySemanticsLabel('Página 2 do menu'));
-    for (final area in ['Projetos', 'Anotações', 'Conta']) {
+    for (final area in ['Anotações', 'Conta']) {
       await tocar(tester, find.bySemanticsLabel(area));
     }
     expect(find.text('Conta e sincronização'), findsWidgets);

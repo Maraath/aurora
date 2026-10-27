@@ -92,6 +92,6 @@ String detalheTarefa(OcorrenciaTarefa o, DateTime hoje) {
   if (h != null && !o.feita) partes.add(horaDe(h.hora, h.minuto));
   final regra = o.regra;
   if (regra != null) partes.add(regra.descricao.toLowerCase());
-  if (o.meta != null) partes.add(o.meta!.nome);
+  if (o.objetivo != null) partes.add(o.objetivo!.nome);
   return partes.join(' · ');
 }

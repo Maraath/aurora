@@ -5,7 +5,7 @@ import 'banco.dart';
 import 'compromissos_repo.dart';
 import 'financas_repo.dart';
 import 'habitos_repo.dart';
-import 'metas_repo.dart';
+import 'objetivos_repo.dart';
 import 'saude_repo.dart';
 import 'tarefas_repo.dart';
 
@@ -31,7 +31,7 @@ Future<String> montarContexto(BancoAurora db) async {
     final quando = o.dia == null
         ? 'sem data'
         : '${diaRelativo(o.dia!, hoje)}${h == null ? '' : ' ${horaDe(h.hora, h.minuto)}'}';
-    return '${o.tarefa.titulo} ($quando${o.atrasada ? ', atrasada' : ''}${o.meta == null ? '' : ', meta ${o.meta!.nome}'})';
+    return '${o.tarefa.titulo} ($quando${o.atrasada ? ', atrasada' : ''}${o.objetivo == null ? '' : ', objetivo ${o.objetivo!.nome}'})';
   }
 
   final abertas = tarefas.pendentes.take(15).map(tarefa).toList();
@@ -61,12 +61,15 @@ Future<String> montarContexto(BancoAurora db) async {
         '${o.atrasada(hoje) ? 'atrasada desde' : 'vence'} ${diaMesCurto(o.vencimento)}').join('; ')}.');
   }
 
-  final metas = await MetasRepo(db).carregar();
-  if (metas.isNotEmpty) {
-    l.add('Metas: ${metas.map((p) {
-      final m = p.meta;
-      return '${m.nome}: ${valorMeta(m.valorAtual, m.unidade)} de ${valorMeta(m.valorAlvo, m.unidade)}'
-          '${m.dataAlvo == null ? '' : ' até ${diaMesCurto(dataLocal(m.dataAlvo!))}'}, ${p.estado.rotulo.toLowerCase()}';
+  final objetivos = await ObjetivosRepo(db).carregar();
+  if (objetivos.isNotEmpty) {
+    l.add('Objetivos: ${objetivos.map((p) {
+      final o = p.objetivo;
+      final medida = p.temNumero
+          ? '${valorMeta(o.valorAtual, o.unidade)} de ${valorMeta(o.valorAlvo, o.unidade)}'
+          : '${p.feitas} de ${p.total} etapas';
+      return '${o.nome}: $medida'
+          '${o.dataAlvo == null ? '' : ' até ${diaMesCurto(dataLocal(o.dataAlvo!))}'}, ${p.estado.rotulo.toLowerCase()}';
     }).join('; ')}.');
   }
 

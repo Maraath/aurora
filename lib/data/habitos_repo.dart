@@ -9,7 +9,7 @@ class QuadroHabitos {
   const QuadroHabitos({
     required this.habitos,
     required this.feitos,
-    required this.metas,
+    required this.objetivos,
     required this.comAviso,
   });
 
@@ -17,7 +17,7 @@ class QuadroHabitos {
 
   /// "aaaa-mm-dd" → ids dos hábitos feitos naquele dia.
   final Map<String, Set<String>> feitos;
-  final List<Meta> metas;
+  final List<Objetivo> objetivos;
 
   /// Ids dos hábitos com lembrete ligado.
   final Set<String> comAviso;
@@ -58,7 +58,7 @@ class HabitosRepo {
   final BancoAurora db;
 
   Stream<QuadroHabitos> observarQuadro() =>
-      observar(db, [db.habitos, db.registrosHabito, db.metas, db.lembretes], carregar);
+      observar(db, [db.habitos, db.registrosHabito, db.objetivos, db.lembretes], carregar);
 
   Future<QuadroHabitos> carregar() async {
     final habitos = await (db.select(db.habitos)
@@ -75,14 +75,14 @@ class HabitosRepo {
     for (final r in registros) {
       feitos.putIfAbsent(r.dia, () => {}).add(r.habitoId);
     }
-    final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
+    final objetivos = await (db.select(db.objetivos)..where((o) => o.apagadoEm.isNull())).get();
     final avisos = await (db.select(db.lembretes)
           ..where((l) => l.itemTipo.equals('habito') & l.apagadoEm.isNull()))
         .get();
     return QuadroHabitos(
       habitos: habitos,
       feitos: feitos,
-      metas: metas,
+      objetivos: objetivos,
       comAviso: {for (final l in avisos) l.itemId!},
     );
   }

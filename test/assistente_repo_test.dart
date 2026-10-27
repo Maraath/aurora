@@ -6,7 +6,7 @@ import 'package:aurora/data/financas_repo.dart';
 import 'package:aurora/data/alimentacao_repo.dart';
 import 'package:aurora/data/habitos_repo.dart';
 import 'package:aurora/data/ia/ferramentas_ia.dart' show consultar, telaPedidaPelaIa;
-import 'package:aurora/data/metas_repo.dart';
+import 'package:aurora/data/objetivos_repo.dart';
 import 'package:aurora/data/saude_repo.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
@@ -383,20 +383,20 @@ void main() {
     });
 
     test('meta do app pelo nome, com desfazer', () async {
-      final metas = MetasRepo(db);
-      final shape = (await metas.carregar()).firstWhere((p) => p.meta.nome.contains('Shape')).meta;
+      final objetivos = ObjetivosRepo(db);
+      final shape = (await objetivos.carregar()).firstWhere((p) => p.objetivo.nome.contains('Shape')).objetivo;
       final (repo, _) = agente('atualizar_metas', {'alvo': 'meta', 'nome_meta': 'shape 80', 'valor_atual': 77});
       await repo.enviar('atualiza minha meta de shape para 77');
-      expect((await metas.carregar()).firstWhere((p) => p.meta.id == shape.id).meta.valorAtual, 77);
+      expect((await objetivos.carregar()).firstWhere((p) => p.objetivo.id == shape.id).objetivo.valorAtual, 77);
       final aviso = (await repo.carregarConversa()).firstWhere((m) => m.itemTipo == 'meta');
       await repo.desfazer(aviso);
-      expect((await metas.carregar()).firstWhere((p) => p.meta.id == shape.id).meta.valorAtual, shape.valorAtual);
+      expect((await objetivos.carregar()).firstWhere((p) => p.objetivo.id == shape.id).objetivo.valorAtual, shape.valorAtual);
     });
 
     test('meta que não existe volta como erro com a lista', () async {
       final (repo, _) = agente('atualizar_metas', {'alvo': 'meta', 'nome_meta': 'viagem ao japão', 'valor_atual': 1});
       await repo.enviar('atualiza a meta da viagem');
-      expect((await repo.carregarConversa()).last.texto, allOf(startsWith('error-text|'), contains('As metas são')));
+      expect((await repo.carregarConversa()).last.texto, allOf(startsWith('error-text|'), contains('Os objetivos são')));
     });
 
     test('consultar medidas traz os ids para excluir', () async {

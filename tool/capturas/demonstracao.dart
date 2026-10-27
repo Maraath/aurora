@@ -18,35 +18,35 @@ Future<void> semearDemonstracao(BancoAurora db) async {
   DateTime as(int deslocamento, int hora, [int minuto = 0]) => instanteLocal(dia(deslocamento), hora, minuto);
 
   await db.transaction(() async {
-    // Metas
-    final reserva = await db.into(db.metas).insertReturning(MetasCompanion.insert(
+    // Objetivos
+    final reserva = await db.into(db.objetivos).insertReturning(ObjetivosCompanion.insert(
         nome: 'Reserva de emergência',
         criadoEm: Value(as(-150, 9)),
-        valorInicial: 0,
-        valorAtual: 620000,
-        valorAlvo: 1000000,
+        valorInicial: const Value(0),
+        valorAtual: const Value(620000),
+        valorAlvo: const Value(1000000),
         unidade: const Value('R\$'),
         dataAlvo: Value(instanteLocal(DateTime(hoje.year, 12, 31)))));
-    final corrida = await db.into(db.metas).insertReturning(MetasCompanion.insert(
+    final corrida = await db.into(db.objetivos).insertReturning(ObjetivosCompanion.insert(
         nome: 'Correr 10 km',
         criadoEm: Value(as(-75, 9)),
-        valorInicial: 3,
-        valorAtual: 7,
-        valorAlvo: 10,
+        valorInicial: const Value(3),
+        valorAtual: const Value(7),
+        valorAlvo: const Value(10),
         unidade: const Value('km'),
         dataAlvo: Value(instanteLocal(DateTime(hoje.year, 12, 15)))));
-    await db.into(db.metas).insert(MetasCompanion.insert(
+    await db.into(db.objetivos).insert(ObjetivosCompanion.insert(
         nome: 'Ler 12 livros no ano',
         criadoEm: Value(as(-290, 9)),
-        valorInicial: 0,
-        valorAtual: 9,
-        valorAlvo: 12,
+        valorInicial: const Value(0),
+        valorAtual: const Value(9),
+        valorAlvo: const Value(12),
         unidade: const Value('livros'),
         dataAlvo: Value(instanteLocal(DateTime(hoje.year, 12, 31)))));
 
-    // Projeto com etapas (etapas são tarefas)
-    final projeto = await db.into(db.projetos).insertReturning(ProjetosCompanion.insert(
-        nome: 'Lançar o portfólio', inicio: as(-21, 9), fim: as(18, 18)));
+    // Objetivo com etapas (etapas são tarefas)
+    final portfolio = await db.into(db.objetivos).insertReturning(ObjetivosCompanion.insert(
+        nome: 'Lançar o portfólio', inicio: Value(as(-21, 9)), dataAlvo: Value(as(18, 18))));
     final etapas = [
       ('Escolher os projetos em destaque', -18, true),
       ('Escrever os textos de cada projeto', -10, true),
@@ -58,12 +58,12 @@ Future<void> semearDemonstracao(BancoAurora db) async {
       await db.into(db.tarefas).insert(TarefasCompanion.insert(
           titulo: titulo,
           prazo: Value(as(d, 18)),
-          projetoId: Value(projeto.id),
+          objetivoId: Value(portfolio.id),
           feitaEm: Value(feita ? as(d, 17) : null)));
     }
 
-    final mudanca = await db.into(db.projetos).insertReturning(ProjetosCompanion.insert(
-        nome: 'Mudança de apartamento', inicio: as(-8, 9), fim: as(52, 18)));
+    final mudanca = await db.into(db.objetivos).insertReturning(ObjetivosCompanion.insert(
+        nome: 'Mudança de apartamento', inicio: Value(as(-8, 9)), dataAlvo: Value(as(52, 18))));
     for (final (titulo, d, feita) in [
       ('Pesquisar transportadoras', -5, true),
       ('Separar o que doar', 9, false),
@@ -73,7 +73,7 @@ Future<void> semearDemonstracao(BancoAurora db) async {
       await db.into(db.tarefas).insert(TarefasCompanion.insert(
           titulo: titulo,
           prazo: Value(as(d, 18)),
-          projetoId: Value(mudanca.id),
+          objetivoId: Value(mudanca.id),
           feitaEm: Value(feita ? as(d, 17) : null)));
     }
 
@@ -89,7 +89,7 @@ Future<void> semearDemonstracao(BancoAurora db) async {
           TarefasCompanion.insert(
               titulo: 'Estudar Flutter: animações', prazo: Value(as(0, 20)), prazoTemHora: const Value(true)),
           TarefasCompanion.insert(
-              titulo: 'Corrida de 7 km no parque', prazo: Value(as(1, 7)), metaId: Value(corrida.id)),
+              titulo: 'Corrida de 7 km no parque', prazo: Value(as(1, 7)), objetivoId: Value(corrida.id)),
           TarefasCompanion.insert(
               titulo: 'Comprar presente de aniversário',
               prazo: Value(as(3, 0)),
@@ -130,7 +130,7 @@ Future<void> semearDemonstracao(BancoAurora db) async {
             tipo: const Value(TipoHabito.duracao),
             alvo: const Value(30),
             diasSemana: const Value(1 | 4 | 16),
-            metaId: Value(corrida.id)),
+            objetivoId: Value(corrida.id)),
         0.88,
         35
       ),

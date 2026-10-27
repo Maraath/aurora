@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Objetivos — protótipo unificado (Aurora)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root, [data-theme="dark"] {
+    --bg: #080716; --surf: #0F0E26; --surf2: #18173A; --line: #232250;
+    --text: #EEF0FB; --muted: #A3A6C8;
+    --accent: #5CF0B0; --accentFill: #3EDB9A; --accentSoft: rgba(92,240,176,.14);
+    --teal: #42E3C8; --tealSoft: rgba(66,227,200,.14);
+    --violet: #9D8CFF; --warn: #F5C35B; --warnSoft: rgba(245,195,91,.14);
+    --bad: #E77BFF; --badSoft: rgba(231,123,255,.14);
+    --gradA: #3EDB9A; --gradB: #7E7BFF; --onGrad: #06061A;
+  }
+  [data-theme="light"] {
+    --bg: #F4F3FB; --surf: #FFFFFF; --surf2: #E9E8F6; --line: #D6D4EA;
+    --text: #0D0B26; --muted: #55557A;
+    --accent: #0B8A5C; --accentFill: #0B8A5C; --accentSoft: rgba(11,138,92,.10);
+    --teal: #0A7C70; --tealSoft: rgba(10,124,112,.10);
+    --violet: #5B45D6; --warn: #9A5B06; --warnSoft: rgba(154,91,6,.10);
+    --bad: #A8259A; --badSoft: rgba(168,37,154,.10);
+    --gradA: #0B8A5C; --gradB: #5B45D6; --onGrad: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Manrope', sans-serif; color: var(--text);
+    background: radial-gradient(1200px 600px at 50% -10%, rgba(125,90,255,.18), transparent 60%),
+                radial-gradient(900px 500px at 85% 110%, rgba(62,219,154,.14), transparent 55%), var(--bg);
+    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; gap: 32px;
+    padding: 40px 20px; flex-wrap: wrap;
+  }
+  .legenda { width: 360px; max-width: 100%; align-self: flex-start; position: sticky; top: 24px;
+    background: var(--surf); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; }
+  .legenda h1 { margin: 0 0 4px; font-family: 'Sora'; font-size: 19px; font-weight: 600; }
+  .legenda p { margin: 0 0 12px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .legenda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .legenda li { font-size: 13px; line-height: 1.45; display: flex; gap: 9px; }
+  .legenda li b { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+
+  .phone { width: 390px; max-width: 100%; height: 820px; display: flex; flex-direction: column;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 28px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45); position: relative; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 18px 10px; }
+  .brand { display: flex; align-items: center; gap: 9px; }
+  .brand span { font-family: 'Sora'; font-weight: 600; font-size: 17px; letter-spacing: .04em; }
+  .topbtns { display: flex; gap: 8px; }
+  .iconbtn { width: 40px; height: 40px; border-radius: 20px; border: 1px solid var(--line); background: var(--surf);
+    color: var(--text); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
+  .screen { flex: 1; overflow-y: auto; padding: 6px 18px 26px; display: flex; flex-direction: column; gap: 12px; }
+  .screen::-webkit-scrollbar { width: 0; }
+  .page-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .page-title h1 { margin: 0; font-family: 'Sora'; font-weight: 600; font-size: 25px; }
+
+  .seg { display: flex; gap: 6px; padding: 4px; border-radius: 14px; background: var(--surf2); overflow-x: auto; scrollbar-width: none; }
+  .seg::-webkit-scrollbar { display: none; }
+  .seg button { flex: 1; min-height: 36px; border: none; border-radius: 10px; padding: 0 10px; background: transparent;
+    color: var(--muted); font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .seg button.on { background: var(--accentSoft); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .seg.modo { align-self: flex-start; }
+  .seg.modo button { padding: 0 14px; }
+
+  .group-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--muted); margin: 6px 0 -6px; }
+  .card { background: var(--surf); border: 1px solid var(--line); border-radius: 18px; padding: 15px; display: flex; flex-direction: column; gap: 11px; }
+  .card.concluida { border: 1px solid transparent; background: linear-gradient(var(--surf), var(--surf)) padding-box, linear-gradient(120deg, var(--teal), var(--accent)) border-box; }
+  .card.arquivada { opacity: .6; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .head { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .dot { width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; }
+  .name { font-family: 'Sora'; font-size: 17px; font-weight: 600; line-height: 1.25; }
+  .desc { font-size: 12px; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+  .etq { font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 8px; border: 1px solid; white-space: nowrap; }
+  .etq.teal { color: var(--teal); border-color: var(--teal); }
+  .etq.bad { color: var(--bad); border-color: var(--bad); }
+  .etq.warn { color: var(--warn); border-color: var(--warn); }
+  .etq.muted { color: var(--muted); border-color: var(--line); }
+  .hero { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .big { font-family: 'Sora'; font-size: 24px; font-weight: 600; line-height: 1.1; }
+  .sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .spark { flex-shrink: 0; }
+  .track { position: relative; height: 10px; border-radius: 5px; background: var(--surf2); }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--teal); }
+  .marker { position: absolute; top: -4px; bottom: -4px; width: 3px; border-radius: 2px; background: var(--violet); }
+  .legend { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); }
+  .legend b { font-weight: 700; }
+  .legend .a { color: var(--teal); } .legend .b { color: var(--violet); }
+  .nota { font-size: 12.5px; line-height: 1.5; font-weight: 600; }
+  .nota.teal { color: var(--teal); } .nota.warn { color: var(--warn); }
+  .nota.bad { color: var(--bad); } .nota.muted { color: var(--muted); }
+
+  .etapas-head { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .etapa { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .etapa .check { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--muted); background: transparent;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+  .etapa .check.on { background: var(--teal); border-color: var(--teal); }
+  .etapa .check svg { display: none; } .etapa .check.on svg { display: block; }
+  .etapa .tx { flex: 1; min-width: 0; }
+  .etapa .tx .t { font-size: 13.5px; font-weight: 600; }
+  .etapa .tx .t.feita { text-decoration: line-through; color: var(--muted); }
+  .etapa .tx .d { font-size: 11.5px; color: var(--muted); }
+  .etapa .tx .d.atrasada { color: var(--bad); font-weight: 600; }
+  .etapa-input-row { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
+  .etapa-input { flex: 1; min-width: 0; height: 38px; background: transparent; border: none; outline: none; color: var(--text); font-family: inherit; font-size: 13.5px; }
+  .etapa-input::placeholder { color: var(--muted); }
+
+  .vinculos { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip { font-size: 11.5px; font-weight: 600; color: var(--text); background: var(--surf2); border: 1px solid var(--line);
+    border-radius: 999px; padding: 5px 10px; display: flex; align-items: center; gap: 6px; }
+  .actions { display: flex; align-items: center; gap: 8px; }
+  .btn-primary { min-height: 40px; padding: 0 15px; border-radius: 20px; border: none; cursor: pointer;
+    background: linear-gradient(90deg, var(--gradA), var(--gradB)); color: var(--onGrad); font-family: inherit; font-size: 13px; font-weight: 700; }
+  .btn-ghost { min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid var(--line); background: transparent;
+    color: var(--text); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .menu-wrap { position: relative; margin-left: auto; }
+  .menu { position: absolute; right: 0; top: calc(100% + 6px); width: 190px; background: var(--surf); border: 1px solid var(--line);
+    border-radius: 14px; padding: 6px; z-index: 30; display: none; flex-direction: column; box-shadow: 0 12px 30px rgba(0,0,0,.4); }
+  .menu.open { display: flex; }
+  .menu button { text-align: left; padding: 10px 12px; border: none; border-radius: 9px; background: transparent; color: var(--text);
+    font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; display: flex; gap: 9px; align-items: center; }
+  .menu button:hover { background: var(--surf2); }
+  .menu button.perigo { color: var(--bad); }
+
+  .tl-card { background: var(--surf); border: 1px solid var(--line); border-radius: 18px; padding: 15px; }
+  .tl-meses { display: grid; grid-template-columns: repeat(5, 1fr); font-size: 10.5px; font-weight: 700; color: var(--muted); text-align: left; }
+  .tl-body { position: relative; margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .tl-row { position: relative; height: 26px; }
+  .tl-track { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
+  .tl-bar { position: absolute; top: 0; bottom: 0; border-radius: 13px; background: var(--surf2); border: 1px solid var(--line);
+    display: flex; align-items: center; overflow: hidden; cursor: pointer; }
+  .tl-bar .tl-fill { position: absolute; left: 0; top: 0; bottom: 0; opacity: .35; }
+  .tl-bar .tl-name { position: relative; font-size: 11.5px; font-weight: 700; padding: 0 9px; white-space: nowrap; }
+  .tl-hoje { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--accent); border-radius: 1px; }
+  .tl-legenda { font-size: 11.5px; color: var(--muted); line-height: 1.4; margin-top: 8px; }
+
+  .empty-card { border: 1px dashed var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .empty-card .tit { font-size: 15px; font-weight: 700; color: var(--accent); }
+  .empty-card .dica { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(2,6,16,.62); display: flex; align-items: center; justify-content: center;
+    z-index: 50; visibility: hidden; opacity: 0; transition: .18s; }
+  .overlay.on { visibility: visible; opacity: 1; }
+  .sheet { width: 390px; max-width: calc(100vw - 24px); max-height: 90vh; overflow-y: auto; background: var(--surf);
+    border: 1px solid var(--line); border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+  .sheet h2 { margin: 0; font-family: 'Sora'; font-size: 20px; font-weight: 600; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .field input, .field textarea { padding: 0 13px; border-radius: 13px; border: 1px solid var(--line); background: var(--bg);
+    color: var(--text); font-family: inherit; font-size: 15px; outline: none; }
+  .field input { height: 46px; }
+  .field textarea { height: 64px; padding-top: 11px; resize: none; }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { min-height: 38px; padding: 0 14px; border-radius: 19px; border: 1.5px solid var(--line); background: transparent;
+    color: var(--text); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .chips button.on { border-color: var(--accent); background: var(--accentSoft); color: var(--accent); }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .etapa-campo { display: flex; gap: 8px; align-items: center; }
+  .etapa-campo input { flex: 1; }
+  .cor-dots { display: flex; gap: 10px; align-items: center; }
+  .cor-dots button { width: 28px; height: 28px; border-radius: 14px; border: 2px solid transparent; cursor: pointer; padding: 0; }
+  .cor-dots button.on { border-color: var(--text); }
+  .preview { padding: 13px 14px; border-radius: 13px; background: var(--accentSoft); font-size: 13.5px; line-height: 1.5; }
+  .preview .k { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; color: var(--accent); display: block; margin-bottom: 3px; }
+  .sheet-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .sheet-actions button { min-height: 44px; padding: 0 18px; border-radius: 22px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .b-cancel { background: transparent; color: var(--muted); border: none; }
+  .b-save { background: linear-gradient(90deg, var(--gradA), var(--gradB)); color: var(--onGrad); border: none; }
+
+  .toast { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(20px); background: var(--surf);
+    border: 1px solid var(--line); color: var(--text); border-radius: 999px; padding: 10px 16px; font-size: 13px; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0,0,0,.4); opacity: 0; transition: .22s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (max-width: 840px) { .legenda { position: static; width: 100%; } body { gap: 16px; } }
+</style>
+</head>
+<body>
+
+<div class="legenda">
+  <h1>Objetivos (Metas + Projetos)</h1>
+  <p>Proposta de tela unificada. Experimente o seletor <b>Lista / Linha do tempo</b>, os filtros, expandir um cartão para marcar etapas, o menu ⋯ e o <b>Novo objetivo</b> com "Como medir?".</p>
+  <ul>
+    <li><b>1</b><span>Um cartão só: mostra número (com ritmo e histórico) e/ou etapas, conforme o objetivo.</span></li>
+    <li><b>2</b><span>Linha do tempo virou um modo de visão (barra = projeto/objetivo no tempo).</span></li>
+    <li><b>3</b><span>Etapas são tarefas de verdade, com check rápido e "Nova etapa…" inline.</span></li>
+    <li><b>4</b><span>Formulário único: Número, Etapas ou Ambos + prazo + cor.</span></li>
+    <li><b>5</b><span>Estados unificados: em risco, em andamento, paradas, concluídas, arquivadas.</span></li>
+  </ul>
+</div>
+
+<div class="phone">
+  <div class="topbar">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="none" stroke="var(--accent)" stroke-width="1.5"/><path d="M5 17c3-5 6-7 9-7s6 2 9 7" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"/><path d="M8 20c2-3 4-4 6-4s4 1 6 4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>Aurora</span>
+    </div>
+    <div class="topbtns">
+      <button class="iconbtn" id="tema" title="Alternar tema">
+        <svg id="iconeTema" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="page-title">
+      <h1>Objetivos</h1>
+      <button class="iconbtn" id="nova" title="Novo objetivo" style="background:linear-gradient(90deg,var(--gradA),var(--gradB));color:var(--onGrad);border:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+
+    <div class="seg modo" id="modo">
+      <button data-m="lista" class="on">Lista</button>
+      <button data-m="timeline">Linha do tempo</button>
+    </div>
+
+    <div class="seg" id="seg">
+      <button data-f="todas" class="on">Todas</button>
+      <button data-f="risco">Em risco</button>
+      <button data-f="andamento">Em andamento</button>
+      <button data-f="paradas">Paradas</button>
+      <button data-f="concluidas">Concluídas</button>
+      <button data-f="arquivadas">Arquivadas</button>
+    </div>
+
+    <div id="lista"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<script>
+(function () {
+  "use strict";
+  var HOJE = new Date(2026, 9, 26);
+
+  var ESTADO = {
+    emDia: { rotulo: 'Em dia', cor: 'teal' },
+    emRisco: { rotulo: 'Em risco', cor: 'bad' },
+    parada: { rotulo: 'Parada', cor: 'warn' },
+    pausada: { rotulo: 'Pausada', cor: 'muted' },
+    concluida: { rotulo: 'Concluída', cor: 'teal' },
+    arquivada: { rotulo: 'Arquivada', cor: 'muted' }
+  };
+  function corVar(c) {
+    var m = { accent: 'var(--accent)', teal: 'var(--teal)', violeta: 'var(--violet)', warn: 'var(--warn)', bad: 'var(--bad)', muted: 'var(--muted)' };
+    return m[c] || 'var(--accent)';
+  }
+
+  var OBS = [
+    {
+      id: 'shape', nome: 'Shape 80kg', desc: 'Ganhar massa e voltar ao shape de competição', cor: 'violeta',
+      tipo: 'ambos', unidade: 'kg', inicial: 74, atual: 74.6, alvo: 80, tempo: 0.20,
+      inicio: '2026-10-09', fim: '2026-12-31', estado: 'emRisco', hist: [74, 74.6, 74.6],
+      vinculos: [{ ic: 'habito', texto: '2 hábitos' }],
+      etapas: [
+        { t: 'Treino A · Peito e tríceps', d: 'feita', feita: true },
+        { t: 'Treino B · Costas e bíceps', d: 'feita', feita: true },
+        { t: 'Cardio 30 min', d: 'feita ontem', feita: true },
+        { t: 'Dieta da semana', d: 'atrasada 3 dias', feita: false, atrasada: true },
+        { t: 'Medir no domingo', d: 'domingo', feita: false }
+      ]
+    },
+    {
+      id: 'reserva', nome: 'Reserva de emergência', desc: 'Seis meses de despesas guardados', cor: 'teal',
+      tipo: 'numero', unidade: 'R$', inicial: 0, atual: 2400, alvo: 10000, tempo: 0.20,
+      inicio: '2026-10-02', fim: '2026-12-31', estado: 'emDia', hist: [0, 600, 1200, 1800, 2400],
+      vinculos: [{ ic: 'tarefa', texto: '1 tarefa ligada' }], etapas: []
+    },
+    {
+      id: 'estagio', nome: 'Conseguir a vaga de estágio', desc: 'Processo seletivo de desenvolvimento', cor: 'accent',
+      tipo: 'etapas', unidade: null, inicial: 0, atual: 0, alvo: 0, tempo: null,
+      inicio: '2026-10-05', fim: '2026-11-30', estado: 'emDia', hist: [], vinculos: [],
+      etapas: [
+        { t: 'Atualizar o currículo', d: 'feita', feita: true },
+        { t: 'Enviar para 10 vagas', d: '4 de 10', feita: false },
+        { t: 'Fazer o teste da empresa X', d: 'segunda', feita: false },
+        { t: 'Treinar entrevista', d: 'sem data', feita: false }
+      ]
+    },
+    {
+      id: 'viagem', nome: 'Viagem de fim de ano', desc: 'Guardar para a passagem e hospedagem', cor: 'warn',
+      tipo: 'numero', unidade: 'R$', inicial: 0, atual: 800, alvo: 8000, tempo: 0.30,
+      inicio: '2026-08-15', fim: '2026-12-15', estado: 'parada', hist: [0, 400, 800, 800],
+      vinculos: [], etapas: []
+    },
+    {
+      id: 'correr', nome: 'Correr 5 km', desc: 'Do zero até completar 5 km', cor: 'teal',
+      tipo: 'numero', unidade: 'km', inicial: 0, atual: 5, alvo: 5, tempo: null,
+      inicio: '2026-09-01', fim: '2026-10-14', estado: 'concluida', concluidaEm: '14 de outubro',
+      hist: [0, 1, 2.5, 4, 5], vinculos: [{ ic: 'habito', texto: 'hábito “Cardio”' }], etapas: []
+    },
+    {
+      id: 'mudanca', nome: 'Mudar de apartamento', desc: 'Procurar, negociar e fazer a mudança', cor: 'muted',
+      tipo: 'etapas', unidade: null, inicial: 0, atual: 0, alvo: 0, tempo: null,
+      inicio: '2026-05-01', fim: '2026-08-30', estado: 'arquivada', hist: [], vinculos: [],
+      etapas: [
+        { t: 'Procurar imóveis', d: 'feita', feita: true },
+        { t: 'Visitar 5 opções', d: 'feita', feita: true }
+      ]
+    }
+  ];
+
+  var filtro = 'todas';
+  var modo = 'lista';
+  var arquivadas = [];
+  var abertos = { shape: true };
+
+  function $id(id) { return document.getElementById(id); }
+  function porId(id) { return OBS.filter(function (o) { return o.id === id; })[0]; }
+
+  function fmt(v, u) {
+    if (u === 'R$') return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+    var s = Number.isInteger(v) ? String(v) : v.toFixed(1).replace('.', ',');
+    return s + ' ' + u;
+  }
+  function progNum(o) {
+    var c = o.alvo - o.inicial;
+    return c === 0 ? 1 : Math.max(0, Math.min(1, (o.atual - o.inicial) / c));
+  }
+  function feitasDe(o) { return { feitas: o.etapas.filter(function (e) { return e.feita; }).length, total: o.etapas.length }; }
+  function progEtapas(o) { var f = feitasDe(o); return f.total === 0 ? 0 : f.feitas / f.total; }
+  function progressoGeral(o) { return o.tipo === 'etapas' ? progEtapas(o) : progNum(o); }
+
+  function spark(vals, color) {
+    var w = 92, h = 34, pad = 3;
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals), range = (max - min) || 1;
+    var pts = vals.map(function (v, i) {
+      var x = pad + (vals.length === 1 ? 0 : (i / (vals.length - 1)) * (w - 2 * pad));
+      var y = pad + (1 - (v - min) / range) * (h - 2 * pad);
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    });
+    var last = pts[pts.length - 1].split(',');
+    return '<svg class="spark" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">'
+      + '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+      + '<circle cx="' + last[0] + '" cy="' + last[1] + '" r="3" fill="' + color + '"/></svg>';
+  }
+  function icone(ic) {
+    if (ic === 'habito') return '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l3-7 6 14 3-7h3"/></svg>';
+    return '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>';
+  }
+  function notaDe(o) {
+    switch (o.estado) {
+      case 'parada': return { t: 'Nenhum avanço há 24 dias.', c: 'warn' };
+      case 'emRisco': return { t: 'Atrás do ritmo' + (o.etapas.some(function (e) { return e.atrasada; }) ? ' · 1 etapa atrasada' : '') + '.', c: 'bad' };
+      case 'emDia': return { t: 'No ritmo.', c: 'teal' };
+      case 'pausada': return { t: 'Pausada em 24 de outubro.', c: 'muted' };
+      case 'concluida': return { t: 'Alcançado em ' + (o.concluidaEm || '—') + '.', c: 'teal' };
+      case 'arquivada': return { t: 'Arquivada em 20 de agosto.', c: 'muted' };
+    }
+    return { t: '', c: 'muted' };
+  }
+
+  function barraSimples(pct, cor) { return '<div class="track"><div class="fill" style="width:' + (pct * 100).toFixed(1) + '%;background:' + cor + '"></div></div>'; }
+
+  function secNumero(o) {
+    var cvar = corVar(o.cor);
+    if (o.estado === 'concluida') {
+      return '<div class="hero"><div><div class="big">' + fmt(o.alvo, o.unidade) + '</div><div class="sub">alvo atingido</div></div>' + spark(o.hist, cvar) + '</div>';
+    }
+    var p = progNum(o);
+    var falta = Math.abs(o.alvo - o.atual);
+    var ft = falta === 0 ? '' : 'faltam ' + fmt(falta, o.unidade);
+    return '<div class="hero"><div><div class="big">' + (ft || fmt(o.atual, o.unidade)) + '</div><div class="sub">' + fmt(o.atual, o.unidade) + ' → ' + fmt(o.alvo, o.unidade) + '</div></div>' + spark(o.hist, cvar) + '</div>'
+      + '<div class="track"><div class="fill" style="width:' + (p * 100).toFixed(1) + '%"></div>' + (o.tempo != null ? '<div class="marker" style="left:' + (o.tempo * 100).toFixed(1) + '%"></div>' : '') + '</div>'
+      + '<div class="legend"><span class="a">feito <b>' + Math.round(p * 100) + '%</b></span>' + (o.tempo != null ? '<span class="b">ritmo ideal <b>' + Math.round(o.tempo * 100) + '%</b></span>' : '<span>sem prazo</span>') + '</div>';
+  }
+
+  function secEtapas(o, aberto, ativo) {
+    var f = feitasDe(o);
+    var html = '<div class="etapas-head"><span>Etapas</span><span>' + f.feitas + ' de ' + f.total + '</span></div>'
+      + barraSimples(progEtapas(o), 'var(--teal)');
+    if (aberto) {
+      html += o.etapas.map(function (e) {
+        var cls = e.feita ? 'feita' : '';
+        var dcls = e.atrasada ? 'atrasada' : '';
+        return '<div class="etapa"><div class="check' + (e.feita ? ' on' : '') + '" data-check="' + o.id + ':' + o.etapas.indexOf(e) + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06061A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></div>'
+          + '<div class="tx"><div class="t ' + cls + '">' + e.t + '</div><div class="d ' + dcls + '">' + e.d + '</div></div></div>';
+      }).join('');
+      if (ativo) {
+        html += '<div class="etapa-input-row"><input class="etapa-input" data-nova="' + o.id + '" placeholder="Nova etapa… (tarefa com data e lembrete)"><button class="iconbtn" data-nova-btn="' + o.id + '" style="width:34px;height:34px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>';
+      }
+    }
+    return html;
+  }
+
+  function menuHtml(o) {
+    if (o.estado === 'arquivada') return '<div class="menu" data-menu="' + o.id + '"><button data-act="reabrir" data-id="' + o.id + '">↺ Reabrir</button><button class="perigo" data-act="excluir" data-id="' + o.id + '">Excluir</button></div>';
+    if (o.estado === 'concluida') return '<div class="menu" data-menu="' + o.id + '"><button data-act="reabrir" data-id="' + o.id + '">↺ Reabrir</button><button data-act="arquivar" data-id="' + o.id + '">Arquivar</button><button class="perigo" data-act="excluir" data-id="' + o.id + '">Excluir</button></div>';
+    if (o.estado === 'pausada') return '<div class="menu" data-menu="' + o.id + '"><button data-act="retomar" data-id="' + o.id + '">▶ Retomar</button><button data-act="concluir" data-id="' + o.id + '">Concluir</button><button data-act="arquivar" data-id="' + o.id + '">Arquivar</button></div>';
+    return '<div class="menu" data-menu="' + o.id + '"><button data-act="pausar" data-id="' + o.id + '">⏸ Pausar</button><button data-act="concluir" data-id="' + o.id + '">✓ Concluir</button><button data-act="arquivar" data-id="' + o.id + '">Arquivar</button></div>';
+  }
+
+  function cardHtml(o) {
+    var st = ESTADO[o.estado];
+    var temNum = o.tipo === 'numero' || o.tipo === 'ambos';
+    var temEt = o.tipo === 'etapas' || o.tipo === 'ambos';
+    var concluida = o.estado === 'concluida';
+    var arquivada = o.estado === 'arquivada';
+    var pausada = o.estado === 'pausada';
+    var ativo = !concluida && !arquivada && !pausada;
+    var aberto = abertos[o.id] === true;
+    var nota = notaDe(o);
+
+    var vinculos = o.vinculos.length
+      ? '<div class="vinculos">' + o.vinculos.map(function (v) { return '<span class="chip">' + icone(v.ic) + v.texto + '</span>'; }).join('') + '</div>' : '';
+
+    var corpo = '';
+    if (temNum) corpo += secNumero(o);
+    if (temEt) corpo += secEtapas(o, aberto, ativo);
+    if (!temNum && !temEt) corpo += '<div class="sub">Sem medida definida.</div>';
+
+    var blocoNota = (concluida || arquivada) ? '' : '<div class="nota ' + nota.c + '">' + nota.t + '</div>';
+
+    var acoes;
+    if (concluida || arquivada) {
+      acoes = '<div class="actions"><span class="nota ' + nota.c + '">' + nota.t + '</span><div class="menu-wrap"><button class="iconbtn menu-btn" data-id="' + o.id + '">⋯</button>' + menuHtml(o) + '</div></div>';
+    } else if (pausada) {
+      acoes = '<div class="actions"><button class="btn-ghost" data-act="retomar" data-id="' + o.id + '">▶ Retomar</button><div class="menu-wrap"><button class="iconbtn menu-btn" data-id="' + o.id + '">⋯</button>' + menuHtml(o) + '</div></div>';
+    } else {
+      acoes = '<div class="actions">'
+        + (temNum ? '<button class="btn-primary" data-update="' + o.id + '">Atualizar progresso</button>' : '')
+        + '<div class="menu-wrap"><button class="iconbtn menu-btn" data-id="' + o.id + '">⋯</button>' + menuHtml(o) + '</div></div>';
+    }
+
+    return '<div class="card' + (concluida ? ' concluida' : '') + (arquivada ? ' arquivada' : '') + '" data-id="' + o.id + '" data-estado="' + o.estado + '">'
+      + '<div class="row"><div class="head" data-toggle="' + o.id + '"><span class="dot" style="background:' + corVar(o.cor) + '"></span>'
+      + '<span class="name">' + o.nome + (o.desc ? '<div class="desc">' + o.desc + '</div>' : '') + '</span></div>'
+      + '<span class="etq ' + st.cor + '">' + st.rotulo + '</span></div>'
+      + corpo + blocoNota + vinculos + acoes + '</div>';
+  }
+
+  function timelineHtml() {
+    var janela = new Date(HOJE.getFullYear(), HOJE.getMonth() - 1, 1);
+    var fimJanela = new Date(janela.getFullYear(), janela.getMonth() + 5, 1);
+    var totalDias = Math.round((fimJanela - janela) / 86400000);
+    function pos(d) { return Math.max(0, Math.min(1, Math.round((d - janela) / 86400000) / totalDias)); }
+    var nomes = ['SET', 'OUT', 'NOV', 'DEZ', 'JAN'].map(function (n, i) {
+      var d = new Date(janela.getFullYear(), janela.getMonth() + i, 1);
+      return n + (d.getMonth() === 0 ? ' ' + d.getFullYear() : '');
+    });
+    var ativos = OBS.filter(function (o) { return o.estado !== 'arquivada'; });
+    var corEstado = { emRisco: 'var(--bad)', parada: 'var(--warn)', concluida: 'var(--teal)', emDia: 'var(--accent)', pausada: 'var(--muted)' };
+
+    var rows = ativos.map(function (o) {
+      var ini = new Date(o.inicio + 'T12:00:00'), fim = new Date(o.fim + 'T12:00:00');
+      var left = pos(ini) * 100, width = Math.max(6, (pos(fim) - pos(ini)) * 100);
+      var pct = progressoGeral(o) * 100;
+      return '<div class="tl-row"><div class="tl-track"><div class="tl-bar" data-toggle="' + o.id + '" style="left:' + left.toFixed(1) + '%;width:' + width.toFixed(1) + '%">'
+        + '<span class="tl-fill" style="width:' + pct.toFixed(1) + '%;background:' + (corEstado[o.estado] || 'var(--accent)') + '"></span>'
+        + '<span class="tl-name">' + o.nome + '</span></div></div></div>';
+    }).join('');
+
+    return '<div class="tl-card"><div class="row"><span style="font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted)">LINHA DO TEMPO</span></div>'
+      + '<div class="tl-meses">' + nomes.map(function (n) { return '<span>' + n + '</span>'; }).join('') + '</div>'
+      + '<div class="tl-body">' + rows + '<div class="tl-hoje" style="left:' + (pos(HOJE) * 100).toFixed(1) + '%"></div></div>'
+      + '<div class="tl-legenda">A linha verde é hoje. A parte preenchida de cada barra é o que já foi feito. Toque numa barra para expandir o objetivo na lista.</div></div>';
+  }
+
+  function render() {
+    var lista = $id('lista');
+    if (modo === 'timeline') { lista.innerHTML = timelineHtml(); bind(); return; }
+
+    var metas = OBS.filter(function (o) { return arquivadas.indexOf(o.id) < 0; });
+    var grupos = [
+      { chave: 'risco', titulo: 'EM RISCO', teste: function (o) { return o.estado === 'emRisco'; } },
+      { chave: 'andamento', titulo: 'EM ANDAMENTO', teste: function (o) { return o.estado === 'emDia'; } },
+      { chave: 'paradas', titulo: 'PARADAS', teste: function (o) { return o.estado === 'parada'; } },
+      { chave: 'concluidas', titulo: 'CONCLUÍDAS', teste: function (o) { return o.estado === 'concluida'; } },
+      { chave: 'arquivadas', titulo: 'ARQUIVADAS', teste: function (o) { return o.estado === 'arquivada'; } }
+    ];
+
+    var html = '';
+    if (filtro === 'todas') {
+      grupos.forEach(function (g) {
+        var itens = metas.filter(g.teste);
+        if (!itens.length) return;
+        html += '<div class="group-label">' + g.titulo + '</div>' + itens.map(cardHtml).join('');
+      });
+      if (!metas.length) html = vazio();
+    } else {
+      var g = grupos.filter(function (x) { return x.chave === filtro; })[0];
+      var itens = metas.filter(g.teste);
+      html = itens.length ? itens.map(cardHtml).join('') : vazio(filtro);
+    }
+    lista.innerHTML = html;
+    bind();
+  }
+
+  function vazio(f) {
+    if (f === 'arquivadas') return '<div class="empty-card"><span class="tit">Nada arquivado</span><span class="dica">Objetivos arquivados ficam guardados aqui, fora da lista ativa.</span></div>';
+    if (f === 'concluidas') return '<div class="empty-card"><span class="tit">Nenhum objetivo concluído ainda</span><span class="dica">Quando alcançar, ele aparece aqui para você revisitar.</span></div>';
+    return '<div class="empty-card"><span class="tit">Comece com um objetivo claro</span><span class="dica">Um bom objetivo tem prazo — e um jeito de medir: um número, etapas, ou os dois. Toque em + para criar.</span></div>';
+  }
+
+  var toastTimer = null;
+  function toast(msg) {
+    var el = $id('toast'); el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2600);
+  }
+
+  function bind() {
+    document.querySelectorAll('[data-toggle]').forEach(function (b) {
+      b.onclick = function (e) { e.stopPropagation(); var id = b.getAttribute('data-toggle'); abertos[id] = !abertos[id]; if (modo === 'timeline') { modo = 'lista'; document.querySelectorAll('#modo button').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-m') === 'lista'); }); } render(); };
+    });
+    document.querySelectorAll('[data-check]').forEach(function (b) {
+      b.onclick = function (e) {
+        e.stopPropagation();
+        var kv = b.getAttribute('data-check').split(':'); var o = porId(kv[0]); var i = parseInt(kv[1], 10);
+        o.etapas[i].feita = !o.etapas[i].feita; o.etapas[i].atrasada = false;
+        render();
+      };
+    });
+    document.querySelectorAll('[data-nova]').forEach(function (inp) {
+      var commit = function () { var v = inp.value.trim(); if (!v) return; var o = porId(inp.getAttribute('data-nova')); o.etapas.push({ t: v, d: 'sem data', feita: false }); render(); toast('Etapa adicionada — Desfazer'); };
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
+      var btn = document.querySelector('[data-nova-btn="' + inp.getAttribute('data-nova') + '"]');
+      if (btn) btn.onclick = commit;
+    });
+    document.querySelectorAll('[data-update]').forEach(function (b) { b.onclick = function () { abrirAtualizar(b.getAttribute('data-update')); }; });
+    document.querySelectorAll('.menu-btn').forEach(function (b) {
+      b.onclick = function (e) { e.stopPropagation(); var id = b.getAttribute('data-id'); var menu = document.querySelector('[data-menu="' + id + '"]'); var aberto = menu.classList.contains('open'); fecharMenus(); if (!aberto) menu.classList.add('open'); };
+    });
+    document.querySelectorAll('.menu [data-act]').forEach(function (b) {
+      b.onclick = function (e) { e.stopPropagation(); var id = b.getAttribute('data-id'); var act = b.getAttribute('data-act'); fecharMenus(); aplicarAcao(id, act); };
+    });
+    document.querySelectorAll('[data-act="retomar"]').forEach(function (b) {
+      b.onclick = function (e) { if (b.closest('.menu')) return; e.stopPropagation(); aplicarAcao(b.getAttribute('data-id'), 'retomar'); };
+    });
+  }
+  function fecharMenus() { document.querySelectorAll('.menu.open').forEach(function (m) { m.classList.remove('open'); }); }
+  document.addEventListener('click', fecharMenus);
+
+  function aplicarAcao(id, act) {
+    var o = porId(id); if (!o) return;
+    if (act === 'pausar') { o.estado = 'pausada'; toast('“' + o.nome + '” pausada — Desfazer'); }
+    else if (act === 'retomar') { o.estado = 'emDia'; toast('Objetivo retomado'); }
+    else if (act === 'concluir') { o.estado = 'concluida'; if (o.tipo !== 'etapas') { o.atual = o.alvo; o.hist.push(o.alvo); } o.concluidaEm = '26 de outubro'; toast('“' + o.nome + '” concluída — Desfazer'); }
+    else if (act === 'reabrir') { o.estado = 'emDia'; toast('Objetivo reaberto'); }
+    else if (act === 'arquivar') { arquivadas.push(id); toast('“' + o.nome + '” arquivada — Desfazer'); }
+    else if (act === 'excluir') { OBS = OBS.filter(function (x) { return x.id !== id; }); toast('Objetivo excluído'); }
+    render();
+  }
+
+  function abrirAtualizar(id) {
+    var o = porId(id);
+    var ov = $id('overlay');
+    ov.innerHTML = '<div class="sheet"><h2>Onde você está hoje?</h2>'
+      + '<div style="font-size:13px;color:var(--muted)">' + o.nome + ' · alvo ' + fmt(o.alvo, o.unidade) + '</div>'
+      + '<div class="field"><label>Valor atual (' + o.unidade + ')</label><input id="inp-val" inputmode="decimal" value="' + String(o.atual).replace('.', ',') + '"></div>'
+      + '<div class="sheet-actions"><button class="b-cancel" id="b-cancel">Cancelar</button><button class="b-save" id="b-save">Salvar</button></div></div>';
+    ov.classList.add('on');
+    var inp = $id('inp-val'); inp.focus(); inp.select();
+    $id('b-cancel').onclick = function () { ov.classList.remove('on'); };
+    $id('b-save').onclick = function () {
+      var v = parseFloat(String(inp.value).replace(',', '.'));
+      if (isNaN(v)) return;
+      o.atual = v; o.hist.push(v);
+      if (v >= o.alvo && o.estado !== 'concluida') { o.estado = 'concluida'; o.concluidaEm = '26 de outubro'; }
+      else if (o.estado === 'concluida' && v < o.alvo) o.estado = 'emDia';
+      else if (o.estado === 'parada') o.estado = 'emDia';
+      ov.classList.remove('on'); render(); toast('Progresso registrado — Desfazer');
+    };
+  }
+
+  // ---- formulário ----
+  var form = { nome: '', desc: '', medir: 'numero', unidade: 'R$', custom: '', dir: 'aumentar', atual: '', alvo: '', inicio: '', fim: '', cor: 'accent', etapas: ['', ''] };
+  var SUGESTOES = {
+    'Reserva de emergência': { nome: 'Reserva de emergência', medir: 'numero', unidade: 'R$', atual: '0', alvo: '10000', dir: 'aumentar', fim: '2026-12-31' },
+    'Shape 80kg': { nome: 'Shape 80kg', medir: 'ambos', unidade: 'kg', atual: '74', alvo: '80', dir: 'aumentar', fim: '2026-12-31', etapas: ['Treino A', 'Treino B', 'Cardio'] },
+    'Conseguir a vaga': { nome: 'Conseguir a vaga de estágio', medir: 'etapas', fim: '2026-11-30', etapas: ['Atualizar o currículo', 'Enviar para 10 vagas'] }
+  };
+
+  function abrirForm(sug) {
+    if (sug && SUGESTOES[sug]) { var s = SUGESTOES[sug]; form = { nome: s.nome, desc: '', medir: s.medir, unidade: s.unidade || 'R$', custom: '', dir: s.dir || 'aumentar', atual: s.atual || '', alvo: s.alvo || '', inicio: '', fim: s.fim || '', cor: 'accent', etapas: s.etapas ? s.etapas.slice() : ['', ''] }; }
+    var ov = $id('overlay'); ov.innerHTML = formHtml(); ov.classList.add('on'); bindForm(ov); $id('f-nome').focus();
+  }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  function formHtml() {
+    var medirs = [['numero', 'Número'], ['etapas', 'Etapas'], ['ambos', 'Ambos']];
+    var unidades = ['R$', 'kg', 'km', 'livros', 'Outra'];
+    var dirs = [['aumentar', 'Aumentar'], ['reduzir', 'Reduzir'], ['alcancar', 'Alcançar']];
+    var cores = ['accent', 'teal', 'violeta', 'warn'];
+    var temNum = form.medir === 'numero' || form.medir === 'ambos';
+    var temEt = form.medir === 'etapas' || form.medir === 'ambos';
+
+    var h = '<div class="sheet"><h2>Novo objetivo</h2>'
+      + '<div class="field"><label>Nome</label><input id="f-nome" placeholder="Ex.: Shape 80kg" value="' + esc(form.nome) + '"></div>'
+      + '<div class="field"><label>Descrição (opcional)</label><textarea id="f-desc" placeholder="O porquê deste objetivo">' + esc(form.desc) + '</textarea></div>'
+      + '<div class="field"><label>Como medir o progresso?</label><div class="chips">' + medirs.map(function (m) { return '<button data-medir="' + m[0] + '" class="' + (form.medir === m[0] ? 'on' : '') + '">' + m[1] + '</button>'; }).join('') + '</div></div>';
+
+    if (temNum) {
+      h += '<div class="field"><label>Medida</label><div class="chips">' + unidades.map(function (u) { return '<button data-unit="' + u + '" class="' + (form.unidade === u ? 'on' : '') + '">' + u + '</button>'; }).join('') + '</div>'
+        + (form.unidade === 'Outra' ? '<input id="f-custom" placeholder="Qual unidade? Ex.: horas" value="' + esc(form.custom) + '" style="height:40px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-family:inherit;font-size:14px">' : '')
+        + '</div>'
+        + '<div class="field"><label>Quero</label><div class="chips">' + dirs.map(function (d) { return '<button data-dir="' + d[0] + '" class="' + (form.dir === d[0] ? 'on' : '') + '">' + d[1] + '</button>'; }).join('') + '</div></div>'
+        + '<div class="duo">'
+        + '<div class="field"><label>Hoje estou em</label><input id="f-atual" inputmode="decimal" placeholder="0" value="' + form.atual + '"></div>'
+        + '<div class="field"><label>Quero chegar em</label><input id="f-alvo" inputmode="decimal" placeholder="0" value="' + form.alvo + '"></div>'
+        + '</div>';
+    }
+
+    if (temEt) {
+      h += '<div class="field"><label>Etapas (viram tarefas)</label>' + form.etapas.map(function (e, i) {
+        return '<div class="etapa-campo"><input data-etapa="' + i + '" placeholder="Ex.: Pesquisar vagas" value="' + esc(e) + '"><button class="iconbtn" data-etapa-del="' + i + '" style="width:34px;height:34px;color:var(--muted)">−</button></div>';
+      }).join('') + '<button class="btn-ghost" data-etapa-add style="align-self:flex-start;min-height:34px">+ Etapa</button></div>';
+    }
+
+    h += '<div class="field"><label>Prazo</label><div class="chips"><button data-fim="2026-12-31" class="' + (form.fim === '2026-12-31' ? 'on' : '') + '">Fim do ano</button><button data-fim="2027-01-26" class="' + (form.fim === '2027-01-26' ? 'on' : '') + '">Daqui a 3 meses</button></div>'
+      + '<div class="duo" style="margin-top:8px"><input id="f-inicio" type="date" value="' + form.inicio + '"><input id="f-fim" type="date" value="' + form.fim + '"></div></div>';
+
+    h += '<div class="field"><label>Cor</label><div class="cor-dots">' + cores.map(function (c) {
+      return '<button data-cor="' + c + '" class="' + (form.cor === c ? 'on' : '') + '" style="background:' + corVar(c) + '"></button>';
+    }).join('') + '</div></div>';
+
+    h += '<div class="sheet-actions"><button class="b-cancel" id="b-cancel">Cancelar</button><button class="b-save" id="b-save">Salvar objetivo</button></div></div>';
+    return h;
+  }
+
+  function bindForm(ov) {
+    $id('b-cancel').onclick = function () { ov.classList.remove('on'); };
+    ov.querySelectorAll('[data-medir]').forEach(function (b) { b.onclick = function () { form.medir = b.getAttribute('data-medir'); ov.innerHTML = formHtml(); bindForm(ov); }; });
+    ov.querySelectorAll('[data-unit]').forEach(function (b) { b.onclick = function () { form.unidade = b.getAttribute('data-unit'); ov.innerHTML = formHtml(); bindForm(ov); }; });
+    ov.querySelectorAll('[data-dir]').forEach(function (b) { b.onclick = function () { form.dir = b.getAttribute('data-dir'); ov.innerHTML = formHtml(); bindForm(ov); }; });
+    ov.querySelectorAll('[data-cor]').forEach(function (b) { b.onclick = function () { form.cor = b.getAttribute('data-cor'); ov.innerHTML = formHtml(); bindForm(ov); }; });
+    ov.querySelectorAll('[data-fim]').forEach(function (b) { b.onclick = function () { form.fim = b.getAttribute('data-fim'); ov.innerHTML = formHtml(); bindForm(ov); }; });
+    ov.querySelectorAll('[data-etapa-add]').forEach(function (b) { b.onclick = function () { form.etapas.push(''); ov.innerHTML = formHtml(); bindForm(ov); }; });
+    ov.querySelectorAll('[data-etapa-del]').forEach(function (b) {
+      b.onclick = function () { var i = parseInt(b.getAttribute('data-etapa-del'), 10); form.etapas.splice(i, 1); if (!form.etapas.length) form.etapas.push(''); ov.innerHTML = formHtml(); bindForm(ov); };
+    });
+
+    var fNome = $id('f-nome'); if (fNome) fNome.oninput = function () { form.nome = fNome.value; };
+    var fDesc = $id('f-desc'); if (fDesc) fDesc.oninput = function () { form.desc = fDesc.value; };
+    var fAtual = $id('f-atual'); if (fAtual) fAtual.oninput = function () { form.atual = fAtual.value; };
+    var fAlvo = $id('f-alvo'); if (fAlvo) fAlvo.oninput = function () { form.alvo = fAlvo.value; };
+    var fInicio = $id('f-inicio'); if (fInicio) fInicio.oninput = function () { form.inicio = fInicio.value; };
+    var fFim = $id('f-fim'); if (fFim) fFim.oninput = function () { form.fim = fFim.value; };
+    var fCustom = $id('f-custom'); if (fCustom) fCustom.oninput = function () { form.custom = fCustom.value; };
+    ov.querySelectorAll('[data-etapa]').forEach(function (inp) {
+      inp.oninput = function () { form.etapas[parseInt(inp.getAttribute('data-etapa'), 10)] = inp.value; };
+    });
+
+    $id('b-save').onclick = function () {
+      var nome = form.nome.trim() || 'Novo objetivo';
+      var tipo = form.medir;
+      var a = parseFloat(String(form.atual).replace(',', '.'));
+      var b = parseFloat(String(form.alvo).replace(',', '.'));
+      var temNum = tipo === 'numero' || tipo === 'ambos';
+      if (temNum && (isNaN(a) || isNaN(b))) { toast('Preencha os valores.'); return; }
+      var u = form.unidade === 'Outra' ? (form.custom.trim() || 'unidades') : form.unidade;
+      var etapas = (tipo === 'etapas' || tipo === 'ambos')
+        ? form.etapas.map(function (e) { return e.trim(); }).filter(Boolean).map(function (e) { return { t: e, d: 'sem data', feita: false }; })
+        : [];
+      var estado = 'emDia';
+      var o = {
+        id: 'o' + Date.now(), nome: nome, desc: form.desc.trim(), cor: form.cor, tipo: tipo,
+        unidade: temNum ? u : null, inicial: temNum ? a : 0, atual: temNum ? a : 0, alvo: temNum ? b : 0,
+        tempo: 0.05, inicio: form.inicio || '2026-10-26', fim: form.fim || '2027-01-26',
+        estado: estado, hist: temNum ? [a] : [], vinculos: [], etapas: etapas
+      };
+      OBS.unshift(o);
+      ov.classList.remove('on');
+      filtro = 'todas';
+      document.querySelectorAll('#seg button').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-f') === 'todas'); });
+      render(); toast('Objetivo “' + nome + '” criado — Desfazer');
+    };
+  }
+
+  // tema
+  $id('tema').onclick = function () {
+    var r = document.documentElement; var light = r.getAttribute('data-theme') === 'light';
+    r.setAttribute('data-theme', light ? 'dark' : 'light');
+    $id('iconeTema').innerHTML = light
+      ? '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'
+      : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  };
+
+  // modo + filtros
+  $id('modo').querySelectorAll('button').forEach(function (b) {
+    b.onclick = function () { modo = b.getAttribute('data-m'); document.querySelectorAll('#modo button').forEach(function (x) { x.classList.toggle('on', x === b); }); render(); };
+  });
+  $id('seg').querySelectorAll('button').forEach(function (b) {
+    b.onclick = function () { filtro = b.getAttribute('data-f'); document.querySelectorAll('#seg button').forEach(function (x) { x.classList.toggle('on', x === b); }); render(); };
+  });
+
+  $id('nova').onclick = function () { abrirForm(null); };
+  $id('overlay').onclick = function (e) { if (e.target === e.currentTarget) e.currentTarget.classList.remove('on'); };
+
+  render();
+})();
+</script>
+</body>
+</html>

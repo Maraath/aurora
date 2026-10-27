@@ -13,7 +13,7 @@ class OcorrenciaTarefa {
     required this.dia,
     required this.feita,
     required this.atrasada,
-    this.meta,
+    this.objetivo,
   });
 
   final Tarefa tarefa;
@@ -22,7 +22,7 @@ class OcorrenciaTarefa {
   final DateTime? dia;
   final bool feita;
   final bool atrasada;
-  final Meta? meta;
+  final Objetivo? objetivo;
 
   Regra? get regra => Regra.ler(tarefa.regraRepeticao);
   bool get recorrente => regra != null;
@@ -48,7 +48,7 @@ class QuadroTarefas {
     required this.atuais,
     required this.recorrentes,
     required this.feitasHoje,
-    required this.metas,
+    required this.objetivos,
     required this.tarefas,
     required this.conclusoes,
   });
@@ -59,7 +59,7 @@ class QuadroTarefas {
   final List<OcorrenciaTarefa> atuais;
   final List<OcorrenciaTarefa> recorrentes;
   final int feitasHoje;
-  final List<Meta> metas;
+  final List<Objetivo> objetivos;
   final List<Tarefa> tarefas;
 
   /// tarefaId → dias concluídos ("aaaa-mm-dd").
@@ -81,7 +81,7 @@ class QuadroTarefas {
   /// Ocorrências em cada dia do período (para o calendário).
   Map<DateTime, List<OcorrenciaTarefa>> porDia(DateTime de, DateTime ate, DateTime agora) {
     final mapa = <DateTime, List<OcorrenciaTarefa>>{};
-    final metasPorId = {for (final m in metas) m.id: m};
+    final objetivosPorId = {for (final o in objetivos) o.id: o};
     for (final t in tarefas) {
       final regra = Regra.ler(t.regraRepeticao);
       if (t.prazo == null) continue;
@@ -98,7 +98,7 @@ class QuadroTarefas {
               dia: d,
               feita: feita,
               atrasada: regra == null && tarefaAtrasada(t, agora),
-              meta: metasPorId[t.metaId],
+              objetivo: objetivosPorId[t.objetivoId],
             ));
       }
     }
@@ -131,7 +131,7 @@ class TarefasRepo {
   final BancoAurora db;
 
   Stream<QuadroTarefas> observarQuadro() =>
-      observar(db, [db.tarefas, db.conclusoesTarefa, db.metas], carregar);
+      observar(db, [db.tarefas, db.conclusoesTarefa, db.objetivos], carregar);
 
   Future<QuadroTarefas> carregar() async {
     final agora = agoraLocal();
@@ -139,8 +139,8 @@ class TarefasRepo {
     final chaveHoje = chaveData(hoje);
 
     final tarefas = await (db.select(db.tarefas)..where((t) => t.apagadoEm.isNull())).get();
-    final metas = await (db.select(db.metas)..where((m) => m.apagadoEm.isNull())).get();
-    final metasPorId = {for (final m in metas) m.id: m};
+    final objetivos = await (db.select(db.objetivos)..where((o) => o.apagadoEm.isNull())).get();
+    final objetivosPorId = {for (final o in objetivos) o.id: o};
     final linhas =
         await (db.select(db.conclusoesTarefa)..where((c) => c.apagadoEm.isNull())).get();
     final conclusoes = <String, Set<String>>{};
@@ -154,7 +154,7 @@ class TarefasRepo {
 
     for (final t in tarefas) {
       final regra = Regra.ler(t.regraRepeticao);
-      final meta = metasPorId[t.metaId];
+      final objetivo = objetivosPorId[t.objetivoId];
       if (regra == null) {
         if (t.feitaEm != null && dataLocal(t.feitaEm!) == hoje) feitasHoje++;
         // Concluídas em outros dias saem da lista.
@@ -164,7 +164,7 @@ class TarefasRepo {
           dia: t.prazo == null ? null : dataLocal(t.prazo!),
           feita: t.feitaEm != null,
           atrasada: tarefaAtrasada(t, agora),
-          meta: meta,
+          objetivo: objetivo,
         ));
         continue;
       }
@@ -182,7 +182,7 @@ class TarefasRepo {
         dia: dia,
         feita: feitos.contains(chaveData(dia)),
         atrasada: false,
-        meta: meta,
+        objetivo: objetivo,
       );
       atuais.add(o);
       recorrentes.add(o);
@@ -194,7 +194,7 @@ class TarefasRepo {
       atuais: atuais,
       recorrentes: recorrentes,
       feitasHoje: feitasHoje,
-      metas: metas,
+      objetivos: objetivos,
       tarefas: tarefas,
       conclusoes: conclusoes,
     );

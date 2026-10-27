@@ -20,8 +20,7 @@ import 'componentes.dart';
 import 'alimentacao/alimentacao_page.dart';
 import 'anotacoes/anotacoes_page.dart';
 import 'financas/form_lancamento.dart';
-import 'metas/form_meta.dart';
-import 'projetos/form_projeto.dart';
+import 'objetivos/form_objetivo.dart';
 import 'atualizacao_ui.dart';
 import 'boas_vindas_page.dart';
 import 'ceu_estrelado.dart';
@@ -30,8 +29,7 @@ import 'automacoes/automacoes_page.dart';
 import 'conta/conta_page.dart';
 import 'financas/financas_page.dart';
 import 'menu_dock.dart';
-import 'metas/metas_page.dart';
-import 'projetos/projetos_page.dart';
+import 'objetivos/objetivos_page.dart';
 import 'saude/treino_page.dart';
 import 'vidro.dart';
 import 'rotina/analise_rotina.dart';
@@ -43,7 +41,7 @@ import 'visao/visao_page.dart';
 
 /// Áreas do app. Cada uma aparece direto no menu lateral (computador) e na
 /// barra rolável de baixo (celular), e organiza o conteúdo em abas no topo.
-enum Secao { visao, assistente, rotina, saude, metas, projetos, anotacoes, financas, conta }
+enum Secao { visao, assistente, rotina, saude, objetivos, anotacoes, financas, conta }
 
 class _ItemNav {
   const _ItemNav(this.secao, this.rotulo, this.icone);
@@ -60,10 +58,9 @@ const _paginasBarra = [
     _ItemNav(Secao.rotina, 'Rotina', Icons.event_available_outlined),
     _ItemNav(Secao.financas, 'Finanças', Icons.account_balance_wallet_outlined),
     _ItemNav(Secao.saude, 'Saúde', Icons.monitor_heart_outlined),
-    _ItemNav(Secao.metas, 'Metas', Icons.flag_outlined),
+    _ItemNav(Secao.objetivos, 'Objetivos', Icons.flag_outlined),
   ],
   [
-    _ItemNav(Secao.projetos, 'Projetos', Icons.folder_outlined),
     _ItemNav(Secao.anotacoes, 'Anotações', Icons.sticky_note_2_outlined),
     _ItemNav(Secao.conta, 'Conta', Icons.person_outline_rounded),
   ],
@@ -77,8 +74,7 @@ const _gruposLateral = [
     _ItemNav(Secao.saude, 'Saúde', Icons.monitor_heart_outlined),
   ],
   [
-    _ItemNav(Secao.metas, 'Metas', Icons.flag_outlined),
-    _ItemNav(Secao.projetos, 'Projetos', Icons.folder_outlined),
+    _ItemNav(Secao.objetivos, 'Objetivos', Icons.flag_outlined),
     _ItemNav(Secao.anotacoes, 'Anotações', Icons.sticky_note_2_outlined),
     _ItemNav(Secao.financas, 'Finanças', Icons.account_balance_wallet_outlined),
   ],
@@ -265,12 +261,9 @@ class _ShellState extends State<Shell> {
       case TipoResultado.habito:
         _irRotina(AbaRotina.habitos);
         await abrirFormRotina(context, item: r.item);
-      case TipoResultado.meta:
-        _ir(Secao.metas);
-        await abrirFormMeta(context, meta: r.item as Meta);
-      case TipoResultado.projeto:
-        _ir(Secao.projetos);
-        await abrirFormProjeto(context, projeto: r.item as Projeto);
+      case TipoResultado.objetivo:
+        _ir(Secao.objetivos);
+        await abrirFormObjetivo(context, objetivo: r.item as Objetivo);
       case TipoResultado.nota:
         _ir(Secao.anotacoes);
         pedidoAbrirNota.value = (r.item as NotaCompleta).id;
@@ -310,8 +303,7 @@ class _ShellState extends State<Shell> {
           : const AlimentacaoPage(),
     ),
     Secao.financas => const FinancasPage(),
-    Secao.metas => const MetasPage(),
-    Secao.projetos => const ProjetosPage(),
+    Secao.objetivos => const ObjetivosPage(),
     Secao.anotacoes => const AnotacoesPage(),
     Secao.assistente => const AssistentePage(),
     Secao.conta => const ContaPage(),

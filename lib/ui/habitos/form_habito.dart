@@ -10,9 +10,9 @@ import '../rotina/contexto_form.dart';
 import '../rotina/form_rotina.dart';
 
 /// Abre o formulário de novo hábito ou de edição de [habito] (a folha única da
-/// Rotina, já no tipo hábito). As metas e o aviso a folha lê sozinha.
+/// Rotina, já no tipo hábito). Os objetivos e o aviso a folha lê sozinha.
 Future<void> abrirFormHabito(BuildContext context,
-        {Habito? habito, List<Meta> metas = const [], bool avisar = false}) =>
+        {Habito? habito, List<Objetivo> objetivos = const [], bool avisar = false}) =>
     abrirFormRotina(context, tipo: TipoRotina.habito, item: habito);
 
 class FormHabito extends StatefulWidget {
@@ -20,14 +20,14 @@ class FormHabito extends StatefulWidget {
     super.key,
     required this.repo,
     required this.habito,
-    required this.metas,
+    required this.objetivos,
     required this.avisarInicial,
     this.contexto = const ContextoForm(),
   });
 
   final HabitosRepo repo;
   final Habito? habito;
-  final List<Meta> metas;
+  final List<Objetivo> objetivos;
   final bool avisarInicial;
   final ContextoForm contexto;
 
@@ -42,7 +42,7 @@ class _FormHabitoState extends State<FormHabito> {
   late TipoHabito _tipo;
   late int _dias;
   TimeOfDay? _hora;
-  String? _metaId;
+  String? _objetivoId;
   late bool _avisar;
   String? _erro;
 
@@ -63,7 +63,7 @@ class _FormHabitoState extends State<FormHabito> {
     } else if (h == null) {
       _hora = _ctx.hora;
     }
-    _metaId = h?.metaId;
+    _objetivoId = h?.objetivoId;
     _avisar = widget.avisarInicial;
   }
 
@@ -97,7 +97,7 @@ class _FormHabitoState extends State<FormHabito> {
       unidade: Value(_tipo == TipoHabito.quantidade && _unidade.text.trim().isNotEmpty
           ? _unidade.text.trim()
           : null),
-      metaId: Value(_metaId),
+      objetivoId: Value(_objetivoId),
     );
     final id = await widget.repo.salvar(dados, id: widget.habito?.id, avisar: _avisar);
     await _ctx.aoSalvo?.call(id);
@@ -208,15 +208,15 @@ class _FormHabitoState extends State<FormHabito> {
           valor: _hora,
           aoMudar: (h) => setState(() => _hora = h),
         ),
-        if (widget.metas.isNotEmpty)
+        if (widget.objetivos.isNotEmpty)
           Campo(
-            rotulo: 'Ligar a uma meta',
+            rotulo: 'Ligar a um objetivo',
             child: GrupoChips<String?>(
-              opcoes: [null, ...widget.metas.map((m) => m.id)],
-              selecionado: _metaId,
+              opcoes: [null, ...widget.objetivos.map((o) => o.id)],
+              selecionado: _objetivoId,
               rotulo: (id) =>
-                  id == null ? 'Nenhuma' : widget.metas.firstWhere((m) => m.id == id).nome,
-              aoEscolher: (id) => setState(() => _metaId = id),
+                  id == null ? 'Nenhum' : widget.objetivos.firstWhere((o) => o.id == id).nome,
+              aoEscolher: (id) => setState(() => _objetivoId = id),
             ),
           ),
         LinhaInterruptor(

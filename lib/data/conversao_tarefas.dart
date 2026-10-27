@@ -47,7 +47,7 @@ Future<int> converterTarefasRepetidas(BancoAurora db) async {
                 nome: t.titulo,
                 diasSemana: Value(dias),
                 horario: Value(horario),
-                metaId: Value(t.metaId),
+                objetivoId: Value(t.objetivoId),
                 // A data de criação da tarefa: o histórico e a sequência contam desde ela.
                 criadoEm: Value(t.criadoEm),
               ),

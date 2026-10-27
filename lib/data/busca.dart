@@ -15,7 +15,7 @@ enum GrupoBusca {
   financas('Finanças'),
   tarefas('Rotina'),
   habitos('Hábitos'),
-  planos('Metas e projetos'),
+  planos('Objetivos'),
   notas('Anotações'),
   saude('Saúde');
 
@@ -30,8 +30,7 @@ enum TipoResultado {
   transacao(GrupoBusca.financas),
   categoria(GrupoBusca.financas),
   habito(GrupoBusca.habitos),
-  meta(GrupoBusca.planos),
-  projeto(GrupoBusca.planos),
+  objetivo(GrupoBusca.planos),
   exercicio(GrupoBusca.saude),
   treino(GrupoBusca.saude),
   nota(GrupoBusca.notas);
@@ -157,15 +156,11 @@ Future<List<ResultadoBusca>> buscarTudo(BancoAurora db, String termo,
     }
   }
   if (quer(GrupoBusca.planos)) {
-    final metas = await (db.select(db.metas)..where((x) => x.apagadoEm.isNull())).get()
+    final objetivos = await (db.select(db.objetivos)..where((x) => x.apagadoEm.isNull())).get()
       ..sort((a, b) => porNome(a.nome, b.nome));
-    for (final m in metas) {
-      add(TipoResultado.meta, m.nome, m.status == 'ativa' ? 'Meta' : 'Meta · ${m.status}', m);
-    }
-    final projetos = await (db.select(db.projetos)..where((x) => x.apagadoEm.isNull())).get()
-      ..sort((a, b) => porNome(a.nome, b.nome));
-    for (final p in projetos) {
-      add(TipoResultado.projeto, p.nome, p.status == 'ativo' ? 'Projeto' : 'Projeto · arquivado', p);
+    for (final o in objetivos) {
+      add(TipoResultado.objetivo, o.nome,
+          o.status == 'ativa' ? 'Objetivo' : 'Objetivo · ${o.status}', o);
     }
   }
   if (quer(GrupoBusca.notas)) {

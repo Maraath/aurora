@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metas — protótipo de redesign (Aurora)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root, [data-theme="dark"] {
+    --bg: #080716; --surf: #0F0E26; --surf2: #18173A; --line: #232250;
+    --text: #EEF0FB; --muted: #A3A6C8;
+    --accent: #5CF0B0; --accentFill: #3EDB9A; --accentSoft: rgba(92,240,176,.14);
+    --teal: #42E3C8; --tealSoft: rgba(66,227,200,.14);
+    --violet: #9D8CFF; --warn: #F5C35B; --warnSoft: rgba(245,195,91,.14);
+    --bad: #E77BFF; --badSoft: rgba(231,123,255,.14);
+    --gradA: #3EDB9A; --gradB: #7E7BFF; --onGrad: #06061A;
+  }
+  [data-theme="light"] {
+    --bg: #F4F3FB; --surf: #FFFFFF; --surf2: #E9E8F6; --line: #D6D4EA;
+    --text: #0D0B26; --muted: #55557A;
+    --accent: #0B8A5C; --accentFill: #0B8A5C; --accentSoft: rgba(11,138,92,.10);
+    --teal: #0A7C70; --tealSoft: rgba(10,124,112,.10);
+    --violet: #5B45D6; --warn: #9A5B06; --warnSoft: rgba(154,91,6,.10);
+    --bad: #A8259A; --badSoft: rgba(168,37,154,.10);
+    --gradA: #0B8A5C; --gradB: #5B45D6; --onGrad: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Manrope', sans-serif; color: var(--text);
+    background: radial-gradient(1200px 600px at 50% -10%, rgba(125,90,255,.18), transparent 60%),
+                radial-gradient(900px 500px at 85% 110%, rgba(62,219,154,.14), transparent 55%),
+                var(--bg);
+    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; gap: 32px;
+    padding: 40px 20px; flex-wrap: wrap;
+  }
+  .legenda {
+    width: 360px; max-width: 100%; align-self: flex-start; position: sticky; top: 24px;
+    background: var(--surf); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px;
+  }
+  .legenda h1 { margin: 0 0 4px; font-family: 'Sora'; font-size: 19px; font-weight: 600; }
+  .legenda p { margin: 0 0 12px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .legenda ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .legenda li { font-size: 13px; line-height: 1.45; display: flex; gap: 9px; }
+  .legenda li b { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+  .legenda li span { color: var(--text); }
+  .phone {
+    width: 390px; max-width: 100%; height: 820px; display: flex; flex-direction: column;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 28px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45); position: relative;
+  }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 16px 18px 10px;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; }
+  .brand svg { display: block; }
+  .brand span { font-family: 'Sora'; font-weight: 600; font-size: 17px; letter-spacing: .04em; }
+  .topbtns { display: flex; gap: 8px; }
+  .iconbtn {
+    width: 40px; height: 40px; border-radius: 20px; border: 1px solid var(--line);
+    background: var(--surf); color: var(--text); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer;
+  }
+  .screen { flex: 1; overflow-y: auto; padding: 6px 18px 26px; display: flex; flex-direction: column; gap: 14px; }
+  .screen::-webkit-scrollbar { width: 0; }
+  .page-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .page-title h1 { margin: 0; font-family: 'Sora'; font-weight: 600; font-size: 25px; }
+  .seg {
+    display: flex; gap: 6px; padding: 4px; border-radius: 14px; background: var(--surf2);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .seg::-webkit-scrollbar { display: none; }
+  .seg button {
+    flex: 1; min-height: 38px; border: none; border-radius: 10px; padding: 0 10px;
+    background: transparent; color: var(--muted); font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+  }
+  .seg button.on { background: var(--accentSoft); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .group-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--muted);
+    margin: 4px 0 -6px;
+  }
+  .card {
+    background: var(--surf); border: 1px solid var(--line); border-radius: 18px; padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .card.concluida { border-color: transparent; background: linear-gradient(var(--surf), var(--surf)) padding-box, linear-gradient(120deg, var(--teal), var(--accent)) border-box; border: 1px solid transparent; }
+  .card.pausada { opacity: .78; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .name { font-family: 'Sora'; font-size: 18px; font-weight: 600; }
+  .etq { font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 8px; border: 1px solid; white-space: nowrap; }
+  .etq.teal { color: var(--teal); border-color: var(--teal); }
+  .etq.bad { color: var(--bad); border-color: var(--bad); }
+  .etq.warn { color: var(--warn); border-color: var(--warn); }
+  .etq.accent { color: var(--accent); border-color: var(--accent); }
+  .etq.muted { color: var(--muted); border-color: var(--line); }
+  .hero { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .big { font-family: 'Sora'; font-size: 26px; font-weight: 600; line-height: 1.1; }
+  .big .un { font-size: 15px; color: var(--muted); font-weight: 500; }
+  .sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .spark { flex-shrink: 0; }
+  .track { position: relative; height: 10px; border-radius: 5px; background: var(--surf2); }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--teal); }
+  .marker { position: absolute; top: -4px; bottom: -4px; width: 3px; border-radius: 2px; background: var(--violet); }
+  .legend { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); }
+  .legend b { font-weight: 700; }
+  .legend .a { color: var(--teal); } .legend .b { color: var(--violet); }
+  .nota { font-size: 12.5px; line-height: 1.5; font-weight: 600; }
+  .nota.teal { color: var(--teal); } .nota.warn { color: var(--warn); }
+  .nota.bad { color: var(--bad); } .nota.muted { color: var(--muted); }
+  .vinculos { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip { font-size: 11.5px; font-weight: 600; color: var(--text); background: var(--surf2); border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px; display: flex; align-items: center; gap: 6px; }
+  .chip svg { flex-shrink: 0; }
+  .actions { display: flex; align-items: center; gap: 8px; }
+  .btn-primary {
+    min-height: 42px; padding: 0 16px; border-radius: 21px; border: none; cursor: pointer;
+    background: linear-gradient(90deg, var(--gradA), var(--gradB)); color: var(--onGrad);
+    font-family: inherit; font-size: 13.5px; font-weight: 700;
+  }
+  .btn-ghost {
+    min-height: 42px; padding: 0 14px; border-radius: 21px; border: 1px solid var(--line);
+    background: transparent; color: var(--text); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .menu-wrap { position: relative; margin-left: auto; }
+  .menu {
+    position: absolute; right: 0; top: calc(100% + 6px); width: 190px; background: var(--surf);
+    border: 1px solid var(--line); border-radius: 14px; padding: 6px; z-index: 30;
+    display: none; flex-direction: column; box-shadow: 0 12px 30px rgba(0,0,0,.4);
+  }
+  .menu.open { display: flex; }
+  .menu button {
+    text-align: left; padding: 10px 12px; border: none; border-radius: 9px; background: transparent;
+    color: var(--text); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; display: flex; gap: 9px; align-items: center;
+  }
+  .menu button:hover { background: var(--surf2); }
+  .menu button.perigo { color: var(--bad); }
+  .empty-card {
+    border: 1px dashed var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: transparent;
+  }
+  .empty-card .tit { font-size: 15px; font-weight: 700; color: var(--accent); }
+  .empty-card .dica { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .exemplos { display: flex; flex-direction: column; gap: 8px; }
+  .exemplo {
+    text-align: left; border: 1px solid var(--line); background: var(--surf); border-radius: 13px;
+    padding: 11px 13px; color: var(--text); font-family: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 2px;
+  }
+  .exemplo .t { font-size: 13.5px; font-weight: 700; }
+  .exemplo .d { font-size: 11.5px; color: var(--muted); }
+
+  /* overlay / folha / diálogo */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(2,6,16,.62); display: flex; align-items: center; justify-content: center;
+    z-index: 50; visibility: hidden; opacity: 0; transition: .18s;
+  }
+  .overlay.on { visibility: visible; opacity: 1; }
+  .sheet {
+    width: 390px; max-width: calc(100vw - 24px); max-height: 90vh; overflow-y: auto;
+    background: var(--surf); border: 1px solid var(--line); border-radius: 22px; padding: 20px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .sheet h2 { margin: 0; font-family: 'Sora'; font-size: 20px; font-weight: 600; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .field input {
+    height: 46px; padding: 0 13px; border-radius: 13px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--text); font-family: inherit; font-size: 15px; outline: none;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button {
+    min-height: 38px; padding: 0 14px; border-radius: 19px; border: 1.5px solid var(--line);
+    background: transparent; color: var(--text); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .chips button.on { border-color: var(--accent); background: var(--accentSoft); color: var(--accent); }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .preview {
+    padding: 13px 14px; border-radius: 13px; background: var(--accentSoft); color: var(--text);
+    font-size: 13.5px; line-height: 1.5;
+  }
+  .preview .k { font-size: 10.5px; font-weight: 700; letter-spacing: .12em; color: var(--accent); display: block; margin-bottom: 3px; }
+  .sheet-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .sheet-actions button { min-height: 44px; padding: 0 18px; border-radius: 22px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .b-cancel { background: transparent; color: var(--muted); border: none; }
+  .b-save { background: linear-gradient(90deg, var(--gradA), var(--gradB)); color: var(--onGrad); border: none; }
+
+  .toast {
+    position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%) translateY(20px);
+    background: var(--surf); border: 1px solid var(--line); color: var(--text);
+    border-radius: 999px; padding: 10px 16px; font-size: 13px; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0,0,0,.4); opacity: 0; transition: .22s; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (max-width: 840px) { .legenda { position: static; width: 100%; } body { gap: 16px; } }
+</style>
+</head>
+<body>
+
+<div class="legenda">
+  <h1>Redesign da seção Metas</h1>
+  <p>Protótipo clicável do que sugeri. Experimente os filtros, o botão <b style="color:var(--accent)">Atualizar progresso</b> (que alimenta o histórico), o menu <b style="color:var(--accent)">⋯</b> e a <b style="color:var(--accent)">Nova meta</b> com sugestões.</p>
+  <ul>
+    <li><b>1</b><span>Barra única com marcador de ritmo (violeta = onde você "deveria" estar hoje).</span></li>
+    <li><b>2</b><span>Histórico com mini-gráfico da evolução, em vez de só um número.</span></li>
+    <li><b>3</b><span>Estados e agrupamento claros: em risco, em andamento, paradas, concluídas.</span></li>
+    <li><b>4</b><span>Ciclo de vida no menu ⋯: pausar, concluir e arquivar.</span></li>
+    <li><b>5</b><span>Formulário com sugestões, direção (reduzir/aumentar) e datas rápidas.</span></li>
+  </ul>
+</div>
+
+<div class="phone">
+  <div class="topbar">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="none" stroke="var(--accent)" stroke-width="1.5"/><path d="M5 17c3-5 6-7 9-7s6 2 9 7" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"/><path d="M8 20c2-3 4-4 6-4s4 1 6 4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>Aurora</span>
+    </div>
+    <div class="topbtns">
+      <button class="iconbtn" id="tema" title="Alternar tema">
+        <svg id="iconeTema" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="page-title">
+      <h1>Metas</h1>
+      <button class="iconbtn" id="nova" title="Nova meta" style="background:linear-gradient(90deg,var(--gradA),var(--gradB));color:var(--onGrad);border:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+
+    <div class="seg" id="seg">
+      <button data-f="todas" class="on">Todas</button>
+      <button data-f="risco">Em risco</button>
+      <button data-f="andamento">Em andamento</button>
+      <button data-f="paradas">Paradas</button>
+      <button data-f="concluidas">Concluídas</button>
+    </div>
+
+    <div id="lista"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- overlay para diálogos / folhas -->
+<div class="overlay" id="overlay"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var HOJE = new Date(2026, 9, 26); // 26 out 2026
+
+  // ---- estados -> cor CSS ----
+  var ESTADO_COR = { emDia: 'teal', emRisco: 'bad', parada: 'warn', concluida: 'teal', pausada: 'muted' };
+  var ESTADO_ROT = { emDia: 'Em dia', emRisco: 'Em risco', parada: 'Parada', concluida: 'Concluída', pausada: 'Pausada' };
+
+  var METAS = [
+    {
+      id: 'reserva', nome: 'Reserva de emergência', unidade: 'R$', inicial: 0, atual: 2400, alvo: 10000,
+      estado: 'emRisco', tempo: 0.55, dataTexto: 'até 31 de dezembro · faltam 66 dias',
+      ritmo: 'cerca de R$ 1.100 por mês',
+      vinculos: [{ ic: 'tarefa', texto: '1 tarefa ligada' }],
+      hist: [0, 600, 1200, 1800, 2400]
+    },
+    {
+      id: 'shape', nome: 'Shape 80kg', unidade: 'kg', inicial: 74, atual: 74.6, alvo: 80,
+      estado: 'parada', tempo: 0.20, dataTexto: 'até 31 de dezembro · faltam 66 dias',
+      ritmo: '0,5 kg por semana',
+      vinculos: [{ ic: 'habito', texto: '2 hábitos' }, { ic: 'tarefa', texto: '3 tarefas · 1 em aberto' }],
+      hist: [74, 74.6, 74.6]
+    },
+    {
+      id: 'ler', nome: 'Ler 12 livros', unidade: 'livros', inicial: 0, atual: 7, alvo: 12,
+      estado: 'emDia', tempo: 0.40, dataTexto: 'até 30 de junho · faltam 8 meses',
+      ritmo: '2 livros por mês',
+      vinculos: [{ ic: 'habito', texto: 'hábito “Ler 30 min”' }],
+      hist: [0, 1, 3, 5, 7]
+    },
+    {
+      id: 'ingles', nome: 'Inglês B2', unidade: 'aulas', inicial: 0, atual: 6, alvo: 20,
+      estado: 'emDia', tempo: 0.22, dataTexto: 'até 30 de março',
+      ritmo: '3 aulas por semana',
+      vinculos: [],
+      hist: [0, 2, 4, 6]
+    },
+    {
+      id: 'correr', nome: 'Correr 5 km', unidade: 'km', inicial: 0, atual: 5, alvo: 5,
+      estado: 'concluida', tempo: null, dataTexto: 'alcançada em 14 de outubro',
+      ritmo: '', concluidaEm: '14 de outubro',
+      vinculos: [{ ic: 'habito', texto: 'hábito “Cardio”' }],
+      hist: [0, 1, 2.5, 4, 5]
+    }
+  ];
+
+  var filtro = 'todas';
+  var arquivadas = [];
+
+  function $id(id) { return document.getElementById(id); }
+  function fmt(v, u) {
+    if (u === 'R$') return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+    var s = Number.isInteger(v) ? String(v) : v.toFixed(1).replace('.', ',');
+    return s + ' ' + u;
+  }
+  function faltaTxt(m) {
+    var f = Math.abs(m.alvo - m.atual);
+    return f === 0 ? '' : 'faltam ' + fmt(f, m.unidade);
+  }
+  function prog(m) {
+    var c = m.alvo - m.inicial;
+    return c === 0 ? 1 : Math.max(0, Math.min(1, (m.atual - m.inicial) / c));
+  }
+  function spark(vals, color) {
+    var w = 92, h = 34, pad = 3;
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    var range = (max - min) || 1;
+    var pts = vals.map(function (v, i) {
+      var x = pad + (vals.length === 1 ? 0 : (i / (vals.length - 1)) * (w - 2 * pad));
+      var y = pad + (1 - (v - min) / range) * (h - 2 * pad);
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    });
+    var last = pts[pts.length - 1].split(',');
+    return '<svg class="spark" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">'
+      + '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+      + '<circle cx="' + last[0] + '" cy="' + last[1] + '" r="3" fill="' + color + '"/></svg>';
+  }
+  function icone(ic) {
+    if (ic === 'habito') return '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l3-7 6 14 3-7h3"/></svg>';
+    return '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>';
+  }
+  function corCSS(c) {
+    var map = { teal: 'var(--teal)', bad: 'var(--bad)', warn: 'var(--warn)', accent: 'var(--accent)', muted: 'var(--muted)', violet: 'var(--violet)' };
+    return map[c];
+  }
+
+  function notaDe(m) {
+    switch (m.estado) {
+      case 'parada': return { t: 'Nenhum avanço há 24 dias.', c: 'warn' };
+      case 'emRisco': return { t: 'Você está atrás do ritmo do prazo.', c: 'bad' };
+      case 'emDia': return { t: 'No ritmo.', c: 'teal' };
+      case 'pausada': return { t: 'Pausada em 24 de outubro.', c: 'muted' };
+      case 'concluida': return { t: 'Meta alcançada em ' + m.concluidaEm + '.', c: 'teal' };
+    }
+    return { t: '', c: 'muted' };
+  }
+
+  function cardHtml(m) {
+    var cor = ESTADO_COR[m.estado];
+    var cvar = corCSS(cor);
+    var concluida = m.estado === 'concluida';
+    var pausada = m.estado === 'pausada';
+    var nota = notaDe(m);
+
+    var vinculos = m.vinculos.length
+      ? '<div class="vinculos">' + m.vinculos.map(function (v) { return '<span class="chip">' + icone(v.ic) + v.texto + '</span>'; }).join('') + '</div>'
+      : '';
+
+    var meio = '';
+    if (concluida) {
+      meio = '<div class="hero"><div><div class="big">' + fmt(m.alvo, m.unidade) + '</div><div class="sub">alvo atingido</div></div>' + spark(m.hist, cvar) + '</div>';
+    } else {
+      var p = prog(m);
+      var ft = faltaTxt(m);
+      var heroNum = ft || fmt(m.atual, m.unidade);
+      meio =
+        '<div class="hero"><div><div class="big">' + heroNum + '</div><div class="sub">' + fmt(m.atual, m.unidade) + ' → ' + fmt(m.alvo, m.unidade) + '</div></div>' + spark(m.hist, cvar) + '</div>'
+        + '<div class="track"><div class="fill" style="width:' + (p * 100).toFixed(1) + '%"></div>'
+        + (m.tempo != null ? '<div class="marker" style="left:' + (m.tempo * 100).toFixed(1) + '%"></div>' : '')
+        + '</div>'
+        + '<div class="legend"><span class="a">feito <b>' + Math.round(p * 100) + '%</b></span>'
+        + (m.tempo != null ? '<span class="b">ritmo ideal <b>' + Math.round(m.tempo * 100) + '%</b></span>' : '<span>sem prazo</span>')
+        + '</div>';
+    }
+
+    var acoes = concluida
+      ? '<div class="actions"><span class="nota ' + nota.c + '">' + nota.t + '</span><div class="menu-wrap"><button class="iconbtn menu-btn" data-id="' + m.id + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></button>' + menuHtml(m) + '</div></div>'
+      : '<div class="actions"><button class="btn-primary" data-update="' + m.id + '">Atualizar progresso</button><div class="menu-wrap"><button class="iconbtn menu-btn" data-id="' + m.id + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg></button>' + menuHtml(m) + '</div></div>';
+
+    var blocoNota = concluida ? '' : '<div class="nota ' + nota.c + '">' + nota.t + '</div>';
+
+    return '<div class="card ' + (concluida ? 'concluida' : '') + (pausada ? ' pausada' : '') + '" data-id="' + m.id + '" data-estado="' + m.estado + '">'
+      + '<div class="row"><span class="name">' + m.nome + '</span><span class="etq ' + cor + '">' + ESTADO_ROT[m.estado] + '</span></div>'
+      + meio
+      + blocoNota
+      + (m.ritmo ? '<div style="font-size:12.5px;color:var(--muted);line-height:1.5"><b style="color:var(--text)">' + m.ritmo + '</b> · ' + m.dataTexto + '</div>' : '')
+      + vinculos
+      + acoes
+      + '</div>';
+  }
+
+  function menuHtml(m) {
+    if (m.estado === 'concluida') {
+      return '<div class="menu" data-menu="' + m.id + '">'
+        + '<button data-act="reabrir" data-id="' + m.id + '">↺ Reabrir</button>'
+        + '<button data-act="arquivar" data-id="' + m.id + '">Arquivar</button>'
+        + '<button class="perigo" data-act="excluir" data-id="' + m.id + '">Excluir</button></div>';
+    }
+    if (m.estado === 'pausada') {
+      return '<div class="menu" data-menu="' + m.id + '">'
+        + '<button data-act="retomar" data-id="' + m.id + '">▶ Retomar</button>'
+        + '<button data-act="concluir" data-id="' + m.id + '">Concluir</button>'
+        + '<button data-act="arquivar" data-id="' + m.id + '">Arquivar</button></div>';
+    }
+    return '<div class="menu" data-menu="' + m.id + '">'
+      + '<button data-act="pausar" data-id="' + m.id + '">⏸ Pausar</button>'
+      + '<button data-act="concluir" data-id="' + m.id + '">✓ Concluir</button>'
+      + '<button data-act="arquivar" data-id="' + m.id + '">Arquivar</button></div>';
+  }
+
+  function render() {
+    var lista = $id('lista');
+    var metas = METAS.filter(function (m) { return arquivadas.indexOf(m.id) < 0; });
+
+    var grupos = [
+      { chave: 'risco', titulo: 'EM RISCO', teste: function (m) { return m.estado === 'emRisco'; } },
+      { chave: 'andamento', titulo: 'EM ANDAMENTO', teste: function (m) { return m.estado === 'emDia'; } },
+      { chave: 'paradas', titulo: 'PARADAS', teste: function (m) { return m.estado === 'parada'; } },
+      { chave: 'concluidas', titulo: 'CONCLUÍDAS', teste: function (m) { return m.estado === 'concluida'; } }
+    ];
+
+    var html = '';
+    if (filtro === 'todas') {
+      grupos.forEach(function (g) {
+        var itens = metas.filter(g.teste);
+        if (!itens.length) return;
+        html += '<div class="group-label">' + g.titulo + '</div>' + itens.map(cardHtml).join('');
+      });
+      if (!metas.length) html = vazioHtml();
+    } else {
+      var g = grupos.filter(function (x) { return x.chave === filtro; })[0];
+      var itens = metas.filter(g.teste);
+      html = itens.length ? itens.map(cardHtml).join('') : vazioHtml(filtro);
+    }
+    lista.innerHTML = html;
+    bind();
+  }
+
+  function vazioHtml(f) {
+    if (f === 'concluidas') {
+      return '<div class="empty-card"><span class="tit">Nenhuma meta concluída ainda</span><span class="dica">Quando você alcançar uma meta, ela aparece aqui para você revisitar.</span></div>';
+    }
+    return '<div class="empty-card"><span class="tit">Comece com uma meta clara</span><span class="dica">Uma boa meta tem número, unidade e data. Toque numa sugestão para preencher na hora.</span>'
+      + '<div class="exemplos">'
+      + exemploHtml('Reserva de emergência', 'guardar R$ 10.000 até 31 dez')
+      + exemploHtml('Ler 12 livros', '1 livro por mês até junho')
+      + exemploHtml('Perder 5 kg', 'de 80 kg para 75 kg')
+      + exemploHtml('Correr 5 km', 'saindo do zero')
+      + '</div></div>';
+  }
+  function exemploHtml(t, d) { return '<button class="exemplo" data-ex="' + t + '"><span class="t">' + t + '</span><span class="d">' + d + '</span></button>'; }
+
+  var toastTimer = null;
+  function toast(msg) {
+    var el = $id('toast'); el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2600);
+  }
+
+  // ---- interações ----
+  function bind() {
+    document.querySelectorAll('[data-update]').forEach(function (b) {
+      b.onclick = function () { abrirAtualizar(b.getAttribute('data-update')); };
+    });
+    document.querySelectorAll('.menu-btn').forEach(function (b) {
+      b.onclick = function (e) {
+        e.stopPropagation();
+        var id = b.getAttribute('data-id');
+        var menu = document.querySelector('[data-menu="' + id + '"]');
+        var aberto = menu.classList.contains('open');
+        fecharMenus();
+        if (!aberto) menu.classList.add('open');
+      };
+    });
+    document.querySelectorAll('.menu [data-act]').forEach(function (b) {
+      b.onclick = function (e) {
+        e.stopPropagation();
+        var id = b.getAttribute('data-id');
+        var act = b.getAttribute('data-act');
+        fecharMenus();
+        aplicarAcao(id, act);
+      };
+    });
+    document.querySelectorAll('.exemplo').forEach(function (b) {
+      b.onclick = function () { abrirForm(b.getAttribute('data-ex')); };
+    });
+  }
+  function fecharMenus() { document.querySelectorAll('.menu.open').forEach(function (m) { m.classList.remove('open'); }); }
+  document.addEventListener('click', fecharMenus);
+
+  function porId(id) { return METAS.filter(function (m) { return m.id === id; })[0]; }
+
+  function aplicarAcao(id, act) {
+    var m = porId(id);
+    if (!m) return;
+    if (act === 'pausar') { m.estado = 'pausada'; toast('“' + m.nome + '” pausada — Desfazer'); }
+    else if (act === 'retomar') { m.estado = 'emDia'; toast('Meta retomada'); }
+    else if (act === 'concluir') { m.estado = 'concluida'; m.atual = m.alvo; m.concluidaEm = '26 de outubro'; m.hist.push(m.alvo); toast('“' + m.nome + '” concluída — Desfazer'); }
+    else if (act === 'reabrir') { m.estado = 'emDia'; m.atual = m.alvo - Math.max(1, Math.round((m.alvo - m.inicial) * 0.1)); toast('Meta reaberta'); }
+    else if (act === 'arquivar') { arquivadas.push(id); toast('“' + m.nome + '” arquivada — Desfazer'); }
+    else if (act === 'excluir') { METAS = METAS.filter(function (x) { return x.id !== id; }); toast('Meta excluída'); }
+    render();
+  }
+
+  // ---- atualizar progresso (o coração do histórico) ----
+  function abrirAtualizar(id) {
+    var m = porId(id);
+    var ov = $id('overlay');
+    ov.innerHTML = '<div class="sheet"><h2>Onde você está hoje?</h2>'
+      + '<div style="font-size:13px;color:var(--muted)">' + m.nome + ' · alvo ' + fmt(m.alvo, m.unidade) + '</div>'
+      + '<div class="field"><label>Valor atual (' + m.unidade + ')</label><input id="inp-val" inputmode="decimal" value="' + String(m.atual).replace('.', ',') + '"></div>'
+      + '<div class="sheet-actions"><button class="b-cancel" id="b-cancel">Cancelar</button><button class="b-save" id="b-save">Salvar</button></div></div>';
+    ov.classList.add('on');
+    var inp = $id('inp-val'); inp.focus(); inp.select();
+    $id('b-cancel').onclick = function () { ov.classList.remove('on'); };
+    $id('b-save').onclick = function () {
+      var v = parseFloat(String(inp.value).replace(',', '.'));
+      if (isNaN(v)) return;
+      m.atual = v;
+      m.hist.push(v);
+      if (v >= m.alvo && m.estado !== 'concluida') { m.estado = 'concluida'; m.concluidaEm = '26 de outubro'; }
+      else if (m.estado === 'concluida' && v < m.alvo) { m.estado = 'emDia'; }
+      else if (m.estado === 'parada') { m.estado = 'emDia'; }
+      ov.classList.remove('on');
+      render();
+      toast('Progresso registrado — Desfazer');
+    };
+  }
+
+  // ---- nova meta ----
+  var form = { nome: '', dir: 'aumentar', unidade: 'R$', custom: '', atual: '', alvo: '', data: '' };
+
+  var SUGESTOES = {
+    'Reserva de emergência': { nome: 'Reserva de emergência', unidade: 'R$', atual: '0', alvo: '10000', dir: 'aumentar', data: '2026-12-31' },
+    'Ler 12 livros': { nome: 'Ler 12 livros', unidade: 'livros', atual: '0', alvo: '12', dir: 'aumentar', data: '2027-06-30' },
+    'Perder 5 kg': { nome: 'Perder 5 kg', unidade: 'kg', atual: '80', alvo: '75', dir: 'reduzir', data: '2027-03-31' },
+    'Correr 5 km': { nome: 'Correr 5 km', unidade: 'km', atual: '0', alvo: '5', dir: 'aumentar', data: '2027-01-31' }
+  };
+
+  function abrirForm(sugestao) {
+    if (sugestao && SUGESTOES[sugestao]) { var s = SUGESTOES[sugestao]; form = { nome: s.nome, dir: s.dir, unidade: s.unidade, custom: '', atual: s.atual, alvo: s.alvo, data: s.data }; }
+    var ov = $id('overlay');
+    ov.innerHTML = formHtml();
+    ov.classList.add('on');
+    bindForm(ov);
+    $id('f-nome').focus();
+  }
+
+  function formHtml() {
+    var chips = ['R$', 'kg', 'km', 'livros', 'Outra'];
+    var dirs = [
+      { k: 'aumentar', l: 'Aumentar' }, { k: 'reduzir', l: 'Reduzir' }, { k: 'alcancar', l: 'Alcançar' }
+    ];
+    return '<div class="sheet"><h2>Nova meta</h2>'
+      + '<div class="field"><label>Nome da meta</label><input id="f-nome" placeholder="Ex.: Reserva de emergência" value="' + esc(form.nome) + '"></div>'
+      + '<div class="field"><label>Quero</label><div class="chips">' + dirs.map(function (d) {
+        return '<button data-dir="' + d.k + '" class="' + (form.dir === d.k ? 'on' : '') + '">' + d.l + '</button>';
+      }).join('') + '</div></div>'
+      + '<div class="field"><label>Medida</label><div class="chips">' + chips.map(function (c) {
+        return '<button data-unit="' + c + '" class="' + (form.unidade === c ? 'on' : '') + '">' + c + '</button>';
+      }).join('') + '</div>'
+      + (form.unidade === 'Outra' ? '<div class="field"><label>Qual unidade?</label><input id="f-custom" placeholder="Ex.: horas, cursos" value="' + esc(form.custom) + '"></div>' : '')
+      + '</div>'
+      + '<div class="duo">'
+      + '<div class="field"><label>Hoje estou em</label><input id="f-atual" inputmode="decimal" placeholder="0" value="' + form.atual + '"></div>'
+      + '<div class="field"><label>Quero chegar em</label><input id="f-alvo" inputmode="decimal" placeholder="0" value="' + form.alvo + '"></div>'
+      + '</div>'
+      + '<div class="field"><label>Até quando</label><div class="chips"><button data-data="2026-12-31" class="' + (form.data === '2026-12-31' ? 'on' : '') + '">Fim do ano</button><button data-data="2027-01-26" class="' + (form.data === '2027-01-26' ? 'on' : '') + '">Daqui a 3 meses</button></div>'
+      + '<input id="f-data" type="date" value="' + form.data + '" style="margin-top:8px"></div>'
+      + '<div class="preview" id="f-prev"><span class="k">RITMO NECESSÁRIO</span><span id="f-prev-txt">' + previa() + '</span></div>'
+      + '<div class="sheet-actions"><button class="b-cancel" id="b-cancel">Cancelar</button><button class="b-save" id="b-save">Salvar meta</button></div></div>';
+  }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  function diasAte(d) {
+    if (!d) return null;
+    var f = new Date(d + 'T12:00:00');
+    return Math.round((f - HOJE) / 86400000);
+  }
+  function previa() {
+    var a = parseFloat(String(form.atual).replace(',', '.'));
+    var b = parseFloat(String(form.alvo).replace(',', '.'));
+    var dias = diasAte(form.data);
+    if (isNaN(a) || isNaN(b) || !dias) return 'Preencha os valores e a data para ver quanto você precisa avançar por semana.';
+    if (a === b) return 'O alvo precisa ser diferente do valor de hoje.';
+    if (dias <= 0) return 'Escolha uma data depois de hoje.';
+    var falta = Math.abs(b - a);
+    var semanas = Math.max(dias / 7, 1);
+    var porSem = falta / semanas;
+    var verbo = form.dir === 'reduzir' ? 'reduzir' : (form.dir === 'alcancar' ? 'avançar' : 'aumentar');
+    return 'Para ' + verbo + ' ' + fmt(falta, form.unidade === 'Outra' ? (form.custom || '?') : form.unidade)
+      + ' até lá, são cerca de ' + fmt(porSem, form.unidade === 'Outra' ? (form.custom || '?') : form.unidade)
+      + ' por semana. Faltam ' + dias + (dias === 1 ? ' dia.' : ' dias.');
+  }
+
+  function bindForm(ov) {
+    $id('b-cancel').onclick = function () { ov.classList.remove('on'); };
+    ov.querySelectorAll('[data-dir]').forEach(function (b) {
+      b.onclick = function () { form.dir = b.getAttribute('data-dir'); ov.innerHTML = formHtml(); bindForm(ov); };
+    });
+    ov.querySelectorAll('[data-unit]').forEach(function (b) {
+      b.onclick = function () { form.unidade = b.getAttribute('data-unit'); ov.innerHTML = formHtml(); bindForm(ov); };
+    });
+    ov.querySelectorAll('[data-data]').forEach(function (b) {
+      b.onclick = function () { form.data = b.getAttribute('data-data'); ov.innerHTML = formHtml(); bindForm(ov); };
+    });
+    ['f-nome', 'f-atual', 'f-alvo'].forEach(function (id) {
+      var el = $id(id); if (!el) return;
+      el.oninput = function () {
+        form[id === 'f-nome' ? 'nome' : id === 'f-atual' ? 'atual' : 'alvo'] = el.value;
+        var p = $id('f-prev-txt'); if (p) p.textContent = previa();
+      };
+    });
+    var fdata = $id('f-data');
+    if (fdata) fdata.oninput = function () { form.data = fdata.value; var p = $id('f-prev-txt'); if (p) p.textContent = previa(); };
+    var fcustom = $id('f-custom');
+    if (fcustom) fcustom.oninput = function () { form.custom = fcustom.value; var p = $id('f-prev-txt'); if (p) p.textContent = previa(); };
+
+    $id('b-save').onclick = function () {
+      var nome = form.nome.trim() || 'Nova meta';
+      var a = parseFloat(String(form.atual).replace(',', '.'));
+      var b = parseFloat(String(form.alvo).replace(',', '.'));
+      if (isNaN(a) || isNaN(b)) { toast('Preencha os valores.'); return; }
+      var u = form.unidade === 'Outra' ? (form.custom.trim() || 'unidades') : form.unidade;
+      var estado = 'emDia';
+      var id = 'm' + Date.now();
+      METAS.unshift({
+        id: id, nome: nome, unidade: u, inicial: a, atual: a, alvo: b, estado: estado, tempo: 0.05,
+        dataTexto: form.data ? ('até ' + dataLonga(form.data)) : 'sem prazo',
+        ritmo: form.data ? ritmoCurto(a, b, u, form.data) : '',
+        vinculos: [], hist: [a]
+      });
+      ov.classList.remove('on');
+      filtro = 'todas';
+      document.querySelectorAll('#seg button').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-f') === 'todas'); });
+      render();
+      toast('Meta “' + nome + '” criada — Desfazer');
+    };
+  }
+
+  function dataLonga(iso) {
+    var f = new Date(iso + 'T12:00:00');
+    var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    return f.getDate() + ' de ' + meses[f.getMonth()];
+  }
+  function ritmoCurto(a, b, u, iso) {
+    var dias = diasAte(iso); if (!dias || dias <= 0) return '';
+    var falta = Math.abs(b - a), semanas = Math.max(dias / 7, 1);
+    return fmt(falta / semanas, u) + ' por semana';
+  }
+
+  // ---- tema ----
+  $id('tema').onclick = function () {
+    var r = document.documentElement;
+    var light = r.getAttribute('data-theme') === 'light';
+    r.setAttribute('data-theme', light ? 'dark' : 'light');
+    $id('iconeTema').innerHTML = light
+      ? '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'
+      : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  };
+
+  // ---- filtros ----
+  $id('seg').querySelectorAll('button').forEach(function (b) {
+    b.onclick = function () {
+      filtro = b.getAttribute('data-f');
+      document.querySelectorAll('#seg button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      render();
+    };
+  });
+
+  $id('nova').onclick = function () { abrirForm(null); };
+  $id('overlay').onclick = function (e) { if (e.target === e.currentTarget) e.currentTarget.classList.remove('on'); };
+
+  render();
+})();
+</script>
+</body>
+</html>

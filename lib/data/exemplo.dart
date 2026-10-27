@@ -131,11 +131,11 @@ Future<void> _etapa1(BancoAurora db) async {
       diaLocal(hoje.year, hoje.month, hoje.day + deslocamento, hora, minuto);
 
   await db.transaction(() async {
-    final meta = await db.into(db.metas).insertReturning(MetasCompanion.insert(
+    final objetivo = await db.into(db.objetivos).insertReturning(ObjetivosCompanion.insert(
           nome: 'Shape 80kg',
-          valorInicial: 73.5,
-          valorAtual: 74,
-          valorAlvo: 80,
+          valorInicial: const Value(73.5),
+          valorAtual: const Value(74),
+          valorAlvo: const Value(80),
           unidade: const Value('kg'),
           dataAlvo: Value(diaLocal(hoje.year, 12, 31)),
         ));
@@ -161,7 +161,7 @@ Future<void> _etapa1(BancoAurora db) async {
         TarefasCompanion.insert(
             titulo: 'Tribulus + creatina',
             prazo: Value(dia(-1)),
-            metaId: Value(meta.id)),
+            objetivoId: Value(objetivo.id)),
         TarefasCompanion.insert(titulo: 'Testes Estágios', prazo: Value(dia(-38))),
         TarefasCompanion.insert(
             titulo: 'Revisar gastos da semana',

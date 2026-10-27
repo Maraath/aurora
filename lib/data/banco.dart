@@ -36,26 +36,21 @@ enum TipoTransacao { entrada, saida }
 /// `regraRepeticao` usa o padrão RRULE de calendário, por exemplo:
 /// `FREQ=DAILY`, `FREQ=WEEKLY;BYDAY=MO,WE,FR`, `FREQ=MONTHLY;BYMONTHDAY=11`.
 
-/// Com unidade "R$", os valores da meta ficam em centavos (como todo dinheiro).
-class Metas extends Table with Sincronizavel {
+/// Objetivo: uma meta numérica e/ou um plano de etapas (tarefas ligadas a ele).
+/// Com [unidade] preenchida, tem número (valorInicial → valorAlvo); sem, é só
+/// etapas. [dataAlvo] é o prazo e [inicio] o começo (linha do tempo). Com
+/// unidade "R$", os valores ficam em centavos (como todo dinheiro).
+class Objetivos extends Table with Sincronizavel {
   TextColumn get nome => text()();
-  RealColumn get valorInicial => real()();
-  RealColumn get valorAtual => real()();
-  RealColumn get valorAlvo => real()();
+  TextColumn get descricao => text().nullable()();
   TextColumn get unidade => text().withDefault(const Constant(''))();
+  RealColumn get valorInicial => real().withDefault(const Constant(0))();
+  RealColumn get valorAtual => real().withDefault(const Constant(0))();
+  RealColumn get valorAlvo => real().withDefault(const Constant(0))();
   DateTimeColumn get dataAlvo => dateTime().nullable()();
+  DateTimeColumn get inicio => dateTime().nullable()();
   TextColumn get status => text().withDefault(const Constant('ativa'))();
-}
-
-/// Projeto: metas vistas no tempo. As etapas são as tarefas com `projetoId`.
-class Projetos extends Table with Sincronizavel {
-  TextColumn get nome => text()();
-  DateTimeColumn get inicio => dateTime()();
-  DateTimeColumn get fim => dateTime()();
-  TextColumn get metaId => text().nullable().references(Metas, #id)();
-
-  /// 'ativo' ou 'arquivado'.
-  TextColumn get status => text().withDefault(const Constant('ativo'))();
+  TextColumn get cor => text().nullable()();
 }
 
 class Tarefas extends Table with Sincronizavel {
@@ -67,10 +62,9 @@ class Tarefas extends Table with Sincronizavel {
       textEnum<Prioridade>().withDefault(Constant(Prioridade.media.name))();
   DateTimeColumn get feitaEm => dateTime().nullable()();
   TextColumn get regraRepeticao => text().nullable()();
-  TextColumn get metaId => text().nullable().references(Metas, #id)();
 
-  /// Etapa de um projeto.
-  TextColumn get projetoId => text().nullable().references(Projetos, #id)();
+  /// Etapa de um objetivo.
+  TextColumn get objetivoId => text().nullable().references(Objetivos, #id)();
 }
 
 class Habitos extends Table with Sincronizavel {
@@ -89,7 +83,7 @@ class Habitos extends Table with Sincronizavel {
 
   /// Unidade da quantidade ("copos", "páginas").
   TextColumn get unidade => text().nullable()();
-  TextColumn get metaId => text().nullable().references(Metas, #id)();
+  TextColumn get objetivoId => text().nullable().references(Objetivos, #id)();
 }
 
 /// Conclusão de UMA ocorrência de tarefa recorrente. A regra continua gerando
@@ -422,8 +416,7 @@ class Preferencias extends Table {
 }
 
 @DriftDatabase(tables: [
-  Metas,
-  Projetos,
+  Objetivos,
   Tarefas,
   ConclusoesTarefa,
   Habitos,
@@ -465,7 +458,7 @@ class BancoAurora extends _$BancoAurora {
             ));
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -496,8 +489,14 @@ class BancoAurora extends _$BancoAurora {
           }
           if (de < 6) await _idsNaturais();
           if (de < 7) {
-            await m.createTable(projetos);
-            await m.addColumn(tarefas, tarefas.projetoId);
+            // Projetos (v7) virou Objetivos na v15; aqui só se recria o que
+            // existia, para a v15 poder migrar os dados. Sem FK de propósito.
+            await customStatement('CREATE TABLE IF NOT EXISTS projetos ('
+                'id TEXT NOT NULL PRIMARY KEY, '
+                'criado_em INTEGER NOT NULL, atualizado_em INTEGER NOT NULL, apagado_em INTEGER, '
+                'nome TEXT NOT NULL, inicio INTEGER NOT NULL, fim INTEGER NOT NULL, '
+                "meta_id TEXT, status TEXT NOT NULL DEFAULT 'ativo')");
+            await customStatement('ALTER TABLE tarefas ADD COLUMN projeto_id TEXT');
           }
           if (de < 8) {
             await m.createTable(alimentos);
@@ -532,6 +531,56 @@ class BancoAurora extends _$BancoAurora {
             // CREATE TABLE IF NOT EXISTS: aguenta rodar de novo (ver o passo 10).
             await m.createTable(compromissos);
           }
+          if (de < 15) {
+            // Metas e Projetos viram Objetivos; tarefas e hábitos ganham um campo só.
+            // Idempotente: num banco novo (criado já na versão atual) as tabelas
+            // antigas não existem, então cada passo confere antes de mexer.
+            await m.createTable(objetivos);
+            if (!await _temColuna('tarefas', 'objetivo_id')) {
+              await m.addColumn(tarefas, tarefas.objetivoId);
+            }
+            if (!await _temColuna('habitos', 'objetivo_id')) {
+              await m.addColumn(habitos, habitos.objetivoId);
+            }
+            if (await _temTabela('metas')) {
+              await customStatement(
+                'INSERT INTO objetivos (id, nome, descricao, unidade, valor_inicial, valor_atual, valor_alvo, '
+                'data_alvo, inicio, status, cor, criado_em, atualizado_em, apagado_em) '
+                'SELECT id, nome, NULL, unidade, valor_inicial, valor_atual, valor_alvo, '
+                'data_alvo, NULL, status, NULL, criado_em, atualizado_em, apagado_em FROM metas');
+            }
+            if (await _temTabela('projetos')) {
+              await customStatement(
+                'INSERT INTO objetivos (id, nome, descricao, unidade, valor_inicial, valor_atual, valor_alvo, '
+                'data_alvo, inicio, status, cor, criado_em, atualizado_em, apagado_em) '
+                "SELECT id, nome, NULL, '', 0, 0, 0, fim, inicio, "
+                "CASE status WHEN 'arquivado' THEN 'arquivada' ELSE 'ativa' END, NULL, "
+                'criado_em, atualizado_em, apagado_em FROM projetos');
+            }
+            final temMetaTarefa = await _temColuna('tarefas', 'meta_id');
+            final temProjetoTarefa = await _temColuna('tarefas', 'projeto_id');
+            if (temMetaTarefa || temProjetoTarefa) {
+              final origem = temMetaTarefa && temProjetoTarefa
+                  ? 'COALESCE(meta_id, projeto_id)'
+                  : (temMetaTarefa ? 'meta_id' : 'projeto_id');
+              await customStatement(
+                  'UPDATE tarefas SET objetivo_id = $origem WHERE objetivo_id IS NULL');
+            }
+            if (await _temColuna('habitos', 'meta_id')) {
+              await customStatement('UPDATE habitos SET objetivo_id = meta_id WHERE objetivo_id IS NULL');
+            }
+            if (temMetaTarefa) {
+              await customStatement('ALTER TABLE tarefas DROP COLUMN meta_id');
+            }
+            if (temProjetoTarefa) {
+              await customStatement('ALTER TABLE tarefas DROP COLUMN projeto_id');
+            }
+            if (await _temColuna('habitos', 'meta_id')) {
+              await customStatement('ALTER TABLE habitos DROP COLUMN meta_id');
+            }
+            await customStatement('DROP TABLE IF EXISTS metas');
+            await customStatement('DROP TABLE IF EXISTS projetos');
+          }
         },
         beforeOpen: (detalhes) async {
           await customStatement('PRAGMA foreign_keys = ON');
@@ -541,6 +590,14 @@ class BancoAurora extends _$BancoAurora {
   Future<bool> _temColuna(String tabela, String coluna) async {
     final colunas = await customSelect('PRAGMA table_info($tabela)').get();
     return colunas.any((c) => c.read<String>('name') == coluna);
+  }
+
+  Future<bool> _temTabela(String tabela) async {
+    final r = await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+      variables: [Variable<String>(tabela)],
+    ).get();
+    return r.isNotEmpty;
   }
 
   /// v6: registros com chave natural passam a usar o id calculado (idNatural).

@@ -42,7 +42,7 @@ void main() {
     expect(r.tarefasAtrasadas, agoraLocal().hour >= 21 ? 4 : 3);
     expect(r.aPagarCentavos, 22280);
     expect(r.contasAPagar, 3);
-    expect(r.meta?.nome, 'Shape 80kg');
+    expect(r.objetivo?.nome, 'Shape 80kg');
   });
 
   test('linha do dia, semana e insights', () async {
