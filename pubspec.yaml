@@ -1,7 +1,7 @@
 name: aurora
 description: "Aurora: tarefas, hábitos, treino, finanças e metas num app só."
 publish_to: 'none'
-version: 1.13.0+43
+version: 1.13.1+44
 
 environment:
   sdk: ^3.13.5
