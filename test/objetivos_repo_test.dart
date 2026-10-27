@@ -110,6 +110,22 @@ void main() {
 
     tearDown(() => db.close());
 
+    /// Um objetivo-plano (o que antes era "projeto"): começa [comecouHa] dias
+    /// atrás e termina em [terminaEm] dias (negativo = já passou).
+    Future<String> plano({int comecouHa = 10, int terminaEm = 30}) {
+      final hoje = hojeLocal();
+      return repo.salvar(ObjetivosCompanion.insert(
+        nome: 'Estágio',
+        inicio: Value(instanteLocal(somarDias(hoje, -comecouHa), 9)),
+        dataAlvo: Value(instanteLocal(somarDias(hoje, terminaEm), 9)),
+      ));
+    }
+
+    Future<ProgressoObjetivo> carregarPorNome(String nome) async =>
+        (await repo.carregar()).firstWhere((p) => p.objetivo.nome == nome);
+
+    Future<ProgressoObjetivo> carregarEstagio() => carregarPorNome('Estágio');
+
     test('conta tarefas ligadas e grava o valor de hoje', () async {
       var lista = await repo.carregar();
       final shape = lista.single;
@@ -159,6 +175,76 @@ void main() {
       await TarefasRepo(db).alternar(pendente.ocorrencia, true);
       p = (await repo.carregar()).firstWhere((p) => p.objetivo.nome == 'Estágio');
       expect(p.estado, EstadoObjetivo.concluida);
+    });
+
+    // O que veio de Projetos: o objetivo como plano de etapas.
+    test('rotina ligada aparece nas etapas mas não conta no progresso', () async {
+      final id = await plano();
+      await repo.novaEtapa(id, 'Pesquisar vagas', dia: somarDias(hojeLocal(), 2));
+      await repo.novaEtapa(id, 'Entrevista');
+      await TarefasRepo(db).salvar(
+        TarefasCompanion.insert(
+          titulo: 'Estudar inglês',
+          prazo: Value(instanteLocal(hojeLocal())),
+          regraRepeticao: const Value('FREQ=DAILY'),
+          objetivoId: Value(id),
+        ),
+        avisar: false,
+      );
+
+      var p = await carregarEstagio();
+      expect(p.etapas, hasLength(3));
+      expect(p.total, 2, reason: 'a rotina fica de fora da conta');
+      expect(p.feitas, 0);
+      expect(p.estado, EstadoObjetivo.emDia);
+      expect(detalheEtapa(p.etapas.firstWhere((e) => e.rotina), hojeLocal()), 'rotina · todo dia');
+
+      await TarefasRepo(db).alternar(
+          p.etapas.firstWhere((e) => e.tarefa.titulo == 'Pesquisar vagas').ocorrencia, true);
+      p = await carregarEstagio();
+      expect(p.feitas, 1);
+      expect(p.progresso, 0.5);
+      // Feitas vão para o fim da lista.
+      expect(p.etapas.last.tarefa.titulo, 'Pesquisar vagas');
+      expect(detalheEtapa(p.etapas.last, hojeLocal()), 'feita hoje');
+    });
+
+    test('etapa atrasada deixa em risco; tudo feito conclui', () async {
+      final id = await plano();
+      await repo.novaEtapa(id, 'Testes', dia: somarDias(hojeLocal(), -3));
+      var p = await carregarEstagio();
+      expect(p.estado, EstadoObjetivo.emRisco);
+      expect(detalheEtapa(p.etapas.single, hojeLocal()), 'atrasada 3 dias');
+
+      await TarefasRepo(db).alternar(p.etapas.single.ocorrencia, true);
+      p = await carregarEstagio();
+      expect(p.estado, EstadoObjetivo.concluida);
+      expect(p.textoPrazo, 'concluído');
+    });
+
+    test('tempo correndo mais rápido que as etapas é risco', () async {
+      final id = await plano(comecouHa: 80, terminaEm: 20);
+      await repo.novaEtapa(id, 'A');
+      await repo.novaEtapa(id, 'B');
+      expect((await carregarEstagio()).estado, EstadoObjetivo.emRisco);
+    });
+
+    test('prazo passou sem terminar é risco', () async {
+      final id = await plano(comecouHa: 30, terminaEm: -1);
+      await repo.novaEtapa(id, 'A');
+      final p = await carregarEstagio();
+      expect(p.estado, EstadoObjetivo.emRisco);
+      expect(p.textoPrazo, 'prazo passou há 1 dia');
+    });
+
+    test('pausar, arquivar e reabrir mudam o estado', () async {
+      final id = await repo.salvar(ObjetivosCompanion.insert(nome: 'Pausado'));
+      await repo.mudarStatus(id, 'pausada');
+      expect((await carregarPorNome('Pausado')).estado, EstadoObjetivo.pausada);
+      await repo.mudarStatus(id, 'arquivada');
+      expect((await carregarPorNome('Pausado')).estado, EstadoObjetivo.arquivada);
+      await repo.mudarStatus(id, 'ativa');
+      expect((await carregarPorNome('Pausado')).estado, EstadoObjetivo.emDia);
     });
   });
 }
