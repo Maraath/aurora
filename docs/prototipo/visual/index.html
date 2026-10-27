@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurora · estúdio visual — quatro caminhos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,300..500,0..1&display=block" rel="stylesheet">
+<style>
+:root{
+  --bg:#080716;--surface:#0F0E26;--surface2:#18173A;--line:#232250;--text:#EEF0FB;--muted:#A3A6C8;
+  --accent:#5CF0B0;--accentFill:#3EDB9A;--gradIni:#3EDB9A;--gradFim:#7E7BFF;--noAccent:#06061A;
+  --violeta:#9D8CFF;--teal:#42E3C8;--warn:#F5C35B;--bad:#E77BFF;
+  --vidro:rgba(22,21,46,.62);--borda:rgba(255,255,255,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Manrope,sans-serif;font-size:15px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+.ms{font-family:'Material Symbols Rounded',sans-serif;font-weight:400;font-size:20px;line-height:1;
+  font-variation-settings:'FILL' 0,'wght' 320,'opsz' 24;display:inline-block}
+a{color:inherit;text-decoration:none}
+.sora{font-family:Sora,sans-serif}
+
+.ceu{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.ceu i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5}
+.ceu i:nth-child(1){width:900px;height:520px;left:-140px;top:-220px;background:radial-gradient(circle,rgba(62,219,154,.55),transparent 68%)}
+.ceu i:nth-child(2){width:760px;height:480px;right:-120px;top:-180px;background:radial-gradient(circle,rgba(126,123,255,.5),transparent 68%)}
+.ceu i:nth-child(3){width:900px;height:600px;left:30%;bottom:-420px;background:radial-gradient(circle,rgba(66,227,200,.22),transparent 70%)}
+.pagina{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 28px 90px}
+
+.topo{padding:54px 0 34px;border-bottom:1px solid var(--borda)}
+.rot{font-size:10.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+h1{font-family:Sora;font-size:48px;font-weight:600;letter-spacing:-1.6px;line-height:1.06;margin:16px 0 16px}
+h1 em{font-style:normal;background:linear-gradient(100deg,var(--text) 6%,var(--accent) 52%,var(--violeta));-webkit-background-clip:text;background-clip:text;color:transparent}
+.topo p{max-width:660px;color:#C7C9DE;font-size:15.5px}
+.topo p b{color:var(--text);font-weight:700}
+.selos{display:flex;gap:8px;margin-top:22px;flex-wrap:wrap}
+.selo{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--borda);
+  background:rgba(255,255,255,.03);font-size:11.5px;font-weight:700;color:var(--muted)}
+.selo .ms{font-size:15px;color:var(--accent)}
+
+h2{font-family:Sora;font-size:26px;font-weight:600;letter-spacing:-.7px}
+.secao{padding-top:56px}
+.cabeco{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px}
+.cabeco p{color:var(--muted);font-size:13.5px;margin-top:6px;max-width:560px}
+
+/* cartão de direção */
+.direcao{display:grid;grid-template-columns:1.05fr 1fr;gap:26px;align-items:center;padding:26px;
+  border-radius:26px;border:1px solid var(--borda);background:var(--vidro);
+  backdrop-filter:blur(18px) saturate(1.3);box-shadow:0 18px 50px rgba(0,0,0,.3);margin-bottom:20px}
+.direcao+.direcao{margin-top:0}
+.visuais{position:relative;display:flex;align-items:flex-end;gap:12px}
+.pc{flex:1;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.13);
+  box-shadow:0 18px 40px rgba(0,0,0,.45);background:#0A0918;position:relative}
+.pc img{display:block;width:100%;height:auto}
+.fone{width:88px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.16);box-shadow:0 16px 34px rgba(0,0,0,.5);flex:0 0 88px}
+.fone img{display:block;width:100%;height:auto}
+.texto-d{display:flex;flex-direction:column;gap:0}
+.marca-d{display:flex;align-items:center;gap:12px}
+.letra{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-family:Sora;font-size:16px;font-weight:600;
+  color:var(--noAccent);background:linear-gradient(135deg,var(--c1),var(--c2));flex:0 0 38px}
+.nome-d{font-family:Sora;font-size:21px;font-weight:600;letter-spacing:-.4px}
+.nome-linha{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.escolhida{font-size:9.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--noAccent);
+  background:linear-gradient(135deg,var(--gradIni),var(--gradFim));border-radius:999px;padding:3px 9px}
+.lema{font-size:12px;color:var(--muted);font-weight:600}
+.lista{list-style:none;margin:16px 0 0;display:flex;flex-direction:column;gap:10px}
+.lista li{display:grid;grid-template-columns:22px 1fr;gap:10px;font-size:13.5px;color:#D5D7E8;line-height:1.45;align-items:start}
+.lista li b{color:var(--text)}
+.lista .ms{font-size:17px;color:var(--c2);margin-top:2px}
+.tags{display:flex;gap:7px;margin-top:16px;flex-wrap:wrap}
+.tag{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;border-radius:999px;
+  padding:4px 9px;border:1px solid var(--borda);color:var(--muted);background:rgba(255,255,255,.03)}
+.tag b{color:var(--text);font-weight:800}
+.tag.i{border-color:rgba(92,240,176,.3);color:var(--accent);background:rgba(62,219,154,.09)}
+.tag.r{border-color:rgba(231,123,255,.3);color:var(--bad);background:rgba(231,123,255,.08)}
+.abrir{display:flex;gap:9px;margin-top:18px;flex-wrap:wrap}
+.botao{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 15px;border-radius:11px;font-size:12.5px;font-weight:700;
+  border:1px solid var(--borda-forte,var(--borda));color:var(--text);background:rgba(255,255,255,.04)}
+.botao .ms{font-size:17px}
+.botao.p{background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:var(--noAccent);border-color:transparent}
+.botao.p .ms{color:var(--noAccent)}
+
+/* tabela */
+.tabela{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+.tabela th{text-align:left;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);
+  padding:0 14px 12px;border-bottom:1px solid var(--borda);font-weight:800}
+.tabela td{padding:14px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;color:#CFD2E6}
+.tabela td:first-child{color:var(--text);font-weight:700;white-space:nowrap}
+.tabela .pt{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px}
+
+/* recomendação */
+.recomenda{display:grid;grid-template-columns:1fr 320px;gap:26px;padding:28px;border-radius:26px;border:1px solid rgba(92,240,176,.28);
+  background:linear-gradient(140deg,rgba(62,219,154,.10),rgba(126,123,255,.08) 60%,rgba(15,14,38,.6));margin-top:8px}
+.recomenda h3{font-family:Sora;font-size:20px;font-weight:600;margin-bottom:10px;letter-spacing:-.3px}
+.recomenda p{font-size:14px;color:#D8DAEA;margin-bottom:12px}
+.recomenda p b{color:var(--accent)}
+.recomenda ol{margin:0 0 0 18px;display:flex;flex-direction:column;gap:7px;font-size:13.5px;color:#D8DAEA}
+.recomenda ol b{color:var(--text)}
+.caixa-v{display:flex;flex-direction:column;gap:10px;justify-content:center;padding:16px 18px;border-radius:18px;
+  background:rgba(8,7,22,.5);border:1px solid var(--borda)}
+.caixa-v .l{display:flex;align-items:center;gap:10px;font-size:12.5px;color:#D5D7E8}
+.caixa-v .l .ms{font-size:17px;color:var(--accent)}
+.caixa-v .l b{color:var(--text)}
+
+/* ideias */
+.ideias{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px}
+.ideia{padding:16px 16px 18px;border-radius:18px;border:1px solid var(--borda);background:rgba(255,255,255,.028)}
+.ideia .ms{font-size:20px;color:var(--accent)}
+.ideia b{display:block;font-family:Sora;font-size:13.5px;font-weight:600;margin:9px 0 5px}
+.ideia p{font-size:12px;color:var(--muted);line-height:1.5}
+
+footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--borda);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  font-size:12px;color:var(--muted)}
+footer code{font-family:Manrope;font-size:11.5px;color:#C9CBE0;background:rgba(255,255,255,.05);border:1px solid var(--borda);
+  border-radius:6px;padding:2px 6px}
+.arquivos{display:flex;flex-direction:column;gap:6px}
+.arquivos a{color:#C9CBE0}
+.arquivos a:hover{color:var(--accent)}
+
+@media (max-width:980px){
+  h1{font-size:34px;letter-spacing:-1px}
+  .direcao{grid-template-columns:1fr;padding:18px}
+  .ideias{grid-template-columns:1fr 1fr}
+  .recomenda{grid-template-columns:1fr}
+  .tabela{font-size:12.5px}
+  .fone{width:64px;flex:0 0 64px}
+}
+@media (max-width:640px){
+  .pagina{padding:0 16px 60px}
+  .topo{padding:32px 0 24px}
+  .ideias{grid-template-columns:1fr}
+  .tabela thead{display:none}
+  .tabela tr{display:block;border-bottom:1px solid var(--borda);padding:10px 0}
+  .tabela td{display:flex;justify-content:space-between;gap:18px;border:0;padding:4px 0;text-align:right}
+  .tabela td:first-child{text-align:left}
+}
+</style>
+</head>
+<body>
+<div class="ceu"><i></i><i></i><i></i></div>
+
+<div class="pagina">
+  <header class="topo">
+    <div class="rot">Aurora · protótipos visuais · 27 de outubro de 2026</div>
+    <h1>Quatro caminhos para o <em>Aurora</em> ficar mais bonito</h1>
+    <p>Quatro direções visuais para a mesma Visão. Todas mantêm o que identifica o app —
+      <b>a paleta da aurora, o céu noturno, Sora e Manrope, o botão em degradê e o vidro</b> — e mudam o
+      material, a tipografia e a organização do conteúdo. Cada uma abre um protótipo clicável, em tamanho real.</p>
+    <div class="selos">
+      <span class="selo"><span class="ms">palette</span>Paleta e fontes originais</span>
+      <span class="selo"><span class="ms">desktop_windows</span>8 telas: computador e celular</span>
+      <span class="selo"><span class="ms">bolt</span>Nada de código de produção</span>
+    </div>
+  </header>
+
+  <section class="secao" id="direcoes">
+    <div class="cabeco">
+      <div>
+        <h2>As quatro direções</h2>
+        <p>Abra no navegador e diminua a janela: cada protótipo vira o layout do celular sozinho.</p>
+      </div>
+    </div>
+
+    <article class="direcao" style="--c1:#3EDB9A;--c2:#5CF0B0">
+      <div class="visuais">
+        <div class="pc"><img src="capturas/a-desktop.png" alt="Direção A — Aurora Viva, tela do computador"></div>
+        <div class="fone"><img src="capturas/a-celular.png" alt="Direção A — celular"></div>
+      </div>
+      <div class="texto-d">
+        <div class="marca-d"><span class="letra">A</span><div><div class="nome-d">Aurora Viva</div><div class="lema">a evolução fiel: mesmo desenho, material muito melhor</div></div></div>
+        <ul class="lista">
+          <li><span class="ms">landscape</span><span><b>Cortinas de aurora de verdade</b> no topo (três camadas e duas cortinas em movimento lento). O céu deixa de ser dois borrões.</span></li>
+          <li><span class="ms">line_weight</span><span><b>Fio de luz</b> de 1&nbsp;px no topo dos cartões e sombra mais funda: o cartão ganha borda iluminada.</span></li>
+          <li><span class="ms">donut_large</span><span><b>Anel do dia</b> no cabeçalho (7/12) e números de destaque maiores.</span></li>
+          <li><span class="ms">timeline</span><span><b>Linha do dia com trilho</b> vertical e nó colorido por tipo; o item de agora ganha faixa e barra em degradê.</span></li>
+          <li><span class="ms">playlist_play</span><span><b>Em foco com fila</b> “A seguir” dentro do cartão e <b>painel das áreas</b> em lista densa.</span></li>
+        </ul>
+        <div class="tags"><span class="tag i">impacto <b>alto</b></span><span class="tag">esforço <b>baixo</b></span><span class="tag">risco <b>baixo</b></span></div>
+        <div class="abrir">
+          <a class="botao p" href="a-aurora-viva.html"><span class="ms">open_in_new</span>Abrir protótipo</a>
+          <a class="botao" href="a-aurora-viva.html"><span class="ms">smartphone</span>Ver no celular</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="direcao" style="--c1:#7E7BFF;--c2:#9D8CFF">
+      <div class="visuais">
+        <div class="pc"><img src="capturas/b-desktop.png" alt="Direção B — Bento Noturno, tela do computador"></div>
+        <div class="fone"><img src="capturas/b-celular.png" alt="Direção B — celular"></div>
+      </div>
+      <div class="texto-d">
+        <div class="marca-d"><span class="letra">B</span><div><div class="nome-linha"><div class="nome-d">Bento Noturno</div><span class="escolhida">no app</span></div><div class="lema">a Visão vira uma grade de blocos com pesos diferentes</div></div></div>
+        <ul class="lista">
+          <li><span class="ms">grid_view</span><span><b>Grade bento</b> de 12 colunas: o foco ocupa dois andares, os números viram blocos pequenos.</span></li>
+          <li><span class="ms">search</span><span><b>Busca sempre visível</b> no cabeçalho (Ctrl&nbsp;K) — sai do canto e vira parte da tela.</span></li>
+          <li><span class="ms">donut_large</span><span><b>Anéis do dia</b> em sequência: tarefas, hábitos, água e reserva num bloco só.</span></li>
+          <li><span class="ms">schedule</span><span><b>“A seguir” com hora gigante</b> e anel do compromisso; a semana mostra o insight embaixo.</span></li>
+          <li><span class="ms">straighten</span><span><b>Rótulos micro</b> em caixa alta e números grandes: hierarquia mais clara, menos texto.</span></li>
+        </ul>
+        <div class="tags"><span class="tag i">impacto <b>alto</b></span><span class="tag">esforço <b>médio</b></span><span class="tag r">risco <b>médio</b></span></div>
+        <div class="abrir">
+          <a class="botao p" href="b-bento-noturno.html"><span class="ms">open_in_new</span>Abrir protótipo</a>
+          <a class="botao" href="b-bento-noturno.html"><span class="ms">smartphone</span>Ver no celular</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="direcao" style="--c1:#0B8A5C;--c2:#5B45D6">
+      <div class="visuais">
+        <div class="pc"><img src="capturas/c-desktop.png" alt="Direção C — Editorial Claro, tela do computador"></div>
+        <div class="fone"><img src="capturas/c-celular.png" alt="Direção C — celular"></div>
+      </div>
+      <div class="texto-d">
+        <div class="marca-d"><span class="letra">C</span><div><div class="nome-d">Editorial Claro</div><div class="lema">o modo claro deixa de ser um tema alternativo</div></div></div>
+        <ul class="lista">
+          <li><span class="ms">light_mode</span><span><b>Papel off-white</b> com lavagem de aurora verde/violeta bem fraca no alto.</span></li>
+          <li><span class="ms">format_size</span><span><b>Tipografia editorial</b>: saudação de 40&nbsp;px, rótulos espaçados em caixa alta e <b>fios em vez de caixas</b>.</span></li>
+          <li><span class="ms">subject</span><span><b>Linha do dia aberta</b> sobre o papel, com ponto colorido por tipo e o item de agora marcado por uma barra.</span></li>
+          <li><span class="ms">bar_chart</span><span><b>Gráficos sem moldura</b>, com linha de base e números tabulares.</span></li>
+          <li><span class="ms">format_quote</span><span><b>Insight como citação</b>, com aspas em degradê, e menu claro com sombra suave.</span></li>
+        </ul>
+        <div class="tags"><span class="tag i">impacto <b>alto</b></span><span class="tag">esforço <b>médio</b></span><span class="tag">risco <b>baixo</b></span></div>
+        <div class="abrir">
+          <a class="botao p" href="c-editorial-claro.html"><span class="ms">open_in_new</span>Abrir protótipo</a>
+          <a class="botao" href="c-editorial-claro.html"><span class="ms">smartphone</span>Ver no celular</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="direcao" style="--c1:#42E3C8;--c2:#7E7BFF">
+      <div class="visuais">
+        <div class="pc"><img src="capturas/d-desktop.png" alt="Direção D — Vidro Imersivo, tela do computador"></div>
+        <div class="fone"><img src="capturas/d-celular.png" alt="Direção D — celular"></div>
+      </div>
+      <div class="texto-d">
+        <div class="marca-d"><span class="letra">D</span><div><div class="nome-d">Vidro Imersivo</div><div class="lema">profundidade e luz: a aurora passa a existir atrás do conteúdo</div></div></div>
+        <ul class="lista">
+          <li><span class="ms">blur_on</span><span><b>Aurora forte</b> atrás de tudo e cartões de vidro com desfoque real e borda de 1&nbsp;px.</span></li>
+          <li><span class="ms">crop_16_9</span><span><b>Cabeçalho em pílula flutuante</b> com saudação, busca, tema e a orbe do assistente.</span></li>
+          <li><span class="ms">bubble_chart</span><span><b>Anel-orbe do dia</b>: a orbe da Aurora vira o medidor de progresso (7 de 12).</span></li>
+          <li><span class="ms">rocket_launch</span><span><b>Barra de ações rápidas</b> no rodapé: Nova tarefa, Lançamento, Lembrete e o +.</span></li>
+          <li><span class="ms">blur_circular</span><span><b>Cantos de 28&nbsp;px</b>, brilho interno nos cartões e ícones soltos sobre a aurora.</span></li>
+        </ul>
+        <div class="tags"><span class="tag i">impacto <b>muito alto</b></span><span class="tag">esforço <b>médio-alto</b></span><span class="tag r">risco <b>desempenho</b></span></div>
+        <div class="abrir">
+          <a class="botao p" href="d-vidro-imersivo.html"><span class="ms">open_in_new</span>Abrir protótipo</a>
+          <a class="botao" href="d-vidro-imersivo.html"><span class="ms">smartphone</span>Ver no celular</a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="secao" id="comparacao">
+    <div class="cabeco"><div><h2>Lado a lado</h2><p>O que cada direção mexe de fato e o que ela custa.</p></div></div>
+    <table class="tabela">
+      <thead><tr><th>Direção</th><th>Muda o layout?</th><th>Onde pesa mais</th><th>Esforço</th><th>Risco</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pt" style="background:#5CF0B0"></span>A · Aurora Viva</td><td>Quase nada</td><td>Céu, cartões, linha do dia, anel</td><td>Baixo</td><td>Baixo</td></tr>
+        <tr><td><span class="pt" style="background:#9D8CFF"></span>B · Bento Noturno</td><td>Sim, a Visão inteira</td><td>Grade, busca no topo, anéis</td><td>Médio</td><td>Médio (tela cheia)</td></tr>
+        <tr><td><span class="pt" style="background:#0B8A5C"></span>C · Editorial Claro</td><td>Pouco (colunas)</td><td>Tema claro, tipografia, fios</td><td>Médio</td><td>Baixo</td></tr>
+        <tr><td><span class="pt" style="background:#42E3C8"></span>D · Vidro Imersivo</td><td>Médio</td><td>Vidro e desfoque, cabeçalho, orbe</td><td>Médio-alto</td><td>Alto (GPU)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="secao" id="recomendacao">
+    <div class="cabeco"><div><h2>Como eu faria</h2><p>Uma base segura, um ganho grande e o resto como tempero.</p></div></div>
+    <div class="recomenda">
+      <div>
+        <h3>Começar por A, colher o anel de D e entregar C junto</h3>
+        <p>A <b>Aurora Viva</b> é a única que dá para fazer em uma passada de UI sem mexer em dado nenhum —
+          e já muda a percepção do app: céu com cortinas, cartões com fio de luz, linha do tempo com trilho.
+          O <b>anel do dia</b> (D) é pequeno e cabe no cabeçalho de qualquer direção.</p>
+        <ol>
+          <li><b>Agora:</b> céu novo + fio nos cartões + linha do dia com trilho (A).</li>
+          <li><b>Depois:</b> anel da orbe no “Em foco” (D) e busca no cabeçalho (B).</li>
+          <li><b>Em paralelo:</b> refazer o modo claro com o desenho editorial (C) — hoje ele é só o escuro com outras cores.</li>
+          <li><b>Experimento:</b> a grade bento (B) só na Visão, atrás de uma opção, para sentir no dia a dia.</li>
+        </ol>
+      </div>
+      <div class="caixa-v">
+        <div class="l"><span class="ms">speed</span><div>Em D, o desfoque é o custo: use vidro em <b>3 ou 4 superfícies</b>, nunca em cartão de lista.</div></div>
+        <div class="l"><span class="ms">devices</span><div>Nos testes do app já existe <b>AURORA_MEDIR</b> para comparar quadros antes e depois.</div></div>
+        <div class="l"><span class="ms">accessibility</span><div>Nenhuma direção muda texto, fluxo ou ordem de toque — só o desenho.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao" id="ideias">
+    <div class="cabeco"><div><h2>Peças que servem em qualquer direção</h2><p>Ideias pequenas, testadas nos quatro protótipos.</p></div></div>
+    <div class="ideias">
+      <div class="ideia"><span class="ms">landscape</span><b>Cortinas de aurora</b><p>Três camadas desfocadas + duas cortinas verticais, com máscara no topo. Dá identidade sem custar quadro a quadro.</p></div>
+      <div class="ideia"><span class="ms">line_weight</span><b>Fio de luz no cartão</b><p>1&nbsp;px em degradê no topo, verde → violeta → transparente. Substitui a sombra pesada por brilho.</p></div>
+      <div class="ideia"><span class="ms">donut_large</span><b>Anel do dia</b><p>Progresso com <i>conic-gradient</i> (ou <span class="sora">SweepGradient</span>) e número no meio; some no celular, onde o espaço é curto.</p></div>
+      <div class="ideia"><span class="ms">timeline</span><b>Linha do dia com trilho</b><p>Um fio vertical conecta as horas; o nó muda de cor pelo tipo e o item de agora ganha faixa.</p></div>
+      <div class="ideia"><span class="ms">format_size</span><b>Escala de título</b><p>Saudação 30–40&nbsp;px, seção 19–20&nbsp;px, rótulo 9–10&nbsp;px em caixa alta. Hoje tudo fica entre 13 e 18.</p></div>
+      <div class="ideia"><span class="ms">search</span><b>Busca no cabeçalho</b><p>Um campo com Ctrl&nbsp;K na Visão reduz a dependência dos atalhos flutuantes e ocupa o vazio do topo.</p></div>
+      <div class="ideia"><span class="ms">rocket_launch</span><b>Ações rápidas no rodapé</b><p>Pílula de vidro com Nova tarefa, Lançamento e Lembrete: o “+” deixa de esconder tudo num menu.</p></div>
+      <div class="ideia"><span class="ms">brush</span><b>Micro-rótulos</b><p>Caixa alta com 1,3&nbsp;px de espaçamento e peso 800 em cima de números grandes: o contraste que faz parecer “produto”.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      <div class="rot" style="margin-bottom:8px">Arquivos</div>
+      <div class="arquivos">
+        <a href="a-aurora-viva.html">a-aurora-viva.html</a>
+        <a href="b-bento-noturno.html">b-bento-noturno.html</a>
+        <a href="c-editorial-claro.html">c-editorial-claro.html</a>
+        <a href="d-vidro-imersivo.html">d-vidro-imersivo.html</a>
+      </div>
+    </div>
+    <div style="max-width:460px">
+      <div class="rot" style="margin-bottom:8px">Como ler</div>
+      Protótipos estáticos em HTML: servem para escolher direção, não para copiar código.
+      O app real é Flutter — a tradução é <code>CustomPaint</code> (céu), <code>BackdropFilter</code> (vidro),
+      <code>ThemeExtension</code> (tokens) e os widgets de <code>lib/ui/componentes.dart</code>.
+      Capturas em <code>capturas/</code>.
+      <p style="margin-top:10px;color:#CFD2E6">A <b style="color:#9D8CFF">B · Bento Noturno</b> foi a escolhida e
+      está no app desde 27/10/2026 (<code>lib/ui/visao/visao_page.dart</code>); telas em
+      <code>docs/capturas/visao-bento-*.png</code>.</p>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

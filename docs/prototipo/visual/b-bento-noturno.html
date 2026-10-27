@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="pt-BR" class="pc">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B · Bento Noturno — protótipo visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,300..500,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="comum.css">
+<script>document.documentElement.className = innerWidth < 760 ? 'fone' : 'pc';</script>
+<style>
+/* ================= B · BENTO NOTURNO =================
+   A Visão vira uma grade de blocos de pesos diferentes (bento). Mesmo céu,
+   mesma paleta, mas com busca sempre visível, anéis do dia e números maiores. */
+
+.veu{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,var(--bg) 0,rgba(8,7,22,.6) 4%,rgba(8,7,22,0) 14%),
+             linear-gradient(180deg,rgba(8,7,22,.4),transparent 22%)}
+.coluna{max-width:1180px;position:relative;z-index:3}
+.rolagem{position:relative;z-index:3}
+#ceu{opacity:.75}
+
+/* cabeçalho */
+.topo{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding:4px 0 18px}
+.topo h1{font-size:31px;margin-top:7px}
+.topo h1 em{font-style:normal;color:var(--accent)}
+.topo-dir{display:flex;align-items:center;gap:10px;padding-top:4px}
+.busca{display:flex;align-items:center;gap:9px;height:42px;padding:0 12px 0 14px;min-width:250px;
+  border-radius:13px;border:1px solid var(--borda);background:rgba(24,23,58,.5);color:var(--muted);
+  font-size:13px;backdrop-filter:blur(10px)}
+.busca .ms{font-size:19px;color:var(--muted)}
+.busca kbd{margin-left:auto;font-family:Manrope;font-size:10.5px;font-weight:700;border:1px solid var(--line);
+  border-radius:6px;padding:2px 6px;color:var(--muted)}
+.orbe-bt{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;border:1px solid rgba(157,140,255,.32);
+  background:rgba(24,23,58,.5);position:relative}
+.orbe-bt::before{content:'';width:22px;height:22px;border-radius:50%;
+  background:radial-gradient(circle at 34% 28%,#E4FFF4,var(--accentFill) 44%,var(--gradFim) 94%);
+  box-shadow:0 0 16px rgba(92,240,176,.45)}
+
+/* grade */
+.bento{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(4,168px);gap:14px}
+.t{position:relative;overflow:hidden;border-radius:24px;border:1px solid var(--borda);padding:18px 20px;
+  background:linear-gradient(170deg,rgba(20,19,44,.92),rgba(12,11,29,.9));box-shadow:0 16px 44px rgba(0,0,0,.26)}
+.t::after{content:'';position:absolute;inset:0 0 auto;height:1px;
+  background:linear-gradient(90deg,rgba(255,255,255,.14),transparent 70%)}
+.t-heroi{grid-column:1/8;grid-row:1/3;padding:22px 26px;display:flex;flex-direction:column}
+.t-agora{grid-column:8/13;grid-row:1/2}
+.t-aneis{grid-column:8/13;grid-row:2/3}
+.t-dia{grid-column:1/8;grid-row:3/5}
+.t-semana{grid-column:8/13;grid-row:3/4}
+.t-areas{grid-column:8/13;grid-row:4/5}
+
+/* herói */
+.t-heroi{border-radius:26px;background:
+  radial-gradient(120% 160% at -5% -30%,rgba(62,219,154,.18),transparent 60%),
+  radial-gradient(90% 140% at 105% 120%,rgba(126,123,255,.22),transparent 62%),
+  linear-gradient(160deg,#131230,#0B0A1E)}
+.t-heroi::before{content:'';position:absolute;left:0;right:0;top:0;height:1.5px;
+  background:linear-gradient(90deg,var(--gradIni),var(--teal) 34%,var(--violeta) 70%,transparent)}
+.t-heroi .rot{display:flex;align-items:center;gap:8px;color:var(--accent)}
+.t-heroi .rot i{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(92,240,176,.14)}
+.t-heroi h2{font-size:30px;margin:14px 0 6px;max-width:440px;letter-spacing:-.7px}
+.t-heroi .sub{font-size:13.5px}
+.t-heroi .acoes{display:flex;align-items:center;gap:10px;margin-top:18px}
+.prog{display:flex;align-items:center;gap:10px;margin-top:22px}
+.prog .trilho{flex:1;height:5px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;max-width:300px}
+.prog .trilho i{display:block;height:100%;width:29%;border-radius:4px;
+  background:linear-gradient(90deg,var(--gradIni),var(--gradFim));box-shadow:0 0 14px rgba(92,240,176,.5)}
+.prog span{font-size:11.5px;font-weight:700;color:var(--muted)}
+.heroi-fila{margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.06);display:grid;
+  grid-template-columns:1fr 1fr;gap:16px}
+.heroi-fila .rot{font-size:9px;color:var(--muted);letter-spacing:1.4px;margin-bottom:7px}
+.hf{display:flex;align-items:center;gap:9px;font-size:12.5px}
+.hf time{font-size:11.5px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.hf b{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hf span{margin-left:auto;font-size:10px;font-weight:700;color:var(--muted)}
+.heroi-topo{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.heroi-lado{position:absolute;right:26px;top:22px;text-align:right}.heroi-lado b{display:block;font-family:Sora;font-size:44px;font-weight:600;letter-spacing:-2px;line-height:1;
+  background:linear-gradient(160deg,var(--text),var(--violeta));-webkit-background-clip:text;background-clip:text;color:transparent}
+.heroi-lado small{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:800}
+
+/* agora */
+.t-agora .rot{color:var(--muted)}
+.t-agora .hora{font-family:Sora;font-size:38px;font-weight:600;letter-spacing:-1.6px;line-height:1;margin:10px 0 6px;
+  background:linear-gradient(120deg,var(--teal),var(--violeta));-webkit-background-clip:text;background-clip:text;color:transparent}
+.t-agora .titulo{font-size:15px;font-weight:700}
+.t-agora .meta{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;color:var(--muted)}
+.t-agora .meta .selo{height:22px;padding:0 9px;border-radius:999px;border:1px solid rgba(66,227,200,.3);
+  background:rgba(66,227,200,.1);color:var(--teal);font-size:10.5px;font-weight:800;display:inline-flex;align-items:center}
+.t-agora .mini-barra{position:absolute;right:20px;bottom:18px;width:52px;height:52px;border-radius:50%;
+  background:conic-gradient(var(--teal) 0 68%,rgba(255,255,255,.07) 68% 100%);display:grid;place-items:center}
+.t-agora .mini-barra i{width:42px;height:42px;border-radius:50%;background:#12112B;display:grid;place-items:center;
+  font-size:10px;font-weight:800;color:var(--teal);font-style:normal}
+
+/* anéis */
+.t-aneis{display:flex;align-items:center;gap:6px}
+.t-aneis .rot{position:absolute;left:20px;top:16px}
+.aneis{display:flex;justify-content:space-between;width:100%;margin-top:20px;padding:0 4px}
+.anel-b{display:flex;flex-direction:column;align-items:center;gap:7px}
+.anel-b .a{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;position:relative;
+  background:conic-gradient(from 180deg,var(--c) 0 var(--p),rgba(255,255,255,.06) var(--p) 100%)}
+.anel-b .a::before{content:'';position:absolute;inset:5px;border-radius:50%;background:#12112A}
+.anel-b .a b{position:relative;font-family:Sora;font-size:12.5px;font-weight:600;color:var(--c)}
+.anel-b small{font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+
+/* dia */
+.t-dia{display:flex;flex-direction:column}
+.t-dia .cab{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.t-dia .cab span{font-size:11.5px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:4px}
+.tempo{list-style:none;flex:1;display:flex;flex-direction:column;justify-content:space-between;padding-bottom:2px}
+.tempo li{display:grid;grid-template-columns:44px 26px 1fr auto;align-items:center;gap:10px;
+  padding:7px 0;border-top:1px solid rgba(255,255,255,.05);font-size:13.5px}
+.tempo li:first-child{border-top:0}
+.tempo time{font-size:11.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.tempo .pt{width:7px;height:7px;border-radius:50%;background:var(--nc);justify-self:center;box-shadow:0 0 0 3px color-mix(in srgb,var(--nc) 14%,transparent)}
+.tempo .tx{font-weight:600;letter-spacing:-.1px}
+.tempo .tp{font-size:10.5px;font-weight:700;color:var(--muted)}
+.tempo li.feito .tx{color:var(--muted);font-weight:500;text-decoration:line-through;text-decoration-color:rgba(255,255,255,.18)}
+.tempo li.agora{position:relative}
+.tempo li.agora .tx{color:var(--accent)}
+.tempo li.agora::before{content:'';position:absolute;left:-20px;top:2px;bottom:2px;width:2px;border-radius:2px;
+  background:linear-gradient(180deg,var(--gradIni),var(--gradFim))}
+
+/* semana */
+.t-semana .cab{display:flex;align-items:baseline;justify-content:space-between}
+.t-semana .cab span{font-size:11px;font-weight:700;color:var(--muted)}
+.barras{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px;align-items:end;height:74px}
+.barras .b{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:5px}
+.barras .b i{width:100%;max-width:15px;border-radius:5px;background:rgba(255,255,255,.09);flex:0 0 auto}
+.barras .b.on i{background:linear-gradient(180deg,var(--gradFim),var(--gradIni));box-shadow:0 0 14px rgba(92,240,176,.4)}
+.barras .b span{font-size:9px;font-weight:800;color:var(--muted);letter-spacing:.3px}
+.barras .b.on span{color:var(--accent)}
+.nota-semana{display:flex;align-items:center;gap:7px;margin-top:11px;font-size:11px;color:var(--muted)}
+.nota-semana b{color:var(--teal);font-weight:800}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--teal)}
+
+/* áreas */
+.t-areas .cab{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px}
+.t-areas .cab span{font-size:11px;font-weight:700;color:var(--muted)}
+.micro{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.micro .m{border-radius:12px;border:1px solid rgba(255,255,255,.06);padding:8px 10px;background:rgba(255,255,255,.022)}
+.micro .m b{display:block;font-family:Sora;font-size:16px;font-weight:600;letter-spacing:-.3px}
+.micro .m b.bad{color:var(--bad)}
+.micro .m small{font-size:9px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--muted)}
+
+/* atalhos */
+.topo-fone{display:none}
+html.fone .topo-fone{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 4px}
+html.fone .topo-fone .marca{display:flex;align-items:center;gap:9px;font-family:Sora;font-size:16px;font-weight:600}
+html.fone .topo-fone .marca .sinal{width:19px;height:19px;border-radius:6px;background:conic-gradient(from 200deg,#3EDB9A,#42E3C8,#7E7BFF,#E77BFF,#3EDB9A)}
+html.fone .topo-fone .lado{display:flex;align-items:center;gap:6px;color:var(--muted)}
+html.fone .topo-fone .bt{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(24,23,58,.5);border:1px solid var(--borda)}
+html.fone .topo-fone .bt .ms{font-size:19px}
+html.fone .topo-fone .bt.ia{border-color:rgba(157,140,255,.35)}
+html.fone .pc-only{display:none!important}
+html.fone .topo{flex-direction:column;align-items:stretch;gap:12px;padding:14px 0 14px}
+html.fone .topo-dir{display:none}
+html.fone .bento{grid-template-columns:1fr;grid-template-rows:none;gap:12px}
+html.fone .t{grid-column:auto!important;grid-row:auto!important}
+html.fone .t-heroi{min-height:0;padding:20px}
+html.fone .t-heroi h2{font-size:23px;max-width:none}
+html.fone .heroi-lado{position:static;text-align:right;display:flex;align-items:baseline;gap:7px}
+html.fone .heroi-lado b{font-size:30px}
+html.fone .t-agora{min-height:132px}
+html.fone .t-aneis{min-height:120px;align-items:flex-start}
+html.fone .t-dia{min-height:0}
+html.fone .t-semana{min-height:150px}
+html.fone .t-areas{min-height:0}
+html.fone .micro .m b{font-size:17px}
+html.fone .heroi-fila{grid-template-columns:1fr;gap:10px;margin-top:16px}
+html.fone .barras{height:64px}
+</style>
+</head>
+<body>
+<canvas id="ceu"></canvas>
+<div class="aurora" data-camadas="2"></div>
+<div class="grao"></div>
+
+<div id="palco">
+  <div class="veu"></div>
+  <div class="janela">
+    <i class="fio-janela"></i>
+    <div class="faixa pc-only">
+      <div class="marca"><span class="sinal"></span>Aurora</div>
+      <div class="bt-janela"><span class="ms">remove</span></div>
+      <div class="bt-janela"><span class="ms">crop_square</span></div>
+      <div class="bt-janela fechar"><span class="ms">close</span></div>
+    </div>
+    <div class="corpo">
+      <nav class="menu pc-only">
+        <div class="item"><span class="ms">auto_awesome</span><span class="nome">Assistente</span></div>
+        <div class="item on"><span class="ms">home</span><span class="nome">Visão</span></div>
+        <div class="sep"></div>
+        <div class="item"><span class="ms">checklist</span><span class="nome">Rotina</span></div>
+        <div class="item"><span class="ms">monitor_heart</span><span class="nome">Saúde</span></div>
+        <div class="item"><span class="ms">flag</span><span class="nome">Objetivos</span></div>
+        <div class="item"><span class="ms">sticky_note_2</span><span class="nome">Anotações</span></div>
+        <div class="item"><span class="ms">account_balance_wallet</span><span class="nome">Finanças</span></div>
+        <div class="sep"></div>
+        <div class="item"><span class="ms">person</span><span class="nome">Conta</span></div>
+      </nav>
+
+      <div class="rolagem">
+        <div class="topo-fone fone-only">
+          <div class="marca"><span class="sinal"></span>Aurora</div>
+          <div class="lado">
+            <div class="bt"><span class="ms">search</span></div>
+            <div class="bt ia"><span class="ms">auto_awesome</span></div>
+          </div>
+        </div>
+        <div class="coluna">
+          <header class="topo">
+            <div>
+              <div class="rot">Terça-feira, 27 de outubro · 13:08</div>
+              <h1>Boa tarde, <em>Maraath</em></h1>
+            </div>
+            <div class="topo-dir">
+              <div class="busca"><span class="ms">search</span>Buscar em tudo<kbd>Ctrl K</kbd></div>
+              <div class="orbe-bt"></div>
+            </div>
+          </header>
+
+          <div class="bento">
+            <section class="t t-heroi">
+              <div class="heroi-topo">
+                <div class="rot"><i></i>Em foco agora</div>
+                <div class="heroi-lado"><b>7/12</b><small>feitos hoje</small></div>
+              </div>
+              <h2>Revisar o orçamento de novembro</h2>
+              <p class="sub">Para hoje · Rotina · 2 de 7</p>
+              <div class="acoes">
+                <button class="btn p"><span class="ms">play_arrow</span>Começar foco</button>
+                <button class="btn g">Focar em outra</button>
+              </div>
+              <div class="prog"><div class="trilho"><i></i></div><span>2 de 7 do foco</span></div>
+              <div class="heroi-fila">
+                <div>
+                  <div class="rot">Depois do foco</div>
+                  <div class="hf"><time>18:00</time><b>Treino de pernas</b><span>Treino</span></div>
+                </div>
+                <div>
+                  <div class="rot">Ainda hoje</div>
+                  <div class="hf"><time>20:00</time><b>Estudar Flutter</b><span>Tarefa</span></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="t t-agora">
+              <div class="rot">A seguir</div>
+              <div class="hora">18:00</div>
+              <div class="titulo">Treino de pernas</div>
+              <div class="meta"><span class="selo">em 4 h</span>Treino · 50 min</div>
+              <div class="mini-barra"><i>68%</i></div>
+            </section>
+
+            <section class="t t-aneis">
+              <div class="rot">Hoje em números</div>
+              <div class="aneis">
+                <div class="anel-b" style="--c:#F5C35B;--p:60%"><div class="a"><b>3/5</b></div><small>Tarefas</small></div>
+                <div class="anel-b" style="--c:#5CF0B0;--p:62%"><div class="a"><b>5/8</b></div><small>Hábitos</small></div>
+                <div class="anel-b" style="--c:#42E3C8;--p:62%"><div class="a"><b>5/8</b></div><small>Água</small></div>
+                <div class="anel-b" style="--c:#9D8CFF;--p:74%"><div class="a"><b>74%</b></div><small>Reserva</small></div>
+              </div>
+            </section>
+
+            <section class="t t-dia">
+              <div class="cab"><div><h3>Linha do dia</h3><p class="sub" style="font-size:12px;margin-top:2px">Na ordem do relógio.</p></div>
+                <span>Ver calendário <span class="ms" style="font-size:14px">arrow_forward</span></span></div>
+              <ol class="tempo">
+                <li class="feito" style="--nc:#5CF0B0"><time>07:00</time><span class="pt"></span><span class="tx">Meditar</span><span class="tp">Hábito</span></li>
+                <li class="feito" style="--nc:#42E3C8"><time>10:00</time><span class="pt"></span><span class="tx">Reunião de planejamento</span><span class="tp">Compromisso</span></li>
+                <li class="agora" style="--nc:#F5C35B"><time>15:00</time><span class="pt"></span><span class="tx">Revisar o orçamento de novembro</span><span class="tp">Tarefa</span></li>
+                <li style="--nc:#F5C35B"><time>18:00</time><span class="pt"></span><span class="tx">Treino de pernas</span><span class="tp">Treino</span></li>
+                <li style="--nc:#5CF0B0"><time>Dia</time><span class="pt"></span><span class="tx">Beber água · 5 de 8</span><span class="tp">Hábito</span></li>
+              </ol>
+            </section>
+
+            <section class="t t-semana">
+              <div class="cab"><h3>Semana</h3><span>27 out – 2 nov</span></div>
+              <div class="barras">
+                <div class="b"><i style="height:20px"></i><span>Seg</span></div>
+                <div class="b on"><i style="height:44px"></i><span>Hoje</span></div>
+                <div class="b"><i style="height:30px"></i><span>Qua</span></div>
+                <div class="b"><i style="height:54px"></i><span>Qui</span></div>
+                <div class="b"><i style="height:14px"></i><span>Sex</span></div>
+                <div class="b"><i style="height:7px"></i><span>Sáb</span></div>
+                <div class="b"><i style="height:17px"></i><span>Dom</span></div>
+              </div>
+              <div class="nota-semana"><span class="dot"></span>Mercado caiu <b>R$ 210</b> vs. setembro</div>
+            </section>
+
+            <section class="t t-areas">
+              <div class="cab"><h3>Painel das áreas</h3><span>abrir →</span></div>
+              <div class="micro">
+                <div class="m"><small>Tarefas</small><b class="bad">1 atrasada</b></div>
+                <div class="m"><small>Hábitos</small><b>5 de 8</b></div>
+                <div class="m"><small>Outubro</small><b>R$ 1.240</b></div>
+                <div class="m"><small>Reserva</small><b>R$ 18.050</b></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <div class="dock pc-only">
+        <div class="bt"><span class="ms">search</span></div>
+        <div class="bt"><span class="ms">contrast</span></div>
+        <div class="bt"><span class="ms">forum</span></div>
+        <div class="bt mais"><span class="ms">add</span></div>
+      </div>
+    </div>
+
+    <div class="barra">
+      <div class="pilula">
+        <div class="bico on"><span class="circulo"><span class="ms">home</span></span><span>Visão</span></div>
+        <div class="bico"><span class="ms">checklist</span><span>Rotina</span></div>
+        <div class="bico"><span class="ms">account_balance_wallet</span><span>Finanças</span></div>
+        <div class="bico"><span class="ms">monitor_heart</span><span>Saúde</span></div>
+        <div class="bico"><span class="ms">flag</span><span>Metas</span></div>
+      </div>
+      <div class="orbe"><span class="ms" style="font-size:26px;color:#9D8CFF">auto_awesome</span></div>
+    </div>
+  </div>
+</div>
+<script src="comum.js"></script>
+</body>
+</html>

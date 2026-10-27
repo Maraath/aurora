@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="pt-BR" class="pc">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D · Vidro Imersivo — protótipo visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Sora:wght@300;400;500;600;700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,300..500,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="comum.css">
+<script>document.documentElement.className = innerWidth < 760 ? 'fone' : 'pc';</script>
+<style>
+/* ================= D · VIDRO IMERSIVO =================
+   A aurora aparece de verdade atrás do conteúdo e tudo é vidro: cabeçalho em
+   pílula flutuante, cartões translúcidos com desfoque e uma barra de ações
+   rápidas no rodapé. Mais profundo e mais "premium"; pesa mais na GPU. */
+
+:root{--raio-g:28px;--sombra:0 22px 60px rgba(0,0,0,.42)}
+.ceu-d i{opacity:.6;height:86%;top:-22%}
+.ceu-d .cortina{opacity:.55;height:76%;top:-6%}
+.ceu-d .cortina.c2{opacity:.4}
+.veu{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(8,7,22,.82) 0,rgba(8,7,22,.35) 5%,rgba(8,7,22,0) 15%),
+    radial-gradient(70% 60% at 50% -18%,rgba(8,7,22,.35),transparent 70%),
+    linear-gradient(180deg,rgba(8,7,22,.5) 0,rgba(8,7,22,.05) 26%,rgba(8,7,22,.2) 60%,rgba(8,7,22,.78) 100%)}
+.coluna{max-width:1060px;position:relative;z-index:3}
+.rolagem{position:relative;z-index:3}
+
+.vidro{background:rgba(22,20,48,.42);border:1px solid rgba(255,255,255,.11);
+  backdrop-filter:blur(20px) saturate(1.45);-webkit-backdrop-filter:blur(20px) saturate(1.45);
+  box-shadow:0 24px 60px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.09);
+  border-radius:var(--raio-g)}
+.vidro::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(160deg,rgba(255,255,255,.055),transparent 42%)}
+
+/* cabeçalho em pílula */
+.topo{padding:8px 0 22px}
+.pilula-topo{display:flex;align-items:center;gap:16px;padding:10px 12px 10px 20px;border-radius:22px;background:rgba(16,15,38,.55)}
+.pilula-topo .marca{display:flex;align-items:center;gap:10px;font-family:Sora;font-size:13px;font-weight:600;letter-spacing:.2px;color:var(--text)}
+.pilula-topo .marca .sinal{width:17px;height:17px;border-radius:6px;background:conic-gradient(from 200deg,#3EDB9A,#42E3C8,#7E7BFF,#E77BFF,#3EDB9A)}
+.pilula-topo .saudacao{display:flex;flex-direction:column;line-height:1.15}
+.pilula-topo .saudacao .rot{font-size:8.5px;letter-spacing:1.5px;color:var(--muted)}
+.pilula-topo .saudacao b{font-family:Sora;font-size:16.5px;font-weight:600;letter-spacing:-.2px;margin-top:3px}
+.pilula-topo .saudacao b em{font-style:normal;color:var(--accent)}
+.pilula-topo .direita{margin-left:auto;display:flex;align-items:center;gap:8px}
+.bt-v{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;color:var(--muted);
+  border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05)}
+.bt-v .ms{font-size:19px}
+.bt-v.ia{border-color:rgba(157,140,255,.4);background:rgba(157,140,255,.14);color:#D9CFFF}
+.bt-v.ia .ms{font-size:20px}
+
+/* herói */
+.heroi{position:relative;margin-top:0;padding:28px 30px;display:grid;grid-template-columns:1fr 250px;align-items:center;gap:26px;overflow:hidden}
+.heroi::before{content:'';position:absolute;left:-40px;top:-80px;width:420px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(62,219,154,.20),transparent 66%);filter:blur(10px);pointer-events:none}
+.heroi .rot{display:flex;align-items:center;gap:8px;color:var(--accent);font-size:9.5px}
+.heroi .rot i{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(92,240,176,.16)}
+.heroi h2{font-size:33px;font-weight:600;letter-spacing:-1px;line-height:1.1;margin:12px 0 8px;max-width:520px}
+.heroi .sub{font-size:13.5px;color:var(--muted);font-weight:400}
+.heroi .acoes{display:flex;gap:10px;margin-top:20px}
+.dia-orbe{display:flex;flex-direction:column;align-items:center;gap:12px}
+.anel-orbe{width:170px;height:170px;border-radius:50%;display:grid;place-items:center;position:relative;
+  background:conic-gradient(from 210deg,rgba(62,219,154,.85) 0 34%,rgba(66,227,200,.8) 42%,rgba(126,123,255,.8) 58%,rgba(255,255,255,.08) 58% 100%);
+  box-shadow:0 0 44px rgba(92,240,176,.18)}
+.anel-orbe::before{content:'';position:absolute;inset:9px;border-radius:50%;background:rgba(12,11,28,.72);
+  backdrop-filter:blur(6px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.anel-orbe .orbe{position:relative;width:88px;height:88px;border-radius:50%;
+  background:radial-gradient(circle at 34% 26%,#EBFFF7,#3EDB9A 42%,#5B57D6 88%,#7E7BFF);
+  box-shadow:0 0 40px rgba(92,240,176,.5),0 0 90px rgba(126,123,255,.34)}
+.anel-orbe .orbe::after{content:'';position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(255,255,255,.16)}
+.dia-orbe .legenda{text-align:center}
+.dia-orbe .legenda b{display:block;font-family:Sora;font-size:15px;font-weight:600}
+.dia-orbe .legenda small{font-size:9.5px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted)}
+
+/* colunas */
+.colunas{display:grid;grid-template-columns:1.32fr .8fr;gap:18px;margin-top:18px;align-items:start}
+.bloco-v{padding:18px 22px 20px;position:relative;overflow:hidden}
+.bloco-v .cab{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.bloco-v .cab .dir{font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px}
+.bloco-v .desc{font-size:12px;color:var(--muted);margin-bottom:10px}
+.dia-v{list-style:none}
+.dia-v li{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:12px;padding:11px 0;
+  border-top:1px solid rgba(255,255,255,.07)}
+.dia-v li:first-child{border-top:0}
+.dia-v time{font-size:11.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.dia-v .t{font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;letter-spacing:-.1px}
+.dia-v .t i{width:7px;height:7px;border-radius:50%;background:var(--nc);box-shadow:0 0 12px var(--nc)}
+.dia-v .tp{font-size:10px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted)}
+.dia-v li.feito .t{color:rgba(238,240,251,.45);font-weight:400}
+.dia-v li.feito .t i{opacity:.35;box-shadow:none}
+.dia-v li.agora{position:relative;background:linear-gradient(90deg,rgba(92,240,176,.11),transparent 72%);margin:0 -22px;padding:11px 22px;border-top-color:transparent}
+.dia-v li.agora .t{color:var(--accent)}
+.dia-v li.agora::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--gradIni),var(--gradFim))}
+
+.lado-v{display:flex;flex-direction:column;gap:18px}
+.mini-sem{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;align-items:end;height:66px;padding-top:4px}
+.mini-sem .c{display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+.mini-sem .c i{width:100%;max-width:16px;border-radius:5px;background:rgba(255,255,255,.14)}
+.mini-sem .c.on i{background:linear-gradient(180deg,var(--gradFim),var(--gradIni));box-shadow:0 0 16px rgba(92,240,176,.45)}
+.mini-sem .c span{font-size:8.5px;font-weight:800;color:var(--muted);letter-spacing:.4px}
+.mini-sem .c.on span{color:var(--accent)}
+.mini-painel{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px}
+.mini-painel .m{padding:9px 11px;border-radius:14px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.045)}
+.mini-painel .m b{display:block;font-family:Sora;font-size:16px;font-weight:600;letter-spacing:-.3px}
+.mini-painel .m b.bad{color:var(--bad)}
+.mini-painel .m small{font-size:8.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.insight-v{display:flex;gap:11px;align-items:flex-start;font-size:12px;line-height:1.55;color:#DCDEEF}
+.insight-v .orbe-p{width:26px;height:26px;border-radius:9px;flex:0 0 26px;display:grid;place-items:center;
+  background:rgba(157,140,255,.16);border:1px solid rgba(157,140,255,.3)}
+.insight-v b{color:var(--accent);font-weight:800}
+
+/* barra de ações rápida (nova): pílula de vidro no rodapé */
+.acoes-rapidas{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:26;
+  display:flex;align-items:center;gap:6px;padding:7px;border-radius:20px;
+  background:rgba(22,20,48,.5);border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
+  box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.acoes-rapidas .a{display:flex;align-items:center;gap:7px;height:38px;padding:0 13px;border-radius:14px;
+  font-size:12px;font-weight:700;color:#D7D9EA;white-space:nowrap}
+.acoes-rapidas .a .ms{font-size:18px;color:var(--accent)}
+.acoes-rapidas .a:nth-child(2) .ms{color:var(--violeta)}
+.acoes-rapidas .a:nth-child(3) .ms{color:var(--teal)}
+.acoes-rapidas .a.mais{width:38px;padding:0;justify-content:center;background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:var(--noAccent)}
+.acoes-rapidas .a.mais .ms{color:var(--noAccent);font-size:22px}
+.acoes-rapidas .sep{width:1px;height:22px;background:rgba(255,255,255,.1);margin:0 4px}
+
+/* celular */
+.topo-fone{display:none}
+html.fone .topo-fone{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px}
+html.fone .topo-fone .marca{display:flex;align-items:center;gap:9px;font-family:Sora;font-size:16px;font-weight:600}
+html.fone .topo-fone .marca .sinal{width:19px;height:19px;border-radius:6px;background:conic-gradient(from 200deg,#3EDB9A,#42E3C8,#7E7BFF,#E77BFF,#3EDB9A)}
+html.fone .topo-fone .lado{display:flex;align-items:center;gap:6px}
+html.fone .pc-only{display:none!important}
+html.fone .acu{display:none}
+html.fone .topo{display:none}
+html.fone .heroi{grid-template-columns:1fr;padding:22px 20px;gap:18px;text-align:left}
+html.fone .heroi h2{font-size:24px;max-width:none}
+html.fone .dia-orbe{flex-direction:row;gap:14px}
+html.fone .anel-orbe{width:86px;height:86px}
+html.fone .anel-orbe .orbe{width:46px;height:46px}
+html.fone .dia-orbe .legenda{text-align:left}
+html.fone .colunas{grid-template-columns:1fr;gap:14px;margin-top:14px}
+html.fone .bloco-v{padding:16px 18px 18px}
+html.fone .dia-v li{grid-template-columns:42px 1fr;padding:10px 0}
+html.fone .dia-v .tp{display:none}
+html.fone .dia-v li.agora{margin:0 -18px;padding:10px 18px}
+html.fone .coluna{padding-bottom:120px}
+html.fone .acoes-rapidas{display:none}
+</style>
+</head>
+<body>
+<canvas id="ceu"></canvas>
+<div class="aurora ceu-d" data-camadas="3" data-cortina="1"></div>
+<div class="grao"></div>
+
+<div id="palco">
+  <div class="veu"></div>
+  <div class="janela">
+    <i class="fio-janela"></i>
+    <div class="faixa pc-only">
+      <div class="marca"><span class="sinal"></span>Aurora</div>
+      <div class="bt-janela"><span class="ms">remove</span></div>
+      <div class="bt-janela"><span class="ms">crop_square</span></div>
+      <div class="bt-janela fechar"><span class="ms">close</span></div>
+    </div>
+    <div class="corpo">
+      <nav class="menu pc-only">
+        <div class="item"><span class="ms">auto_awesome</span><span class="nome">Assistente</span></div>
+        <div class="item on"><span class="ms">home</span><span class="nome">Visão</span></div>
+        <div class="sep"></div>
+        <div class="item"><span class="ms">checklist</span><span class="nome">Rotina</span></div>
+        <div class="item"><span class="ms">monitor_heart</span><span class="nome">Saúde</span></div>
+        <div class="item"><span class="ms">flag</span><span class="nome">Objetivos</span></div>
+        <div class="item"><span class="ms">sticky_note_2</span><span class="nome">Anotações</span></div>
+        <div class="item"><span class="ms">account_balance_wallet</span><span class="nome">Finanças</span></div>
+        <div class="sep"></div>
+        <div class="item"><span class="ms">person</span><span class="nome">Conta</span></div>
+      </nav>
+
+      <div class="rolagem">
+        <div class="topo-fone fone-only">
+          <div class="marca"><span class="sinal"></span>Aurora</div>
+          <div class="lado">
+            <div class="bt-v"><span class="ms">search</span></div>
+            <div class="bt-v"><span class="ms">contrast</span></div>
+          </div>
+        </div>
+
+        <div class="coluna">
+          <div class="topo">
+            <div class="pilula-topo vidro">
+              <div class="marca"><span class="sinal"></span>Aurora</div>
+              <div class="saudacao">
+                <span class="rot">Terça, 27 de outubro · 13:08</span>
+                <b>Boa tarde, <em>Maraath</em></b>
+              </div>
+              <div class="direita">
+                <div class="bt-v"><span class="ms">search</span></div>
+                <div class="bt-v"><span class="ms">contrast</span></div>
+                <div class="bt-v ia"><span class="ms">auto_awesome</span></div>
+              </div>
+            </div>
+          </div>
+
+          <section class="vidro heroi">
+            <div>
+              <div class="rot"><i></i>Em foco agora</div>
+              <h2>Revisar o orçamento de novembro</h2>
+              <p class="sub">Para hoje · Rotina · 2 de 7 · 40 min</p>
+              <div class="acoes">
+                <button class="btn p"><span class="ms">play_arrow</span>Começar foco</button>
+                <button class="btn g" style="background:rgba(255,255,255,.06)">Focar em outra</button>
+              </div>
+            </div>
+            <div class="dia-orbe">
+              <div class="anel-orbe"><div class="orbe"></div></div>
+              <div class="legenda"><b>7 de 12 feitos</b><small>ritmo de hoje</small></div>
+            </div>
+          </section>
+
+          <div class="colunas">
+            <section class="vidro bloco-v">
+              <div class="cab"><h3>Linha do dia</h3><span class="dir">7 de 12 feitos <span class="ms" style="font-size:14px">check_circle</span></span></div>
+              <div class="desc">Tudo o que é de hoje, na ordem do relógio.</div>
+              <ol class="dia-v">
+                <li class="feito" style="--nc:#5CF0B0"><time>07:00</time><span class="t"><i></i>Meditar</span><span class="tp">Hábito</span></li>
+                <li class="feito" style="--nc:#42E3C8"><time>10:00</time><span class="t"><i></i>Reunião de planejamento</span><span class="tp">Compromisso</span></li>
+                <li class="agora" style="--nc:#F5C35B"><time>15:00</time><span class="t"><i></i>Revisar o orçamento de novembro</span><span class="tp">Tarefa</span></li>
+                <li style="--nc:#F5C35B"><time>18:00</time><span class="t"><i></i>Treino de pernas</span><span class="tp">Treino</span></li>
+                <li style="--nc:#5CF0B0"><time>Dia</time><span class="t"><i></i>Beber água · 5 de 8</span><span class="tp">Hábito</span></li>
+                <li style="--nc:#9D8CFF"><time>20:00</time><span class="t"><i></i>Estudar Flutter: animações</span><span class="tp">Lembrete</span></li>
+              </ol>
+            </section>
+
+            <div class="lado-v">
+              <section class="vidro bloco-v">
+                <div class="cab"><h3>Semana</h3><span class="dir">27 out – 2 nov</span></div>
+                <div class="mini-sem">
+                  <div class="c"><i style="height:22px"></i><span>SEG</span></div>
+                  <div class="c on"><i style="height:48px"></i><span>HOJE</span></div>
+                  <div class="c"><i style="height:32px"></i><span>QUA</span></div>
+                  <div class="c"><i style="height:58px"></i><span>QUI</span></div>
+                  <div class="c"><i style="height:16px"></i><span>SEX</span></div>
+                  <div class="c"><i style="height:8px"></i><span>SÁB</span></div>
+                  <div class="c"><i style="height:18px"></i><span>DOM</span></div>
+                </div>
+              </section>
+
+              <section class="vidro bloco-v">
+                <div class="cab"><h3>Painel</h3><span class="dir">abrir</span></div>
+                <div class="mini-painel">
+                  <div class="m"><small>Tarefas</small><b class="bad">1 atrasada</b></div>
+                  <div class="m"><small>Hábitos</small><b>5 de 8</b></div>
+                  <div class="m"><small>Outubro</small><b>R$ 1.240</b></div>
+                  <div class="m"><small>Reserva</small><b>R$ 18.050</b></div>
+                </div>
+                <div class="insight-v" style="margin-top:14px">
+                  <span class="orbe-p"><span class="ms" style="font-size:15px;color:#B9A7FF">auto_awesome</span></span>
+                  <p>Mercado caiu <b>R$ 210</b> vs. setembro.</p>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="acoes-rapidas pc-only">
+        <div class="a"><span class="ms">checklist</span>Nova tarefa</div>
+        <div class="a"><span class="ms">payments</span>Lançamento</div>
+        <div class="a"><span class="ms">notifications</span>Lembrete</div>
+        <div class="sep"></div>
+        <div class="a mais"><span class="ms">add</span></div>
+      </div>
+    </div>
+
+    <div class="barra">
+      <div class="pilula">
+        <div class="bico on"><span class="circulo"><span class="ms">home</span></span><span>Visão</span></div>
+        <div class="bico"><span class="ms">checklist</span><span>Rotina</span></div>
+        <div class="bico"><span class="ms">account_balance_wallet</span><span>Finanças</span></div>
+        <div class="bico"><span class="ms">monitor_heart</span><span>Saúde</span></div>
+        <div class="bico"><span class="ms">flag</span><span>Metas</span></div>
+      </div>
+      <div class="orbe"><span class="ms" style="font-size:26px;color:#9D8CFF">auto_awesome</span></div>
+    </div>
+  </div>
+</div>
+<script src="comum.js"></script>
+</body>
+</html>

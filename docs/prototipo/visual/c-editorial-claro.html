@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="pt-BR" class="pc claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C · Editorial Claro — protótipo visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,300..500,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="comum.css">
+<script>document.documentElement.className = innerWidth < 760 ? 'fone claro' : 'pc claro';</script>
+<style>
+/* ================= C · EDITORIAL CLARO =================
+   O modo claro deixa de ser um tema alternativo e vira um modo bonito de
+   verdade: papel, fios finos, tipografia grande e cor só onde importa.
+   A paleta clara do app é mantida; o escuro continua existindo. */
+
+:root{
+  --bg:#F5F4FB;--surface:#FFFFFF;--surface2:#EDEBF7;--line:#DFDCEF;--text:#0D0B26;--muted:#5E5C7A;
+  --accent:#0B8A5C;--accentFill:#0B8A5C;--gradIni:#0B8A5C;--gradFim:#5B45D6;--noAccent:#FFFFFF;
+  --violeta:#5B45D6;--teal:#0A7C70;--warn:#8A5306;--bad:#A8259A;
+  --borda:rgba(13,11,38,.10);--borda-forte:rgba(13,11,38,.18);--vidro:rgba(255,255,255,.75);
+  --sombra:0 2px 4px rgba(13,11,38,.03),0 14px 40px rgba(13,11,38,.06);
+  --raio:14px;--raio-g:20px;
+}
+body{background:var(--bg)}
+#ceu{display:none}
+.grao{opacity:.035;mix-blend-mode:multiply}
+.papel{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(80% 50% at 8% -6%,rgba(11,138,92,.13),transparent 62%),
+    radial-gradient(60% 44% at 88% -10%,rgba(91,69,214,.12),transparent 64%),
+    radial-gradient(50% 60% at 50% 106%,rgba(10,124,112,.07),transparent 70%)}
+.fio-janela{opacity:.95}
+.faixa .marca,.faixa .bt-janela{color:var(--muted)}
+.faixa .bt-janela:hover{background:rgba(13,11,38,.06)}
+
+/* menu claro */
+.menu{width:80px;flex:0 0 80px}
+.menu .item{color:#7B799A}
+.menu .item.on{color:var(--accent);background:rgba(11,138,92,.09);border:1px solid rgba(11,138,92,.16);box-shadow:none}
+.menu .item.on::before{left:-8px;height:16px}
+.menu .item .nome{background:#fff;border-color:var(--line);box-shadow:var(--sombra)}
+
+.coluna{max-width:1140px;position:relative;z-index:3;padding-bottom:48px}
+
+/* cabeçalho */
+.topo{display:flex;align-items:flex-end;justify-content:space-between;gap:26px;padding:18px 0 22px;border-bottom:1px solid var(--line)}
+.topo .rot{color:var(--muted)}
+.topo h1{font-size:40px;font-weight:600;letter-spacing:-1.4px;margin-top:8px;line-height:1.06}
+.topo h1 em{font-style:normal;color:var(--accent)}
+.hoje{display:flex;align-items:flex-end;gap:15px;padding-bottom:3px}
+.hoje .n{text-align:right}
+.hoje .n b{font-family:Sora;font-size:32px;font-weight:600;letter-spacing:-1.2px;line-height:1;display:block}
+.hoje .n b small{font-family:Manrope;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:0;margin-left:2px}
+.hoje .n .linha{display:block;height:3px;border-radius:3px;background:var(--line);overflow:hidden;margin:7px 0 0}
+.hoje .n .linha i{display:block;height:100%;width:58%;background:linear-gradient(90deg,var(--gradIni),var(--gradFim))}
+.hoje .n em{display:block;font-style:normal;font-size:9px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.orbe-bt{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(91,69,214,.22);
+  background:#fff;box-shadow:var(--sombra)}
+.orbe-bt::before{content:'';width:24px;height:24px;border-radius:50%;
+  background:radial-gradient(circle at 34% 28%,#B9F5DC,var(--accentFill) 46%,var(--gradFim) 96%)}
+
+/* foco */
+.heroi{position:relative;margin-top:22px;padding:22px 26px;border-radius:var(--raio-g);background:#fff;border:1px solid var(--line);
+  box-shadow:var(--sombra);display:grid;grid-template-columns:1fr 240px;gap:26px;overflow:hidden}
+.heroi::before{content:'';position:absolute;left:0;top:0;width:132px;height:3px;
+  background:linear-gradient(90deg,var(--gradIni),var(--gradFim));border-radius:0 3px 3px 0}
+.heroi::after{content:'';position:absolute;right:-80px;top:-90px;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(91,69,214,.07),transparent 70%)}
+.heroi .rot{display:flex;align-items:center;gap:8px;color:var(--accent)}
+.heroi .rot i{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.heroi h2{font-size:31px;font-weight:600;letter-spacing:-1px;margin:12px 0 6px;line-height:1.1}
+.heroi .sub{font-size:13.5px;color:var(--muted)}
+.heroi .acoes{display:flex;gap:10px;margin-top:20px}
+.heroi .relogio{border-left:1px solid var(--line);padding-left:26px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.heroi .relogio .rot{font-size:9px;letter-spacing:1.5px}
+.heroi .relogio .l{display:flex;align-items:center;gap:10px;font-size:12.5px}
+.heroi .relogio time{font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.heroi .relogio b{font-weight:700}
+
+/* colunas */
+.colunas{display:grid;grid-template-columns:1.45fr .85fr;gap:40px;margin-top:26px}
+.secao-t{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:6px}
+.secao-t h3{font-size:19px;font-weight:600;letter-spacing:-.4px}
+.secao-t .dir{font-size:11.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px}
+.regua{width:26px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--gradIni),var(--gradFim));margin:8px 0 3px}
+.secao-desc{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+
+/* linha do dia editorial */
+.dia-lista{list-style:none}
+.dia-lista li{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+.dia-lista li:first-child{padding-top:4px}
+.dia-lista .h{font-size:11.5px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.4px}
+.dia-lista .t{font-size:15px;font-weight:600;letter-spacing:-.2px;display:flex;align-items:center;gap:10px}
+.dia-lista .t i{width:6px;height:6px;border-radius:50%;background:var(--nc);flex:0 0 6px}
+.dia-lista .tp{font-size:9.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.dia-lista li.feito .t{color:#8A88A6;text-decoration:line-through;text-decoration-color:var(--line);font-weight:500}
+.dia-lista li.feito .t i{opacity:.45}
+.dia-lista li.agora{position:relative}
+.dia-lista li.agora::before{content:'';position:absolute;left:-14px;top:10px;bottom:10px;width:2px;border-radius:2px;
+  background:linear-gradient(180deg,var(--gradIni),var(--gradFim))}
+.dia-lista li.agora .t{color:var(--accent)}
+.rodape-dia{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-size:12px;color:var(--muted)}
+.rodape-dia b{font-family:Sora;font-size:13px;color:var(--text)}
+
+/* coluna direita */
+.lado-c{display:flex;flex-direction:column;gap:18px}
+.semana-g{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;padding-top:6px}
+.semana-g .d{display:flex;flex-direction:column;align-items:center;gap:7px}
+.semana-g .d i{width:15px;border-radius:3px 3px 1px 1px;background:#E1DEF0;display:block}
+.semana-g .d.on i{background:linear-gradient(180deg,var(--gradFim),var(--gradIni))}
+.semana-g .d span{font-size:9.5px;font-weight:800;letter-spacing:.6px;color:var(--muted)}
+.semana-g .d.on span{color:var(--accent)}
+.semana-n{font-size:10.5px;font-weight:700;color:var(--muted);margin-left:2px}
+.linha-base{height:1px;background:var(--line);margin-top:8px}
+
+.areas-l{display:flex;flex-direction:column}
+.areas-l .a{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.areas-l .a:last-child{border-bottom:0}
+.areas-l .a .rot{font-size:9px;letter-spacing:1.3px;color:var(--muted);flex:1}
+.areas-l .a b{font-family:Sora;font-size:16px;font-weight:600;letter-spacing:-.3px}
+.areas-l .a b.bad{color:var(--bad)}
+.areas-l .a small{font-size:10.5px;color:var(--muted);width:74px;text-align:right}
+
+.citacao{position:relative;padding:14px 18px 14px 20px;border-radius:14px;border:1px solid var(--line);
+  background:linear-gradient(150deg,rgba(91,69,214,.055),rgba(11,138,92,.035))}
+.citacao .asp{position:absolute;left:14px;top:6px;font-family:Sora;font-size:40px;line-height:1;
+  background:linear-gradient(160deg,var(--gradIni),var(--gradFim));-webkit-background-clip:text;background-clip:text;color:transparent}
+.citacao p{font-size:13px;line-height:1.6;padding-left:26px;color:#26243F}
+.citacao p b{color:var(--accent);font-weight:800}
+.citacao .por{font-size:9.5px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);padding-left:26px;margin-top:8px}
+
+/* atalhos */
+.dock .bt{background:rgba(255,255,255,.86);border-color:var(--line);color:var(--muted);box-shadow:0 6px 22px rgba(13,11,38,.1)}
+.dock .bt.mais{background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:#fff}
+.dock .bt.mais .ms{color:#fff}
+
+/* celular */
+.topo-fone{display:none}
+html.fone .topo-fone{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 6px}
+html.fone .topo-fone .marca{display:flex;align-items:center;gap:9px;font-family:Sora;font-size:16px;font-weight:600}
+html.fone .topo-fone .marca .sinal{width:19px;height:19px;border-radius:6px;background:conic-gradient(from 200deg,#3EDB9A,#42E3C8,#7E7BFF,#E77BFF,#3EDB9A)}
+html.fone .topo-fone .lado{display:flex;align-items:center;gap:6px;color:var(--muted)}
+html.fone .topo-fone .bt{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:#fff;border:1px solid var(--line)}
+html.fone .topo-fone .bt .ms{font-size:19px}
+html.fone .pc-only{display:none!important}
+html.fone .topo{flex-direction:column;align-items:stretch;gap:14px;padding:12px 0 18px}
+html.fone .topo h1{font-size:30px;letter-spacing:-.9px}
+html.fone .hoje{justify-content:flex-start;padding:0}
+html.fone .hoje .n{text-align:left;display:flex;align-items:baseline;gap:9px}
+html.fone .hoje .n b{font-size:22px;letter-spacing:-.6px}
+html.fone .hoje .n .linha{display:none}
+html.fone .hoje .n em{margin:0;font-size:9px;letter-spacing:1.2px}
+html.fone .hoje .prog-dia{flex:1}
+html.fone .heroi{grid-template-columns:1fr;margin-top:18px;padding:20px}
+html.fone .heroi h2{font-size:24px;letter-spacing:-.6px}
+html.fone .heroi .relogio{display:none}
+html.fone .heroi .acoes .btn{height:40px;padding:0 16px;font-size:13px}
+html.fone .colunas{grid-template-columns:1fr;gap:28px;margin-top:24px}
+html.fone .lado-c{gap:26px}
+html.fone .secao-t h3{font-size:18px}
+html.fone .dia-lista li{grid-template-columns:44px 1fr;padding:14px 0}
+html.fone .dia-lista .tp{display:none}
+html.fone .citacao{display:none}
+html.fone .coluna{padding-bottom:120px}
+</style>
+</head>
+<body>
+<div class="papel"></div>
+<div class="grao"></div>
+
+<div id="palco">
+  <div class="janela">
+    <i class="fio-janela"></i>
+    <div class="faixa pc-only">
+      <div class="marca"><span class="sinal"></span>Aurora</div>
+      <div class="bt-janela"><span class="ms">remove</span></div>
+      <div class="bt-janela"><span class="ms">crop_square</span></div>
+      <div class="bt-janela fechar"><span class="ms">close</span></div>
+    </div>
+    <div class="corpo">
+      <nav class="menu pc-only">
+        <div class="item"><span class="ms">auto_awesome</span><span class="nome">Assistente</span></div>
+        <div class="item on"><span class="ms">home</span><span class="nome">Visão</span></div>
+        <div class="sep"></div>
+        <div class="item"><span class="ms">checklist</span><span class="nome">Rotina</span></div>
+        <div class="item"><span class="ms">monitor_heart</span><span class="nome">Saúde</span></div>
+        <div class="item"><span class="ms">flag</span><span class="nome">Objetivos</span></div>
+        <div class="item"><span class="ms">sticky_note_2</span><span class="nome">Anotações</span></div>
+        <div class="item"><span class="ms">account_balance_wallet</span><span class="nome">Finanças</span></div>
+        <div class="sep"></div>
+        <div class="item"><span class="ms">person</span><span class="nome">Conta</span></div>
+      </nav>
+
+      <div class="rolagem">
+        <div class="topo-fone fone-only">
+          <div class="marca"><span class="sinal"></span>Aurora</div>
+          <div class="lado">
+            <div class="bt"><span class="ms">search</span></div>
+            <div class="bt"><span class="ms">auto_awesome</span></div>
+            <div class="bt"><span class="ms">dark_mode</span></div>
+          </div>
+        </div>
+
+        <div class="coluna">
+          <header class="topo">
+            <div>
+              <div class="rot">Terça-feira, 27 de outubro · 13:08</div>
+              <h1>Boa tarde, <em>Maraath</em></h1>
+            </div>
+            <div class="hoje">
+              <div class="n">
+                <b>7<small>/12</small></b>
+                <span class="linha"><i></i></span>
+                <em>feitos hoje</em>
+              </div>
+              <div class="orbe-bt pc-only"></div>
+            </div>
+          </header>
+
+          <section class="heroi">
+            <div>
+              <div class="rot"><i></i>Em foco agora</div>
+              <h2>Revisar o orçamento de novembro</h2>
+              <p class="sub">Para hoje · Rotina · 2 de 7</p>
+              <div class="acoes">
+                <button class="btn p"><span class="ms" style="color:#fff">play_arrow</span>Começar foco</button>
+                <button class="btn g" style="border-color:var(--borda-forte);color:var(--text);background:#fff">Focar em outra</button>
+              </div>
+            </div>
+            <div class="relogio">
+              <div class="rot">A seguir</div>
+              <div class="l"><time>18:00</time><b>Treino de pernas</b></div>
+              <div class="l"><time>20:00</time><b>Estudar Flutter</b></div>
+            </div>
+          </section>
+
+          <div class="colunas">
+            <div>
+              <div class="secao-t">
+                <h3>Linha do dia</h3>
+                <span class="dir">Ver semana <span class="ms" style="font-size:14px">arrow_forward</span></span>
+              </div>
+              <div class="regua"></div>
+              <div class="secao-desc">Tudo o que é de hoje, na ordem do relógio.</div>
+              <ol class="dia-lista">
+                <li class="feito" style="--nc:#0B8A5C"><span class="h">07:00</span><span class="t"><i></i>Meditar</span><span class="tp">Hábito</span></li>
+                <li class="feito" style="--nc:#0A7C70"><span class="h">10:00</span><span class="t"><i></i>Reunião de planejamento</span><span class="tp">Compromisso</span></li>
+                <li class="agora" style="--nc:#8A5306"><span class="h">15:00</span><span class="t"><i></i>Revisar o orçamento de novembro</span><span class="tp">Tarefa</span></li>
+                <li style="--nc:#8A5306"><span class="h">18:00</span><span class="t"><i></i>Treino de pernas</span><span class="tp">Treino</span></li>
+                <li style="--nc:#0B8A5C"><span class="h">Dia</span><span class="t"><i></i>Beber água · 5 de 8</span><span class="tp">Hábito</span></li>
+              </ol>
+              <div class="rodape-dia">
+                <span><b>7</b> de 12 itens concluídos</span>
+                <span>Próximo: <b>18:00</b> Treino de pernas</span>
+              </div>
+            </div>
+
+            <aside class="lado-c">
+              <div>
+                <div class="secao-t"><h3>Semana</h3><span class="dir">27 out – 2 nov</span></div>
+                <div class="regua"></div>
+                <div class="semana-g">
+                  <div class="d"><i style="height:18px"></i><span>SEG</span></div>
+                  <div class="d on"><i style="height:38px"></i><span>HOJE</span></div>
+                  <div class="d"><i style="height:26px"></i><span>QUA</span></div>
+                  <div class="d"><i style="height:46px"></i><span>QUI</span></div>
+                  <div class="d"><i style="height:14px"></i><span>SEX</span></div>
+                  <div class="d"><i style="height:7px"></i><span>SÁB</span></div>
+                  <div class="d"><i style="height:15px"></i><span>DOM</span></div>
+                </div>
+                <div class="linha-base"></div>
+                <div class="semana-n">7 compromissos · 5 tarefas · 3 hábitos</div>
+              </div>
+
+              <div>
+                <div class="secao-t"><h3>Painel</h3><span class="dir">abrir</span></div>
+                <div class="regua"></div>
+                <div class="areas-l">
+                  <div class="a"><span class="rot">Tarefas</span><b class="bad">1 atrasada</b><small>7 abertas</small></div>
+                  <div class="a"><span class="rot">Hábitos</span><b>5 de 8</b><small>hoje</small></div>
+                  <div class="a"><span class="rot">Outubro</span><b>R$ 1.240</b><small>3 contas</small></div>
+                  <div class="a"><span class="rot">Reserva</span><b>R$ 18.050</b><small>74%</small></div>
+                </div>
+              </div>
+
+              <div class="citacao">
+                <span class="asp">“</span>
+                <p>Você fecha os hábitos <b>20% mais cedo</b> nas terças. Mantendo o ritmo, outubro fecha com <b>88%</b> de constância.</p>
+                <div class="por">Insight da Aurora</div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <div class="dock pc-only">
+        <div class="bt"><span class="ms">search</span></div>
+        <div class="bt"><span class="ms">dark_mode</span></div>
+        <div class="bt"><span class="ms">forum</span></div>
+        <div class="bt mais"><span class="ms">add</span></div>
+      </div>
+    </div>
+
+    <div class="barra">
+      <div class="pilula" style="background:rgba(255,255,255,.82);border-color:var(--line);box-shadow:0 12px 34px rgba(13,11,38,.12)">
+        <div class="bico on"><span class="circulo"><span class="ms">home</span></span><span>Visão</span></div>
+        <div class="bico"><span class="ms">checklist</span><span>Rotina</span></div>
+        <div class="bico"><span class="ms">account_balance_wallet</span><span>Finanças</span></div>
+        <div class="bico"><span class="ms">monitor_heart</span><span>Saúde</span></div>
+        <div class="bico"><span class="ms">flag</span><span>Metas</span></div>
+      </div>
+      <div class="orbe" style="background:#fff;border-color:rgba(91,69,214,.25)"><span class="ms" style="font-size:26px;color:#5B45D6">auto_awesome</span></div>
+    </div>
+  </div>
+</div>
+<script src="comum.js"></script>
+</body>
+</html>

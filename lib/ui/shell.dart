@@ -277,11 +277,12 @@ class _ShellState extends State<Shell> {
   }
 
   bool get _largo =>
+      _secao == Secao.visao ||
       _secao == Secao.anotacoes ||
       (_secao == Secao.rotina && (_abaRotina == AbaRotina.hoje || _abaRotina == AbaRotina.calendario));
 
   Widget _pagina(bool desktop) => switch (_secao) {
-    Secao.visao => VisaoPage(ir: _ir, irRotina: _irRotina),
+    Secao.visao => VisaoPage(ir: _ir, irRotina: _irRotina, aoBuscar: _buscar),
     Secao.rotina => AbasArea(
       abas: [for (final a in AbaRotina.values) a.rotulo],
       atual: _abaRotina.index,

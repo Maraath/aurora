@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="pt-BR" class="pc">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A · Aurora Viva — protótipo visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,300..500,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="comum.css">
+<script>document.documentElement.className = innerWidth < 760 ? 'fone' : 'pc';</script>
+<style>
+/* ================= A · AURORA VIVA =================
+   Mesma estrutura de hoje, com material e tipografia mais ricos:
+   cortinas de aurora de verdade, fio de luz nas bordas, anel do dia,
+   linha do tempo com trilho e números de destaque maiores. */
+
+:root{--raio:20px;--raio-g:24px}
+.ceu-a i{opacity:.3;left:-14%;width:130%;height:62%;top:-30%}
+.ceu-a .cortina{opacity:.26;left:-4%;width:112%}
+.ceu-a .cortina.c2{opacity:.16}
+/* véu à esquerda: o menu precisa de sossego para ler os ícones */
+.veu{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,var(--bg) 0,rgba(8,7,22,.72) 5%,rgba(8,7,22,0) 17%),
+             linear-gradient(180deg,rgba(8,7,22,.45),transparent 26%)}
+.coluna{max-width:1140px;position:relative;z-index:3}
+.rolagem{position:relative;z-index:3}
+
+/* ---------- cabeçalho ---------- */
+.topo{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:6px 0 16px}
+.topo .data{margin-bottom:9px}
+.topo h1{margin-top:2px}
+.topo h1 em{font-style:normal;background:linear-gradient(100deg,var(--text) 12%,var(--accent) 58%,var(--violeta) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.topo-dir{display:flex;align-items:center;gap:20px;padding-bottom:4px}
+.dia{display:flex;align-items:center;gap:13px}
+.dia .txt{text-align:right}
+.dia .txt b{display:block;font-family:Sora;font-size:13.5px;font-weight:600;letter-spacing:-.1px}
+.dia .txt small{color:var(--muted);font-size:11.5px;font-weight:600}
+.anel-dia{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(from 205deg,var(--gradIni) 0 40%,var(--teal) 48%,rgba(126,123,255,.9) 58%,var(--line) 58% 100%);
+  box-shadow:0 0 30px rgba(62,219,154,.14)}
+.anel-dia .miolo{width:62px;height:62px;border-radius:50%;background:#0A0919;display:grid;place-items:center;text-align:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.anel-dia b{font-family:Sora;font-size:16px;font-weight:600;line-height:1}
+.anel-dia small{display:block;font-size:8px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);font-weight:800;margin-top:3px}
+.orbe-bt{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(157,140,255,.34);
+  background:rgba(24,23,58,.5);backdrop-filter:blur(10px);box-shadow:0 10px 32px rgba(126,123,255,.2);position:relative}
+.orbe-bt::before{content:'';width:27px;height:27px;border-radius:50%;
+  background:radial-gradient(circle at 34% 28%,#E4FFF4,var(--accentFill) 44%,var(--gradFim) 94%);
+  box-shadow:0 0 20px rgba(92,240,176,.5),0 0 44px rgba(126,123,255,.28)}
+.orbe-bt::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(92,240,176,.16)}
+
+/* ---------- em foco ---------- */
+.heroi{position:relative;display:grid;grid-template-columns:1fr 262px;gap:28px;padding:20px 24px 20px 26px;
+  border-radius:var(--raio-g);overflow:hidden;border:1px solid var(--borda);box-shadow:var(--sombra);
+  background:
+    radial-gradient(120% 150% at -10% -20%,rgba(62,219,154,.20),transparent 58%),
+    radial-gradient(90% 130% at 108% 120%,rgba(126,123,255,.22),transparent 60%),
+    linear-gradient(160deg,#121128,#0C0B20)}
+.heroi::before{content:'';position:absolute;left:0;right:0;top:0;height:1.5px;
+  background:linear-gradient(90deg,var(--gradIni),var(--teal) 32%,var(--violeta) 66%,transparent 96%)}
+.heroi::after{content:'';position:absolute;right:-60px;top:-90px;width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(157,140,255,.16),transparent 68%);filter:blur(6px)}
+.heroi .rot{display:flex;align-items:center;gap:8px;color:var(--accent)}
+.heroi .rot i{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(92,240,176,.14)}
+.heroi h2{font-size:23px;margin:8px 0 5px;max-width:none;letter-spacing:-.4px}
+.heroi .sub{font-size:13.5px}
+.heroi .acoes{display:flex;gap:10px;margin-top:14px}
+.fila{position:relative;border-left:1px solid rgba(255,255,255,.07);padding-left:26px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.fila .rot{color:var(--muted);font-size:9.5px;letter-spacing:1.5px}
+.fila .fi{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center}
+.fila .fi time{font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.fila .fi b{display:block;font-size:13px;font-weight:700;line-height:1.3}
+.fila .fi small{color:var(--muted);font-size:11px}
+
+/* ---------- blocos ---------- */
+.bloco{margin-top:20px}
+.cab{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:12px}
+.cab p{color:var(--muted);font-size:12.5px;margin-top:3px}
+.cab .dir{display:flex;align-items:center;gap:7px;padding-bottom:2px;white-space:nowrap}
+.cab .dir .ms{font-size:15px;color:var(--accent)}
+
+/* linha do tempo */
+.tempo{position:relative;list-style:none;padding:6px 22px;border-radius:22px;border:1px solid var(--borda);
+  background:linear-gradient(180deg,rgba(18,17,40,.72),rgba(12,11,30,.62));backdrop-filter:blur(3px);box-shadow:0 14px 40px rgba(0,0,0,.22)}
+.tempo::before{content:'';position:absolute;left:107px;top:30px;bottom:30px;width:1px;
+  background:linear-gradient(180deg,transparent,var(--line) 10%,var(--line) 90%,transparent)}
+.tempo li{position:relative;display:grid;grid-template-columns:58px 40px 1fr auto;align-items:center;gap:12px;height:48px}
+.tempo li+li{border-top:1px solid rgba(255,255,255,.045)}
+.tempo .hora{font-size:12.5px;font-weight:700;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.tempo .no{position:relative;z-index:2;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:#100F26;border:1px solid var(--line);color:var(--muted)}
+.tempo .no .ms{font-size:16px;color:var(--nc,var(--muted))}
+.tempo .no::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:1px solid color-mix(in srgb,var(--nc,transparent) 22%,transparent)}
+.tempo .txt{font-size:14.5px;font-weight:600;letter-spacing:-.05px}
+.tempo .meta{font-size:11.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:7px}
+.tempo .meta s{width:5px;height:5px;border-radius:50%;background:var(--nc);display:inline-block;text-decoration:none}
+.tempo li.feito .txt{color:var(--muted);font-weight:500}
+.tempo li.feito .no{background:rgba(66,227,200,.13);border-color:rgba(66,227,200,.4)}
+.tempo li.feito .no .ms{color:var(--teal)}
+.tempo li.feito .meta{color:rgba(66,227,200,.85)}
+.tempo li.agora{background:linear-gradient(90deg,rgba(92,240,176,.07),transparent 70%);margin:0 -22px;padding:0 22px;border-top-color:transparent}
+.tempo li.agora .txt{color:var(--accent)}
+.tempo li.agora .hora{color:var(--accent)}
+
+/* semana */
+.semana{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:16px 16px 12px;border-radius:22px;
+  border:1px solid var(--borda);background:linear-gradient(180deg,rgba(18,17,40,.72),rgba(12,11,30,.6))}
+.semana .d{display:flex;flex-direction:column;align-items:center;gap:7px;padding:10px 4px 8px;border-radius:15px;border:1px solid transparent}
+.semana .d.on{background:linear-gradient(180deg,rgba(62,219,154,.13),rgba(126,123,255,.05));border-color:rgba(92,240,176,.26)}
+.semana .n{font-family:Sora;font-size:14px;font-weight:600;color:var(--muted)}
+.semana .d.on .n{color:var(--text)}
+.semana .col{height:66px;display:flex;align-items:flex-end}
+.semana .col i{display:block;width:17px;border-radius:7px;background:linear-gradient(180deg,rgba(60,58,110,.85),rgba(35,34,80,.55))}
+.semana .d.on .col i{background:linear-gradient(180deg,var(--gradFim),var(--gradIni));box-shadow:0 0 20px rgba(92,240,176,.3)}
+.semana .w{font-size:11px;font-weight:700;color:var(--muted)}
+.semana .d.on .w{color:var(--accent)}
+
+/* painel das áreas */
+.areas{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.area{position:relative;overflow:hidden;padding:15px 16px 16px;border-radius:19px;border:1px solid var(--borda);
+  background:linear-gradient(165deg,rgba(20,19,44,.9),rgba(13,12,30,.86));box-shadow:0 12px 34px rgba(0,0,0,.2)}
+.area::after{content:'';position:absolute;right:-46px;top:-56px;width:150px;height:150px;border-radius:50%;
+  background:radial-gradient(circle,rgba(92,240,176,.16),transparent 70%)}
+.area.fin::after{background:radial-gradient(circle,rgba(126,123,255,.18),transparent 70%)}
+.area .ico{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--surface2);color:var(--c,#A3A6C8)}
+.area .ico .ms{font-size:16px}
+.area .rot{font-size:9.5px;letter-spacing:1.4px;margin:12px 0 5px;color:var(--muted)}
+.area .val{font-family:Sora;font-size:21px;font-weight:600;letter-spacing:-.4px;line-height:1.14;position:relative;z-index:2}
+.area .val.bad{color:var(--bad)}
+.area .mini{font-size:11.5px;color:var(--muted);margin-top:5px;position:relative;z-index:2}
+
+/* insights */
+.insight{display:flex;gap:14px;align-items:flex-start;padding:17px 20px;border-radius:20px;
+  border:1px solid rgba(157,140,255,.2);
+  background:radial-gradient(120% 160% at 0% 0%,rgba(157,140,255,.14),transparent 60%),rgba(14,13,32,.7)}
+.insight+.insight{margin-top:12px}
+.insight .orbe{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;flex:0 0 30px;
+  background:rgba(157,140,255,.14);border:1px solid rgba(157,140,255,.24)}
+.insight p{font-size:13.5px;line-height:1.55}
+.insight p b{color:var(--accent);font-weight:800}
+
+/* semana + painel lado a lado */
+.dupla{display:grid;grid-template-columns:1.06fr 1fr;gap:15px}
+.painel-bloco{padding:13px 16px 13px;border-radius:20px;border:1px solid var(--borda);display:flex;flex-direction:column;
+  background:linear-gradient(180deg,rgba(18,17,40,.72),rgba(12,11,30,.58));box-shadow:0 14px 40px rgba(0,0,0,.2)}
+.semana{flex:1;align-content:center}
+.cab-min{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.cab-min .dir{display:flex;align-items:center;gap:5px;font-size:11.5px}
+.semana{padding:0;border:0;background:none;border-radius:0;gap:0}
+.semana .d{padding:5px 2px 4px;gap:4px}
+.semana .col{height:58px}
+.semana .n{font-size:12.5px}
+.semana .w{font-size:10.5px}
+/* item ativo do menu: pílula de luz */
+.menu .item.on{background:linear-gradient(135deg,rgba(62,219,154,.16),rgba(126,123,255,.14));
+  border:1px solid rgba(92,240,176,.2);color:var(--accent);box-shadow:0 8px 24px rgba(62,219,154,.12)}
+.menu .item.on::before{left:-9px;height:17px}
+.areas{grid-template-columns:1fr 1fr;gap:8px}
+.area{padding:10px 11px 11px;border-radius:14px;background:rgba(255,255,255,.022);border-color:rgba(255,255,255,.07)}
+.area::after{width:110px;height:110px;right:-38px;top:-46px}
+.area .ico{width:23px;height:23px;border-radius:8px}
+.area .ico .ms{font-size:14px}
+.area .rot{font-size:8.5px;margin:7px 0 2px;letter-spacing:1.1px}
+.area .val{font-size:16.5px;letter-spacing:-.3px}
+.area .mini{font-size:10px;margin-top:2px}
+/* painel das áreas em lista */
+.plista{display:flex;flex-direction:column}
+.pl{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;padding:3px 0;border-top:1px solid rgba(255,255,255,.055)}
+.pl:first-child{border-top:0}
+.pl .ico{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.045);color:var(--c)}
+.pl .ico .ms{font-size:15px}
+.pl-t{display:flex;flex-direction:column;line-height:1.1}
+.pl-t .rot{font-size:8px;letter-spacing:1.2px}
+.pl-t b{font-family:Sora;font-size:14.5px;font-weight:600;margin-top:2px;letter-spacing:-.2px}
+.pl-t b.bad{color:var(--bad)}
+.pl .mini{font-size:10.5px;color:var(--muted);text-align:right}
+
+/* sinal de continuação */
+.fade{position:absolute;left:0;right:0;bottom:0;height:44px;pointer-events:none;z-index:5;
+  background:linear-gradient(180deg,transparent,rgba(8,7,22,.85))}
+
+/* ---------- celular ---------- */
+.topo-fone{display:none}
+html.fone .topo-fone{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 14px}
+html.fone .topo-fone .marca{display:flex;align-items:center;gap:9px;font-family:Sora;font-size:16px;font-weight:600}
+html.fone .topo-fone .marca .sinal{width:19px;height:19px;border-radius:6px;background:conic-gradient(from 200deg,#3EDB9A,#42E3C8,#7E7BFF,#E77BFF,#3EDB9A)}
+html.fone .topo-fone .lado{display:flex;align-items:center;gap:8px;color:var(--muted)}
+html.fone .topo-fone .bt{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(24,23,58,.5);border:1px solid var(--borda)}
+html.fone .topo-fone .bt .ms{font-size:19px}
+html.fone .topo-fone .bt.ia{border-color:rgba(157,140,255,.35)}
+html.fone .topo{padding:0 0 20px}
+html.fone .topo h1{font-size:28px;line-height:1.12}
+html.fone .dia{display:none}
+html.fone .heroi{grid-template-columns:1fr;gap:0;padding:20px 20px 18px;border-radius:22px}
+html.fone .heroi h2{font-size:22px;margin:12px 0 6px}
+html.fone .heroi .acoes{margin-top:18px}
+html.fone .heroi .acoes .btn{height:40px;padding:0 16px;font-size:13px}
+html.fone .fila{display:none}
+html.fone .bloco{margin-top:22px}
+html.fone .tempo{padding:4px 14px;border-radius:20px}
+html.fone .tempo::before{left:78px;top:26px;bottom:26px}
+html.fone .tempo li{grid-template-columns:44px 34px 1fr;gap:10px;height:auto;min-height:54px;padding:9px 0}
+html.fone .tempo .meta{display:none}
+html.fone .cab .dir{font-size:11px}
+html.fone .topo-fone .lado{gap:6px}
+html.fone .tempo li.agora{margin:0 -14px;padding:0 14px}
+html.fone .semana{padding:10px 6px 8px}
+html.fone .semana .col{height:52px}
+html.fone .semana .col i{width:13px}
+html.fone .semana .d{padding:8px 2px 6px;gap:5px}
+html.fone .semana .w{font-size:9.5px}
+html.fone .areas{grid-template-columns:1fr 1fr;gap:10px}
+html.fone .area .val{font-size:17px}
+html.fone .dupla{grid-template-columns:1fr;gap:12px}
+html.fone .coluna{padding-top:0}
+html.fone .fade{height:150px}
+html.fone .anel-dia{width:56px;height:56px}
+html.fone .anel-dia .miolo{width:46px;height:46px}
+html.fone .anel-dia b{font-size:12.5px}
+html.fone .anel-dia small{font-size:7px}
+html.fone .pc-only{display:none!important}
+.html-none{display:none}
+</style>
+</head>
+<body>
+<canvas id="ceu"></canvas>
+<div class="aurora ceu-a" data-camadas="3" data-cortina="1"></div>
+<div class="grao"></div>
+
+<div id="palco">
+  <div class="veu"></div>
+  <div class="janela">
+    <i class="fio-janela"></i>
+    <div class="faixa pc-only">
+      <div class="marca"><span class="sinal"></span>Aurora</div>
+      <div class="bt-janela"><span class="ms">remove</span></div>
+      <div class="bt-janela"><span class="ms">crop_square</span></div>
+      <div class="bt-janela fechar"><span class="ms">close</span></div>
+    </div>
+
+    <div class="corpo">
+      <nav class="menu pc-only">
+        <div class="item"><span class="ms">auto_awesome</span><span class="nome">Assistente</span></div>
+        <div class="item on"><span class="ms">home</span><span class="nome">Visão</span></div>
+        <div class="sep"></div>
+        <div class="item"><span class="ms">checklist</span><span class="nome">Rotina</span></div>
+        <div class="item"><span class="ms">monitor_heart</span><span class="nome">Saúde</span></div>
+        <div class="item"><span class="ms">flag</span><span class="nome">Objetivos</span></div>
+        <div class="item"><span class="ms">sticky_note_2</span><span class="nome">Anotações</span></div>
+        <div class="item"><span class="ms">account_balance_wallet</span><span class="nome">Finanças</span></div>
+        <div class="sep"></div>
+        <div class="item"><span class="ms">person</span><span class="nome">Conta</span></div>
+      </nav>
+
+      <div class="rolagem">
+        <div class="topo-fone fone-only">
+          <div class="marca"><span class="sinal"></span>Aurora</div>
+          <div class="lado">
+            <div class="bt"><span class="ms">search</span></div>
+            <div class="bt ia"><span class="ms">auto_awesome</span></div>
+            <div class="bt"><span class="ms">contrast</span></div>
+          </div>
+        </div>
+
+        <div class="coluna">
+          <header class="topo">
+            <div>
+              <div class="rot data">Terça-feira, 27 de outubro · 13:08</div>
+              <h1>Boa tarde, <em>Maraath</em></h1>
+            </div>
+            <div class="topo-dir">
+              <div class="dia">
+                <div class="txt"><b>Hoje</b><small>7 de 12 feitos</small></div>
+                <div class="anel-dia"><div class="miolo"><div><b>7/12</b><small>feitos</small></div></div></div>
+              </div>
+              <div class="orbe-bt pc-only"></div>
+            </div>
+          </header>
+
+          <section class="heroi">
+            <div>
+              <div class="rot"><i></i>Em foco agora</div>
+              <h2>Revisar o orçamento de novembro</h2>
+              <p class="sub">Para hoje · Rotina · 2 de 7</p>
+              <div class="acoes">
+                <button class="btn p"><span class="ms">play_arrow</span>Começar foco</button>
+                <button class="btn g">Focar em outra</button>
+              </div>
+            </div>
+            <aside class="fila">
+              <div class="rot">A seguir</div>
+              <div class="fi"><time>15:00</time><div><b>Revisar o orçamento</b><small>Tarefa · 40 min</small></div></div>
+              <div class="fi"><time>18:00</time><div><b>Treino de pernas</b><small>Treino · 50 min</small></div></div>
+            </aside>
+          </section>
+
+          <section class="bloco">
+            <div class="cab">
+              <div><h3>Linha do dia</h3><p>Tudo o que é de hoje, na ordem do relógio.</p></div>
+              <div class="dir"><span class="ms">check_circle</span>7 de 12 feitos</div>
+            </div>
+            <ol class="tempo">
+              <li class="feito" style="--nc:#5CF0B0"><span class="hora">07:00</span><span class="no"><span class="ms">check</span></span><span class="txt">Meditar</span><span class="meta">Hábito</span></li>
+              <li class="feito" style="--nc:#42E3C8"><span class="hora">10:00</span><span class="no"><span class="ms">event</span></span><span class="txt">Reunião de planejamento</span><span class="meta">Compromisso</span></li>
+              <li class="agora" style="--nc:#F5C35B"><span class="hora">15:00</span><span class="no"><span class="ms">check_box</span></span><span class="txt">Revisar o orçamento de novembro</span><span class="meta"><s></s>Tarefa</span></li>
+              <li style="--nc:#F5C35B"><span class="hora">18:00</span><span class="no"><span class="ms">fitness_center</span></span><span class="txt">Treino de pernas</span><span class="meta">Treino</span></li>
+              <li style="--nc:#5CF0B0"><span class="hora">Dia</span><span class="no"><span class="ms">water_drop</span></span><span class="txt">Beber água · 5 de 8</span><span class="meta">Hábito</span></li>
+            </ol>
+          </section>
+
+          <section class="bloco">
+            <div class="dupla">
+              <div class="painel-bloco">
+                <div class="cab-min"><h3>Semana</h3><span class="dir">Calendário <span class="ms" style="font-size:14px">open_in_full</span></span></div>
+                <div class="semana">
+                  <div class="d"><span class="n">3</span><span class="col"><i style="height:26px"></i></span><span class="w">Seg</span></div>
+                  <div class="d on"><span class="n">5</span><span class="col"><i style="height:46px"></i></span><span class="w">Hoje</span></div>
+                  <div class="d"><span class="n">4</span><span class="col"><i style="height:36px"></i></span><span class="w">Qua</span></div>
+                  <div class="d"><span class="n">6</span><span class="col"><i style="height:56px"></i></span><span class="w">Qui</span></div>
+                  <div class="d"><span class="n">2</span><span class="col"><i style="height:18px"></i></span><span class="w">Sex</span></div>
+                  <div class="d"><span class="n">1</span><span class="col"><i style="height:9px"></i></span><span class="w">Sáb</span></div>
+                  <div class="d"><span class="n">3</span><span class="col"><i style="height:26px"></i></span><span class="w">Dom</span></div>
+                </div>
+              </div>
+              <div class="painel-bloco">
+                <div class="cab-min"><h3>Painel das áreas</h3><span class="dir">7 abertas</span></div>
+                <div class="plista">
+                  <div class="pl" style="--c:#F5C35B"><span class="ico"><span class="ms">check_box</span></span><span class="pl-t"><span class="rot">Tarefas</span><b class="bad">1 atrasada</b></span><span class="mini">7 abertas</span></div>
+                  <div class="pl" style="--c:#5CF0B0"><span class="ico"><span class="ms">repeat</span></span><span class="pl-t"><span class="rot">Hábitos</span><b>5 de 8</b></span><span class="mini">hoje</span></div>
+                  <div class="pl" style="--c:#9D8CFF"><span class="ico"><span class="ms">account_balance_wallet</span></span><span class="pl-t"><span class="rot">Outubro</span><b>R$ 1.240</b></span><span class="mini">3 contas</span></div>
+                  <div class="pl" style="--c:#42E3C8"><span class="ico"><span class="ms">flag</span></span><span class="pl-t"><span class="rot">Reserva</span><b>R$ 18.050</b></span><span class="mini">faltam 5.949</span></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="bloco">
+            <div class="cab"><div><h3>Insights</h3><p>O que a Aurora percebeu nos seus dados.</p></div></div>
+            <div class="insight"><div class="orbe"><span class="ms" style="font-size:16px;color:#9D8CFF">auto_awesome</span></div>
+              <p>Você fecha os hábitos <b>20% mais cedo</b> nas terças. Se mantiver o ritmo, outubro fecha com <b>88%</b> de constância.</p></div>
+            <div class="insight"><div class="orbe"><span class="ms" style="font-size:16px;color:#9D8CFF">auto_awesome</span></div>
+              <p>Mercado caiu <b>R$ 210</b> em relação a setembro — o maior recuo do ano.</p></div>
+          </section>
+        </div>
+        <div class="fade pc-only"></div>
+      </div>
+
+      <div class="dock pc-only">
+        <div class="bt"><span class="ms">search</span></div>
+        <div class="bt"><span class="ms">contrast</span></div>
+        <div class="bt"><span class="ms">forum</span></div>
+        <div class="bt mais"><span class="ms">add</span></div>
+      </div>
+    </div>
+
+    <div class="barra">
+      <div class="pilula">
+        <div class="bico"><span class="ms">home</span><span>Visão</span></div>
+        <div class="bico"><span class="ms">checklist</span><span>Rotina</span></div>
+        <div class="bico on"><span class="circulo"><span class="ms">account_balance_wallet</span></span><span>Finanças</span></div>
+        <div class="bico"><span class="ms">monitor_heart</span><span>Saúde</span></div>
+        <div class="bico"><span class="ms">flag</span><span>Metas</span></div>
+      </div>
+      <div class="orbe"><span class="ms" style="font-size:26px;color:#9D8CFF">auto_awesome</span></div>
+    </div>
+  </div>
+</div>
+
+<script src="comum.js"></script>
+</body>
+</html>

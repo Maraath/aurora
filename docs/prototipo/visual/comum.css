@@ -1,0 +1,148 @@
+/* Base dos protótipos visuais do Aurora — tokens, peças e moldura.
+   Cada direção (a-, b-, c-, d-) carrega este arquivo e sobrescreve só a pele. */
+:root{
+  --bg:#080716;--surface:#0F0E26;--surface2:#18173A;--line:#232250;--text:#EEF0FB;--muted:#A3A6C8;
+  --accent:#5CF0B0;--accentFill:#3EDB9A;--gradIni:#3EDB9A;--gradFim:#7E7BFF;--noAccent:#06061A;
+  --violeta:#9D8CFF;--teal:#42E3C8;--warn:#F5C35B;--bad:#E77BFF;
+  --vidro:rgba(24,23,58,.55);--borda:rgba(255,255,255,.09);--borda-forte:rgba(255,255,255,.16);
+  --sombra:0 18px 50px rgba(0,0,0,.35);
+  --raio:18px;--raio-g:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:Manrope,sans-serif;font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;overflow:hidden}
+b,strong{font-weight:700}
+.ms{font-family:'Material Symbols Rounded',sans-serif;font-weight:400;font-style:normal;line-height:1;
+  letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;
+  font-variation-settings:'FILL' 0,'wght' 320,'GRAD' 0,'opsz' 24;-webkit-font-smoothing:antialiased}
+.sora{font-family:Sora,sans-serif}
+
+/* palco fixo 1600x900, escalado para caber na janela */
+#palco{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;background:transparent}
+html.fone #palco{width:100vw;height:100vh;transform:none!important;left:0!important;top:0!important}
+#ceu{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+.grao{position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23r)' opacity='0.55'/></svg>")}
+
+/* janela do app (sem barra do sistema, como no Windows: fio de aurora + botões) */
+.janela{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
+.fio-janela{position:absolute;left:0;right:0;top:0;height:2px;z-index:40;
+  background:linear-gradient(90deg,var(--gradIni),var(--teal) 28%,var(--violeta) 68%,var(--bad));opacity:.9}
+.faixa{height:34px;flex:0 0 34px;display:flex;align-items:center;justify-content:flex-end;gap:4px;padding:2px 8px 0 20px;position:relative;z-index:30}
+.faixa .bt-janela{width:40px;height:28px;display:grid;place-items:center;border-radius:8px;color:var(--muted);font-size:15px;opacity:.75}
+.faixa .bt-janela.fechar:hover{background:rgba(231,123,255,.18);color:#FFD9FA}
+.faixa .marca{position:absolute;left:26px;top:3px;display:flex;align-items:center;gap:9px;font-family:Sora;font-size:12.5px;font-weight:600;letter-spacing:.2px;color:var(--muted);opacity:.8}
+.faixa .marca .sinal{width:16px;height:16px;border-radius:5px;background:conic-gradient(from 210deg,#3EDB9A,#42E3C8,#7E7BFF,#E77BFF,#3EDB9A);filter:saturate(1.1)}
+.corpo{flex:1;display:flex;min-height:0;position:relative}
+
+/* menu lateral: só ícones */
+.menu{width:78px;flex:0 0 78px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;z-index:20}
+.menu .item{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;color:var(--muted);position:relative;transition:color .2s}
+.menu .item .ms{font-size:21px}
+.menu .item .nome{position:absolute;left:58px;top:50%;transform:translateY(-50%) translateX(-4px);opacity:0;pointer-events:none;
+  background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;transition:.18s;z-index:50}
+.menu .item:hover .nome{opacity:1;transform:translateY(-50%)}
+.menu .item:hover{color:var(--text)}
+.menu .sep{width:16px;height:1px;background:var(--line);margin:6px 0}
+.menu .item.on{color:var(--accent)}
+.menu .item.on::before{content:'';position:absolute;left:-20px;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:3px;
+  background:linear-gradient(180deg,var(--gradIni),var(--gradFim))}
+
+/* coluna de conteúdo */
+.rolagem{flex:1;overflow:hidden;position:relative}
+.coluna{max-width:1040px;margin:0 auto;padding:8px 44px 60px}
+
+/* tipografia */
+.rot{font-size:10.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:var(--muted)}
+h1{font-family:Sora;font-size:33px;font-weight:600;letter-spacing:-.5px;line-height:1.1}
+h2{font-family:Sora;font-size:25px;font-weight:600;letter-spacing:-.3px;line-height:1.18}
+h3{font-family:Sora;font-size:17px;font-weight:600;letter-spacing:-.1px}
+.sub{color:var(--muted)}
+.dir{color:var(--muted);font-size:12.5px;font-weight:600}
+
+/* peças */
+.btn{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 20px;border-radius:13px;font-family:Manrope;font-weight:700;font-size:13.5px;
+  border:1px solid transparent;cursor:pointer;white-space:nowrap}
+.btn .ms{font-size:18px}
+.btn.p{background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:var(--noAccent);box-shadow:0 8px 26px rgba(62,219,154,.22)}
+.btn.g{background:transparent;border-color:var(--borda-forte);color:var(--text)}
+.btn.ghost{background:var(--surface2);color:var(--text);border-color:var(--line)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:27px;padding:0 11px;border-radius:999px;border:1px solid var(--line);
+  color:var(--muted);font-size:12px;font-weight:700;background:rgba(255,255,255,.02)}
+.chip.on{color:var(--accent);border-color:rgba(92,240,176,.42);background:rgba(62,219,154,.12)}
+.cartao{background:var(--surface);border:1px solid var(--borda);border-radius:var(--raio);position:relative}
+.selo{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--muted)}
+
+/* anel de progresso */
+.anel{border-radius:50%;display:grid;place-items:center;position:relative}
+.anel .miolo{background:var(--bg);border-radius:50%;display:grid;place-items:center;text-align:center}
+.anel .miolo b{font-family:Sora;font-size:15px;font-weight:600;line-height:1}
+.anel .miolo small{display:block;font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:800;margin-top:3px}
+
+/* atalhos flutuantes */
+.dock{position:absolute;right:26px;bottom:26px;display:flex;flex-direction:column;gap:11px;align-items:center;z-index:25}
+.dock .bt{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--vidro);border:1px solid var(--borda);
+  color:var(--muted);backdrop-filter:blur(12px) saturate(1.4);-webkit-backdrop-filter:blur(12px) saturate(1.4);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.dock .bt .ms{font-size:19px}
+.dock .bt.mais{width:52px;height:52px;background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:var(--noAccent);border:0;
+  box-shadow:0 10px 30px rgba(126,123,255,.35)}
+.dock .bt.mais .ms{font-size:25px;font-variation-settings:'FILL' 0,'wght' 400,'opsz' 24}
+
+/* cabeçalho e barra do celular */
+.barra{display:none}
+
+/* ---------- celular ---------- */
+html.fone .janela{inset:0}
+html.fone .faixa{display:none}
+html.fone .menu{display:none}
+html.fone .dock{display:none}
+html.fone .coluna{max-width:none;padding:0 18px 120px}
+html.fone h1{font-size:27px;letter-spacing:-.4px}
+html.fone h2{font-size:21px}
+html.fone .barra{display:flex;position:absolute;left:14px;right:14px;bottom:16px;z-index:30;
+  align-items:center;justify-content:space-between;gap:10px}
+html.fone .barra .pilula{flex:1;display:flex;align-items:center;justify-content:space-around;height:62px;padding:0 8px;border-radius:22px;
+  background:var(--vidro);border:1px solid var(--borda);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);
+  box-shadow:0 14px 40px rgba(0,0,0,.42);position:relative}
+html.fone .barra .bico{width:46px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted)}
+html.fone .barra .bico .ms{font-size:22px}
+html.fone .barra .bico span{font-size:8.5px;font-weight:800;letter-spacing:.2px;opacity:0;height:0;overflow:hidden}
+html.fone .barra .bico.on{color:var(--accent)}
+html.fone .barra .bico.on .circulo{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--gradIni),var(--gradFim));color:var(--noAccent);box-shadow:0 6px 18px rgba(62,219,154,.3)}
+html.fone .barra .bico.on .circulo .ms{font-size:21px}
+html.fone .barra .bico.on span{opacity:1;height:auto}
+html.fone .barra .orbe{flex:0 0 58px;height:58px;border-radius:50%;display:grid;place-items:center;
+  background:var(--vidro);border:1px solid rgba(157,140,255,.4);backdrop-filter:blur(16px);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+
+/* ---------- aurora em camadas (montada pelo comum.js) ---------- */
+.aurora{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.aurora i{position:absolute;left:-25%;top:-26%;width:150%;height:80%;opacity:.5;
+  filter:blur(46px) saturate(1.15);
+  background:radial-gradient(46% 55% at 28% 38%,rgba(62,219,154,.5),transparent 72%),
+             radial-gradient(42% 48% at 70% 30%,rgba(126,123,255,.42),transparent 74%);
+  animation:derivaA 54s ease-in-out infinite alternate}
+.aurora i:nth-child(2){left:-10%;top:-8%;height:60%;opacity:.3;filter:blur(64px);
+  background:radial-gradient(40% 60% at 18% 34%,rgba(66,227,200,.42),transparent 70%),
+             radial-gradient(38% 50% at 78% 22%,rgba(231,123,255,.2),transparent 72%);
+  animation:derivaB 74s ease-in-out infinite alternate}
+.aurora i:nth-child(3){left:-30%;top:-34%;height:56%;opacity:.22;filter:blur(58px);
+  background:radial-gradient(34% 60% at 52% 30%,rgba(126,123,255,.5),transparent 70%),
+             radial-gradient(30% 46% at 86% 44%,rgba(62,219,154,.34),transparent 72%);
+  animation:derivaA 92s ease-in-out infinite alternate-reverse}
+.aurora .cortina{position:absolute;left:-12%;top:-12%;width:124%;height:66%;opacity:.5;
+  background:linear-gradient(90deg,transparent 0 6%,rgba(62,219,154,.42) 12%,transparent 19%,
+    rgba(157,140,255,.36) 28%,transparent 38%,rgba(66,227,200,.34) 50%,transparent 62%,
+    rgba(126,123,255,.32) 74%,transparent 86%,rgba(62,219,154,.22) 92%,transparent 100%);
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.6) 42%,transparent 88%);
+  mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.6) 42%,transparent 88%);
+  filter:blur(22px);
+  animation:derivaB 68s ease-in-out infinite alternate}
+.aurora .cortina.c2{opacity:.32;height:52%;top:-18%;transform:scaleX(-1);
+  background:linear-gradient(90deg,transparent 0 10%,rgba(231,123,255,.24) 20%,transparent 32%,
+    rgba(62,219,154,.3) 46%,transparent 58%,rgba(157,140,255,.24) 72%,transparent 88%);
+  filter:blur(30px);animation-duration:96s}
+.aurora.estatico i,.aurora.estatico .cortina{animation:none}
+@keyframes derivaA{0%{transform:translateX(-3%) skewX(-5deg)}100%{transform:translateX(5%) skewX(5deg) scaleY(1.1)}}
+@keyframes derivaB{0%{transform:translateX(4%) skewX(4deg) scaleY(1.08)}100%{transform:translateX(-4%) skewX(-4deg) scaleY(.96)}}
