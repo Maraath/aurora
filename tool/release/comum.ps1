@@ -1,4 +1,4 @@
-﻿# Envio ao balde "atualizacoes" do Supabase, usado por windows.ps1 e android.ps1.
+# Envio ao balde "atualizacoes" do Supabase, usado por windows.ps1 e android.ps1.
 # O CLI do Storage só aceita caminho RELATIVO à raiz do projeto.
 
 $UrlBalde = 'https://fhmhmdzbujqhkdsfnbtx.supabase.co/storage/v1/object/public/atualizacoes'
@@ -88,8 +88,10 @@ function Substituir([string]$local, [string]$remoto) {
 function ApagarAntigos([string]$pasta, [string[]]$manter) {
   $lista = npx --yes supabase --experimental storage ls "ss:///atualizacoes/$pasta/" --linked | Out-String
   if ($LASTEXITCODE -ne 0) { Write-Warning "Não listei $pasta/; nada foi apagado."; return }
-  $antigos = [regex]::Matches($lista, '"(Aurora-[^"/]+\.(apk|exe))"') | ForEach-Object { $_.Groups[1].Value } |
-    Where-Object { $manter -notcontains $_ }
+  # O CLI imprime um nome por linha, sem aspas ("Aurora-1.2.3-setup.exe").
+  $nomes = ($lista -split "`r?`n") | ForEach-Object { $_.Trim() } |
+    Where-Object { $_ -match '^Aurora-.+\.(apk|exe)$' }
+  $antigos = @($nomes | Where-Object { $manter -notcontains $_ })
   if (-not $antigos) { return }
   Write-Host "Apagando versões antigas de ${pasta}/: $($antigos -join ', ')"
   npx --yes supabase --experimental storage rm ($antigos | ForEach-Object { "ss:///atualizacoes/$pasta/$_" }) --linked --yes
