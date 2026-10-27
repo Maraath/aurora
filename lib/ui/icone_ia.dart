@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 /// Marcador do ícone da IA para os campos `IconData` (menu, botões, busca).
 /// Não é uma fonte de verdade: quem desenha ícones vindos de fora usa
 /// [IconeApp], que troca o marcador pelo desenho de [IconeIa].
-const iconeIa = IconData(0xF000, fontFamily: 'AuroraIconeIa');
+///
+/// Sem `fontFamily` de propósito: o build release do Flutter varre os
+/// `IconData` constantes atrás das famílias de fonte e avisava
+/// "Expected to find fonts for (…, AuroraIconeIa)" por causa de uma família que
+/// não existe (a faísca é desenhada com CustomPaint, não é glifo). O ponto
+/// 0x10FFFD fica fora da faixa dos ícones do Material, então nenhum ícone real
+/// se confunde com este marcador.
+const iconeIa = IconData(0x10FFFD);
 
 /// `Icon` que também sabe desenhar o ícone da IA.
 class IconeApp extends StatelessWidget {
