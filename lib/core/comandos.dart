@@ -4,6 +4,7 @@
 /// vai para a fila da IA.
 library;
 
+import 'categorias.dart';
 import 'formato.dart';
 import 'recorrencia.dart';
 import 'relogio.dart';
@@ -179,32 +180,31 @@ Comando? _dinheiro(String o, String n, DateTime hoje) {
   );
 }
 
-/// Categoria pelo que se escreveu (as mesmas de Finanças).
+/// Categoria pelo que se escreveu (as mesmas de Finanças). A ordem de teste
+/// das palavras fica em [ordemClassificacaoSaida], do mais específico para o
+/// genérico.
 String categoriaGasto(String texto) {
   final t = normalizar(texto);
-  bool tem(List<String> palavras) => palavras.any((p) => RegExp('\\b$p').hasMatch(t));
-  if (tem(['mercado', 'supermercado', 'feira', 'padaria', 'acougue', 'hortifruti'])) return 'Mercado';
-  if (tem(['uber', '99', 'onibus', 'metro', 'gasolina', 'combustivel', 'estacionamento', 'pedagio', 'taxi', 'passagem'])) {
-    return 'Transporte';
-  }
-  if (tem(['farmacia', 'remedio', 'medico', 'consulta', 'exame', 'dentista', 'academia', 'suplemento'])) {
-    return 'Saúde';
-  }
-  if (tem(['aluguel', 'condominio', 'luz', 'energia', 'agua', 'gas', 'internet', 'iptu'])) return 'Moradia';
-  if (tem(['faculdade', 'curso', 'livro', 'escola', 'mensalidade'])) return 'Educação';
-  if (tem(['netflix', 'spotify', 'icloud', 'assinatura', 'celular', 'plano', 'streaming'])) return 'Serviços';
-  if (tem(['cinema', 'bar', 'restaurante', 'lanche', 'ifood', 'pizza', 'show', 'jogo', 'viagem', 'cerveja'])) {
-    return 'Lazer';
+  for (final nome in ordemClassificacaoSaida) {
+    final c = categoriasPorNome[nome];
+    if (c != null && c.apelidos.any((p) => _casa(t, p))) return c.nome;
   }
   return 'Outros';
 }
 
 String categoriaEntrada(String texto) {
   final t = normalizar(texto);
-  if (RegExp(r'\b(salario|pagamento do mes)').hasMatch(t)) return 'Salário';
-  if (RegExp(r'\b(freela|freelance|job|bico|projeto)').hasMatch(t)) return 'Freela';
+  for (final nome in ordemClassificacaoEntrada) {
+    final c = categoriasPorNome[nome];
+    if (c != null && c.apelidos.any((p) => _casa(t, p))) return c.nome;
+  }
   return 'Outros';
 }
+
+/// Palavra inteira, para "bar" não casar "barbearia" nem "gás" casar
+/// "gasolina".
+bool _casa(String texto, String palavra) =>
+    RegExp('\\b${RegExp.escape(palavra)}\\b').hasMatch(texto);
 
 // ----------------------------------------------------------------- lembrete
 

@@ -6,6 +6,7 @@ import 'package:aurora/data/financas_repo.dart';
 import 'package:aurora/data/graficos_financas.dart';
 import 'package:aurora/ui/financas/graficos/cartao_categorias.dart';
 import 'package:aurora/ui/financas/graficos/config.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -100,7 +101,8 @@ void main() {
   test('configuração do painel: guarda e lê ordem, ocultos e tipos', () {
     final c = ConfigPainel.padrao()
       ..ocultos.add(CartaoFin.recentes)
-      ..tipos[CartaoFin.categorias] = TipoGrafico.radar;
+      ..tipos[CartaoFin.categorias] = TipoGrafico.radar
+      ..porGrupo.add(CartaoFin.categorias);
     c.ordem[PainelFin.resumo] = [CartaoFin.fluxoCaixa, ...CartaoFin.doPainel(PainelFin.resumo).where((x) => x != CartaoFin.fluxoCaixa)];
     final lida = ConfigPainel.deJson(c.paraJson());
     expect(lida.ordem[PainelFin.resumo]!.first, CartaoFin.fluxoCaixa);
@@ -108,6 +110,8 @@ void main() {
     expect(lida.tipoDe(CartaoFin.categorias), TipoGrafico.radar);
     expect(lida.tipoDe(CartaoFin.fluxoCaixa), TipoGrafico.barras, reason: 'sem escolha, o primeiro tipo');
     expect(lida.visiveis(PainelFin.resumo), isNot(contains(CartaoFin.recentes)));
+    expect(lida.usaGrupo(CartaoFin.categorias), isTrue);
+    expect(lida.usaGrupo(CartaoFin.fluxoCaixa), isFalse);
     // JSON estragado ou de versão antiga: volta ao padrão sem quebrar.
     expect(ConfigPainel.deJson('{oi').ordem[PainelFin.analise], CartaoFin.doPainel(PainelFin.analise));
     final parcial = ConfigPainel.deJson('{"ordem":{"resumo":["recentes","nao_existe"]}}');
@@ -176,6 +180,66 @@ void main() {
         await t.pumpWidget(const SizedBox());
       });
     }
+
+    testWidgets('Despesas por categoria: agrupa por grupo e guarda a escolha', (t) async {
+      // Um gasto pago no mês: sem ele o cartão fica no estado vazio (sem subtítulo).
+      await t.runAsync(() => FinancasRepo(db).salvar(TransacoesCompanion.insert(
+            descricao: 'Feira',
+            valorCentavos: 5000,
+            tipo: TipoTransacao.saida,
+            data: instanteLocal(hojeLocal(), 10),
+            pagoEm: Value(instanteLocal(hojeLocal(), 10)),
+            categoria: const Value('Mercado'),
+          )));
+      await abrir(t, const Size(1280, 900));
+      await t.scrollUntilVisible(find.text('Despesas por categoria'), 300, scrollable: _lista);
+      expect(find.text('Para onde foi o dinheiro neste mês'), findsOneWidget);
+
+      final botao = find.bySemanticsLabel('Somar por grupo');
+      await t.ensureVisible(botao);
+      await t.pump();
+      await t.tap(botao);
+      await assentar(t);
+      expect(find.text('Para onde foi o dinheiro neste mês · por grupo'), findsOneWidget);
+      expect(find.bySemanticsLabel('Ver por categoria'), findsOneWidget);
+
+      final salvo = await t.runAsync(() => db.preferencia(PreferenciasPainel.chave));
+      expect(ConfigPainel.deJson(salvo).usaGrupo(CartaoFin.categorias), isTrue);
+
+      await t.tap(find.bySemanticsLabel('Ver por categoria'));
+      await assentar(t);
+      expect(find.text('Para onde foi o dinheiro neste mês'), findsOneWidget);
+      await t.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('Outros: o pé do cartão abre a revisão, com a sugestão pelo nome', (t) async {
+      await t.runAsync(() => FinancasRepo(db).salvar(TransacoesCompanion.insert(
+            descricao: 'Empréstimo carol',
+            valorCentavos: 10000,
+            tipo: TipoTransacao.saida,
+            data: instanteLocal(hojeLocal(), 10),
+            pagoEm: Value(instanteLocal(hojeLocal(), 10)),
+            categoria: const Value('Outros'),
+          )));
+      await abrir(t, const Size(1280, 900));
+      final pe = find.textContaining('em Outros ·');
+      await t.scrollUntilVisible(pe, 300, scrollable: _lista);
+      expect(pe, findsOneWidget);
+
+      final alvo = find.ancestor(of: pe, matching: find.byType(InkWell)).first;
+      await t.ensureVisible(alvo);
+      await t.pump();
+      await t.tap(alvo);
+      await assentar(t);
+      expect(find.text('O que caiu em Outros'), findsOneWidget);
+      expect(find.text('Empréstimo carol'), findsWidgets);
+      // "empréstimo" no nome já cai em Dívidas e juros.
+      expect(find.text('Dívidas e juros'), findsWidgets);
+
+      await t.tap(find.text('Pronto'));
+      await assentar(t);
+      await t.pumpWidget(const SizedBox());
+    });
 
     testWidgets('Personalizar: desligar um cartão some com ele e fica salvo', (t) async {
       await abrir(t, const Size(1280, 900));

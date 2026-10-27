@@ -11,7 +11,8 @@ import 'config.dart';
 
 /// "Despesas por categoria" em rosca, pizza, barras, blocos (treemap) ou
 /// radar (este mês × média dos 3 anteriores). Tocar (ou passar o mouse) numa
-/// parte destaca a categoria na legenda e mostra o valor dela.
+/// parte destaca a categoria na legenda e mostra o valor dela. Pode somar as
+/// categorias por grupo, que com 20 categorias a rosca fica cheia de fatia fina.
 class CartaoCategorias extends StatefulWidget {
   const CartaoCategorias({
     super.key,
@@ -19,12 +20,22 @@ class CartaoCategorias extends StatefulWidget {
     required this.comparacao,
     required this.tipo,
     required this.aoEscolherTipo,
+    required this.porGrupo,
+    required this.aoAlternarGrupo,
+    this.rodape,
   });
 
   final List<CategoriaGasto> categorias;
   final List<ComparacaoCategoria> comparacao;
   final TipoGrafico tipo;
   final ValueChanged<TipoGrafico> aoEscolherTipo;
+
+  /// Soma as categorias por grupo (ver [grupoDe]) em vez de por categoria.
+  final bool porGrupo;
+  final VoidCallback aoAlternarGrupo;
+
+  /// Linha extra no pé do cartão (o que caiu em "Outros", para revisar).
+  final Widget? rodape;
 
   @override
   State<CartaoCategorias> createState() => _CartaoCategoriasState();
@@ -35,17 +46,34 @@ class _CartaoCategoriasState extends State<CartaoCategorias> {
 
   void _tocar(int? i) => setState(() => _tocada = i);
 
+  /// As fatias do gráfico, agrupadas ou não.
+  List<CategoriaGasto> get _cats =>
+      widget.porGrupo ? agruparCategorias(widget.categorias) : widget.categorias;
+
+  /// A comparação com a média, no mesmo agrupamento do gráfico.
+  List<ComparacaoCategoria> get _comp =>
+      widget.porGrupo ? agruparComparacao(widget.comparacao) : widget.comparacao;
+
+  /// Ícone e cor de uma fatia: do grupo ou da categoria.
+  VisualCategoria _visual(BuildContext context, String nome) =>
+      widget.porGrupo ? visualDoGrupo(context, nome) : visualDaCategoria(context, nome);
+
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final cats = widget.categorias;
+    final cats = _cats;
     final total = cats.fold(0, (s, x) => s + x.centavos);
     final seletor = SeletorTipo(tipos: CartaoFin.categorias.tipos, atual: widget.tipo, aoEscolher: widget.aoEscolherTipo);
+    final acao = Row(mainAxisSize: MainAxisSize.min, children: [
+      _BotaoGrupo(porGrupo: widget.porGrupo, aoTocar: widget.aoAlternarGrupo),
+      const SizedBox(width: 6),
+      seletor,
+    ]);
 
     if (total == 0 && widget.tipo != TipoGrafico.radar) {
       return CartaoPainel(
         titulo: 'Despesas por categoria',
-        acao: seletor,
+        acao: acao,
         child: SizedBox(
           height: 120,
           child: Center(child: Text('Nenhuma despesa paga neste mês.', style: manrope(14, cor: c.muted))),
@@ -66,8 +94,8 @@ class _CartaoCategoriasState extends State<CartaoCategorias> {
       titulo: 'Despesas por categoria',
       subtitulo: widget.tipo == TipoGrafico.radar
           ? 'Este mês comparado à média dos 3 anteriores'
-          : 'Para onde foi o dinheiro neste mês',
-      acao: seletor,
+          : 'Para onde foi o dinheiro neste mês${widget.porGrupo ? ' · por grupo' : ''}',
+      acao: acao,
       child: Column(children: [
         AnimatedSwitcher(
           duration: MediaQuery.maybeDisableAnimationsOf(context) ?? false
@@ -85,17 +113,22 @@ class _CartaoCategoriasState extends State<CartaoCategorias> {
           for (var i = 0; i < cats.length; i++)
             _ItemLegenda(
               categoria: cats[i],
+              visual: _visual(context, cats[i].nome),
               porcento: _pct(cats[i].centavos, total),
               destacado: i == _tocada,
               aoPassar: (dentro) => _tocar(dentro ? i : null),
             ),
+        if (widget.rodape != null) ...[
+          const SizedBox(height: 10),
+          widget.rodape!,
+        ],
       ]),
     );
   }
 
   Widget _pizza(BuildContext context, int total, {required bool buraco}) {
     final c = context.cores;
-    final cats = widget.categorias;
+    final cats = _cats;
     final destaque = _tocada == null || _tocada! >= cats.length ? null : cats[_tocada!];
     return SizedBox(
       height: 190,
@@ -116,7 +149,7 @@ class _CartaoCategoriasState extends State<CartaoCategorias> {
               for (var i = 0; i < cats.length; i++)
                 PieChartSectionData(
                   value: cats[i].centavos.toDouble(),
-                  color: visualDaCategoria(context, cats[i].nome).cor,
+                  color: _visual(context, cats[i].nome).cor,
                   radius: buraco ? (i == _tocada ? 30 : 24) : (i == _tocada ? 92 : 86),
                   showTitle: false,
                 ),
@@ -137,7 +170,7 @@ class _CartaoCategoriasState extends State<CartaoCategorias> {
 
   Widget _barras(BuildContext context, int total) {
     final c = context.cores;
-    final cats = widget.categorias;
+    final cats = _cats;
     final maior = cats.first.centavos;
     return Column(children: [
       for (var i = 0; i < cats.length; i++)
@@ -148,8 +181,8 @@ class _CartaoCategoriasState extends State<CartaoCategorias> {
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               Row(children: [
-                Icon(visualDaCategoria(context, cats[i].nome).icone,
-                    size: 15, color: visualDaCategoria(context, cats[i].nome).cor),
+                Icon(_visual(context, cats[i].nome).icone,
+                    size: 15, color: _visual(context, cats[i].nome).cor),
                 const SizedBox(width: 8),
                 Expanded(child: Text(cats[i].nome, style: manrope(13.5, peso: FontWeight.w600))),
                 Text('${_pct(cats[i].centavos, total)}%', style: manrope(12, peso: FontWeight.w700, cor: c.muted)),
@@ -158,7 +191,7 @@ class _CartaoCategoriasState extends State<CartaoCategorias> {
               ]),
               const SizedBox(height: 6),
               LayoutBuilder(builder: (context, box) {
-                final cor = visualDaCategoria(context, cats[i].nome).cor;
+                final cor = _visual(context, cats[i].nome).cor;
                 return Stack(children: [
                   Container(height: 10, decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(6))),
                   AnimatedContainer(
@@ -179,7 +212,7 @@ class _CartaoCategoriasState extends State<CartaoCategorias> {
   }
 
   Widget _blocos(BuildContext context, int total) {
-    final cats = widget.categorias;
+    final cats = _cats;
     return SizedBox(
       height: 200,
       child: LayoutBuilder(builder: (context, box) {
@@ -196,7 +229,7 @@ class _CartaoCategoriasState extends State<CartaoCategorias> {
                   child: _Bloco(
                     nome: cats[i].nome,
                     porcento: _pct(cats[i].centavos, total),
-                    cor: visualDaCategoria(context, cats[i].nome).cor,
+                    cor: _visual(context, cats[i].nome).cor,
                     destacado: i == _tocada,
                   ),
                 ),
@@ -209,7 +242,7 @@ class _CartaoCategoriasState extends State<CartaoCategorias> {
 
   Widget _radar(BuildContext context) {
     final c = context.cores;
-    final comp = widget.comparacao;
+    final comp = _comp;
     if (comp.length < 3) {
       return SizedBox(
         height: 140,
@@ -347,15 +380,65 @@ class _Marca extends StatelessWidget {
       ]);
 }
 
+/// Botão ao lado do seletor de tipo: alterna entre "por categoria" e "por
+/// grupo" (camadas cheias quando está agrupado).
+class _BotaoGrupo extends StatelessWidget {
+  const _BotaoGrupo({required this.porGrupo, required this.aoTocar});
+
+  final bool porGrupo;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    final dica = porGrupo ? 'Ver por categoria' : 'Somar por grupo';
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: c.surface2.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.line),
+      ),
+      child: Tooltip(
+        message: dica,
+        child: Semantics(
+          button: true,
+          selected: porGrupo,
+          label: dica,
+          child: InkWell(
+            onTap: aoTocar,
+            borderRadius: BorderRadius.circular(9),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              width: 30,
+              height: 28,
+              decoration: BoxDecoration(
+                color: porGrupo ? c.accentSoft : Colors.transparent,
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Icon(porGrupo ? Icons.layers_rounded : Icons.layers_outlined,
+                  size: 16, color: porGrupo ? c.accent : c.muted),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ItemLegenda extends StatelessWidget {
   const _ItemLegenda({
     required this.categoria,
+    required this.visual,
     required this.porcento,
     required this.destacado,
     required this.aoPassar,
   });
 
   final CategoriaGasto categoria;
+
+  /// Ícone e cor da categoria (ou do grupo, quando o cartão está agrupado).
+  final VisualCategoria visual;
   final int porcento;
   final bool destacado;
   final ValueChanged<bool> aoPassar;
@@ -363,7 +446,7 @@ class _ItemLegenda extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final v = visualDaCategoria(context, categoria.nome);
+    final v = visual;
     return MouseRegion(
       onEnter: (_) => aoPassar(true),
       onExit: (_) => aoPassar(false),

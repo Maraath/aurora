@@ -205,6 +205,31 @@ void main() {
     expect(q.patrimonioCentavos, 70000);
   });
 
+  test('categorias mais usadas alimentam os chips do formulário', () async {
+    await db.delete(db.transacoes).go();
+    await criar(nome: 'Compra', centavos: 1000, categoria: 'Mercado', paga: true);
+    await criar(nome: 'Compra', centavos: 1000, categoria: 'Mercado', paga: true);
+    await criar(nome: 'Ração', centavos: 1000, categoria: 'Pets', paga: true);
+    await criar(nome: 'Curso', centavos: 1000, categoria: 'Estudos', paga: true);
+    final usadas = await repo.categoriasMaisUsadas(TipoTransacao.saida);
+    expect(usadas.first, 'Mercado');
+    expect(usadas.toSet(), {'Mercado', 'Pets', 'Estudos'});
+    // A entrada tem a própria lista: nada do que é gasto aparece nela.
+    expect(await repo.categoriasMaisUsadas(TipoTransacao.entrada), isEmpty);
+  });
+
+  test('converterCategoriasRenomeadas: Educação vira Estudos', () async {
+    await db.delete(db.transacoes).go();
+    await criar(nome: 'Curso', centavos: 20000, categoria: 'Educação', paga: true);
+    await criar(nome: 'Faculdade', centavos: 20000, categoria: 'Estudos', paga: true);
+    await criar(nome: 'Mercado', centavos: 20000, categoria: 'Mercado', paga: true);
+    await repo.converterCategoriasRenomeadas();
+    final cats = (await db.select(db.transacoes).get()).map((t) => t.categoria).toList();
+    expect(cats.where((c) => c == 'Educação'), isEmpty);
+    expect(cats.where((c) => c == 'Estudos'), hasLength(2));
+    expect(cats.where((c) => c == 'Mercado'), hasLength(1));
+  });
+
   test('lançamento numa conta excluída não some do saldo', () async {
     final conta = await db.into(db.contasFinanceiras).insertReturning(
         ContasFinanceirasCompanion.insert(nome: 'Antiga', tipo: TipoConta.corrente));

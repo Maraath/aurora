@@ -76,17 +76,28 @@ enum CartaoFin {
 /// Ordem, cartões escondidos e tipo escolhido de cada cartão. Fica nas
 /// preferências deste aparelho (`financas_painel`, não sincroniza).
 class ConfigPainel {
-  ConfigPainel({required this.ordem, required this.ocultos, required this.tipos});
+  ConfigPainel({
+    required this.ordem,
+    required this.ocultos,
+    required this.tipos,
+    required this.porGrupo,
+  });
 
   factory ConfigPainel.padrao() => ConfigPainel(
         ordem: {for (final p in PainelFin.values) p: CartaoFin.doPainel(p)},
         ocultos: {},
         tipos: {},
+        porGrupo: {},
       );
 
   final Map<PainelFin, List<CartaoFin>> ordem;
   final Set<CartaoFin> ocultos;
   final Map<CartaoFin, TipoGrafico> tipos;
+
+  /// Cartões que somam as categorias por grupo em vez de por categoria.
+  final Set<CartaoFin> porGrupo;
+
+  bool usaGrupo(CartaoFin c) => porGrupo.contains(c);
 
   TipoGrafico? tipoDe(CartaoFin c) {
     final t = tipos[c];
@@ -100,12 +111,14 @@ class ConfigPainel {
         ordem: {for (final e in ordem.entries) e.key: [...e.value]},
         ocultos: {...ocultos},
         tipos: {...tipos},
+        porGrupo: {...porGrupo},
       );
 
   String paraJson() => jsonEncode({
         'ordem': {for (final e in ordem.entries) e.key.name: [for (final c in e.value) c.name]},
         'ocultos': [for (final c in ocultos) c.name],
         'tipos': {for (final e in tipos.entries) e.key.name: e.value.name},
+        'grupos': [for (final c in porGrupo) c.name],
       });
 
   /// Lê o JSON salvo; cartões novos (de versões futuras) entram no fim e
@@ -132,6 +145,7 @@ class ConfigPainel {
                 case (final c?, final t?))
               c: t,
         },
+        porGrupo: {for (final n in (j['grupos'] as List? ?? const [])) ?CartaoFin.deNome('$n')},
       );
     } catch (_) {
       return padrao;
@@ -163,6 +177,13 @@ class PreferenciasPainel extends ChangeNotifier {
 
   Future<void> escolherTipo(CartaoFin c, TipoGrafico t) {
     final nova = _config.copiar()..tipos[c] = t;
+    return salvar(nova);
+  }
+
+  /// Alterna o cartão entre "por categoria" e "por grupo".
+  Future<void> alternarGrupo(CartaoFin c) {
+    final nova = _config.copiar();
+    if (!nova.porGrupo.remove(c)) nova.porGrupo.add(c);
     return salvar(nova);
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import '../core/categorias.dart';
 import '../core/relogio.dart';
 
 import 'banco.dart';
@@ -6,6 +7,35 @@ import 'financas_repo.dart';
 
 /// Números dos gráficos de Finanças (Resumo e Análise). Tudo sai do
 /// [QuadroFinancas] do aparelho: nada aqui vai para o servidor.
+
+/// As categorias somadas por grupo (ver [grupoDe]), do maior para o menor: com
+/// 20 categorias a rosca vira um monte de fatia fina. Categoria desconhecida
+/// (histórico antigo) cai em "Outros".
+List<CategoriaGasto> agruparCategorias(List<CategoriaGasto> categorias) {
+  final soma = <String, int>{};
+  for (final c in categorias) {
+    final g = grupoDe(c.nome);
+    soma.update(g, (v) => v + c.centavos, ifAbsent: () => c.centavos);
+  }
+  final lista = [for (final e in soma.entries) CategoriaGasto(e.key, e.value)];
+  lista.sort((a, b) => b.centavos.compareTo(a.centavos));
+  return lista;
+}
+
+/// O mesmo agrupamento para o radar (este mês × média dos 3 anteriores).
+List<ComparacaoCategoria> agruparComparacao(List<ComparacaoCategoria> comparacoes) {
+  final atual = <String, int>{}, media = <String, int>{};
+  for (final c in comparacoes) {
+    final g = grupoDe(c.nome);
+    atual.update(g, (v) => v + c.atualCentavos, ifAbsent: () => c.atualCentavos);
+    media.update(g, (v) => v + c.mediaCentavos, ifAbsent: () => c.mediaCentavos);
+  }
+  final lista = [
+    for (final e in atual.entries) ComparacaoCategoria(e.key, e.value, media[e.key] ?? 0),
+  ];
+  lista.sort((a, b) => b.atualCentavos.compareTo(a.atualCentavos));
+  return lista;
+}
 
 // ---------------------------------------------------------------- gasto por dia
 

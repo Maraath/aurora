@@ -22,6 +22,7 @@ import 'graficos/config.dart';
 import 'graficos/personalizar.dart';
 import 'painel/cartoes_resumo.dart';
 import 'painel/transacoes.dart';
+import 'revisar_outros.dart';
 
 enum _Vista {
   resumo('Resumo'),
@@ -62,6 +63,17 @@ class _FinancasPageState extends State<FinancasPage> {
       _quadro = _repo!.observarQuadro();
       _prefs?.dispose();
       _prefs = PreferenciasPainel(db);
+      // Nome antigo de categoria (Educação → Estudos) não pode ficar dividido
+      // em duas fatias nos gráficos.
+      _converterCategorias();
+    }
+  }
+
+  Future<void> _converterCategorias() async {
+    try {
+      await _repo?.converterCategoriasRenomeadas();
+    } catch (e) {
+      debugPrint('Finanças: não converti categorias antigas ($e)');
     }
   }
 
@@ -128,6 +140,8 @@ class _FinancasPageState extends State<FinancasPage> {
               aoPagar: (o) => _repo!.pagar(o, !o.paga),
               aoEditar: (t) => _lancar(q, t),
               aoVerExtrato: () => setState(() => _vista = _Vista.extrato),
+              aoRevisarOutros: (outros) =>
+                  abrirRevisarOutros(context, repo: _repo!, movimentos: outros),
             ),
           _Vista.extrato => _Extrato(quadro: q, mes: mes, hoje: _hoje, aoEditar: (t) => _lancar(q, t)),
           _Vista.fixas => _Fixas(quadro: q, aoEditar: (t) => _lancar(q, t)),
@@ -196,6 +210,7 @@ class _Resumo extends StatelessWidget {
     required this.aoPagar,
     required this.aoEditar,
     required this.aoVerExtrato,
+    required this.aoRevisarOutros,
   });
 
   final QuadroFinancas quadro;
@@ -205,6 +220,9 @@ class _Resumo extends StatelessWidget {
   final ValueChanged<Ocorrencia> aoPagar;
   final ValueChanged<Transacao> aoEditar;
   final VoidCallback aoVerExtrato;
+
+  /// Abre a revisão dos lançamentos que ficaram em "Outros" no mês.
+  final ValueChanged<List<Movimento>> aoRevisarOutros;
 
   @override
   Widget build(BuildContext context) {
@@ -219,12 +237,7 @@ class _Resumo extends StatelessWidget {
               fato: fluxoDoDinheiro(quadro, mes.mes),
               comPrevistos: fluxoDoDinheiro(quadro, mes.mes, comPrevistos: true),
             ),
-          CartaoFin.categorias => CartaoCategorias(
-              categorias: painel.categorias,
-              comparacao: compararComMedia(quadro, mes.mes),
-              tipo: config.tipoDe(c)!,
-              aoEscolherTipo: (t) => prefs.escolherTipo(c, t),
-            ),
+          CartaoFin.categorias => _categorias(context, c, painel),
           CartaoFin.gastoDia => CartaoGastoDia(
               dados: gastoPorDia(quadro, mes.mes, hoje),
               receitasCentavos: painel.receitasCentavos + faltaReceber,
@@ -258,6 +271,35 @@ class _Resumo extends StatelessWidget {
             if (cartao(c) case final w?) (c, w),
         ]),
       ],
+    );
+  }
+
+  /// "Despesas por categoria": por categoria ou somada por grupo (preferência
+  /// do aparelho) e, no pé, o atalho para revisar o que ficou em "Outros".
+  Widget _categorias(BuildContext context, CartaoFin c, PainelMes painel) {
+    final porGrupo = prefs.config.usaGrupo(c);
+    final outros = [
+      for (final m in mes.extrato)
+        if (!m.transferencia && !m.entrada && m.categoria == 'Outros') m,
+    ];
+    return CartaoCategorias(
+      categorias: porGrupo ? agruparCategorias(painel.categorias) : painel.categorias,
+      // Agrupar depois de somar TODAS as categorias: cortar em 6 antes daria
+      // grupo pela metade.
+      comparacao: porGrupo
+          ? agruparComparacao(compararComMedia(quadro, mes.mes, maxCategorias: 99))
+          : compararComMedia(quadro, mes.mes),
+      tipo: prefs.config.tipoDe(c)!,
+      aoEscolherTipo: (t) => prefs.escolherTipo(c, t),
+      porGrupo: porGrupo,
+      aoAlternarGrupo: () => prefs.alternarGrupo(c),
+      rodape: outros.isEmpty
+          ? null
+          : _RodapeOutros(
+              quantos: outros.length,
+              centavos: outros.fold(0, (s, m) => s + m.valorCentavos),
+              aoTocar: () => aoRevisarOutros(outros),
+            ),
     );
   }
 
@@ -298,6 +340,46 @@ class _Resumo extends StatelessWidget {
           ),
       ],
     ]);
+  }
+}
+
+/// Pé do cartão de despesas: "6 em Outros · R$ 480,00 · Revisar". Aparece só
+/// quando sobrou alguma coisa em "Outros" no mês.
+class _RodapeOutros extends StatelessWidget {
+  const _RodapeOutros({required this.quantos, required this.centavos, required this.aoTocar});
+
+  final int quantos;
+  final int centavos;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Material(
+      color: c.surface2.withValues(alpha: 0.6),
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: aoTocar,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(children: [
+            Icon(Icons.category_outlined, size: 16, color: c.muted),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '$quantos em Outros · ${reais(centavos)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: manrope(12.5, cor: c.muted),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text('Revisar', style: manrope(12.5, peso: FontWeight.w700, cor: c.accent)),
+          ]),
+        ),
+      ),
+    );
   }
 }
 
@@ -960,11 +1042,25 @@ class _Analise extends StatelessWidget {
 
   Widget _paraOndeFoi(BuildContext context, AnaliseMes a) {
     final c = context.cores;
-    final maior = a.categorias.isEmpty ? 1 : a.gastoCentavos;
+    final porGrupo = prefs.config.usaGrupo(CartaoFin.paraOndeFoi);
+    final cats = porGrupo ? agruparParaOndeFoi(a.categorias) : a.categorias;
+    final maior = cats.isEmpty ? 1 : a.gastoCentavos;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      const TituloSecao('Para onde foi'),
-      if (a.categorias.isEmpty) const Vazio('Nenhum gasto pago neste mês.'),
-      for (final cat in a.categorias)
+      TituloSecao(
+        'Para onde foi',
+        direita: TextButton(
+          onPressed: () => prefs.alternarGrupo(CartaoFin.paraOndeFoi),
+          style: TextButton.styleFrom(
+            minimumSize: const Size(0, 34),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(porGrupo ? 'Por categoria' : 'Por grupo',
+              style: manrope(12, peso: FontWeight.w700, cor: c.accent)),
+        ),
+      ),
+      if (cats.isEmpty) const Vazio('Nenhum gasto pago neste mês.'),
+      for (final cat in cats)
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Column(

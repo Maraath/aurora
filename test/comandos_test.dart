@@ -37,7 +37,24 @@ void main() {
       final c = ler('gastei 50 no restaurante ontem') as CmdDinheiro;
       expect(c.dia, DateTime(2026, 10, 15));
       expect(c.descricao, 'Restaurante');
-      expect(c.categoria, 'Lazer');
+      expect(c.categoria, 'Alimentação fora');
+    });
+
+    test('categorias novas', () {
+      expect((ler('gastei 30 no ifood') as CmdDinheiro).categoria, 'Alimentação fora');
+      expect((ler('paguei 50 de netflix') as CmdDinheiro).categoria, 'Assinaturas e planos');
+      expect((ler('gastei 80 na academia') as CmdDinheiro).categoria, 'Academia e suplementos');
+      expect((ler('paguei 100 do ipva') as CmdDinheiro).categoria, 'Carro',
+          reason: 'IPVA é custo do carro, não imposto genérico');
+      expect((ler('paguei 100 do darf') as CmdDinheiro).categoria, 'Impostos e taxas');
+      expect((ler('paguei 30 na ração do pet') as CmdDinheiro).categoria, 'Pets');
+      expect((ler('gastei 120 no hotel') as CmdDinheiro).categoria, 'Viagem');
+      expect((ler('paguei 200 do seguro do carro') as CmdDinheiro).categoria, 'Carro');
+      expect((ler('gastei 50 no presente') as CmdDinheiro).categoria, 'Presentes e doações');
+      expect((ler('gastei 200 no tênis') as CmdDinheiro).categoria, 'Compras');
+      expect((ler('gastei 200 na educação') as CmdDinheiro).categoria, 'Estudos');
+      expect((ler('gastei 200 no mercado livre') as CmdDinheiro).categoria, 'Compras');
+      expect((ler('gastei 20 no cinema') as CmdDinheiro).categoria, 'Lazer');
     });
 
     test('entrada', () {
@@ -45,6 +62,10 @@ void main() {
       expect(c.entrada, isTrue);
       expect(c.categoria, 'Freela');
       expect(c.descricao, 'Freela');
+      expect((ler('recebi 100 de reembolso') as CmdDinheiro).categoria, 'Reembolso');
+      expect((ler('recebi 50 de juros') as CmdDinheiro).categoria, 'Rendimentos');
+      expect((ler('recebi 300 de aluguel') as CmdDinheiro).categoria, 'Rendimentos');
+      expect((ler('recebi 500 de salário') as CmdDinheiro).categoria, 'Salário');
     });
   });
 

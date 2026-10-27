@@ -1,5 +1,24 @@
+import '../core/categorias.dart';
 import 'banco.dart';
 import 'financas_repo.dart';
+
+/// As categorias de "Para onde foi" somadas por grupo (ver [grupoDe]),
+/// mantendo a comparação com o mês anterior.
+List<({CategoriaGasto atual, int anteriorCentavos})> agruparParaOndeFoi(
+    List<({CategoriaGasto atual, int anteriorCentavos})> categorias) {
+  final atual = <String, int>{}, anterior = <String, int>{};
+  for (final c in categorias) {
+    final g = grupoDe(c.atual.nome);
+    atual.update(g, (v) => v + c.atual.centavos, ifAbsent: () => c.atual.centavos);
+    anterior.update(g, (v) => v + c.anteriorCentavos, ifAbsent: () => c.anteriorCentavos);
+  }
+  final lista = [
+    for (final e in atual.entries)
+      (atual: CategoriaGasto(e.key, e.value), anteriorCentavos: anterior[e.key] ?? 0),
+  ];
+  lista.sort((a, b) => b.atual.centavos.compareTo(a.atual.centavos));
+  return lista;
+}
 
 /// Números da aba "Análise" de Finanças para um mês.
 class AnaliseMes {

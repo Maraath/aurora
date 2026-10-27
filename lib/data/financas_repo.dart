@@ -8,10 +8,10 @@ import 'observar.dart';
 /// Categoria das transferências que pagam a fatura de um cartão.
 const categoriaFatura = 'Fatura do cartão';
 
-const categoriasSaida = [
-  'Mercado', 'Serviços', 'Transporte', 'Lazer', 'Saúde', 'Educação', 'Moradia', 'Outros',
-];
-const categoriasEntrada = ['Salário', 'Freela', 'Outros'];
+/// Nomes antigos de categoria que passaram a ter outro nome. As linhas são
+/// ajustadas ao abrir Finanças (ver `converterCategoriasRenomeadas`), senão o
+/// mesmo gasto histórico aparece em duas fatias nos gráficos.
+const categoriasRenomeadas = <String, String>{'Educação': 'Estudos'};
 
 enum FormaTransacao { unica, recorrente, parcelada }
 
@@ -384,6 +384,26 @@ class FinancasRepo {
     );
   }
 
+  /// Categorias do [tipo] mais usadas nos últimos [dias], da mais usada para a
+  /// menos usada. Alimenta os chips do formulário (as mais usadas primeiro) e a
+  /// categoria inicial de um lançamento novo. Transferências e fatura não
+  /// contam como categoria de gasto.
+  Future<List<String>> categoriasMaisUsadas(TipoTransacao tipo, {int dias = 90}) async {
+    final desde = instanteLocal(somarDias(hojeLocal(), -dias), 0);
+    final linhas = await (db.select(db.transacoes)
+          ..where((t) => t.apagadoEm.isNull() & t.data.isBiggerOrEqualValue(desde)))
+        .get();
+    final vezes = <String, int>{};
+    for (final t in linhas) {
+      if (t.tipo != tipo || t.contaDestinoId != null) continue;
+      final c = t.categoria;
+      if (c == null || c == categoriaFatura) continue;
+      vezes.update(c, (v) => v + 1, ifAbsent: () => 1);
+    }
+    final ordenadas = vezes.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    return [for (final e in ordenadas) e.key];
+  }
+
   /// Paga (ou desfaz o pagamento de) uma ocorrência.
   Future<void> pagar(Ocorrencia o, bool pago) => _pagar(o.transacao, o.vencimento, pago);
 
@@ -438,6 +458,12 @@ class FinancasRepo {
       return t.id;
     });
   }
+
+  /// Troca só a categoria de um lançamento (revisão do que ficou em "Outros").
+  Future<void> definirCategoria(Transacao t, String categoria) => salvar(
+        TransacoesCompanion(categoria: Value(categoria)),
+        id: t.id,
+      );
 
   /// Exclui. Uma recorrente ou parcelada com pagamentos é ENCERRADA (a regra
   /// ganha fim), para o histórico continuar no extrato e nos saldos.
@@ -503,6 +529,19 @@ class FinancasRepo {
     await (db.update(db.contasFinanceiras)..where((c) => c.id.equals(id)))
         .write(ContasFinanceirasCompanion(apagadoEm: Value(agora), atualizadoEm: Value(agora)));
     return true;
+  }
+
+  /// Ajusta as linhas antigas para o nome atual da categoria (Educação →
+  /// Estudos). Roda ao abrir Finanças e é idempotente: depois da primeira vez
+  /// não sobra nenhuma linha com o nome antigo.
+  Future<void> converterCategoriasRenomeadas() async {
+    for (final MapEntry(key: antigo, value: novo) in categoriasRenomeadas.entries) {
+      final onde = db.update(db.transacoes)..where((t) => t.categoria.equals(antigo));
+      await onde.write(TransacoesCompanion(
+        categoria: Value(novo),
+        atualizadoEm: Value(DateTime.now()),
+      ));
+    }
   }
 
   /// Paga a fatura do [cartao] com dinheiro da conta [origemId].
