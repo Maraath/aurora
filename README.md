@@ -6,17 +6,17 @@
 
 **Sua rotina inteira num app só, com uma assistente de IA que entende o que você fala.**
 
-Tarefas · Hábitos · Treino · Alimentação · Finanças · Metas · Projetos · Lembretes
+Rotina · Hábitos · Treino · Alimentação · Finanças · Objetivos · Anotações · Lembretes
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-3-0175C2?logo=dart&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3FCF8E?logo=supabase&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/Edge%20Functions-TypeScript-3178C6?logo=typescript&logoColor=white)
 ![Plataformas](https://img.shields.io/badge/Windows%20%C2%B7%20Android%20%C2%B7%20Web%20%28PWA%29-5CF0B0)
-![Testes](https://img.shields.io/badge/testes-263%20passando-42E3C8)
+![Testes](https://img.shields.io/badge/testes-304%20passando-42E3C8)
 ![Licença](https://img.shields.io/badge/licen%C3%A7a-PolyForm%20Noncommercial-9D8CFF)
 
-<img src="docs/imagens/visao.png" alt="Tela Visão do Aurora no Windows" width="900">
+<img src="docs/imagens/visao.png" alt="Tela Visão do Aurora no Windows, em blocos" width="900">
 
 </div>
 
@@ -38,8 +38,8 @@ Tarefas · Hábitos · Treino · Alimentação · Finanças · Metas · Projetos
 
 ## Sobre o projeto
 
-O Aurora junta numa tela só o que normalmente fica espalhado em vários apps: tarefas, gastos, treino, hábitos e
-metas. Por cima de tudo há uma assistente, a **Aurora**, que entende pedidos em linguagem natural: *"gastei 35 no mercado"*, *"me lembra de pagar a luz amanhã às 9"* ou
+O Aurora junta numa tela só o que normalmente fica espalhado em vários apps: tarefas, compromissos, hábitos,
+gastos, treino, objetivos e anotações. Por cima de tudo há uma assistente, a **Aurora**, que entende pedidos em linguagem natural: *"gastei 35 no mercado"*, *"me lembra de pagar a luz amanhã às 9"* ou
 *"como estão meus gastos este mês?"*.
 
 É um app completo, publicado e em uso: **um único código Flutter** roda no **Windows, no Android e na web (PWA, que também instala no iPhone)**; a versão nativa para iOS está nos planos. O app
@@ -48,10 +48,10 @@ automática e um servidor com autenticação, banco protegido por usuário e IA.
 
 | Versão atual | Código | Testes | Plataformas |
 | :---: | :---: | :---: | :---: |
-| **1.10.2** | ~54 mil linhas de Dart | **263** automatizados | Windows · Android · Web (PWA) |
+| **1.14.1** | ~61 mil linhas de Dart | **304** automatizados | Windows · Android · Web (PWA) |
 
-> **In English:** Aurora is a personal routine app (tasks, habits, workouts, nutrition, finances, goals, projects,
-> reminders) with an AI assistant that creates and edits your data through tool calls. One Flutter codebase for
+> **In English:** Aurora is a personal routine app (tasks, habits, appointments, workouts, nutrition, finances,
+> goals, notes, reminders) with an AI assistant that creates and edits your data through tool calls. One Flutter codebase for
 > Windows, Android and web (PWA, installable on iPhone); offline-first with SQLite (Drift), synced to Supabase (Postgres + Row Level
 > Security); AI served by a Deno Edge Function with an automatic model fallback chain. Source-available under
 > PolyForm Noncommercial 1.0.0.
@@ -62,42 +62,51 @@ automática e um servidor com autenticação, banco protegido por usuário e IA.
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/imagens/assistente.png" alt="Assistente"><br><b>Assistente</b>: pedidos em linguagem natural viram lançamentos, lembretes e respostas com os seus dados.</td>
-    <td width="50%"><img src="docs/imagens/financas-fluxo.png" alt="Fluxo do dinheiro"><br><b>Fluxo do dinheiro</b>: diagrama de Sankey de onde o dinheiro veio e para onde foi.</td>
+    <td width="50%"><img src="docs/imagens/rotina-hoje.png" alt="Rotina, aba Hoje"><br><b>Rotina › Hoje</b>: compromissos, tarefas, hábitos e lembretes do dia em quatro colunas, cada tipo com a sua cor.</td>
+    <td width="50%"><img src="docs/imagens/rotina-calendario.png" alt="Calendário da Rotina"><br><b>Calendário</b>: mês (ou semana em grade de horas) com o painel do dia ao lado; filtros por tipo.</td>
   </tr>
   <tr>
-    <td><img src="docs/imagens/financas-categorias.png" alt="Despesas por categoria"><br><b>Despesas e gasto por dia</b>: cada gráfico troca de tipo (rosca, pizza, barras, blocos, radar).</td>
-    <td><img src="docs/imagens/financas-analise.png" alt="Análise financeira"><br><b>Análise</b>: trajetória do saldo com projeção, categorias no tempo e leituras automáticas.</td>
+    <td><img src="docs/imagens/objetivos.png" alt="Objetivos"><br><b>Objetivos</b>: metas com número (R$, km, livros) ou com etapas, ritmo ideal até a data e estado de cada uma.</td>
+    <td><img src="docs/imagens/objetivos-linha.png" alt="Linha do tempo dos objetivos"><br><b>Linha do tempo</b>: todos os objetivos num Gantt, com o que já foi feito e a linha de hoje.</td>
   </tr>
   <tr>
-    <td><img src="docs/imagens/habitos-analise.png" alt="Análise de hábitos"><br><b>Hábitos</b>: constância dos últimos 30 dias, sequências e recordes.</td>
+    <td><img src="docs/imagens/anotacoes.png" alt="Anotações"><br><b>Anotações</b>: mural de notas, listas com caixinhas, fotos e áudios transcritos, com pastas e notas fixadas.</td>
+    <td><img src="docs/imagens/assistente.png" alt="Assistente"><br><b>Assistente</b>: pedidos em linguagem natural viram lançamentos, lembretes e respostas com os seus dados.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/imagens/financas-fluxo.png" alt="Fluxo do dinheiro"><br><b>Fluxo do dinheiro</b>: diagrama de Sankey de onde o dinheiro veio e para onde foi.</td>
+    <td><img src="docs/imagens/financas-categorias.png" alt="Despesas por categoria"><br><b>Despesas e gasto por dia</b>: 25 categorias com ícone e cor; cada gráfico troca de tipo e pode somar por grupo.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/imagens/financas-analise.png" alt="Análise financeira"><br><b>Análise</b>: trajetória do saldo com projeção, categorias no tempo, mapa de calor e fixo × parcelas × variável.</td>
+    <td><img src="docs/imagens/rotina-analise.png" alt="Análise da Rotina"><br><b>Análise da Rotina</b>: tarefas concluídas por dia, cumprimento de prazo e constância dos hábitos.</td>
+  </tr>
+  <tr>
     <td><img src="docs/imagens/saude-medidas.png" alt="Medidas"><br><b>Saúde</b>: ficha de treino com carga sugerida, medidas, fotos de evolução e dieta.</td>
-  </tr>
-  <tr>
-    <td><img src="docs/imagens/projetos.png" alt="Projetos"><br><b>Projetos</b>: linha do tempo e etapas que também são tarefas.</td>
     <td><img src="docs/imagens/tema-claro.png" alt="Tema claro"><br><b>Tema claro</b>: a mesma paleta de aurora boreal, em versão diurna.</td>
   </tr>
 </table>
 
 <div align="center">
   <img src="docs/imagens/celular.png" alt="Aurora no celular" width="900"><br>
-  <sub><b>No celular</b>: barra inferior, cabeçalho com busca e assistente, e as mesmas telas adaptadas.</sub>
+  <sub><b>No celular</b>: barra flutuante de vidro só com ícones (duas páginas), a orbe que abre a assistente e as mesmas telas adaptadas.</sub>
 </div>
 
 ## Funcionalidades
 
 | Área | O que faz |
 | --- | --- |
-| 🌌 **Visão** | O dia em cinco blocos: em foco agora, linha do dia, semana, painel das áreas e insights. |
-| ✅ **Tarefas** | Prioridades, prazos com hora, recorrência, calendário e análise de produtividade. |
-| 🔁 **Hábitos** | Marcar, por duração ou por quantidade; dias da semana, sequências e constância. |
+| 🌌 **Visão** | O dia em blocos: **em foco** com o anel do dia e a fila do que vem depois, **a seguir** com a hora do próximo item, **hoje em números** em anéis, **linha do dia**, **semana** com leituras automáticas e o painel das áreas. Busca em tudo no cabeçalho (Ctrl+K). |
+| 📅 **Rotina** | Tarefas, hábitos, lembretes e **compromissos** numa área só, com as abas Hoje, Calendário, Hábitos, Automações e Análise. Compromisso tem início e fim (ou dia inteiro), local, repetição (até "todo ano") e aviso antes. Um formulário único cria qualquer tipo, e trocar o tipo ao editar converte o item (com "Desfazer"). |
+| 🗓️ **Calendário** | Visão de mês (com os itens dentro do dia ou em pontinhos no celular) e de semana em grade de horas, painel do dia ao lado e filtros por tipo. |
+| 🔁 **Hábitos** | Marcar, por duração ou por quantidade; dias da semana, sequências, recordes e constância. Tarefas repetidas antigas viram hábitos sozinhas, com o histórico. |
+| 🎯 **Objetivos** | Metas e projetos juntos: progresso por número (R$, kg, km, livros ou unidade livre) ou por **etapas que viram tarefas**. Mostra o ritmo por semana até a data e o estado (em dia, em risco, parada, pausada, concluída, arquivada), com lista, filtros e **linha do tempo**. |
+| 📝 **Anotações** | Mural em colunas com notas de texto, **listas com caixinhas**, fotos e **áudios gravados no app com transcrição**. Pastas, notas fixadas, busca nas notas e nas transcrições, painel ao lado no computador e "Desfazer" ao apagar. Funciona também na web. |
+| 💰 **Finanças** | Lançamentos, contas fixas e parceladas e várias contas. **25 categorias em 8 grupos** (com Investimentos, Dívidas e juros, Cuidados pessoais e Serviços); a categoria é sugerida enquanto você digita a descrição, os chips mostram as mais usadas, e "Revisar" tira os lançamentos de "Outros" com um toque. Painéis de gráficos personalizáveis: fluxo do dinheiro (Sankey), categorias (por categoria ou por grupo), gasto por dia, fluxo de caixa, trajetória com projeção, mapa de calor e mais. |
 | 💪 **Saúde** | Ficha de treino com 470 exercícios animados, carga sugerida, medidas, fotos de evolução e dieta com a tabela TACO. |
-| 💰 **Finanças** | Lançamentos, contas fixas e parceladas, várias contas e 8 gráficos personalizáveis. |
-| 🎯 **Metas e projetos** | Progresso, ritmo necessário até a data e etapas ligadas a tarefas. |
-| 🔔 **Lembretes** | Avisos locais, Web Push no PWA e despertador de tela cheia no Android. |
-| ✨ **Assistente** | Texto e voz; cria, edita e exclui dados com confirmação e "Desfazer"; sem internet, comandos rápidos por regras. |
-| 🔎 **Extras** | Busca global (Ctrl+K), atalhos flutuantes, bloqueio por PIN ou biometria, tema escuro e claro, e datas e avisos sempre no fuso de onde você está. |
-
+| 🔔 **Lembretes** | Avisos locais, Web Push no PWA e despertador de tela cheia no Android, que toca mesmo no silencioso. |
+| ✨ **Assistente** | Texto e **voz** (microfone no campo, transcrição na nuvem) e **resposta falada** com a voz do próprio aparelho (só quando você falou, sempre ou nunca). Cria, edita e exclui lançamentos, tarefas, lembretes, compromissos e treinos com confirmação e "Desfazer"; sem internet, comandos rápidos por regras. |
+| 🔎 **Extras** | Busca global (Ctrl+K), atalhos flutuantes com captura rápida e mini chat, bloqueio por PIN ou biometria, tema escuro e claro, efeitos visuais leves para aparelhos mais fracos, fotos só no aparelho ou na nuvem (privadas, comprimidas e sem metadados), e datas e avisos sempre no fuso de onde você está. |
 ## Arquitetura
 
 ```mermaid
@@ -176,15 +185,15 @@ SDK, implementado em Dart.
 
 ## Qualidade
 
-- **263 testes automatizados** (widgets e regras de negócio): recorrência, finanças, sincronização, assistente,
-  voz, gráficos, busca e mais.
+- **304 testes automatizados** (widgets e regras de negócio): recorrência, rotina e compromissos, objetivos,
+  anotações, finanças e categorias, sincronização, assistente, voz, gráficos, busca e mais.
 - `flutter analyze` sem nenhum aviso.
 - Migrações do servidor versionadas em [`supabase/migrations`](supabase/migrations), testadas num banco local antes
   de ir para produção.
 - Backup semanal automático do banco do servidor.
 
 ```bash
-flutter test      # roda os 263 testes
+flutter test      # roda os 304 testes
 flutter analyze   # análise estática
 ```
 

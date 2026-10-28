@@ -2,13 +2,14 @@ import 'dart:math';
 
 import 'package:aurora/core/relogio.dart';
 import 'package:aurora/data/alimentacao_repo.dart';
+import 'package:aurora/data/anotacoes_repo.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/data/saude_repo.dart';
 import 'package:drift/drift.dart';
 
 /// Dados de demonstração para as capturas do README: três meses de finanças,
-/// hábitos, tarefas, treinos, medidas e uma conversa com a Aurora. Só roda num
+/// hábitos, tarefas, compromissos, anotações, treinos, medidas e uma conversa com a Aurora. Só roda num
 /// banco separado (tool/capturas/main.dart); o app nunca chama isto.
 Future<void> semearDemonstracao(BancoAurora db) async {
   if (await db.preferencia('demonstracao') != null) return;
@@ -79,26 +80,91 @@ Future<void> semearDemonstracao(BancoAurora db) async {
 
     // Tarefas de hoje e dos próximos dias
     await db.batch((b) => b.insertAll(db.tarefas, [
-          TarefasCompanion.insert(
-              titulo: 'Reunião de planejamento',
-              prazo: Value(as(0, 10)),
-              prazoTemHora: const Value(true),
-              prioridade: const Value(Prioridade.alta)),
-          TarefasCompanion.insert(
-              titulo: 'Pagar a fatura do cartão', prazo: Value(as(-1, 0)), prioridade: const Value(Prioridade.alta)),
+          TarefasCompanion.insert(titulo: 'Pagar a fatura do cartão', prazo: Value(as(-1, 0))),
           TarefasCompanion.insert(
               titulo: 'Estudar Flutter: animações', prazo: Value(as(0, 20)), prazoTemHora: const Value(true)),
+          TarefasCompanion.insert(titulo: 'Enviar o relatório do mês', prazo: Value(as(0, 0))),
           TarefasCompanion.insert(
               titulo: 'Corrida de 7 km no parque', prazo: Value(as(1, 7)), objetivoId: Value(corrida.id)),
-          TarefasCompanion.insert(
-              titulo: 'Comprar presente de aniversário',
-              prazo: Value(as(3, 0)),
-              prioridade: const Value(Prioridade.baixa)),
-          TarefasCompanion.insert(
-              titulo: 'Planejar a semana',
-              prazo: Value(as((7 - hoje.weekday) % 7, 20)),
-              prazoTemHora: const Value(true),
-              regraRepeticao: const Value('FREQ=WEEKLY;BYDAY=SU')),
+          TarefasCompanion.insert(titulo: 'Comprar presente de aniversário', prazo: Value(as(3, 0))),
+        ]));
+
+    // Compromissos da semana (com hora, dia inteiro e repetição)
+    final quinta = (4 - hoje.weekday) % 7;
+    await db.batch((b) => b.insertAll(db.compromissos, [
+          CompromissosCompanion.insert(
+              titulo: 'Reunião de planejamento',
+              inicio: as(0, 10),
+              fim: Value(as(0, 11)),
+              local: const Value('Sala 3'),
+              avisoAntesMin: const Value(15)),
+          CompromissosCompanion.insert(
+              titulo: 'Dentista',
+              inicio: as(0, 16, 30),
+              fim: Value(as(0, 17, 15)),
+              local: const Value('Clínica Sorriso'),
+              avisoAntesMin: const Value(60)),
+          CompromissosCompanion.insert(
+              titulo: 'Almoço com a equipe', inicio: as(1, 12, 30), fim: Value(as(1, 14)), local: const Value('Centro')),
+          CompromissosCompanion.insert(
+              titulo: 'Aula de inglês',
+              inicio: as(quinta, 19),
+              fim: Value(as(quinta, 20)),
+              regraRepeticao: const Value('FREQ=WEEKLY;BYDAY=TH'),
+              avisoAntesMin: const Value(30)),
+          CompromissosCompanion.insert(
+              titulo: 'Aniversário da Ana',
+              inicio: instanteLocal(dia(3)),
+              diaInteiro: const Value(true),
+              regraRepeticao: const Value('FREQ=YEARLY')),
+          CompromissosCompanion.insert(
+              titulo: 'Consulta de rotina', inicio: as(9, 9), fim: Value(as(9, 10)), local: const Value('Hospital')),
+        ]));
+
+    // Anotações: textos, listas com caixinhas, uma pasta e uma nota fixada
+    final ideias = await db.into(db.pastasNotas).insertReturning(PastasNotasCompanion.insert(nome: 'Ideias'));
+    await db.batch((b) => b.insertAll(db.notas, [
+          NotasCompanion.insert(
+              tipo: const Value(TipoNota.lista),
+              titulo: const Value('Lista do mercado'),
+              fixada: const Value(true),
+              itens: Value(gravarItens(const [
+                ItemLista('Café', feito: true),
+                ItemLista('Ovos', feito: true),
+                ItemLista('Banana'),
+                ItemLista('Aveia'),
+                ItemLista('Peito de frango'),
+              ]))),
+          NotasCompanion.insert(
+              titulo: const Value('Receita do bolo de cenoura'),
+              texto: const Value('3 cenouras médias, 3 ovos e 1 xícara de óleo no liquidificador. '
+                  'Misturar 2 xícaras de farinha e 1 de açúcar, e por último o fermento. Forno a 180 °C por 40 min.')),
+          NotasCompanion.insert(
+              pastaId: Value(ideias.id),
+              titulo: const Value('Viagem de fim de ano'),
+              texto: const Value('Serra ou praia? Ver passagens em novembro, '
+                  'reservar com cancelamento grátis e separar a reserva no orçamento.')),
+          NotasCompanion.insert(
+              tipo: const Value(TipoNota.lista),
+              pastaId: Value(ideias.id),
+              titulo: const Value('Livros para ler'),
+              itens: Value(gravarItens(const [
+                ItemLista('O Hobbit', feito: true),
+                ItemLista('Sapiens'),
+                ItemLista('Hábitos Atômicos'),
+              ]))),
+          NotasCompanion.insert(
+              titulo: const Value('Reunião de planejamento'),
+              texto: const Value('Prioridades do trimestre: lançar o portfólio, revisar o orçamento '
+                  'e marcar as férias. Próxima conversa na sexta.')),
+          NotasCompanion.insert(
+              tipo: const Value(TipoNota.lista),
+              titulo: const Value('Mala da viagem'),
+              itens: Value(gravarItens(const [
+                ItemLista('Carregador'),
+                ItemLista('Documentos', feito: true),
+                ItemLista('Remédios'),
+              ]))),
         ]));
     // Histórico de tarefas feitas (para a aba Análise)
     const feitas = [
@@ -152,7 +218,8 @@ Future<void> semearDemonstracao(BancoAurora db) async {
     // Lembretes
     await db.batch((b) => b.insertAll(db.lembretes, [
           LembretesCompanion.insert(
-              texto: 'Tomar vitamina D', quando: as(1, 8), regraRepeticao: const Value('FREQ=DAILY')),
+              texto: 'Tomar vitamina D', quando: as(0, 8), regraRepeticao: const Value('FREQ=DAILY')),
+          LembretesCompanion.insert(texto: 'Buscar a encomenda na portaria', quando: as(0, 18, 30)),
           LembretesCompanion.insert(
               texto: 'Revisar gastos da semana',
               quando: as((5 - hoje.weekday) % 7, 18),
@@ -193,20 +260,21 @@ Future<void> semearDemonstracao(BancoAurora db) async {
     await fixa('Salário', 680000, 5, 'Salário', tipo: TipoTransacao.entrada);
     await fixa('Aluguel', 185000, 10, 'Moradia');
     await fixa('Condomínio', 42000, 10, 'Moradia');
-    await fixa('Internet', 11990, 15, 'Serviços');
-    await fixa('Streaming', 5590, 20, 'Serviços');
-    await fixa('Academia', 11900, 8, 'Saúde');
-    await fixa('Curso de inglês', 29900, 12, 'Educação', parcelas: 12);
+    await fixa('Internet', 11990, 15, 'Assinaturas e planos');
+    await fixa('Streaming', 5590, 20, 'Assinaturas e planos');
+    await fixa('Academia', 11900, 8, 'Academia e suplementos');
+    await fixa('Curso de inglês', 29900, 12, 'Estudos', parcelas: 12);
 
     final variaveis = [
       ('Mercado', 'Mercado', 7, 18000, 46000),
       ('Feira', 'Mercado', 9, 4000, 9000),
       ('Uber', 'Transporte', 5, 1500, 4800),
-      ('Combustível', 'Transporte', 12, 15000, 24000),
-      ('Restaurante', 'Lazer', 8, 6000, 16000),
+      ('Combustível', 'Carro', 12, 15000, 24000),
+      ('Restaurante', 'Alimentação fora', 8, 6000, 16000),
       ('Cinema', 'Lazer', 20, 4000, 7000),
       ('Farmácia', 'Saúde', 18, 2500, 9000),
-      ('Livro', 'Educação', 25, 3500, 8000),
+      ('Livro', 'Estudos', 25, 3500, 8000),
+      ('Barbearia', 'Cuidados pessoais', 21, 4500, 6000),
     ];
     final primeiroDia = diasEntre(inicio, hoje);
     for (final (nome, categoria, cada, minimo, maximo) in variaveis) {
