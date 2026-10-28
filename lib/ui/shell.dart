@@ -276,10 +276,9 @@ class _ShellState extends State<Shell> {
     }
   }
 
-  bool get _largo =>
-      _secao == Secao.visao ||
-      _secao == Secao.anotacoes ||
-      (_secao == Secao.rotina && (_abaRotina == AbaRotina.hoje || _abaRotina == AbaRotina.calendario));
+  // A Rotina é larga em todas as abas, para a fileira de abas não mudar de
+  // tamanho; Hábitos, Automações e Análise estreitam só o conteúdo.
+  bool get _largo => _secao == Secao.visao || _secao == Secao.anotacoes || _secao == Secao.rotina;
 
   Widget _pagina(bool desktop) => switch (_secao) {
     Secao.visao => VisaoPage(ir: _ir, irRotina: _irRotina, aoBuscar: _buscar),
@@ -287,6 +286,7 @@ class _ShellState extends State<Shell> {
       abas: [for (final a in AbaRotina.values) a.rotulo],
       atual: _abaRotina.index,
       aoEscolher: (i) => setState(() => _abaRotina = AbaRotina.values[i]),
+      larguraConteudo: _abaRotina == AbaRotina.hoje || _abaRotina == AbaRotina.calendario ? null : 820,
       child: switch (_abaRotina) {
         AbaRotina.hoje => HojeRotina(verCalendario: () => _irRotina(AbaRotina.calendario)),
         AbaRotina.calendario => const CalendarioRotina(),
@@ -325,7 +325,9 @@ class _ShellState extends State<Shell> {
     final cabecalho = desktop ? null : _Cabecalho(buscar: _buscar);
     final pagina = AnimatedSwitcher(
       duration: const Duration(milliseconds: 160),
-      child: KeyedSubtree(key: ValueKey((_secao, _abaSaude, _abaRotina)), child: _pagina(desktop)),
+      // Só a área entra na chave: trocar de aba mantém a fileira de abas e o
+      // AbasArea anima apenas o conteúdo.
+      child: KeyedSubtree(key: ValueKey(_secao), child: _pagina(desktop)),
     );
     // No celular o conteúdo passa por baixo da barra de vidro (extendBody): a
     // margem de baixo soma a altura da barra, que o Scaffold põe no MediaQuery.
@@ -421,7 +423,8 @@ class _ShellState extends State<Shell> {
   }
 }
 
-/// Área com abas no topo (Saúde, Lembretes), com "voltar" opcional.
+/// Área com abas no topo (Saúde, Rotina), com "voltar" opcional. A fileira de
+/// abas fica parada; ao trocar, só o conteúdo sai e entra com fade.
 class AbasArea extends StatelessWidget {
   const AbasArea({
     super.key,
@@ -430,6 +433,7 @@ class AbasArea extends StatelessWidget {
     required this.aoEscolher,
     required this.child,
     this.voltar,
+    this.larguraConteudo,
   });
 
   final List<String> abas;
@@ -438,9 +442,20 @@ class AbasArea extends StatelessWidget {
   final Widget child;
   final VoidCallback? voltar;
 
+  /// Largura máxima do conteúdo da aba (centralizado), sem mexer na fileira.
+  final double? larguraConteudo;
+
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
+    final semMovimento = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final largura = larguraConteudo;
+    final conteudo = KeyedSubtree(
+      key: ValueKey(atual),
+      child: largura == null
+          ? child
+          : Center(child: ConstrainedBox(constraints: BoxConstraints(maxWidth: largura), child: child)),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -463,7 +478,12 @@ class AbasArea extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 20),
-        child,
+        AnimatedSwitcher(
+          duration: semMovimento ? Duration.zero : const Duration(milliseconds: 160),
+          layoutBuilder: (atual, anteriores) =>
+              Stack(alignment: Alignment.topCenter, children: [...anteriores, ?atual]),
+          child: conteudo,
+        ),
       ],
     );
   }

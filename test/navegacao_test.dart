@@ -2,6 +2,7 @@ import 'package:aurora/app.dart';
 import 'package:aurora/core/relogio.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
+import 'package:aurora/ui/componentes.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -105,6 +106,24 @@ void main() {
     await tocar(tester, find.bySemanticsLabel('Rotina'));
     await tocar(tester, find.text('Automações'));
     await tocar(tester, find.bySemanticsLabel('Conta e sincronização'));
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('trocar de aba mantém a fileira de abas (Rotina e Saúde)', (tester) async {
+    await abrirApp(tester, const Size(1280, 860));
+    final abas = find.byType(Segmentos<int>);
+    await tocar(tester, find.bySemanticsLabel('Rotina'));
+    final rotina = tester.element(abas);
+    final largura = tester.getSize(abas).width;
+    for (final aba in ['Calendário', 'Hábitos', 'Análise', 'Hoje']) {
+      await tocar(tester, find.text(aba).first);
+      expect(tester.element(abas), same(rotina), reason: 'a fileira foi refeita ao abrir $aba');
+      expect(tester.getSize(abas).width, largura, reason: 'a fileira mudou de largura em $aba');
+    }
+    await tocar(tester, find.bySemanticsLabel('Saúde'));
+    final saude = tester.element(abas);
+    await tocar(tester, find.text('Alimentação'));
+    expect(tester.element(abas), same(saude));
     await tester.pumpWidget(const SizedBox());
   });
 
