@@ -514,6 +514,12 @@ class _GradeSemana extends StatelessWidget {
   static const _h0 = 7, _h1 = 24;
   static const _px = 40.0;
 
+  /// Altura do bloco do compromisso: a duração na grade (1 h sem fim), no mínimo 22 px.
+  double _alturaBloco(_ItemCal i, double altura) {
+    final minutos = (i.compromisso!.fim ?? i.momento!.add(const Duration(hours: 1))).difference(i.momento!).inMinutes;
+    return (minutos / 60 * _px - 2).clamp(22, altura - _y(i.momento!)).toDouble();
+  }
+
   double _y(DateTime m) {
     final l = emLocal(m);
     final min = (l.hour * 60 + l.minute - _h0 * 60).clamp(0, (_h1 - _h0) * 60 - 20);
@@ -620,15 +626,12 @@ class _GradeSemana extends StatelessWidget {
                               top: _y(i.momento!),
                               left: 3,
                               right: 3,
-                              height: (((i.compromisso!.fim ?? i.momento!.add(const Duration(hours: 1)))
-                                                  .difference(i.momento!)
-                                                  .inMinutes /
-                                              60 *
-                                              _px) -
-                                          2)
-                                      .clamp(22, altura - _y(i.momento!))
-                                      .toDouble(),
-                              child: _Bloco(item: i, aoTocar: () => aoAbrir(i)),
+                              height: _alturaBloco(i, altura),
+                              child: _Bloco(
+                                item: i,
+                                curto: _alturaBloco(i, altura) < _Bloco.alturaDuasLinhas,
+                                aoTocar: () => aoAbrir(i),
+                              ),
                             )
                           else
                             Positioned(
@@ -657,9 +660,16 @@ class _GradeSemana extends StatelessWidget {
 }
 
 class _Bloco extends StatelessWidget {
-  const _Bloco({required this.item, required this.aoTocar});
+  const _Bloco({required this.item, required this.aoTocar, this.curto = false});
   final _ItemCal item;
   final VoidCallback aoTocar;
+
+  /// Bloco curto (menos de ~50 min na grade): hora e título numa linha só,
+  /// senão o título e o horário em duas linhas estouram o bloco.
+  final bool curto;
+
+  /// Altura mínima para o título e o horário em duas linhas.
+  static const alturaDuasLinhas = 36.0;
 
   @override
   Widget build(BuildContext context) {
@@ -677,14 +687,24 @@ class _Bloco extends StatelessWidget {
           onTap: aoTocar,
           child: Container(
             decoration: BoxDecoration(border: Border(left: BorderSide(color: c.corCompromisso, width: 3))),
-            padding: const EdgeInsets.fromLTRB(5, 3, 4, 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.titulo, maxLines: 1, overflow: TextOverflow.ellipsis, style: manrope(11, peso: FontWeight.w700)),
-                Text(o.horario, maxLines: 1, style: manrope(10, cor: c.muted)),
-              ],
-            ),
+            padding: EdgeInsets.fromLTRB(5, curto ? 2 : 3, 4, curto ? 0 : 2),
+            child: curto
+                ? Text.rich(
+                    TextSpan(children: [
+                      TextSpan(text: '${hora(emLocal(item.momento!))} ', style: manrope(10, cor: c.muted)),
+                      TextSpan(text: item.titulo, style: manrope(11, peso: FontWeight.w700)),
+                    ]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.titulo,
+                          maxLines: 1, overflow: TextOverflow.ellipsis, style: manrope(11, peso: FontWeight.w700)),
+                      Text(o.horario, maxLines: 1, style: manrope(10, cor: c.muted)),
+                    ],
+                  ),
           ),
         ),
       ),

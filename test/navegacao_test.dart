@@ -2,6 +2,7 @@ import 'package:aurora/app.dart';
 import 'package:aurora/core/relogio.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -118,6 +119,19 @@ void main() {
     }
     await tocar(tester, find.text('Calendário'));
     expect(find.text('Compromisso neste dia'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('semana: compromisso curto cabe no bloco numa linha só', (tester) async {
+    final hoje = hojeLocal();
+    await tester.runAsync(() => db.into(db.compromissos).insert(CompromissosCompanion.insert(
+        titulo: 'Dentista', inicio: instanteLocal(hoje, 8), fim: Value(instanteLocal(hoje, 8, 45)))));
+    await abrirApp(tester, const Size(1280, 860));
+    await tocar(tester, find.bySemanticsLabel('Rotina'));
+    await tocar(tester, find.text('Calendário'));
+    await tocar(tester, find.text('Semana'));
+    // 45 min = 28 px na grade: hora e título juntos, sem estourar o bloco.
+    expect(find.text('08:00 Dentista', findRichText: true), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
 
