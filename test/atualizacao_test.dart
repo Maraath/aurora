@@ -24,7 +24,7 @@ void main() {
 
   test('endereço do GitHub quando vem no versao.json; sem ele, o balde', () {
     expect(novaVersao(json, 1)!.url, isNull);
-    const gh = 'https://github.com/Maraath/aurora-instaladores/releases/download/windows-1.0.1/Aurora-1.0.1-setup.exe';
+    const gh = 'https://github.com/Maraath/aurora/releases/download/v1.0.1/Aurora-1.0.1-setup.exe';
     expect(novaVersao({...json, 'url': gh}, 1)!.url, gh);
     // Só https: qualquer outra coisa cai no balde.
     expect(novaVersao({...json, 'url': 'http://exemplo.test/a.exe'}, 1)!.url, isNull);

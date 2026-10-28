@@ -39,7 +39,7 @@ $nome = "Aurora-$versao-setup.exe"
 $arquivo = "build\instalador\$nome"
 $sha = (Get-FileHash $arquivo -Algorithm SHA256).Hash.ToLower()
 . "$PSScriptRoot\comum.ps1"
-$tag = "windows-$versao"
+$tag = "v$versao"
 $json = [ordered]@{ versao = $versao; build = $build; notas = $Notas; instalador = $nome; sha256 = $sha
   url = (UrlNoGitHub $tag $nome) } | ConvertTo-Json
 [IO.File]::WriteAllText("$PWD\build\instalador\versao.json", $json, (New-Object Text.UTF8Encoding $false))
@@ -49,9 +49,8 @@ if ($SemEnviar) { return }
 
 # O instalador vai antes do versao.json, para nenhum app ver a versão nova
 # sem o arquivo no ar. Aurora-setup.exe é o link fixo para instalar pela 1ª vez.
-PublicarNoGitHub $tag "Aurora $versao para Windows" $Notas @($arquivo)
+PublicarVersao $versao $Notas @($arquivo)
 TrocarNoGitHubBaixar $arquivo 'Aurora-setup.exe'
-PublicarNoCodigo $versao $Notas @($arquivo)
 Enviar $arquivo "windows/$nome"
 Substituir $arquivo 'baixar/Aurora-setup.exe'
 Substituir build\instalador\versao.json 'windows/versao.json'

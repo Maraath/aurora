@@ -37,7 +37,7 @@ flutter build apk --release --split-per-abi
 if ($LASTEXITCODE -ne 0) { throw 'flutter build falhou.' }
 
 . "$PSScriptRoot\comum.ps1"
-$tag = "android-$versao"
+$tag = "v$versao"
 $bt = Get-ChildItem C:\Android\Sdk\build-tools | Sort-Object Name | Select-Object -Last 1
 New-Item -ItemType Directory -Force build\instalador | Out-Null
 $abis = [ordered]@{}
@@ -59,9 +59,8 @@ if ($SemEnviar) { return }
 
 # Os APKs vão antes do versao.json. Aurora.apk (arm64, o de quase todo
 # celular) é o link fixo para instalar pela 1ª vez.
-PublicarNoGitHub $tag "Aurora $versao para Android" $Notas @($abis.Values | ForEach-Object { "build\instalador\$($_.instalador)" })
+PublicarVersao $versao $Notas @($abis.Values | ForEach-Object { "build\instalador\$($_.instalador)" })
 TrocarNoGitHubBaixar "build\instalador\$($abis['arm64-v8a'].instalador)" 'Aurora.apk'
-PublicarNoCodigo $versao $Notas @($abis.Values | ForEach-Object { "build\instalador\$($_.instalador)" })
 foreach ($a in $abis.Values) { Enviar "build\instalador\$($a.instalador)" "android/$($a.instalador)" }
 Substituir "build\instalador\$($abis['arm64-v8a'].instalador)" 'baixar/Aurora.apk'
 Substituir build\instalador\versao-android.json 'android/versao.json'
