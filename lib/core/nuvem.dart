@@ -4,9 +4,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Projeto do Supabase. A chave `anon` foi feita para ficar no app: o que
 /// protege os dados são as regras de RLS no banco. A chave de serviço e a da
 /// IA NUNCA ficam aqui; elas vivem só nos segredos da Edge Function.
-const supabaseUrl = 'https://fhmhmdzbujqhkdsfnbtx.supabase.co';
-const supabaseAnonKey =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZobWhtZHpidWpxaGtkc2ZuYnR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNzkyMjAsImV4cCI6MjEwNzc1NTIyMH0.L4c8wzk3bZGO3eX8tmjC8JuZtXa5Agwmiys36AT8lok';
+/// Para usar outro projeto: `--dart-define=AURORA_SUPABASE_URL=...` e
+/// `--dart-define=AURORA_SUPABASE_CHAVE=...` (a chave anon dele).
+const supabaseUrl =
+    String.fromEnvironment('AURORA_SUPABASE_URL', defaultValue: 'https://fhmhmdzbujqhkdsfnbtx.supabase.co');
+const supabaseAnonKey = String.fromEnvironment(
+  'AURORA_SUPABASE_CHAVE',
+  defaultValue:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZobWhtZHpidWpxaGtkc2ZuYnR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNzkyMjAsImV4cCI6MjEwNzc1NTIyMH0.L4c8wzk3bZGO3eX8tmjC8JuZtXa5Agwmiys36AT8lok',
+);
 
 /// Para onde o link de confirmação do cadastro leva: a imagem "E-mail
 /// confirmado" no balde público (tool/paginas/gerar.ps1). Tem de estar nas

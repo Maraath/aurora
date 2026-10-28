@@ -10,6 +10,7 @@ import '../../core/login_google.dart';
 import '../../core/nuvem.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
+import '../../data/catalogo_taco.dart' show fonteTaco;
 import '../../data/servico_sync.dart';
 import '../../data/sincronizacao.dart';
 import '../atualizacao_ui.dart';
@@ -221,6 +222,19 @@ class _ContaPageState extends State<ContaPage> {
         SecaoEfeitos(db: AuroraEscopo.de(context).db),
         const SizedBox(height: 28),
         _Versao(),
+        const SizedBox(height: 6),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton(
+            onPressed: () => showLicensePage(
+              context: context,
+              applicationName: 'Aurora',
+              applicationLegalese: 'Alimentos: $fonteTaco.',
+            ),
+            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4)),
+            child: Text('Licenças', style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
+          ),
+        ),
       ],
     );
   }

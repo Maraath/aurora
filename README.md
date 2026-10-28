@@ -13,7 +13,7 @@ Rotina · Hábitos · Treino · Alimentação · Finanças · Objetivos · Anota
 ![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3FCF8E?logo=supabase&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/Edge%20Functions-TypeScript-3178C6?logo=typescript&logoColor=white)
 ![Plataformas](https://img.shields.io/badge/Windows%20%C2%B7%20Android%20%C2%B7%20Web%20%28PWA%29-5CF0B0)
-![Testes](https://img.shields.io/badge/testes-304%20passando-42E3C8)
+![Testes](https://img.shields.io/badge/testes-307%20passando-42E3C8)
 ![Licença](https://img.shields.io/badge/licen%C3%A7a-PolyForm%20Noncommercial-9D8CFF)
 
 <img src="docs/imagens/visao.png" alt="Tela Visão do Aurora no Windows, em blocos" width="900">
@@ -48,13 +48,17 @@ automática e um servidor com autenticação, banco protegido por usuário e IA.
 
 | Versão atual | Código | Testes | Plataformas |
 | :---: | :---: | :---: | :---: |
-| **1.14.1** | ~61 mil linhas de Dart | **304** automatizados | Windows · Android · Web (PWA) |
+| **1.14.3** | ~46 mil linhas de Dart (fora o código gerado) | **307** automatizados | Windows · Android · Web (PWA) |
 
 > **In English:** Aurora is a personal routine app (tasks, habits, appointments, workouts, nutrition, finances,
 > goals, notes, reminders) with an AI assistant that creates and edits your data through tool calls. One Flutter codebase for
 > Windows, Android and web (PWA, installable on iPhone); offline-first with SQLite (Drift), synced to Supabase (Postgres + Row Level
 > Security); AI served by a Deno Edge Function with an automatic model fallback chain. Source-available under
 > PolyForm Noncommercial 1.0.0.
+
+**Experimentar:** [instalador para Windows](https://github.com/Maraath/aurora-instaladores/releases/download/baixar/Aurora-setup.exe) ·
+[APK para Android](https://github.com/Maraath/aurora-instaladores/releases/download/baixar/Aurora.apk) ·
+[versão web](https://aurora-ar2.pages.dev) (no iPhone, abra no Safari e use "Adicionar à Tela de Início").
 
 ## Galeria
 
@@ -107,6 +111,7 @@ automática e um servidor com autenticação, banco protegido por usuário e IA.
 | 🔔 **Lembretes** | Avisos locais, Web Push no PWA e despertador de tela cheia no Android, que toca mesmo no silencioso. |
 | ✨ **Assistente** | Texto e **voz** (microfone no campo, transcrição na nuvem) e **resposta falada** com a voz do próprio aparelho (só quando você falou, sempre ou nunca). Cria, edita e exclui lançamentos, tarefas, lembretes, compromissos e treinos com confirmação e "Desfazer"; sem internet, comandos rápidos por regras. |
 | 🔎 **Extras** | Busca global (Ctrl+K), atalhos flutuantes com captura rápida e mini chat, bloqueio por PIN ou biometria, tema escuro e claro, efeitos visuais leves para aparelhos mais fracos, fotos só no aparelho ou na nuvem (privadas, comprimidas e sem metadados), e datas e avisos sempre no fuso de onde você está. |
+
 ## Arquitetura
 
 ```mermaid
@@ -185,7 +190,7 @@ SDK, implementado em Dart.
 
 ## Qualidade
 
-- **304 testes automatizados** (widgets e regras de negócio): recorrência, rotina e compromissos, objetivos,
+- **307 testes automatizados** (widgets e regras de negócio): recorrência, rotina e compromissos, objetivos,
   anotações, finanças e categorias, sincronização, assistente, voz, gráficos, busca e mais.
 - `flutter analyze` sem nenhum aviso.
 - Migrações do servidor versionadas em [`supabase/migrations`](supabase/migrations), testadas num banco local antes
@@ -193,7 +198,7 @@ SDK, implementado em Dart.
 - Backup semanal automático do banco do servidor.
 
 ```bash
-flutter test      # roda os 304 testes
+flutter test      # roda os 307 testes
 flutter analyze   # análise estática
 ```
 
@@ -222,7 +227,16 @@ flutter analyze   # análise estática
 
 ## Como rodar
 
-Pré-requisito: [Flutter](https://docs.flutter.dev/get-started/install) 3.47 ou mais novo.
+Pré-requisitos:
+
+- [Flutter](https://docs.flutter.dev/get-started/install) 3.47 ou mais novo (`flutter doctor` sem erros para a
+  plataforma que for usar).
+- **Windows:** Visual Studio 2022 (ou Build Tools) com "Desenvolvimento para desktop com C++" e o componente **ATL**
+  (o plugin de notificações exige), `nuget.exe` no PATH (o plugin de voz exige) e o **Modo de Desenvolvedor** do
+  Windows ligado. Se o nome do seu usuário do Windows tem espaço, ponha o cache do Flutter fora do perfil
+  (`PUB_CACHE=C:\src\pub-cache`), senão o build quebra.
+- **Android:** Android SDK e JDK (os do Android Studio servem). Sem `android/key.properties`, o APK sai assinado com a
+  chave de depuração.
 
 ```bash
 flutter pub get
@@ -236,7 +250,24 @@ O app abre vazio e funciona offline. Para ver com os dados de demonstração das
 flutter run -d windows -t tool/capturas/main.dart --dart-define=AURORA_BANCO=aurora_capturas
 ```
 
-A conta, a sincronização e a assistente com IA usam o projeto Supabase do autor.
+**Servidor.** Sem nada configurado, a conta, a sincronização e a assistente usam o projeto Supabase do autor (a chave
+que vai no app é a pública `anon`; os dados de cada conta são protegidos por RLS). Para usar o seu próprio projeto:
+
+1. Crie um projeto no [Supabase](https://supabase.com) e aplique as migrações: `npx supabase link` e
+   `npx supabase db push`. Antes, troque o endereço do projeto do autor no agendamento dos avisos
+   (`supabase/migrations/20261020200000_avisos_push.sql`).
+2. Publique as Edge Functions (`npx supabase functions deploy assistente`, `excluir-conta` e, com
+   `--no-verify-jwt`, `avisos-push`) e cadastre os segredos que elas leem: `GEMINI_API_KEY` e/ou
+   `ANTHROPIC_API_KEY` para a IA, `VAPID_PUBLICO`/`VAPID_PRIVADO` para os avisos da web
+   (`tool/push/gerar_chaves.ps1` gera).
+3. Rode o app apontando para ele:
+
+```bash
+flutter run -d windows --dart-define=AURORA_SUPABASE_URL=https://SEU-PROJETO.supabase.co --dart-define=AURORA_SUPABASE_CHAVE=SUA-CHAVE-ANON
+```
+
+O login com Google, a chave pública dos avisos da web (`chavePublicaAvisos`) e as atualizações automáticas
+continuam configurados para o projeto do autor.
 
 ## Metodologia de desenvolvimento
 

@@ -1,15 +1,15 @@
 # Licenças do conteúdo de terceiros
 
-Conferido em 18/10/2026, antes de abrir o Aurora ao público.
+Conferido em 18/10/2026 e revisto em 28/10/2026, antes de abrir o código ao público.
 
 ## TACO (catálogo de alimentos)
 
 - Fonte: Tabela Brasileira de Composição de Alimentos (TACO), 4ª edição revisada e ampliada, NEPA/Unicamp, 2011.
   Arquivo em `docs/taco/Taco-4a-Edicao.xlsx`, convertido para `assets/taco.json` por `tool/taco/converter.dart`.
 - Termos da publicação: a reprodução total ou parcial é permitida **desde que a fonte seja citada**.
-- O app cita a fonte na tela de Alimentação (`fonteTaco`, em `lib/data/catalogo_taco.dart`), nos Termos de uso e em
-  Conta › Licenças. Os nomes foram adaptados e alguns itens foram filtrados (crus que não se comem), e os valores
-  continuam os da tabela.
+- O app cita a fonte na tela de Alimentação e no formulário de registro (`fonteTaco`, em
+  `lib/data/catalogo_taco.dart`), em Conta › Licenças e no README. Os nomes foram adaptados e alguns itens foram
+  filtrados (crus que não se comem), e os valores continuam os da tabela.
 - **Em aberto:** o texto não fala de uso comercial, nem para permitir nem para proibir. Para o app gratuito, citar a
   fonte basta. Antes de cobrar pelo app, pedir confirmação por escrito ao NEPA/Unicamp (o contato da edição era
   taco@unicamp.br).
@@ -27,4 +27,7 @@ Conferido em 18/10/2026, antes de abrir o Aurora ao público.
 ## Código aberto
 
 Os pacotes Flutter/Dart usados têm licenças próprias (MIT, BSD, Apache). O app lista todas em Conta › Licenças
-(`showLicensePage`). As fontes Sora e Manrope usam a SIL Open Font License e entram nessa lista.
+(`showLicensePage`). As fontes Sora e Manrope usam a SIL Open Font License: o texto está em `assets/fonts/OFL-*.txt`,
+vai junto no app e entra nessa lista (`LicenseRegistry`, em `lib/main.dart`).
+
+O código do próprio Aurora usa a PolyForm Noncommercial 1.0.0 (arquivo `LICENSE`).

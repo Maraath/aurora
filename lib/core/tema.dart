@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Tokens de cor do Aurora: paleta "Aurora completa" (ver CLAUDE.md).
+/// Tokens de cor do Aurora: paleta "Aurora completa" (cores de uma aurora real).
 /// Acesse com `context.cores`.
 @immutable
 class AuroraCores extends ThemeExtension<AuroraCores> {

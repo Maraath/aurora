@@ -2,6 +2,10 @@
 
 Oct 15, 2026 · @Maraath
 
+> Documento original do planejamento, guardado como histórico. Várias decisões mudaram depois (paleta "Aurora
+> completa", áreas Rotina e Objetivos, web/PWA no lugar do iOS nativo por enquanto); o estado atual está no
+> [README](../README.md).
+
 ## Visão geral
 
 Um app pessoal que junta tarefas, dinheiro, hábitos, treino e metas numa tela só, com um assistente de IA que entende pedidos em linguagem natural. Roda no Windows, no iPhone (iOS) e no Android, com os mesmos dados nos três.
@@ -15,7 +19,7 @@ Princípios:
 
 ## Identidade
 
-O app se chama **Aurora**. Visual aprovado no [protótipo](https://claude.ai/artifact/CiB2znP5dtB7juauMQ6zca): azul-marinho com fundo escuro como padrão e modo claro opcional. Logo definitiva fica para depois.
+O app se chama **Aurora**. Visual aprovado no [protótipo](prototipo/Main.dc.html): azul-marinho com fundo escuro como padrão e modo claro opcional. Logo definitiva fica para depois. (Paleta da primeira versão; depois trocada pela "Aurora completa", com cores de uma aurora real.)
 
 | Cor | Modo escuro | Modo claro |
 | --- | --- | --- |

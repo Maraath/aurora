@@ -26,7 +26,7 @@ $versao = $linha.Matches[0].Groups[1].Value
 $build = [int]$linha.Matches[0].Groups[2].Value
 Write-Host "Aurora $versao (build $build)"
 
-# Mesmas variáveis do CLAUDE.md: sem elas o Gradle falha neste PC.
+# Variáveis de usuário deste PC (GRADLE_USER_HOME, JAVA_TOOL_OPTIONS): sem elas o Gradle falha aqui.
 $u = [Environment]::GetEnvironmentVariables('User')
 $env:GRADLE_USER_HOME = $u.GRADLE_USER_HOME
 $env:JAVA_TOOL_OPTIONS = $u.JAVA_TOOL_OPTIONS
