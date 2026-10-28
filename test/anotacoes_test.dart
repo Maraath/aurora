@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:aurora/app.dart';
 import 'package:aurora/core/relogio.dart';
@@ -13,6 +12,7 @@ import 'package:aurora/data/gravacao_nota.dart';
 import 'package:aurora/data/sincronizacao.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -340,6 +340,39 @@ void main() {
       await tester.tap(find.text('Ideias para o Aurora'));
       await assentar(tester);
       expect(find.byTooltip('Fechar a nota'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('lista: Backspace apaga letras e, no item vazio, tira o item', (tester) async {
+      await abrir(tester, const Size(1400, 900));
+      await tester.tap(find.text('Nova nota'));
+      await assentar(tester);
+      await tester.tap(find.text('Caixinhas para ir marcando'));
+      await assentar(tester);
+      final campo = find.widgetWithText(TextField, 'Item').first;
+      final campos = tester.widgetList(find.byType(TextField)).length;
+      await tester.tap(campo);
+      await tester.enterText(campo, 'Pão');
+      await tester.testTextInput.receiveAction(TextInputAction.next);
+      await assentar(tester);
+      expect(find.byType(TextField), findsNWidgets(campos + 1));
+
+      await tester.enterText(find.byType(TextField).last, 'Ovo');
+      await assentar(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await assentar(tester);
+      expect(find.text('Ov'), findsWidgets);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await assentar(tester);
+      expect(find.byType(TextField), findsNWidgets(campos + 1));
+      // Vazio: o próximo Backspace tira o item e volta ao anterior.
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await assentar(tester);
+      expect(find.byType(TextField), findsNWidgets(campos));
+      expect(find.text('Pão'), findsWidgets);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     });

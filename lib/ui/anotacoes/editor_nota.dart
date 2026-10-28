@@ -580,11 +580,19 @@ class _EditorNotaState extends State<EditorNota> {
           ),
           const SizedBox(width: 4),
           Expanded(
-            child: CallbackShortcuts(
-              bindings: {
-                const SingleActivator(LogicalKeyboardKey.backspace): () {
-                  if (it.controle.text.isEmpty) _tirarItem(it);
-                },
+            // Backspace no item vazio tira o item. Com texto, a tecla tem de seguir
+            // até o atalho de apagar do app: um CallbackShortcuts a consumiria sempre.
+            child: Focus(
+              canRequestFocus: false,
+              skipTraversal: true,
+              onKeyEvent: (_, e) {
+                if (e is KeyUpEvent ||
+                    e.logicalKey != LogicalKeyboardKey.backspace ||
+                    it.controle.text.isNotEmpty) {
+                  return KeyEventResult.ignored;
+                }
+                if (e is KeyDownEvent) _tirarItem(it);
+                return KeyEventResult.handled;
               },
               child: TextField(
                 controller: it.controle,
