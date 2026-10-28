@@ -61,6 +61,7 @@ if ($SemEnviar) { return }
 # celular) é o link fixo para instalar pela 1ª vez.
 PublicarNoGitHub $tag "Aurora $versao para Android" $Notas @($abis.Values | ForEach-Object { "build\instalador\$($_.instalador)" })
 TrocarNoGitHubBaixar "build\instalador\$($abis['arm64-v8a'].instalador)" 'Aurora.apk'
+PublicarNoCodigo $versao $Notas @($abis.Values | ForEach-Object { "build\instalador\$($_.instalador)" })
 foreach ($a in $abis.Values) { Enviar "build\instalador\$($a.instalador)" "android/$($a.instalador)" }
 Substituir "build\instalador\$($abis['arm64-v8a'].instalador)" 'baixar/Aurora.apk'
 Substituir build\instalador\versao-android.json 'android/versao.json'

@@ -51,6 +51,7 @@ if ($SemEnviar) { return }
 # sem o arquivo no ar. Aurora-setup.exe é o link fixo para instalar pela 1ª vez.
 PublicarNoGitHub $tag "Aurora $versao para Windows" $Notas @($arquivo)
 TrocarNoGitHubBaixar $arquivo 'Aurora-setup.exe'
+PublicarNoCodigo $versao $Notas @($arquivo)
 Enviar $arquivo "windows/$nome"
 Substituir $arquivo 'baixar/Aurora-setup.exe'
 Substituir build\instalador\versao.json 'windows/versao.json'

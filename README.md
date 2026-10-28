@@ -59,6 +59,7 @@ automática e um servidor com autenticação, banco protegido por usuário e IA.
 **Experimentar:** [instalador para Windows](https://github.com/Maraath/aurora-instaladores/releases/download/baixar/Aurora-setup.exe) ·
 [APK para Android](https://github.com/Maraath/aurora-instaladores/releases/download/baixar/Aurora.apk) ·
 [versão web](https://aurora-ar2.pages.dev) (no iPhone, abra no Safari e use "Adicionar à Tela de Início").
+Todas as versões, com o que mudou em cada uma, estão em [Releases](https://github.com/Maraath/aurora/releases).
 
 ## Galeria
 

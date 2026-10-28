@@ -3,12 +3,14 @@
 
 $UrlBalde = 'https://fhmhmdzbujqhkdsfnbtx.supabase.co/storage/v1/object/public/atualizacoes'
 
-# Instaladores também no GitHub Releases, num repositório PÚBLICO só deles (o do
-# código é privado e o app não baixaria de lá sem login). Desde a 1.10.1 o app
+# Instaladores também no GitHub Releases, num repositório PÚBLICO só deles (é de
+# lá que o app baixa as atualizações; o código, em $RepoCodigo, ganha uma cópia
+# para quem visita o projeto: PublicarNoCodigo). Desde a 1.10.1 o app
 # baixa pelo "url" do versao.json; as versões antigas ainda baixam do balde, por
 # isso o balde segue recebendo os instaladores (etapa 1). Etapa 2, quando todos
 # estiverem na 1.10.1 ou depois: parar de mandar os instaladores ao balde.
 $RepoInstaladores = 'Maraath/aurora-instaladores'
+$RepoCodigo = 'Maraath/aurora'
 
 function UrlNoGitHub([string]$tag, [string]$nome) {
   return "https://github.com/$RepoInstaladores/releases/download/$tag/$nome"
@@ -51,6 +53,35 @@ function TrocarNoGitHubBaixar([string]$local, [string]$nomeFixo) {
   # como histórico (elas são criadas com --latest=false).
   $r = ChamarGitHub release edit 'baixar' --repo $RepoInstaladores --latest
   if (-not $r.Ok) { Write-Warning "Não marquei a release baixar como Latest: $($r.Saida)" }
+}
+
+# Release "v<versão>" no repositório do código (público), presa ao commit de
+# agora: Windows e Android caem na mesma release, quem publicar primeiro cria.
+# Fica como "Latest" para a página do projeto mostrar o download.
+function PublicarNoCodigo([string]$versao, [string]$notas, [string[]]$arquivos) {
+  $tag = "v$versao"
+  if ((ChamarGitHub release view $tag --repo $RepoCodigo).Ok) {
+    $r = ChamarGitHub release upload $tag @arquivos --repo $RepoCodigo --clobber
+  } else {
+    if (-not $notas) { $notas = "Aurora $versao" }
+    $notas += @"
+
+
+**Como instalar**
+- **Windows:** ``Aurora-$versao-setup.exe``. O app se atualiza sozinho depois.
+- **Android:** ``Aurora-$versao-arm64-v8a.apk`` serve para quase todos os celulares (os outros são para aparelhos antigos de 32 bits e emuladores x86_64). Permita "instalar apps desconhecidos" quando o Android pedir.
+- **iPhone / navegador:** https://aurora-ar2.pages.dev (no Safari, "Adicionar à Tela de Início").
+
+O app funciona offline sem conta; a conta só é necessária para sincronizar e usar a assistente com IA.
+"@
+    $arquivoNotas = Join-Path $env:TEMP "notas-codigo-$tag.txt"
+    [IO.File]::WriteAllText($arquivoNotas, $notas, (New-Object Text.UTF8Encoding $false))
+    $commit = (git rev-parse HEAD).Trim()
+    $r = ChamarGitHub release create $tag @arquivos --repo $RepoCodigo --target $commit --title "Aurora $versao" --notes-file $arquivoNotas --latest
+    Remove-Item $arquivoNotas
+  }
+  # Não para a publicação: o app já está no ar pelo repositório de instaladores.
+  if (-not $r.Ok) { Write-Warning "Release no repositório do código ($tag) falhou (o commit já foi enviado ao GitHub?): $($r.Saida)" }
 }
 
 # O CLI adivinha o tipo pelo conteúdo e marca o APK (um zip por dentro) como
