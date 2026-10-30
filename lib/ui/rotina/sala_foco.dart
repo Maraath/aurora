@@ -8,6 +8,8 @@ import '../componentes.dart';
 import '../formulario.dart';
 import '../vidro.dart';
 import '../visao/foco.dart';
+import '../visao/spotify_foco_player.dart';
+import '../visao/youtube_foco_player.dart';
 
 /// Sala de Foco Imersivo: timer circular com os 3 modos configuráveis
 /// (Pomodoro, Imersão e Pausa), ajuste livre de minutos, segmentos de áudio
@@ -31,6 +33,10 @@ class SalaFocoImersivo extends StatefulWidget {
 }
 
 class _SalaFocoImersivoState extends State<SalaFocoImersivo> {
+  bool _spotifyPlayerAberto = false;
+  bool _youtubePlayerAberto = false;
+  SegmentoAudioFoco? _segmentoYoutubeAtivo;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -48,7 +54,20 @@ class _SalaFocoImersivoState extends State<SalaFocoImersivo> {
     return (titulo: lista[idx].titulo, detalhe: lista[idx].detalhe);
   }
 
-  Future<void> _abrirYoutube(SegmentoAudioFoco s) async {
+  void _tocarYoutube(SegmentoAudioFoco s) {
+    final foco = ControleFoco.instancia;
+    foco.segmentoAtivo = s;
+    setState(() {
+      if (_segmentoYoutubeAtivo == s && _youtubePlayerAberto) {
+        _youtubePlayerAberto = false;
+      } else {
+        _segmentoYoutubeAtivo = s;
+        _youtubePlayerAberto = true;
+      }
+    });
+  }
+
+  Future<void> _abrirYoutubeExterno(SegmentoAudioFoco s) async {
     final foco = ControleFoco.instancia;
     final abriu = await foco.abrirSegmentoYoutube(s);
     if (!mounted) return;
@@ -309,9 +328,12 @@ class _SalaFocoImersivoState extends State<SalaFocoImersivo> {
                             for (final s in SegmentoAudioFoco.values)
                               _CartaoSegmentoYoutube(
                                 segmento: s,
-                                ativo: foco.segmentoAtivo == s,
+                                ativo: _segmentoYoutubeAtivo == s || (_segmentoYoutubeAtivo == null && foco.segmentoAtivo == s),
+                                tocando: _segmentoYoutubeAtivo == s && _youtubePlayerAberto,
+                                carregando: false,
                                 url: foco.urlYoutubeDe(s),
-                                aoAbrir: () => _abrirYoutube(s),
+                                aoTocar: () => _tocarYoutube(s),
+                                aoAbrirExterno: () => _abrirYoutubeExterno(s),
                                 aoEditarUrl: () => abrirEditarLinkYoutube(context, s),
                               ),
                           ];
@@ -347,6 +369,21 @@ class _SalaFocoImersivoState extends State<SalaFocoImersivo> {
                         },
                       ),
 
+                      // Player Integrado Oficial do YouTube via WebView2 (áudio e vídeo sem erros de codec)
+                      if (_youtubePlayerAberto && _segmentoYoutubeAtivo != null)
+                        PlayerYoutubeIntegrado(
+                          key: ValueKey(_segmentoYoutubeAtivo),
+                          segmento: _segmentoYoutubeAtivo,
+                          titulo: _segmentoYoutubeAtivo!.titulo,
+                          url: foco.urlYoutubeDe(_segmentoYoutubeAtivo!),
+                          aoFechar: () {
+                            setState(() => _youtubePlayerAberto = false);
+                          },
+                          aoAbrirExterno: () {
+                            _abrirYoutubeExterno(_segmentoYoutubeAtivo!);
+                          },
+                        ),
+
                       const SizedBox(height: 14),
 
                       // Cartão de Vínculo com o Spotify
@@ -354,6 +391,10 @@ class _SalaFocoImersivoState extends State<SalaFocoImersivo> {
                         vinculado: foco.spotifyVinculado,
                         nome: foco.spotifyNome,
                         url: foco.spotifyUrl,
+                        playerAberto: _spotifyPlayerAberto,
+                        aoAlternarPlayer: () {
+                          setState(() => _spotifyPlayerAberto = !_spotifyPlayerAberto);
+                        },
                         aoVincularOuEditar: () => abrirVinculoSpotifyFoco(context),
                         aoAbrirSpotify: _abrirSpotify,
                         aoDesvincular: () => foco.desvincularSpotify(db: db),
@@ -521,15 +562,21 @@ class _CartaoSegmentoYoutube extends StatelessWidget {
   const _CartaoSegmentoYoutube({
     required this.segmento,
     required this.ativo,
+    required this.tocando,
+    required this.carregando,
     required this.url,
-    required this.aoAbrir,
+    required this.aoTocar,
+    required this.aoAbrirExterno,
     required this.aoEditarUrl,
   });
 
   final SegmentoAudioFoco segmento;
   final bool ativo;
+  final bool tocando;
+  final bool carregando;
   final String url;
-  final VoidCallback aoAbrir;
+  final VoidCallback aoTocar;
+  final VoidCallback aoAbrirExterno;
   final VoidCallback aoEditarUrl;
 
   IconData get _icone => switch (segmento) {
@@ -548,7 +595,7 @@ class _CartaoSegmentoYoutube extends StatelessWidget {
       raio: 16,
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
       cor: ativo ? c.accentSoft : c.surface2.withValues(alpha: 0.45),
-      aoTocar: aoAbrir,
+      aoTocar: aoTocar,
       child: Row(
         children: [
           Container(
@@ -558,7 +605,19 @@ class _CartaoSegmentoYoutube extends StatelessWidget {
               color: corYt.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(_icone, size: 19, color: corYt),
+            child: carregando
+                ? const Center(
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: corYt),
+                    ),
+                  )
+                : Icon(
+                    tocando ? Icons.pause_rounded : _icone,
+                    size: 19,
+                    color: corYt,
+                  ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -574,20 +633,35 @@ class _CartaoSegmentoYoutube extends StatelessWidget {
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    const Icon(Icons.play_circle_fill_rounded, size: 13, color: corYt),
+                    Icon(
+                      tocando ? Icons.volume_up_rounded : Icons.play_circle_fill_rounded,
+                      size: 13,
+                      color: tocando ? c.teal : corYt,
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        'YouTube · ${segmento.subtitulo}',
+                        tocando
+                            ? 'Tocando no Aurora · ${segmento.subtitulo}'
+                            : (carregando ? 'Carregando áudio...' : 'YouTube · ${segmento.subtitulo}'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: manrope(11.5, cor: c.muted),
+                        style: manrope(
+                          11.5,
+                          peso: tocando ? FontWeight.w700 : FontWeight.w500,
+                          cor: tocando ? c.teal : c.muted,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ],
             ),
+          ),
+          IconButton(
+            tooltip: 'Abrir no navegador do YouTube',
+            onPressed: aoAbrirExterno,
+            icon: Icon(Icons.open_in_new_rounded, size: 16, color: c.muted),
           ),
           IconButton(
             tooltip: 'Trocar link de ${segmento.titulo}',
@@ -605,6 +679,8 @@ class _CartaoSpotify extends StatelessWidget {
     required this.vinculado,
     required this.nome,
     required this.url,
+    required this.playerAberto,
+    required this.aoAlternarPlayer,
     required this.aoVincularOuEditar,
     required this.aoAbrirSpotify,
     required this.aoDesvincular,
@@ -613,6 +689,8 @@ class _CartaoSpotify extends StatelessWidget {
   final bool vinculado;
   final String nome;
   final String url;
+  final bool playerAberto;
+  final VoidCallback aoAlternarPlayer;
   final VoidCallback aoVincularOuEditar;
   final VoidCallback aoAbrirSpotify;
   final VoidCallback aoDesvincular;
@@ -629,98 +707,121 @@ class _CartaoSpotify extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _verdeSpotify.withValues(alpha: 0.35)),
       ),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 10,
-        alignment: WrapAlignment.spaceBetween,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
+          Wrap(
+            spacing: 12,
+            runSpacing: 10,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: _verdeSpotify.withValues(alpha: 0.20),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.library_music_rounded, color: _verdeSpotify, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _verdeSpotify.withValues(alpha: 0.20),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.library_music_rounded, color: _verdeSpotify, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          vinculado ? 'Spotify vinculado' : 'Spotify',
-                          style: sora(14, cor: vinculado ? _verdeSpotify : c.text),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              vinculado ? 'Spotify vinculado' : 'Spotify',
+                              style: sora(14, cor: vinculado ? _verdeSpotify : c.text),
+                            ),
+                            if (vinculado) ...[
+                              const SizedBox(width: 6),
+                              const Icon(Icons.verified_rounded, size: 15, color: _verdeSpotify),
+                            ],
+                          ],
                         ),
-                        if (vinculado) ...[
-                          const SizedBox(width: 6),
-                          const Icon(Icons.verified_rounded, size: 15, color: _verdeSpotify),
-                        ],
+                        const SizedBox(height: 2),
+                        Text(
+                          vinculado
+                              ? nome
+                              : 'Vincule sua conta ou playlist de foco favorita do Spotify',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: manrope(12, cor: c.muted),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      vinculado
-                          ? nome
-                          : 'Vincule sua conta ou playlist de foco favorita do Spotify',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: manrope(12, cor: c.muted),
+                  ),
+                ],
+              ),
+              if (!vinculado)
+                Semantics(
+                  button: true,
+                  label: 'Vincular Spotify',
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _verdeSpotify,
+                      foregroundColor: Colors.black,
+                      textStyle: manrope(12.5, peso: FontWeight.w700),
+                    ),
+                    onPressed: aoVincularOuEditar,
+                    icon: const Icon(Icons.link_rounded, size: 16),
+                    label: const Text('Vincular Spotify'),
+                  ),
+                )
+              else
+                Wrap(
+                  spacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: playerAberto ? c.surface2 : _verdeSpotify,
+                        foregroundColor: playerAberto ? c.text : Colors.black,
+                        textStyle: manrope(12.5, peso: FontWeight.w700),
+                      ),
+                      onPressed: aoAlternarPlayer,
+                      icon: Icon(
+                        playerAberto ? Icons.keyboard_arrow_up_rounded : Icons.play_circle_fill_rounded,
+                        size: 16,
+                        color: playerAberto ? _verdeSpotify : Colors.black,
+                      ),
+                      label: Text(playerAberto ? 'Ocultar player' : 'Tocar no app'),
+                    ),
+                    IconButton(
+                      tooltip: 'Abrir no app desktop ou web do Spotify',
+                      onPressed: aoAbrirSpotify,
+                      icon: Icon(Icons.open_in_new_rounded, size: 17, color: c.muted),
+                    ),
+                    IconButton(
+                      tooltip: 'Trocar playlist do Spotify',
+                      onPressed: aoVincularOuEditar,
+                      icon: Icon(Icons.edit_outlined, size: 18, color: c.muted),
+                    ),
+                    IconButton(
+                      tooltip: 'Desvincular Spotify',
+                      onPressed: aoDesvincular,
+                      icon: Icon(Icons.link_off_rounded, size: 18, color: c.bad),
                     ),
                   ],
                 ),
-              ),
             ],
           ),
-          if (!vinculado)
-            Semantics(
-              button: true,
-              label: 'Vincular Spotify',
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: _verdeSpotify,
-                  foregroundColor: Colors.black,
-                  textStyle: manrope(12.5, peso: FontWeight.w700),
-                ),
-                onPressed: aoVincularOuEditar,
-                icon: const Icon(Icons.link_rounded, size: 16),
-                label: const Text('Vincular Spotify'),
-              ),
-            )
-          else
-            Wrap(
-              spacing: 6,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _verdeSpotify,
-                    foregroundColor: Colors.black,
-                    textStyle: manrope(12.5, peso: FontWeight.w700),
-                  ),
-                  onPressed: aoAbrirSpotify,
-                  icon: const Icon(Icons.open_in_new_rounded, size: 15),
-                  label: const Text('Ouvir no Spotify'),
-                ),
-                IconButton(
-                  tooltip: 'Trocar playlist do Spotify',
-                  onPressed: aoVincularOuEditar,
-                  icon: Icon(Icons.edit_outlined, size: 18, color: c.muted),
-                ),
-                IconButton(
-                  tooltip: 'Desvincular Spotify',
-                  onPressed: aoDesvincular,
-                  icon: Icon(Icons.link_off_rounded, size: 18, color: c.bad),
-                ),
-              ],
+          if (vinculado && playerAberto) ...[
+            const SizedBox(height: 12),
+            PlayerSpotifyIntegrado(
+              url: url,
+              aoFechar: aoAlternarPlayer,
+              aoAbrirExterno: aoAbrirSpotify,
             ),
+          ],
         ],
       ),
     );

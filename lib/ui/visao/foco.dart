@@ -28,12 +28,12 @@ enum SegmentoAudioFoco {
   chuva(
     'Chuva Noturna',
     'Isolamento calmo',
-    'https://www.youtube.com/watch?v=mPZkdNFkNps',
+    'https://www.youtube.com/watch?v=q76bMs-NwRk',
   ),
   lofi(
     'Lofi Estrelado',
     'Beats para focar',
-    'https://www.youtube.com/watch?v=jfKfPfyJRdk',
+    'https://www.youtube.com/watch?v=lTRiuFIWV54',
   ),
   ruido(
     'Ruído Marrom',
@@ -151,7 +151,11 @@ class ControleFoco extends ChangeNotifier {
         final mapa = jsonDecode(rawYoutube) as Map<String, dynamic>;
         for (final s in SegmentoAudioFoco.values) {
           final u = (mapa[s.name] as String?)?.trim();
-          if (u != null && u.isNotEmpty) _urlsYoutube[s] = u;
+          // Ignora URLs legadas que tinham problemas no YouTube
+          final ehAntiga = u != null && (u.contains('mPZkdNFkNps') || u.contains('jfKfPfyJRdk'));
+          if (u != null && u.isNotEmpty && !ehAntiga) {
+            _urlsYoutube[s] = u;
+          }
         }
       }
 

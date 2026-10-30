@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:drift/drift.dart' show Value;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -28,6 +30,12 @@ const larguraTimeblocking = 900.0;
 
 const _chaveDuracoes = 'timeblocking_duracoes_v1';
 const _opcoesDuracao = [25, 30, 45, 60, 90];
+
+/// Indica se o app está rodando em dispositivo móvel (Android ou iOS).
+bool get ehAparelhoMovel =>
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS);
 
 enum ModoHoje {
   timeblocking('Timeblocking', Icons.view_timeline_outlined),
@@ -69,7 +77,31 @@ class _HojeRotinaState extends State<HojeRotina> {
 
   ModoHoje get _modoAtual => widget.modo ?? _modo;
 
+  void _mostrarAvisoFocoExclusivoPc() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.desktop_windows_rounded, color: Colors.white, size: 18),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'O Foco Imersivo é exclusivo para PC para manter seu celular leve e economizar bateria.',
+              ),
+            ),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 4),
+      ),
+    );
+  }
+
   void _definirModo(ModoHoje m) {
+    if (m == ModoHoje.foco && ehAparelhoMovel) {
+      _mostrarAvisoFocoExclusivoPc();
+      return;
+    }
     if (widget.aoMudarModo != null) {
       widget.aoMudarModo!(m);
     } else {
@@ -269,6 +301,10 @@ class _HojeRotinaState extends State<HojeRotina> {
     required String detalhe,
     required int minutos,
   }) {
+    if (ehAparelhoMovel) {
+      _mostrarAvisoFocoExclusivoPc();
+      return;
+    }
     ControleFoco.instancia.prepararItem(
       titulo: titulo,
       detalhe: detalhe,
@@ -331,7 +367,7 @@ class _HojeRotinaState extends State<HojeRotina> {
           ),
     ];
 
-    final modoAtual = _modoAtual;
+    final modoAtual = ehAparelhoMovel ? ModoHoje.timeblocking : _modoAtual;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -718,16 +754,56 @@ class _Cabecalho extends StatelessWidget {
           selecionado: modo,
           rotulo: (m) => m.rotulo,
           icone: (m) => m.icone,
+          desabilitado: (m) => m == ModoHoje.foco && ehAparelhoMovel,
+          aoTocarDesabilitado: (m) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Row(
+                  children: [
+                    Icon(Icons.desktop_windows_rounded, color: Colors.white, size: 18),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'O Foco Imersivo é exclusivo para PC para manter seu celular leve e economizar bateria.',
+                      ),
+                    ),
+                  ],
+                ),
+                behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 4),
+              ),
+            );
+          },
           sufixo: (m) => m == ModoHoje.foco
               ? Tooltip(
-                  message: 'Esse recurso é melhor aproveitado no PC',
+                  message: ehAparelhoMovel
+                      ? 'Exclusivo no PC · Para não pesar no celular'
+                      : 'Esse recurso é melhor aproveitado no PC',
                   triggerMode: TooltipTriggerMode.tap,
                   waitDuration: const Duration(milliseconds: 200),
                   showDuration: const Duration(seconds: 4),
-                  child: Icon(
-                    Icons.desktop_windows_outlined,
-                    size: 14,
-                    color: modo == ModoHoje.foco ? c.accent : c.muted,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.desktop_windows_outlined,
+                        size: 14,
+                        color: ehAparelhoMovel
+                            ? c.muted.withValues(alpha: 0.40)
+                            : (modo == ModoHoje.foco ? c.accent : c.muted),
+                      ),
+                      if (ehAparelhoMovel) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          'Só PC',
+                          style: manrope(
+                            11,
+                            peso: FontWeight.w700,
+                            cor: c.muted.withValues(alpha: 0.55),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 )
               : null,

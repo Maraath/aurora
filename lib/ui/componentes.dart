@@ -573,6 +573,8 @@ class SubAbas<T> extends StatelessWidget {
     required this.aoEscolher,
     this.icone,
     this.sufixo,
+    this.desabilitado,
+    this.aoTocarDesabilitado,
   });
 
   final List<T> opcoes;
@@ -581,6 +583,8 @@ class SubAbas<T> extends StatelessWidget {
   final IconData Function(T)? icone;
   final Widget? Function(T)? sufixo;
   final ValueChanged<T> aoEscolher;
+  final bool Function(T)? desabilitado;
+  final ValueChanged<T>? aoTocarDesabilitado;
 
   @override
   Widget build(BuildContext context) {
@@ -603,10 +607,14 @@ class SubAbas<T> extends StatelessWidget {
   }
 
   Widget _pilula(AuroraCores c, T o, Duration duracao) {
-    final ativo = o == selecionado;
-    final cor = ativo ? c.accent : c.muted;
+    final bloqueado = desabilitado?.call(o) ?? false;
+    final ativo = !bloqueado && o == selecionado;
+    final cor = bloqueado
+        ? c.muted.withValues(alpha: 0.45)
+        : (ativo ? c.accent : c.muted);
     return Semantics(
       selected: ativo,
+      enabled: !bloqueado,
       button: true,
       child: AnimatedContainer(
         duration: duracao,
@@ -615,16 +623,20 @@ class SubAbas<T> extends StatelessWidget {
           color: ativo ? c.accentSoft : Colors.transparent,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: ativo ? c.accent.withValues(alpha: 0.45) : c.line,
+            color: bloqueado
+                ? c.line.withValues(alpha: 0.40)
+                : (ativo ? c.accent.withValues(alpha: 0.45) : c.line),
           ),
         ),
         child: Material(
           type: MaterialType.transparency,
           child: InkWell(
-            onTap: () => aoEscolher(o),
+            onTap: bloqueado
+                ? (aoTocarDesabilitado != null ? () => aoTocarDesabilitado!(o) : null)
+                : () => aoEscolher(o),
             customBorder: const StadiumBorder(),
-            hoverColor: c.teal.withValues(alpha: 0.10),
-            splashColor: c.violeta.withValues(alpha: 0.14),
+            hoverColor: bloqueado ? Colors.transparent : c.teal.withValues(alpha: 0.10),
+            splashColor: bloqueado ? Colors.transparent : c.violeta.withValues(alpha: 0.14),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               child: Row(
@@ -639,7 +651,9 @@ class SubAbas<T> extends StatelessWidget {
                     style: manrope(
                       13,
                       peso: ativo ? FontWeight.w700 : FontWeight.w600,
-                      cor: ativo ? c.text : c.muted,
+                      cor: bloqueado
+                          ? c.muted.withValues(alpha: 0.50)
+                          : (ativo ? c.text : c.muted),
                     ),
                   ),
                   if (sufixo?.call(o) != null) ...[

@@ -33,6 +33,7 @@ dependencies:
   timezone: ^0.11.2
   url_launcher: ^6.3.3
   uuid: ^4.6.0
+  webview_windows: ^0.4.0
 
 dev_dependencies:
   flutter_test:
@@ -40,7 +41,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.35.1
   build_runner: ^2.16.2
-  xml: ^7.1.0
+  xml: ^6.5.0
 
 flutter:
   uses-material-design: true
