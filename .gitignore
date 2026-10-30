@@ -60,3 +60,4 @@ supabase/.branches/
 # Anotações internas (infraestrutura, rodadas de teste): ficam só na máquina do dono
 /CLAUDE.md
 /docs/pendente-android.md
+/executar_aurora.bat

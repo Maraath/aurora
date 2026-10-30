@@ -794,6 +794,571 @@ class ObjetivosCompanion extends UpdateCompanion<Objetivo> {
   }
 }
 
+class $EtapasTable extends Etapas with TableInfo<$EtapasTable, Etapa> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EtapasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => _uuid.v4(),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _apagadoEmMeta = const VerificationMeta(
+    'apagadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> apagadoEm = GeneratedColumn<DateTime>(
+    'apagado_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _objetivoIdMeta = const VerificationMeta(
+    'objetivoId',
+  );
+  @override
+  late final GeneratedColumn<String> objetivoId = GeneratedColumn<String>(
+    'objetivo_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES objetivos (id)',
+    ),
+  );
+  static const VerificationMeta _tituloMeta = const VerificationMeta('titulo');
+  @override
+  late final GeneratedColumn<String> titulo = GeneratedColumn<String>(
+    'titulo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _concluidaMeta = const VerificationMeta(
+    'concluida',
+  );
+  @override
+  late final GeneratedColumn<bool> concluida = GeneratedColumn<bool>(
+    'concluida',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("concluida" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _ordemMeta = const VerificationMeta('ordem');
+  @override
+  late final GeneratedColumn<int> ordem = GeneratedColumn<int>(
+    'ordem',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _concluidaEmMeta = const VerificationMeta(
+    'concluidaEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> concluidaEm = GeneratedColumn<DateTime>(
+    'concluida_em',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    objetivoId,
+    titulo,
+    concluida,
+    ordem,
+    concluidaEm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'etapas';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Etapa> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('apagado_em')) {
+      context.handle(
+        _apagadoEmMeta,
+        apagadoEm.isAcceptableOrUnknown(data['apagado_em']!, _apagadoEmMeta),
+      );
+    }
+    if (data.containsKey('objetivo_id')) {
+      context.handle(
+        _objetivoIdMeta,
+        objetivoId.isAcceptableOrUnknown(data['objetivo_id']!, _objetivoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_objetivoIdMeta);
+    }
+    if (data.containsKey('titulo')) {
+      context.handle(
+        _tituloMeta,
+        titulo.isAcceptableOrUnknown(data['titulo']!, _tituloMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tituloMeta);
+    }
+    if (data.containsKey('concluida')) {
+      context.handle(
+        _concluidaMeta,
+        concluida.isAcceptableOrUnknown(data['concluida']!, _concluidaMeta),
+      );
+    }
+    if (data.containsKey('ordem')) {
+      context.handle(
+        _ordemMeta,
+        ordem.isAcceptableOrUnknown(data['ordem']!, _ordemMeta),
+      );
+    }
+    if (data.containsKey('concluida_em')) {
+      context.handle(
+        _concluidaEmMeta,
+        concluidaEm.isAcceptableOrUnknown(
+          data['concluida_em']!,
+          _concluidaEmMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Etapa map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Etapa(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      apagadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}apagado_em'],
+      ),
+      objetivoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}objetivo_id'],
+      )!,
+      titulo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}titulo'],
+      )!,
+      concluida: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}concluida'],
+      )!,
+      ordem: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ordem'],
+      )!,
+      concluidaEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}concluida_em'],
+      ),
+    );
+  }
+
+  @override
+  $EtapasTable createAlias(String alias) {
+    return $EtapasTable(attachedDatabase, alias);
+  }
+}
+
+class Etapa extends DataClass implements Insertable<Etapa> {
+  final String id;
+  final DateTime criadoEm;
+  final DateTime atualizadoEm;
+  final DateTime? apagadoEm;
+  final String objetivoId;
+  final String titulo;
+  final bool concluida;
+  final int ordem;
+  final DateTime? concluidaEm;
+  const Etapa({
+    required this.id,
+    required this.criadoEm,
+    required this.atualizadoEm,
+    this.apagadoEm,
+    required this.objetivoId,
+    required this.titulo,
+    required this.concluida,
+    required this.ordem,
+    this.concluidaEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    if (!nullToAbsent || apagadoEm != null) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm);
+    }
+    map['objetivo_id'] = Variable<String>(objetivoId);
+    map['titulo'] = Variable<String>(titulo);
+    map['concluida'] = Variable<bool>(concluida);
+    map['ordem'] = Variable<int>(ordem);
+    if (!nullToAbsent || concluidaEm != null) {
+      map['concluida_em'] = Variable<DateTime>(concluidaEm);
+    }
+    return map;
+  }
+
+  EtapasCompanion toCompanion(bool nullToAbsent) {
+    return EtapasCompanion(
+      id: Value(id),
+      criadoEm: Value(criadoEm),
+      atualizadoEm: Value(atualizadoEm),
+      apagadoEm: apagadoEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apagadoEm),
+      objetivoId: Value(objetivoId),
+      titulo: Value(titulo),
+      concluida: Value(concluida),
+      ordem: Value(ordem),
+      concluidaEm: concluidaEm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(concluidaEm),
+    );
+  }
+
+  factory Etapa.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Etapa(
+      id: serializer.fromJson<String>(json['id']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      apagadoEm: serializer.fromJson<DateTime?>(json['apagadoEm']),
+      objetivoId: serializer.fromJson<String>(json['objetivoId']),
+      titulo: serializer.fromJson<String>(json['titulo']),
+      concluida: serializer.fromJson<bool>(json['concluida']),
+      ordem: serializer.fromJson<int>(json['ordem']),
+      concluidaEm: serializer.fromJson<DateTime?>(json['concluidaEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'apagadoEm': serializer.toJson<DateTime?>(apagadoEm),
+      'objetivoId': serializer.toJson<String>(objetivoId),
+      'titulo': serializer.toJson<String>(titulo),
+      'concluida': serializer.toJson<bool>(concluida),
+      'ordem': serializer.toJson<int>(ordem),
+      'concluidaEm': serializer.toJson<DateTime?>(concluidaEm),
+    };
+  }
+
+  Etapa copyWith({
+    String? id,
+    DateTime? criadoEm,
+    DateTime? atualizadoEm,
+    Value<DateTime?> apagadoEm = const Value.absent(),
+    String? objetivoId,
+    String? titulo,
+    bool? concluida,
+    int? ordem,
+    Value<DateTime?> concluidaEm = const Value.absent(),
+  }) => Etapa(
+    id: id ?? this.id,
+    criadoEm: criadoEm ?? this.criadoEm,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    apagadoEm: apagadoEm.present ? apagadoEm.value : this.apagadoEm,
+    objetivoId: objetivoId ?? this.objetivoId,
+    titulo: titulo ?? this.titulo,
+    concluida: concluida ?? this.concluida,
+    ordem: ordem ?? this.ordem,
+    concluidaEm: concluidaEm.present ? concluidaEm.value : this.concluidaEm,
+  );
+  Etapa copyWithCompanion(EtapasCompanion data) {
+    return Etapa(
+      id: data.id.present ? data.id.value : this.id,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      apagadoEm: data.apagadoEm.present ? data.apagadoEm.value : this.apagadoEm,
+      objetivoId: data.objetivoId.present
+          ? data.objetivoId.value
+          : this.objetivoId,
+      titulo: data.titulo.present ? data.titulo.value : this.titulo,
+      concluida: data.concluida.present ? data.concluida.value : this.concluida,
+      ordem: data.ordem.present ? data.ordem.value : this.ordem,
+      concluidaEm: data.concluidaEm.present
+          ? data.concluidaEm.value
+          : this.concluidaEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Etapa(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('objetivoId: $objetivoId, ')
+          ..write('titulo: $titulo, ')
+          ..write('concluida: $concluida, ')
+          ..write('ordem: $ordem, ')
+          ..write('concluidaEm: $concluidaEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    criadoEm,
+    atualizadoEm,
+    apagadoEm,
+    objetivoId,
+    titulo,
+    concluida,
+    ordem,
+    concluidaEm,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Etapa &&
+          other.id == this.id &&
+          other.criadoEm == this.criadoEm &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.apagadoEm == this.apagadoEm &&
+          other.objetivoId == this.objetivoId &&
+          other.titulo == this.titulo &&
+          other.concluida == this.concluida &&
+          other.ordem == this.ordem &&
+          other.concluidaEm == this.concluidaEm);
+}
+
+class EtapasCompanion extends UpdateCompanion<Etapa> {
+  final Value<String> id;
+  final Value<DateTime> criadoEm;
+  final Value<DateTime> atualizadoEm;
+  final Value<DateTime?> apagadoEm;
+  final Value<String> objetivoId;
+  final Value<String> titulo;
+  final Value<bool> concluida;
+  final Value<int> ordem;
+  final Value<DateTime?> concluidaEm;
+  final Value<int> rowid;
+  const EtapasCompanion({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    this.objetivoId = const Value.absent(),
+    this.titulo = const Value.absent(),
+    this.concluida = const Value.absent(),
+    this.ordem = const Value.absent(),
+    this.concluidaEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EtapasCompanion.insert({
+    this.id = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.apagadoEm = const Value.absent(),
+    required String objetivoId,
+    required String titulo,
+    this.concluida = const Value.absent(),
+    this.ordem = const Value.absent(),
+    this.concluidaEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : objetivoId = Value(objetivoId),
+       titulo = Value(titulo);
+  static Insertable<Etapa> custom({
+    Expression<String>? id,
+    Expression<DateTime>? criadoEm,
+    Expression<DateTime>? atualizadoEm,
+    Expression<DateTime>? apagadoEm,
+    Expression<String>? objetivoId,
+    Expression<String>? titulo,
+    Expression<bool>? concluida,
+    Expression<int>? ordem,
+    Expression<DateTime>? concluidaEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (apagadoEm != null) 'apagado_em': apagadoEm,
+      if (objetivoId != null) 'objetivo_id': objetivoId,
+      if (titulo != null) 'titulo': titulo,
+      if (concluida != null) 'concluida': concluida,
+      if (ordem != null) 'ordem': ordem,
+      if (concluidaEm != null) 'concluida_em': concluidaEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EtapasCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? criadoEm,
+    Value<DateTime>? atualizadoEm,
+    Value<DateTime?>? apagadoEm,
+    Value<String>? objetivoId,
+    Value<String>? titulo,
+    Value<bool>? concluida,
+    Value<int>? ordem,
+    Value<DateTime?>? concluidaEm,
+    Value<int>? rowid,
+  }) {
+    return EtapasCompanion(
+      id: id ?? this.id,
+      criadoEm: criadoEm ?? this.criadoEm,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      apagadoEm: apagadoEm ?? this.apagadoEm,
+      objetivoId: objetivoId ?? this.objetivoId,
+      titulo: titulo ?? this.titulo,
+      concluida: concluida ?? this.concluida,
+      ordem: ordem ?? this.ordem,
+      concluidaEm: concluidaEm ?? this.concluidaEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (apagadoEm.present) {
+      map['apagado_em'] = Variable<DateTime>(apagadoEm.value);
+    }
+    if (objetivoId.present) {
+      map['objetivo_id'] = Variable<String>(objetivoId.value);
+    }
+    if (titulo.present) {
+      map['titulo'] = Variable<String>(titulo.value);
+    }
+    if (concluida.present) {
+      map['concluida'] = Variable<bool>(concluida.value);
+    }
+    if (ordem.present) {
+      map['ordem'] = Variable<int>(ordem.value);
+    }
+    if (concluidaEm.present) {
+      map['concluida_em'] = Variable<DateTime>(concluidaEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EtapasCompanion(')
+          ..write('id: $id, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('apagadoEm: $apagadoEm, ')
+          ..write('objetivoId: $objetivoId, ')
+          ..write('titulo: $titulo, ')
+          ..write('concluida: $concluida, ')
+          ..write('ordem: $ordem, ')
+          ..write('concluidaEm: $concluidaEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TarefasTable extends Tarefas with TableInfo<$TarefasTable, Tarefa> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -15672,6 +16237,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   _$BancoAurora(QueryExecutor e) : super(e);
   $BancoAuroraManager get managers => $BancoAuroraManager(this);
   late final $ObjetivosTable objetivos = $ObjetivosTable(this);
+  late final $EtapasTable etapas = $EtapasTable(this);
   late final $TarefasTable tarefas = $TarefasTable(this);
   late final $ConclusoesTarefaTable conclusoesTarefa = $ConclusoesTarefaTable(
     this,
@@ -15731,6 +16297,7 @@ abstract class _$BancoAurora extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     objetivos,
+    etapas,
     tarefas,
     conclusoesTarefa,
     habitos,
@@ -15802,6 +16369,25 @@ typedef $$ObjetivosTableUpdateCompanionBuilder = ObjetivosCompanion Function({
 final class $$ObjetivosTableReferences
     extends BaseReferences<_$BancoAurora, $ObjetivosTable, Objetivo> {
   $$ObjetivosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$EtapasTable, List<Etapa>> _etapasRefsTable(
+    _$BancoAurora db,
+  ) => MultiTypedResultKey.fromTable(
+    db.etapas,
+    aliasName: 'objetivos__id__etapas__objetivo_id',
+  );
+
+  $$EtapasTableProcessedTableManager get etapasRefs {
+    final manager = $$EtapasTableTableManager(
+      $_db,
+      $_db.etapas,
+    ).filter((f) => f.objetivoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_etapasRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$TarefasTable, List<Tarefa>> _tarefasRefsTable(
     _$BancoAurora db,
@@ -15920,6 +16506,31 @@ class $$ObjetivosTableFilterComposer
     column: $table.cor,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> etapasRefs(
+    Expression<bool> Function($$EtapasTableFilterComposer f) f,
+  ) {
+    final $$EtapasTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.etapas,
+      getReferencedColumn: (t) => t.objetivoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EtapasTableFilterComposer(
+            $db: $db,
+            $table: $db.etapas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> tarefasRefs(
     Expression<bool> Function($$TarefasTableFilterComposer f) f,
@@ -16109,6 +16720,31 @@ class $$ObjetivosTableAnnotationComposer
   GeneratedColumn<String> get cor =>
       $composableBuilder(column: $table.cor, builder: (column) => column);
 
+  Expression<T> etapasRefs<T extends Object>(
+    Expression<T> Function($$EtapasTableAnnotationComposer a) f,
+  ) {
+    final $$EtapasTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.etapas,
+      getReferencedColumn: (t) => t.objetivoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EtapasTableAnnotationComposer(
+            $db: $db,
+            $table: $db.etapas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> tarefasRefs<T extends Object>(
     Expression<T> Function($$TarefasTableAnnotationComposer a) f,
   ) {
@@ -16173,7 +16809,11 @@ class $$ObjetivosTableTableManager
           $$ObjetivosTableUpdateCompanionBuilder,
           (Objetivo, $$ObjetivosTableReferences),
           Objetivo,
-          PrefetchHooks Function({bool tarefasRefs, bool habitosRefs})
+          PrefetchHooks Function({
+            bool etapasRefs,
+            bool tarefasRefs,
+            bool habitosRefs,
+          })
         > {
   $$ObjetivosTableTableManager(_$BancoAurora db, $ObjetivosTable table)
     : super(
@@ -16262,50 +16902,85 @@ class $$ObjetivosTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({tarefasRefs = false, habitosRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (tarefasRefs) db.tarefas,
-                if (habitosRefs) db.habitos,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (tarefasRefs)
-                    await $_getPrefetchedData<
-                      Objetivo,
-                      $ObjetivosTable,
-                      Tarefa
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ObjetivosTableReferences
-                          ._tarefasRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$ObjetivosTableReferences(db, table, p0).tarefasRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.objetivoId == item.id),
-                      typedResults: items,
-                    ),
-                  if (habitosRefs)
-                    await $_getPrefetchedData<
-                      Objetivo,
-                      $ObjetivosTable,
-                      Habito
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ObjetivosTableReferences
-                          ._habitosRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$ObjetivosTableReferences(db, table, p0).habitosRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.objetivoId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({etapasRefs = false, tarefasRefs = false, habitosRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (etapasRefs) db.etapas,
+                    if (tarefasRefs) db.tarefas,
+                    if (habitosRefs) db.habitos,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (etapasRefs)
+                        await $_getPrefetchedData<
+                          Objetivo,
+                          $ObjetivosTable,
+                          Etapa
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ObjetivosTableReferences
+                              ._etapasRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ObjetivosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).etapasRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.objetivoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (tarefasRefs)
+                        await $_getPrefetchedData<
+                          Objetivo,
+                          $ObjetivosTable,
+                          Tarefa
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ObjetivosTableReferences
+                              ._tarefasRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ObjetivosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).tarefasRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.objetivoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (habitosRefs)
+                        await $_getPrefetchedData<
+                          Objetivo,
+                          $ObjetivosTable,
+                          Habito
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ObjetivosTableReferences
+                              ._habitosRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ObjetivosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).habitosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.objetivoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -16322,7 +16997,404 @@ typedef $$ObjetivosTableProcessedTableManager =
       $$ObjetivosTableUpdateCompanionBuilder,
       (Objetivo, $$ObjetivosTableReferences),
       Objetivo,
-      PrefetchHooks Function({bool tarefasRefs, bool habitosRefs})
+      PrefetchHooks Function({
+        bool etapasRefs,
+        bool tarefasRefs,
+        bool habitosRefs,
+      })
+    >;
+typedef $$EtapasTableCreateCompanionBuilder = EtapasCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  required String objetivoId,
+  required String titulo,
+  Value<bool> concluida,
+  Value<int> ordem,
+  Value<DateTime?> concluidaEm,
+  Value<int> rowid,
+});
+typedef $$EtapasTableUpdateCompanionBuilder = EtapasCompanion Function({
+  Value<String> id,
+  Value<DateTime> criadoEm,
+  Value<DateTime> atualizadoEm,
+  Value<DateTime?> apagadoEm,
+  Value<String> objetivoId,
+  Value<String> titulo,
+  Value<bool> concluida,
+  Value<int> ordem,
+  Value<DateTime?> concluidaEm,
+  Value<int> rowid,
+});
+
+final class $$EtapasTableReferences
+    extends BaseReferences<_$BancoAurora, $EtapasTable, Etapa> {
+  $$EtapasTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ObjetivosTable _objetivoIdTable(_$BancoAurora db) =>
+      db.objetivos.createAlias('etapas__objetivo_id__objetivos__id');
+
+  $$ObjetivosTableProcessedTableManager get objetivoId {
+    final $_column = $_itemColumn<String>('objetivo_id')!;
+
+    final manager = $$ObjetivosTableTableManager(
+      $_db,
+      $_db.objetivos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_objetivoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$EtapasTableFilterComposer
+    extends Composer<_$BancoAurora, $EtapasTable> {
+  $$EtapasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get titulo => $composableBuilder(
+    column: $table.titulo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get concluida => $composableBuilder(
+    column: $table.concluida,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get concluidaEm => $composableBuilder(
+    column: $table.concluidaEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ObjetivosTableFilterComposer get objetivoId {
+    final $$ObjetivosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.objetivoId,
+      referencedTable: $db.objetivos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ObjetivosTableFilterComposer(
+            $db: $db,
+            $table: $db.objetivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EtapasTableOrderingComposer
+    extends Composer<_$BancoAurora, $EtapasTable> {
+  $$EtapasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get apagadoEm => $composableBuilder(
+    column: $table.apagadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get titulo => $composableBuilder(
+    column: $table.titulo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get concluida => $composableBuilder(
+    column: $table.concluida,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get concluidaEm => $composableBuilder(
+    column: $table.concluidaEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ObjetivosTableOrderingComposer get objetivoId {
+    final $$ObjetivosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.objetivoId,
+      referencedTable: $db.objetivos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ObjetivosTableOrderingComposer(
+            $db: $db,
+            $table: $db.objetivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EtapasTableAnnotationComposer
+    extends Composer<_$BancoAurora, $EtapasTable> {
+  $$EtapasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get apagadoEm =>
+      $composableBuilder(column: $table.apagadoEm, builder: (column) => column);
+
+  GeneratedColumn<String> get titulo =>
+      $composableBuilder(column: $table.titulo, builder: (column) => column);
+
+  GeneratedColumn<bool> get concluida =>
+      $composableBuilder(column: $table.concluida, builder: (column) => column);
+
+  GeneratedColumn<int> get ordem =>
+      $composableBuilder(column: $table.ordem, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get concluidaEm => $composableBuilder(
+    column: $table.concluidaEm,
+    builder: (column) => column,
+  );
+
+  $$ObjetivosTableAnnotationComposer get objetivoId {
+    final $$ObjetivosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.objetivoId,
+      referencedTable: $db.objetivos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ObjetivosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.objetivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EtapasTableTableManager
+    extends
+        RootTableManager<
+          _$BancoAurora,
+          $EtapasTable,
+          Etapa,
+          $$EtapasTableFilterComposer,
+          $$EtapasTableOrderingComposer,
+          $$EtapasTableAnnotationComposer,
+          $$EtapasTableCreateCompanionBuilder,
+          $$EtapasTableUpdateCompanionBuilder,
+          (Etapa, $$EtapasTableReferences),
+          Etapa,
+          PrefetchHooks Function({bool objetivoId})
+        > {
+  $$EtapasTableTableManager(_$BancoAurora db, $EtapasTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EtapasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EtapasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EtapasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                Value<String> objetivoId = const Value.absent(),
+                Value<String> titulo = const Value.absent(),
+                Value<bool> concluida = const Value.absent(),
+                Value<int> ordem = const Value.absent(),
+                Value<DateTime?> concluidaEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EtapasCompanion(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                objetivoId: objetivoId,
+                titulo: titulo,
+                concluida: concluida,
+                ordem: ordem,
+                concluidaEm: concluidaEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<DateTime?> apagadoEm = const Value.absent(),
+                required String objetivoId,
+                required String titulo,
+                Value<bool> concluida = const Value.absent(),
+                Value<int> ordem = const Value.absent(),
+                Value<DateTime?> concluidaEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EtapasCompanion.insert(
+                id: id,
+                criadoEm: criadoEm,
+                atualizadoEm: atualizadoEm,
+                apagadoEm: apagadoEm,
+                objetivoId: objetivoId,
+                titulo: titulo,
+                concluida: concluida,
+                ordem: ordem,
+                concluidaEm: concluidaEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$EtapasTable, Etapa>(table),
+                  $$EtapasTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({objetivoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (objetivoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.objetivoId,
+                        referencedTable: $$EtapasTableReferences
+                            ._objetivoIdTable(db),
+                        referencedColumn: $$EtapasTableReferences
+                            ._objetivoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$EtapasTableProcessedTableManager =
+    ProcessedTableManager<
+      _$BancoAurora,
+      $EtapasTable,
+      Etapa,
+      $$EtapasTableFilterComposer,
+      $$EtapasTableOrderingComposer,
+      $$EtapasTableAnnotationComposer,
+      $$EtapasTableCreateCompanionBuilder,
+      $$EtapasTableUpdateCompanionBuilder,
+      (Etapa, $$EtapasTableReferences),
+      Etapa,
+      PrefetchHooks Function({bool objetivoId})
     >;
 typedef $$TarefasTableCreateCompanionBuilder = TarefasCompanion Function({
   Value<String> id,
@@ -26670,6 +27742,8 @@ class $BancoAuroraManager {
   $BancoAuroraManager(this._db);
   $$ObjetivosTableTableManager get objetivos =>
       $$ObjetivosTableTableManager(_db, _db.objetivos);
+  $$EtapasTableTableManager get etapas =>
+      $$EtapasTableTableManager(_db, _db.etapas);
   $$TarefasTableTableManager get tarefas =>
       $$TarefasTableTableManager(_db, _db.tarefas);
   $$ConclusoesTarefaTableTableManager get conclusoesTarefa =>

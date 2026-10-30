@@ -44,10 +44,9 @@ void main() {
     }
     // Rotina: as abas, o calendário em mês e semana e a análise dos dois tipos.
     await tocar(tester, find.bySemanticsLabel('Rotina'));
-    // Hoje: as quatro colunas lado a lado.
-    for (final coluna in ['Compromissos', 'Fazer', 'Hábitos', 'Lembretes']) {
-      expect(find.text(coluna), findsWidgets);
-    }
+    // Hoje: Timeblocking do dia lado a lado.
+    expect(find.text('CAPACIDADE DO SEU DIA'), findsOneWidget);
+    expect(find.text('Linha do Tempo de Hoje'), findsOneWidget);
     await tocar(tester, find.text('Calendário'));
     expect(find.text('Compromisso neste dia'), findsOneWidget);
     await tocar(tester, find.text('Semana'));
@@ -127,17 +126,31 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('celular: Rotina › Hoje vira lista com filtros', (tester) async {
+  testWidgets('celular: Rotina › Hoje alterna entre Timeblocking e Sala de Foco Imersivo', (tester) async {
     await abrirApp(tester, const Size(390, 844));
     await tocar(tester, find.bySemanticsLabel('Rotina'));
     await assentar(tester); // a Rotina lê quatro tabelas
-    // Os filtros ficam abaixo das abas ("Hábitos" também é uma aba).
-    for (final filtro in ['Compromissos', 'Fazer', 'Hábitos', 'Lembretes', 'Tudo']) {
-      await tester.ensureVisible(find.text(filtro).last);
-      await tocar(tester, find.text(filtro).last);
-    }
+    expect(find.text('CAPACIDADE DO SEU DIA'), findsOneWidget);
+    expect(find.text('Linha do Tempo de Hoje'), findsOneWidget);
+    await tocar(tester, find.text('Foco Imersivo'));
+    expect(find.text('Música e Ambiente de Foco'), findsOneWidget);
+    expect(find.text('Vincular Spotify'), findsOneWidget);
+    await tocar(tester, find.text('Timeblocking'));
     await tocar(tester, find.text('Calendário'));
     expect(find.text('Compromisso neste dia'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('Visão abre direto como Raio-X Estratégico com todas as seções integradas', (tester) async {
+    await abrirApp(tester, const Size(1280, 860));
+    await assentar(tester);
+    expect(find.text('SCORE DE RITMO'), findsOneWidget);
+    expect(find.text('Tempo em Hiper-Foco'), findsOneWidget);
+    expect(find.text('Heatmap de Hábitos · Últimos 14 dias'), findsOneWidget);
+    expect(find.text('Painel das áreas'), findsOneWidget);
+    expect(find.text('Vitórias da Semana'), findsOneWidget);
+    expect(find.text('Pontos de Atenção'), findsOneWidget);
+    expect(find.text('Reflexão Semanal com a Aurora'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
 

@@ -24,28 +24,30 @@ void main() {
     String status = 'ativa',
     required DateTime criada,
     DateTime? dataAlvo,
-  }) =>
-      Objetivo(
-        id: 'o',
-        criadoEm: criada,
-        atualizadoEm: criada,
-        nome: 'Objetivo',
-        valorInicial: inicial,
-        valorAtual: atual,
-        valorAlvo: alvo,
-        unidade: unidade,
-        dataAlvo: dataAlvo,
-        status: status,
-      );
+  }) => Objetivo(
+    id: 'o',
+    criadoEm: criada,
+    atualizadoEm: criada,
+    nome: 'Objetivo',
+    valorInicial: inicial,
+    valorAtual: atual,
+    valorAlvo: alvo,
+    unidade: unidade,
+    dataAlvo: dataAlvo,
+    status: status,
+  );
 
   EstadoObjetivo estado(Objetivo o, {DateTime? ultima}) {
-    final dias = o.dataAlvo == null ? null : diasEntre(dataLocal(o.criadoEm), dataLocal(o.dataAlvo!));
+    final dias = o.dataAlvo == null
+        ? null
+        : diasEntre(dataLocal(o.criadoEm), dataLocal(o.dataAlvo!));
     final t = dias == null || dias <= 0
         ? null
         : (diasEntre(dataLocal(o.criadoEm), hoje) / dias).clamp(0.0, 1.0);
     final c = o.valorAlvo == o.valorInicial
         ? 1.0
-        : ((o.valorAtual - o.valorInicial) / (o.valorAlvo - o.valorInicial)).clamp(0.0, 1.0);
+        : ((o.valorAtual - o.valorInicial) / (o.valorAlvo - o.valorInicial))
+              .clamp(0.0, 1.0);
     return estadoObjetivo(
       o,
       hoje: hoje,
@@ -58,17 +60,29 @@ void main() {
 
   group('estado', () {
     test('parada sem atividade há duas semanas', () {
-      final o = objetivo(criada: DateTime(2026, 9, 1), atual: 50, dataAlvo: DateTime(2026, 12, 31));
+      final o = objetivo(
+        criada: DateTime(2026, 9, 1),
+        atual: 50,
+        dataAlvo: DateTime(2026, 12, 31),
+      );
       expect(estado(o, ultima: DateTime(2026, 10, 1)), EstadoObjetivo.parada);
     });
 
     test('em risco quando o tempo passa mais rápido que o progresso', () {
-      final o = objetivo(criada: DateTime(2026, 8, 1), atual: 10, dataAlvo: DateTime(2026, 11, 30));
+      final o = objetivo(
+        criada: DateTime(2026, 8, 1),
+        atual: 10,
+        dataAlvo: DateTime(2026, 11, 30),
+      );
       expect(estado(o), EstadoObjetivo.emRisco);
     });
 
     test('em dia e concluída', () {
-      final o = objetivo(criada: DateTime(2026, 8, 1), atual: 70, dataAlvo: DateTime(2026, 11, 30));
+      final o = objetivo(
+        criada: DateTime(2026, 8, 1),
+        atual: 70,
+        dataAlvo: DateTime(2026, 11, 30),
+      );
       expect(estado(o), EstadoObjetivo.emDia);
       final feita = objetivo(criada: DateTime(2026, 8, 1), atual: 100);
       expect(estado(feita), EstadoObjetivo.concluida);
@@ -76,19 +90,39 @@ void main() {
 
     test('meta de redução (peso para baixo) também progride', () {
       final o = objetivo(
-          inicial: 90, atual: 85, alvo: 80, criada: DateTime(2026, 9, 1), dataAlvo: DateTime(2026, 12, 31));
+        inicial: 90,
+        atual: 85,
+        alvo: 80,
+        criada: DateTime(2026, 9, 1),
+        dataAlvo: DateTime(2026, 12, 31),
+      );
       expect(estado(o, ultima: hoje), EstadoObjetivo.emDia);
     });
 
     test('pausada e arquivada vêm do status', () {
-      expect(estado(objetivo(criada: hoje, status: 'pausada')), EstadoObjetivo.pausada);
-      expect(estado(objetivo(criada: hoje, status: 'arquivada')), EstadoObjetivo.arquivada);
+      expect(
+        estado(objetivo(criada: hoje, status: 'pausada')),
+        EstadoObjetivo.pausada,
+      );
+      expect(
+        estado(objetivo(criada: hoje, status: 'arquivada')),
+        EstadoObjetivo.arquivada,
+      );
     });
   });
 
   test('ritmo por semana, como no protótipo', () {
-    final t = ritmoMeta(atual: 74, alvo: 80, unidade: 'kg', dataAlvo: DateTime(2026, 12, 31), hoje: hoje);
-    expect(t, 'Para aumentar 6 kg até 31 de dezembro, são cerca de 0,6 kg por semana. Faltam 76 dias.');
+    final t = ritmoMeta(
+      atual: 74,
+      alvo: 80,
+      unidade: 'kg',
+      dataAlvo: DateTime(2026, 12, 31),
+      hoje: hoje,
+    );
+    expect(
+      t,
+      'Para aumentar 6 kg até 31 de dezembro, são cerca de 0,6 kg por semana. Faltam 76 dias.',
+    );
   });
 
   test('valores em R\$ guardam centavos e mostram reais', () {
@@ -114,11 +148,13 @@ void main() {
     /// atrás e termina em [terminaEm] dias (negativo = já passou).
     Future<String> plano({int comecouHa = 10, int terminaEm = 30}) {
       final hoje = hojeLocal();
-      return repo.salvar(ObjetivosCompanion.insert(
-        nome: 'Estágio',
-        inicio: Value(instanteLocal(somarDias(hoje, -comecouHa), 9)),
-        dataAlvo: Value(instanteLocal(somarDias(hoje, terminaEm), 9)),
-      ));
+      return repo.salvar(
+        ObjetivosCompanion.insert(
+          nome: 'Estágio',
+          inicio: Value(instanteLocal(somarDias(hoje, -comecouHa), 9)),
+          dataAlvo: Value(instanteLocal(somarDias(hoje, terminaEm), 9)),
+        ),
+      );
     }
 
     Future<ProgressoObjetivo> carregarPorNome(String nome) async =>
@@ -140,83 +176,94 @@ void main() {
 
     test('concluir tarefa ligada conta como atividade', () async {
       final quadro = await TarefasRepo(db).carregar();
-      final ligada = quadro.atuais.firstWhere((o) => o.tarefa.objetivoId != null);
-      await (db.update(db.objetivos)).write(ObjetivosCompanion(atualizadoEm: Value(DateTime(2026, 1, 1))));
+      final ligada = quadro.atuais.firstWhere(
+        (o) => o.tarefa.objetivoId != null,
+      );
+      await (db.update(db.objetivos))
+          .write(ObjetivosCompanion(atualizadoEm: Value(DateTime(2026, 1, 1))));
       await TarefasRepo(db).alternar(ligada, true);
       final p = (await repo.carregar()).single;
       expect(dataLocal(p.ultimaAtividade), hojeLocal());
       expect(p.tarefasAbertas, 0);
     });
 
-    test('excluir tira o objetivo da lista e mantém as tarefas sem vínculo', () async {
-      final id = (await repo.carregar()).single.objetivo.id;
-      await repo.excluir(id);
-      expect(await repo.carregar(), isEmpty);
-      final t = await (db.select(db.tarefas)..where((t) => t.titulo.equals('Tribulus + creatina'))).getSingle();
-      expect(t.objetivoId, isNull);
-      expect(t.apagadoEm, isNull);
-    });
+    test(
+      'excluir tira o objetivo da lista e mantém as tarefas sem vínculo',
+      () async {
+        final id = (await repo.carregar()).single.objetivo.id;
+        await repo.excluir(id);
+        expect(await repo.carregar(), isEmpty);
+        final t = await (db.select(
+          db.tarefas,
+        )..where((t) => t.titulo.equals('Tribulus + creatina'))).getSingle();
+        expect(t.objetivoId, isNull);
+        expect(t.apagadoEm, isNull);
+      },
+    );
 
     test('etapas contam no progresso e tudo feito conclui', () async {
       final id = await repo.salvar(ObjetivosCompanion.insert(nome: 'Estágio'));
-      await repo.novaEtapa(id, 'Pesquisar vagas', dia: hojeLocal().add(const Duration(days: 2)));
+      await repo.novaEtapa(id, 'Pesquisar vagas');
       await repo.novaEtapa(id, 'Entrevista');
 
-      var p = (await repo.carregar()).firstWhere((p) => p.objetivo.nome == 'Estágio');
+      // Etapas NÃO viram tarefas nem aparecem como tarefas
+      final tarefas = await (db.select(
+        db.tarefas,
+      )..where((t) => t.titulo.equals('Pesquisar vagas'))).get();
+      expect(tarefas, isEmpty, reason: 'etapa não deve ser criada como tarefa');
+
+      var p = (await repo.carregar()).firstWhere(
+        (p) => p.objetivo.nome == 'Estágio',
+      );
       expect(p.total, 2);
       expect(p.feitas, 0);
       expect(p.estado, EstadoObjetivo.emDia);
 
-      await TarefasRepo(db).alternar(p.etapas.first.ocorrencia, true);
-      p = (await repo.carregar()).firstWhere((p) => p.objetivo.nome == 'Estágio');
+      await repo.alternarEtapa(p.etapas.first, true);
+      p = (await repo.carregar()).firstWhere(
+        (p) => p.objetivo.nome == 'Estágio',
+      );
       expect(p.feitas, 1);
 
       final pendente = p.etapas.firstWhere((e) => !e.feita);
-      await TarefasRepo(db).alternar(pendente.ocorrencia, true);
-      p = (await repo.carregar()).firstWhere((p) => p.objetivo.nome == 'Estágio');
+      await repo.alternarEtapa(pendente, true);
+      p = (await repo.carregar()).firstWhere(
+        (p) => p.objetivo.nome == 'Estágio',
+      );
       expect(p.estado, EstadoObjetivo.concluida);
     });
 
-    // O que veio de Projetos: o objetivo como plano de etapas.
-    test('rotina ligada aparece nas etapas mas não conta no progresso', () async {
+    test('etapas do projeto ordenam e feitas vão para o fim', () async {
       final id = await plano();
-      await repo.novaEtapa(id, 'Pesquisar vagas', dia: somarDias(hojeLocal(), 2));
+      await repo.novaEtapa(id, 'Pesquisar vagas');
       await repo.novaEtapa(id, 'Entrevista');
-      await TarefasRepo(db).salvar(
-        TarefasCompanion.insert(
-          titulo: 'Estudar inglês',
-          prazo: Value(instanteLocal(hojeLocal())),
-          regraRepeticao: const Value('FREQ=DAILY'),
-          objetivoId: Value(id),
-        ),
-        avisar: false,
-      );
 
       var p = await carregarEstagio();
-      expect(p.etapas, hasLength(3));
-      expect(p.total, 2, reason: 'a rotina fica de fora da conta');
+      expect(p.etapas, hasLength(2));
+      expect(p.total, 2);
       expect(p.feitas, 0);
       expect(p.estado, EstadoObjetivo.emDia);
-      expect(detalheEtapa(p.etapas.firstWhere((e) => e.rotina), hojeLocal()), 'rotina · todo dia');
+      expect(detalheEtapa(p.etapas.first, hojeLocal()), 'etapa do projeto');
 
-      await TarefasRepo(db).alternar(
-          p.etapas.firstWhere((e) => e.tarefa.titulo == 'Pesquisar vagas').ocorrencia, true);
+      await repo.alternarEtapa(
+        p.etapas.firstWhere((e) => e.titulo == 'Pesquisar vagas'),
+        true,
+      );
       p = await carregarEstagio();
       expect(p.feitas, 1);
       expect(p.progresso, 0.5);
       // Feitas vão para o fim da lista.
-      expect(p.etapas.last.tarefa.titulo, 'Pesquisar vagas');
+      expect(p.etapas.last.titulo, 'Pesquisar vagas');
       expect(detalheEtapa(p.etapas.last, hojeLocal()), 'feita hoje');
     });
 
-    test('etapa atrasada deixa em risco; tudo feito conclui', () async {
+    test('concluir todas as etapas conclui o objetivo', () async {
       final id = await plano();
-      await repo.novaEtapa(id, 'Testes', dia: somarDias(hojeLocal(), -3));
+      await repo.novaEtapa(id, 'Testes');
       var p = await carregarEstagio();
-      expect(p.estado, EstadoObjetivo.emRisco);
-      expect(detalheEtapa(p.etapas.single, hojeLocal()), 'atrasada 3 dias');
+      expect(p.estado, EstadoObjetivo.emDia);
 
-      await TarefasRepo(db).alternar(p.etapas.single.ocorrencia, true);
+      await repo.alternarEtapa(p.etapas.single, true);
       p = await carregarEstagio();
       expect(p.estado, EstadoObjetivo.concluida);
       expect(p.textoPrazo, 'concluído');
@@ -242,7 +289,10 @@ void main() {
       await repo.mudarStatus(id, 'pausada');
       expect((await carregarPorNome('Pausado')).estado, EstadoObjetivo.pausada);
       await repo.mudarStatus(id, 'arquivada');
-      expect((await carregarPorNome('Pausado')).estado, EstadoObjetivo.arquivada);
+      expect(
+        (await carregarPorNome('Pausado')).estado,
+        EstadoObjetivo.arquivada,
+      );
       await repo.mudarStatus(id, 'ativa');
       expect((await carregarPorNome('Pausado')).estado, EstadoObjetivo.emDia);
     });

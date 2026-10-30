@@ -52,25 +52,30 @@ void main() {
 
   tearDown(() => db.close());
 
-  Future<void> abrir(WidgetTester tester, Future<void> Function(BuildContext) abrirForm) async {
+  Future<void> abrir(
+    WidgetTester tester,
+    Future<void> Function(BuildContext) abrirForm,
+  ) async {
     tester.view.physicalSize = const Size(1180, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(AuroraEscopo(
-      db: db,
-      escuro: ValueNotifier(true),
-      child: MaterialApp(
-        theme: temaAurora(Brightness.dark),
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => TextButton(
-              onPressed: () => abrirForm(context),
-              child: const Text('abrir'),
+    await tester.pumpWidget(
+      AuroraEscopo(
+        db: db,
+        escuro: ValueNotifier(true),
+        child: MaterialApp(
+          theme: temaAurora(Brightness.dark),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => abrirForm(context),
+                child: const Text('abrir'),
+              ),
             ),
           ),
         ),
       ),
-    ));
+    );
     await tester.tap(find.text('abrir'));
     await tester.pumpAndSettle();
   }
@@ -78,7 +83,11 @@ void main() {
   testWidgets('editar hábito', (tester) async {
     await tester.runAsync(() => semearExemplo(db));
     final q = (await tester.runAsync(() => HabitosRepo(db).carregar()))!;
-    await abrir(tester, (c) => abrirFormHabito(c, habito: q.habitos.first, objetivos: q.objetivos));
+    await abrir(
+      tester,
+      (c) =>
+          abrirFormHabito(c, habito: q.habitos.first, objetivos: q.objetivos),
+    );
     expect(tester.takeException(), isNull);
     expect(find.text('Editar hábito'), findsOneWidget);
     expect(find.text('Excluir'), findsOneWidget);
@@ -86,9 +95,12 @@ void main() {
 
   testWidgets('editar tarefa', (tester) async {
     await tester.runAsync(() => semearExemplo(db));
-    final tarefa = (await tester.runAsync(() => db.select(db.tarefas).get()))!.first;
+    final tarefa = (await tester.runAsync(() => db.select(db.tarefas).get()))!
+        .first;
     await abrir(tester, (c) => abrirFormTarefa(c, tarefa: tarefa));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.text('Editar tarefa'), findsOneWidget);
@@ -96,34 +108,53 @@ void main() {
 
   testWidgets('editar lembrete', (tester) async {
     await tester.runAsync(() => semearExemplo(db));
-    final l = (await tester.runAsync(() => db.select(db.lembretes).get()))!.first;
+    final l = (await tester.runAsync(() => db.select(db.lembretes).get()))!
+        .first;
     await abrir(tester, (c) => abrirFormLembrete(c, lembrete: l));
     expect(tester.takeException(), isNull);
     expect(find.text('Editar lembrete'), findsOneWidget);
   });
 
-  testWidgets('folha única: novo compromisso grava com aviso de 30 min', (tester) async {
-    await abrir(tester, (c) => abrirFormRotina(c, tipo: TipoRotina.compromisso));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+  testWidgets('folha única: novo compromisso grava com aviso de 30 min', (
+    tester,
+  ) async {
+    await abrir(
+      tester,
+      (c) => abrirFormRotina(c, tipo: TipoRotina.compromisso),
+    );
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Novo compromisso'), findsOneWidget);
     await tester.enterText(find.byType(TextField).first, 'Dentista');
     await tester.ensureVisible(find.text('Salvar compromisso'));
     await tester.tap(find.text('Salvar compromisso'));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    final c = (await tester.runAsync(() => db.select(db.compromissos).getSingle()))!;
+    final c = (await tester.runAsync(
+      () => db.select(db.compromissos).getSingle(),
+    ))!;
     expect(c.titulo, 'Dentista');
     expect(c.avisoAntesMin, 30);
     expect(c.fim!.difference(c.inicio), const Duration(hours: 1));
   });
 
-  testWidgets('folha única: converter tarefa em hábito apaga a tarefa', (tester) async {
+  testWidgets('folha única: converter tarefa em hábito apaga a tarefa', (
+    tester,
+  ) async {
     final tarefa = (await tester.runAsync(
-        () => db.into(db.tarefas).insertReturning(TarefasCompanion.insert(titulo: 'Ler 20 páginas'))))!;
+      () => db
+          .into(db.tarefas)
+          .insertReturning(TarefasCompanion.insert(titulo: 'Ler 20 páginas')),
+    ))!;
     await abrir(tester, (c) => abrirFormTarefa(c, tarefa: tarefa));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Editar tarefa'), findsOneWidget);
     await tester.tap(find.bySemanticsLabel('Tipo: Hábito'));
@@ -131,10 +162,14 @@ void main() {
     expect(find.text('Converter em hábito'), findsOneWidget);
     await tester.ensureVisible(find.text('Salvar hábito'));
     await tester.tap(find.text('Salvar hábito'));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    final habito = (await tester.runAsync(() => db.select(db.habitos).getSingle()))!;
+    final habito = (await tester.runAsync(
+      () => db.select(db.habitos).getSingle(),
+    ))!;
     expect(habito.nome, 'Ler 20 páginas');
     final t = (await tester.runAsync(() => db.select(db.tarefas).getSingle()))!;
     expect(t.apagadoEm, isNotNull);
@@ -142,12 +177,18 @@ void main() {
 
   testWidgets('"Me despertar" fica gravado no lembrete', (tester) async {
     final amanha = agoraLocal().add(const Duration(days: 1));
-    await tester.runAsync(() => LembretesRepo(db).salvar(LembretesCompanion(
+    await tester.runAsync(
+      () => LembretesRepo(db).salvar(
+        LembretesCompanion(
           texto: const Value('Acordar'),
           quando: Value(amanha),
           regraRepeticao: const Value('FREQ=DAILY'),
-        )));
-    final l = (await tester.runAsync(() => db.select(db.lembretes).getSingle()))!;
+        ),
+      ),
+    );
+    final l = (await tester.runAsync(
+      () => db.select(db.lembretes).getSingle(),
+    ))!;
     expect(l.despertar, isFalse);
     await abrir(tester, (c) => abrirFormLembrete(c, lembrete: l));
     await tester.ensureVisible(find.text('Me despertar'));
@@ -155,16 +196,22 @@ void main() {
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Salvar lembrete'));
     await tester.tap(find.text('Salvar lembrete'));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    final salvo = (await tester.runAsync(() => db.select(db.lembretes).getSingle()))!;
+    final salvo = (await tester.runAsync(
+      () => db.select(db.lembretes).getSingle(),
+    ))!;
     expect(salvo.despertar, isTrue);
   });
 
   testWidgets('novo lançamento e edição de recorrente', (tester) async {
     await tester.runAsync(() => semearExemplo(db));
-    final contas = (await tester.runAsync(() => db.select(db.contasFinanceiras).get()))!;
+    final contas = (await tester.runAsync(
+      () => db.select(db.contasFinanceiras).get(),
+    ))!;
     await abrir(tester, (c) => abrirFormLancamento(c, contas: contas));
     expect(tester.takeException(), isNull);
     expect(find.text('Salvar gasto'), findsOneWidget);
@@ -178,8 +225,12 @@ void main() {
 
   testWidgets('editar lançamento', (tester) async {
     await tester.runAsync(() => semearExemplo(db));
-    final t = (await tester.runAsync(() => db.select(db.transacoes).get()))!.first;
-    await abrir(tester, (c) => abrirFormLancamento(c, transacao: t, contas: const []));
+    final t = (await tester.runAsync(() => db.select(db.transacoes).get()))!
+        .first;
+    await abrir(
+      tester,
+      (c) => abrirFormLancamento(c, transacao: t, contas: const []),
+    );
     expect(tester.takeException(), isNull);
     expect(find.text('Editar lançamento'), findsOneWidget);
     expect(find.text('Excluir'), findsOneWidget);
@@ -187,7 +238,9 @@ void main() {
 
   testWidgets('editar conta e trocar para cartão', (tester) async {
     await tester.runAsync(() => semearExemplo(db));
-    final conta = (await tester.runAsync(() => db.select(db.contasFinanceiras).get()))!.first;
+    final conta = (await tester.runAsync(
+      () => db.select(db.contasFinanceiras).get(),
+    ))!.first;
     await abrir(tester, (c) => abrirFormConta(c, conta: conta));
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('Cartão'));
@@ -197,32 +250,47 @@ void main() {
 
   testWidgets('editar objetivo mostra o ritmo', (tester) async {
     await tester.runAsync(() => semearExemplo(db));
-    final objetivo = (await tester.runAsync(() => db.select(db.objetivos).get()))!.first;
+    final objetivo = (await tester.runAsync(
+      () => db.select(db.objetivos).get(),
+    ))!.first;
     await abrir(tester, (c) => abrirFormObjetivo(c, objetivo: objetivo));
     expect(tester.takeException(), isNull);
     expect(find.text('Editar objetivo'), findsOneWidget);
     expect(find.textContaining('Para aumentar 6 kg'), findsOneWidget);
   });
 
-  testWidgets('telas de Finanças e Objetivos montam no celular e no desktop', (tester) async {
+  testWidgets('telas de Finanças e Objetivos montam no celular e no desktop', (
+    tester,
+  ) async {
     await tester.runAsync(() => semearExemplo(db));
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
       tester.view.devicePixelRatio = 1;
       for (final pagina in [const FinancasPage(), const ObjetivosPage()]) {
-        await tester.pumpWidget(AuroraEscopo(
-          db: db,
-          escuro: ValueNotifier(true),
-          child: MaterialApp(
-            theme: temaAurora(Brightness.dark),
-            home: Scaffold(body: SingleChildScrollView(child: pagina)),
+        await tester.pumpWidget(
+          AuroraEscopo(
+            db: db,
+            escuro: ValueNotifier(true),
+            child: MaterialApp(
+              theme: temaAurora(Brightness.dark),
+              home: Scaffold(body: SingleChildScrollView(child: pagina)),
+            ),
           ),
-        ));
-        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+        );
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         if (pagina is FinancasPage) {
-          for (final aba in ['Extrato', 'Fixas', 'Parceladas', 'Contas', 'Análise', 'Resumo']) {
+          for (final aba in [
+            'Extrato',
+            'Fixas',
+            'Parceladas',
+            'Contas',
+            'Análise',
+            'Resumo',
+          ]) {
             // No celular a barra de abas rola de lado.
             await tester.ensureVisible(find.text(aba));
             await tester.tap(find.text(aba));
@@ -285,18 +353,30 @@ void main() {
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
       tester.view.devicePixelRatio = 1;
-      for (final pagina in const [HabitosRotina(), FichaPage(), MedidasPage()]) {
-        await tester.pumpWidget(AuroraEscopo(
-          db: db,
-          escuro: ValueNotifier(true),
-          child: MaterialApp(
-            theme: temaAurora(Brightness.dark),
-            home: Scaffold(body: SingleChildScrollView(child: pagina)),
+      for (final pagina in const [
+        HabitosRotina(),
+        FichaPage(),
+        MedidasPage(),
+      ]) {
+        await tester.pumpWidget(
+          AuroraEscopo(
+            db: db,
+            escuro: ValueNotifier(true),
+            child: MaterialApp(
+              theme: temaAurora(Brightness.dark),
+              home: Scaffold(body: SingleChildScrollView(child: pagina)),
+            ),
           ),
-        ));
-        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+        );
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 150)),
+        );
         await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull, reason: '${pagina.runtimeType} $tamanho');
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: '${pagina.runtimeType} $tamanho',
+        );
       }
       expect(find.text('74 kg'), findsWidgets);
     }
@@ -309,21 +389,27 @@ void main() {
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
       tester.view.devicePixelRatio = 1;
-      await tester.pumpWidget(AuroraEscopo(
-        db: db,
-        escuro: ValueNotifier(true),
-        child: MaterialApp(
-          theme: temaAurora(Brightness.dark),
-          home: const Scaffold(body: AssistentePage()),
+      await tester.pumpWidget(
+        AuroraEscopo(
+          db: db,
+          escuro: ValueNotifier(true),
+          child: MaterialApp(
+            theme: temaAurora(Brightness.dark),
+            home: const Scaffold(body: AssistentePage()),
+          ),
         ),
-      ));
+      );
       // A orbe da conversa vazia pulsa sem parar: nada de pumpAndSettle.
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
       await tester.pump(const Duration(milliseconds: 500));
       expect(tester.takeException(), isNull, reason: '$tamanho');
     }
     await tester.tap(find.text('Gastei 35 no mercado').first);
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 200)),
+    );
     // A resposta aparece aos poucos (efeito de digitação).
     for (var i = 0; i < 20; i++) {
       await tester.pump(const Duration(milliseconds: 100));
@@ -340,26 +426,34 @@ void main() {
       await semearExemplo(db);
       final hoje = hojeLocal();
       final repo = ObjetivosRepo(db);
-      final id = await repo.salvar(ObjetivosCompanion.insert(
-        nome: 'Estágio',
-        inicio: Value(instanteLocal(hoje.subtract(const Duration(days: 40)))),
-        dataAlvo: Value(instanteLocal(hoje.add(const Duration(days: 45)))),
-      ));
+      final id = await repo.salvar(
+        ObjetivosCompanion.insert(
+          nome: 'Estágio',
+          inicio: Value(instanteLocal(hoje.subtract(const Duration(days: 40)))),
+          dataAlvo: Value(instanteLocal(hoje.add(const Duration(days: 45)))),
+        ),
+      );
       await repo.novaEtapa(id, 'Pesquisar vagas');
-      await repo.novaEtapa(id, 'Entrevista', dia: hoje.subtract(const Duration(days: 2)));
+      await repo.novaEtapa(id, 'Entrevista');
     });
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
       tester.view.devicePixelRatio = 1;
-      await tester.pumpWidget(AuroraEscopo(
-        db: db,
-        escuro: ValueNotifier(true),
-        child: MaterialApp(
-          theme: temaAurora(Brightness.dark),
-          home: const Scaffold(body: SingleChildScrollView(child: ObjetivosPage())),
+      await tester.pumpWidget(
+        AuroraEscopo(
+          db: db,
+          escuro: ValueNotifier(true),
+          child: MaterialApp(
+            theme: temaAurora(Brightness.dark),
+            home: const Scaffold(
+              body: SingleChildScrollView(child: ObjetivosPage()),
+            ),
+          ),
         ),
-      ));
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+      );
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 150)),
+      );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: '$tamanho');
       expect(find.text('Estágio'), findsOneWidget);
@@ -378,25 +472,48 @@ void main() {
     await tester.runAsync(() async {
       await semearExemplo(db);
       final repo = AlimentacaoRepo(db);
-      await repo.salvarAlimento(AlimentosCompanion.insert(
-          nome: 'Ovo cozido', kcal: 146, porcaoNome: const Value('1 ovo'), porcaoGramas: const Value(50)));
-      await repo.salvarAlvo(TipoDia.treino, const Nutrientes(2600, 160, 300, 70));
-      await repo.salvarAlvo(TipoDia.descanso, const Nutrientes(2200, 150, 220, 70));
+      await repo.salvarAlimento(
+        AlimentosCompanion.insert(
+          nome: 'Ovo cozido',
+          kcal: 146,
+          porcaoNome: const Value('1 ovo'),
+          porcaoGramas: const Value(50),
+        ),
+      );
+      await repo.salvarAlvo(
+        TipoDia.treino,
+        const Nutrientes(2600, 160, 300, 70),
+      );
+      await repo.salvarAlvo(
+        TipoDia.descanso,
+        const Nutrientes(2200, 150, 220, 70),
+      );
       alimentos = await repo.listarAlimentos();
-      await repo.registrar(dia: hojeLocal(), refeicao: Refeicao.cafe, alimento: alimentos.single, gramas: 100);
+      await repo.registrar(
+        dia: hojeLocal(),
+        refeicao: Refeicao.cafe,
+        alimento: alimentos.single,
+        gramas: 100,
+      );
     });
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
       tester.view.devicePixelRatio = 1;
-      await tester.pumpWidget(AuroraEscopo(
-        db: db,
-        escuro: ValueNotifier(true),
-        child: MaterialApp(
-          theme: temaAurora(Brightness.dark),
-          home: const Scaffold(body: SingleChildScrollView(child: AlimentacaoPage())),
+      await tester.pumpWidget(
+        AuroraEscopo(
+          db: db,
+          escuro: ValueNotifier(true),
+          child: MaterialApp(
+            theme: temaAurora(Brightness.dark),
+            home: const Scaffold(
+              body: SingleChildScrollView(child: AlimentacaoPage()),
+            ),
+          ),
         ),
-      ));
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+      );
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 150)),
+      );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: '$tamanho');
       expect(find.text('Ovo cozido'), findsOneWidget);
@@ -404,7 +521,10 @@ void main() {
     tester.view.reset();
     await tester.pumpWidget(const SizedBox());
 
-    await abrir(tester, (c) => abrirFormRegistro(c, dia: hojeLocal(), alimentos: alimentos));
+    await abrir(
+      tester,
+      (c) => abrirFormRegistro(c, dia: hojeLocal(), alimentos: alimentos),
+    );
     await tester.tap(find.text('Ovo cozido'));
     await tester.pumpAndSettle();
     expect(find.textContaining('73 kcal'), findsOneWidget); // 1 ovo = 50 g
@@ -426,43 +546,62 @@ void main() {
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
       tester.view.devicePixelRatio = 1;
-      await tester.pumpWidget(AuroraEscopo(
-        db: db,
-        escuro: ValueNotifier(true),
-        child: MaterialApp(
-          theme: temaAurora(Brightness.dark),
-          home: const Scaffold(body: SingleChildScrollView(child: AutomacoesPage())),
+      await tester.pumpWidget(
+        AuroraEscopo(
+          db: db,
+          escuro: ValueNotifier(true),
+          child: MaterialApp(
+            theme: temaAurora(Brightness.dark),
+            home: const Scaffold(
+              body: SingleChildScrollView(child: AutomacoesPage()),
+            ),
+          ),
         ),
-      ));
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+      );
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 200)),
+      );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: '$tamanho');
       expect(find.text('Briefing do dia'), findsOneWidget);
       expect(find.text('Todo dia às 07:00'), findsOneWidget);
     }
     await tester.tap(find.text('Briefing do dia'));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Editar automação'), findsOneWidget);
-    expect(find.text('Excluir'), findsNothing); // modelos prontos não se excluem
+    expect(
+      find.text('Excluir'),
+      findsNothing,
+    ); // modelos prontos não se excluem
     expect(tester.takeException(), isNull);
     tester.view.reset();
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('biblioteca de exercícios: página, grupos e animação', (tester) async {
+  testWidgets('biblioteca de exercícios: página, grupos e animação', (
+    tester,
+  ) async {
     for (final tamanho in const [Size(390, 844), Size(1180, 800)]) {
       tester.view.physicalSize = tamanho;
       tester.view.devicePixelRatio = 1;
-      await tester.pumpWidget(AuroraEscopo(
-        db: db,
-        escuro: ValueNotifier(true),
-        child: MaterialApp(
-          theme: temaAurora(Brightness.dark),
-          home: const Scaffold(body: SingleChildScrollView(child: BibliotecaPage())),
+      await tester.pumpWidget(
+        AuroraEscopo(
+          db: db,
+          escuro: ValueNotifier(true),
+          child: MaterialApp(
+            theme: temaAurora(Brightness.dark),
+            home: const Scaffold(
+              body: SingleChildScrollView(child: BibliotecaPage()),
+            ),
+          ),
         ),
-      ));
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
+      );
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 300)),
+      );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: '$tamanho');
       expect(find.text('Todos'), findsOneWidget);

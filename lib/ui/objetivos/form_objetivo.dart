@@ -11,7 +11,10 @@ import '../formulario.dart';
 
 Future<void> abrirFormObjetivo(BuildContext context, {Objetivo? objetivo}) {
   final repo = ObjetivosRepo(AuroraEscopo.de(context).db);
-  return abrirFolha<void>(context, (_) => _FormObjetivo(repo: repo, objetivo: objetivo));
+  return abrirFolha<void>(
+    context,
+    (_) => _FormObjetivo(repo: repo, objetivo: objetivo),
+  );
 }
 
 class _FormObjetivo extends StatefulWidget {
@@ -50,17 +53,22 @@ class _FormObjetivoState extends State<_FormObjetivo> {
     final o = widget.objetivo;
     _nome = TextEditingController(text: o?.nome ?? '');
     _descricao = TextEditingController(text: o?.descricao ?? '');
-    _unidade = o == null ? unidadesMeta.first : (o.unidade.isEmpty ? unidadesMeta.first : o.unidade);
+    _unidade = o == null
+        ? unidadesMeta.first
+        : (o.unidade.isEmpty ? unidadesMeta.first : o.unidade);
     _outra = TextEditingController(text: _outraUnidade ? _unidade : '');
-    _medir = o == null
-        ? 'numero'
-        : (o.unidade.isEmpty ? 'etapas' : 'ambos');
-    _atual = TextEditingController(text: o == null ? '' : valorParaCampo(o.valorAtual, o.unidade));
-    _alvo = TextEditingController(text: o == null ? '' : valorParaCampo(o.valorAlvo, o.unidade));
+    _medir = o == null ? 'numero' : (o.unidade.isEmpty ? 'etapas' : 'ambos');
+    _atual = TextEditingController(
+      text: o == null ? '' : valorParaCampo(o.valorAtual, o.unidade),
+    );
+    _alvo = TextEditingController(
+      text: o == null ? '' : valorParaCampo(o.valorAlvo, o.unidade),
+    );
     _inicio = o?.inicio == null ? null : dataLocal(o!.inicio!);
     _data = o?.dataAlvo == null ? null : dataLocal(o!.dataAlvo!);
     _cor = o?.cor ?? coresObjetivo.first;
-    if (_novo) _etapas.addAll([TextEditingController(), TextEditingController()]);
+    if (_novo)
+      _etapas.addAll([TextEditingController(), TextEditingController()]);
   }
 
   @override
@@ -86,7 +94,13 @@ class _FormObjetivoState extends State<_FormObjetivo> {
       return 'Preencha os valores e a data para ver quanto você precisa avançar por semana.';
     }
     if (atual == alvo) return 'O alvo precisa ser diferente do valor de hoje.';
-    return ritmoMeta(atual: atual, alvo: alvo, unidade: _unidadeFinal, dataAlvo: data, hoje: _hoje) ??
+    return ritmoMeta(
+          atual: atual,
+          alvo: alvo,
+          unidade: _unidadeFinal,
+          dataAlvo: data,
+          hoje: _hoje,
+        ) ??
         'Escolha uma data depois de hoje.';
   }
 
@@ -127,7 +141,9 @@ class _FormObjetivoState extends State<_FormObjetivo> {
     final vAlvo = _temNumero ? (alvo ?? 0.0) : 0.0;
     final dados = ObjetivosCompanion.insert(
       nome: nome,
-      descricao: Value(_descricao.text.trim().isEmpty ? null : _descricao.text.trim()),
+      descricao: Value(
+        _descricao.text.trim().isEmpty ? null : _descricao.text.trim(),
+      ),
       unidade: Value(unidade),
       valorInicial: Value(vInicial),
       valorAtual: Value(vAtual),
@@ -151,7 +167,9 @@ class _FormObjetivoState extends State<_FormObjetivo> {
       await widget.repo.salvar(
         ObjetivosCompanion(
           nome: Value(nome),
-          descricao: Value(_descricao.text.trim().isEmpty ? null : _descricao.text.trim()),
+          descricao: Value(
+            _descricao.text.trim().isEmpty ? null : _descricao.text.trim(),
+          ),
           unidade: Value(unidade),
           valorInicial: Value(_temNumero ? inicial : 0.0),
           valorAtual: Value(_temNumero ? (atual ?? 0.0) : 0.0),
@@ -159,7 +177,11 @@ class _FormObjetivoState extends State<_FormObjetivo> {
           dataAlvo: Value(_data == null ? null : instanteLocal(_data!)),
           inicio: Value(_inicio == null ? null : instanteLocal(_inicio!)),
           cor: Value(_cor),
-          status: Value(o.status == 'concluida' && _temNumero && atual != alvo ? 'ativa' : o.status),
+          status: Value(
+            o.status == 'concluida' && _temNumero && atual != alvo
+                ? 'ativa'
+                : o.status,
+          ),
         ),
         id: o.id,
       );
@@ -174,10 +196,15 @@ class _FormObjetivoState extends State<_FormObjetivo> {
       builder: (ctx) => AlertDialog(
         backgroundColor: c.surface,
         title: Text('Excluir objetivo?', style: sora(18)),
-        content: Text('“${widget.objetivo!.nome}” sai da lista. Tarefas e hábitos ligados continuam.',
-            style: manrope(14, cor: c.text, altura: 1.4)),
+        content: Text(
+          '“${widget.objetivo!.nome}” sai da lista. Tarefas e hábitos ligados continuam.',
+          style: manrope(14, cor: c.text, altura: 1.4),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text('Excluir', style: TextStyle(color: c.bad)),
@@ -193,7 +220,8 @@ class _FormObjetivoState extends State<_FormObjetivo> {
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    Widget numeroCampo(String rotulo, TextEditingController controle) => Expanded(
+    Widget numeroCampo(String rotulo, TextEditingController controle) =>
+        Expanded(
           child: Campo(
             rotulo: rotulo,
             child: CampoTexto(
@@ -293,21 +321,28 @@ class _FormObjetivoState extends State<_FormObjetivo> {
         ],
         if (_temEtapas && _novo)
           Campo(
-            rotulo: 'Primeiras etapas (viram tarefas)',
+            rotulo: 'Primeiras etapas do projeto',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 for (var i = 0; i < _etapas.length; i++)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: CampoTexto(controle: _etapas[i], dica: i == 0 ? 'Ex.: Pesquisar vagas' : 'Outra etapa'),
+                    child: CampoTexto(
+                      controle: _etapas[i],
+                      dica: i == 0 ? 'Ex.: Pesquisar vagas' : 'Outra etapa',
+                    ),
                   ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
-                    onPressed: () => setState(() => _etapas.add(TextEditingController())),
+                    onPressed: () =>
+                        setState(() => _etapas.add(TextEditingController())),
                     icon: Icon(Icons.add_rounded, size: 18, color: c.accent),
-                    label: Text('Etapa', style: manrope(13, peso: FontWeight.w700, cor: c.accent)),
+                    label: Text(
+                      'Etapa',
+                      style: manrope(13, peso: FontWeight.w700, cor: c.accent),
+                    ),
                   ),
                 ),
               ],
@@ -320,7 +355,12 @@ class _FormObjetivoState extends State<_FormObjetivo> {
               child: Campo(
                 rotulo: 'Começa',
                 child: OpcaoChip(
-                  texto: _inicio == null ? 'Hoje' : diaMesCurto(_inicio!) + (_inicio!.year != _hoje.year ? ' ${_inicio!.year}' : ''),
+                  texto: _inicio == null
+                      ? 'Hoje'
+                      : diaMesCurto(_inicio!) +
+                            (_inicio!.year != _hoje.year
+                                ? ' ${_inicio!.year}'
+                                : ''),
                   selecionado: _inicio != null,
                   aoTocar: () async {
                     final d = await _escolherData(_inicio ?? _hoje);
@@ -334,10 +374,17 @@ class _FormObjetivoState extends State<_FormObjetivo> {
               child: Campo(
                 rotulo: 'Até quando',
                 child: OpcaoChip(
-                  texto: _data == null ? 'Sem prazo' : diaMesCurto(_data!) + (_data!.year != _hoje.year ? ' ${_data!.year}' : ''),
+                  texto: _data == null
+                      ? 'Sem prazo'
+                      : diaMesCurto(_data!) +
+                            (_data!.year != _hoje.year
+                                ? ' ${_data!.year}'
+                                : ''),
                   selecionado: _data != null,
                   aoTocar: () async {
-                    final d = await _escolherData(_data ?? DateTime(_hoje.year, 12, 31));
+                    final d = await _escolherData(
+                      _data ?? DateTime(_hoje.year, 12, 31),
+                    );
                     if (d != null) setState(() => _data = d);
                   },
                 ),
@@ -348,7 +395,10 @@ class _FormObjetivoState extends State<_FormObjetivo> {
         if (_temNumero)
           Container(
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: c.accentSoft, borderRadius: BorderRadius.circular(14)),
+            decoration: BoxDecoration(
+              color: c.accentSoft,
+              borderRadius: BorderRadius.circular(14),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -379,7 +429,10 @@ class _FormObjetivoState extends State<_FormObjetivo> {
                           _ => c.accent,
                         },
                         shape: BoxShape.circle,
-                        border: Border.all(color: _cor == cor ? c.text : Colors.transparent, width: 2),
+                        border: Border.all(
+                          color: _cor == cor ? c.text : Colors.transparent,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
@@ -387,7 +440,11 @@ class _FormObjetivoState extends State<_FormObjetivo> {
             ],
           ),
         ),
-        if (_erro != null) Text(_erro!, style: manrope(13, peso: FontWeight.w600, cor: c.bad)),
+        if (_erro != null)
+          Text(
+            _erro!,
+            style: manrope(13, peso: FontWeight.w600, cor: c.bad),
+          ),
       ],
     );
   }

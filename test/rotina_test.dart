@@ -8,6 +8,7 @@ import 'package:aurora/data/compromissos_repo.dart';
 import 'package:aurora/data/conversao_tarefas.dart';
 import 'package:aurora/data/ia/ferramentas_ia.dart';
 import 'package:aurora/data/rotina_repo.dart';
+import 'package:aurora/ui/visao/foco.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -222,6 +223,51 @@ void main() {
       // "Desfazer" traz de volta como era antes da exclusão.
       await restaurar(db, excluir.aviso!.itemId!);
       expect((await CompromissosRepo(db).carregar()).todos.single.id, c.id);
+    });
+  });
+
+  group('foco imersivo', () {
+    test('personaliza os minutos de pomodoro, imersão e pausa e vincula o Spotify', () async {
+      final foco = ControleFoco.instancia;
+      await foco.carregarPreferencias(db);
+
+      await foco.salvarTodosTempos(pomodoro: 35, imersao: 75, pausa: 10, db: db);
+      expect(foco.minutosDe(ModoFoco.pomodoro), 35);
+      expect(foco.minutosDe(ModoFoco.imersao), 75);
+      expect(foco.minutosDe(ModoFoco.pausa), 10);
+
+      foco.selecionarModo(ModoFoco.imersao);
+      expect(foco.mostrador, '75:00');
+
+      await foco.definirMinutosModo(ModoFoco.imersao, 80, db: db);
+      expect(foco.minutosDe(ModoFoco.imersao), 80);
+      expect(foco.mostrador, '80:00');
+
+      // Links de playlists do YouTube nos segmentos
+      expect(foco.urlYoutubeDe(SegmentoAudioFoco.lofi), contains('youtube.com'));
+      await foco.definirUrlYoutube(
+        SegmentoAudioFoco.lofi,
+        'https://www.youtube.com/playlist?list=PL123',
+        db: db,
+      );
+      expect(foco.urlYoutubeDe(SegmentoAudioFoco.lofi), 'https://www.youtube.com/playlist?list=PL123');
+
+      // Vínculo com o Spotify
+      await foco.vincularSpotify(
+        nome: 'Minha Playlist Foco',
+        url: 'https://open.spotify.com/playlist/abc',
+        db: db,
+      );
+      expect(foco.spotifyVinculado, isTrue);
+      expect(foco.spotifyNome, 'Minha Playlist Foco');
+      expect(foco.spotifyUrl, 'https://open.spotify.com/playlist/abc');
+
+      await foco.desvincularSpotify(db: db);
+      expect(foco.spotifyVinculado, isFalse);
+
+      // Volta aos valores padrão para não interferir em outros testes
+      await foco.salvarTodosTempos(pomodoro: 25, imersao: 50, pausa: 5, db: db);
+      foco.selecionarModo(ModoFoco.pomodoro);
     });
   });
 }

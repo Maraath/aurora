@@ -42,6 +42,7 @@ void main() {
     expect(r.tarefasAtrasadas, agoraLocal().hour >= 21 ? 4 : 3);
     expect(r.aPagarCentavos, 22280);
     expect(r.contasAPagar, 3);
+    expect(r.saldoCentavos, 70318);
     expect(r.objetivo?.nome, 'Shape 80kg');
   });
 

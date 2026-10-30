@@ -1,25 +1,22 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../app.dart';
 import '../../core/formato.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
-import '../../data/banco.dart';
 import '../../data/objetivos_repo.dart';
 import '../../data/visao_repo.dart';
 import '../componentes.dart';
 import '../icone_ia.dart';
+import '../rotina/form_rotina.dart';
+import '../rotina/hoje_rotina.dart' show BotaoNovoRotina;
 import '../shell.dart';
-import '../vidro.dart';
-import 'foco.dart';
 
-/// Visão em blocos (direção "Bento Noturno", 27/10/2026): em foco grande à
-/// esquerda, "a seguir" e os números do dia à direita; embaixo, a linha do dia
-/// e, ao lado, semana e painel das áreas. Em telas médias os blocos viram
-/// pares; no celular, uma coluna só.
+/// Visão principal do Aurora: Raio-X Estratégico & Momentum Semanal,
+/// integrando Score de Ritmo, Hiper-Foco, Heatmap de Hábitos, Áreas da Vida,
+/// Vitórias da Semana, Pontos de Atenção e Reflexão com a IA.
 class VisaoPage extends StatefulWidget {
   const VisaoPage({
     super.key,
@@ -92,176 +89,29 @@ class _Conteudo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final agora = agoraLocal();
-    final feitos = resumo.linha.where((i) => i.feito).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _Cabecalho(resumo: resumo, agora: agora, aoBuscar: aoBuscar, ir: ir),
+        _Cabecalho(
+          resumo: resumo,
+          agora: agora,
+          aoBuscar: aoBuscar,
+          ir: ir,
+        ),
         const SizedBox(height: Espaco.md),
-        LayoutBuilder(
-          builder: (context, box) {
-            final largura = box.maxWidth;
-            final foco = _CartaoFoco(
-              itens: _itensFoco(resumo),
-              feitos: feitos,
-              total: resumo.linha.length,
-              estreito: largura < 520,
-            );
-            final seguir = _CartaoASeguir(
-              item: _proximo(resumo.linha, agora),
-              agora: agora,
-            );
-            final numeros = _CartaoNumeros(
-              feitosTarefas: resumo.linha
-                  .where((i) => i.tipo == TipoItemLinha.tarefa && i.feito)
-                  .length,
-              totalTarefas: resumo.linha
-                  .where((i) => i.tipo == TipoItemLinha.tarefa)
-                  .length,
-              feitosHabitos: resumo.habitosFeitos,
-              totalHabitos: resumo.habitos.length,
-              objetivo: resumo.objetivo,
-              aPagarCentavos: resumo.aPagarCentavos,
-              contasAPagar: resumo.contasAPagar,
-              ir: ir,
-            );
-            final dia = _CartaoLinhaDoDia(
-              itens: resumo.linha,
-              repo: repo,
-              irRotina: irRotina,
-              maximo: largura >= 940 ? 5 : 4,
-            );
-            final semana = _CartaoSemana(
-              dias: resumo.semana,
-              insight: resumo.insights.isEmpty ? null : resumo.insights.first,
-              irRotina: irRotina,
-            );
-            final painel = _CartaoAreas(
-              resumo: resumo,
-              ir: ir,
-              irRotina: irRotina,
-              emLinha: largura >= 940,
-            );
-
-            if (largura >= 940) {
-              return Column(
-                children: [
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(flex: 7, child: foco),
-                        const SizedBox(width: Espaco.md - 2),
-                        Expanded(
-                          flex: 5,
-                          child: Column(
-                            children: [
-                              Expanded(child: seguir),
-                              const SizedBox(height: Espaco.md - 2),
-                              Expanded(child: numeros),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: Espaco.md - 2),
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(flex: 7, child: dia),
-                        const SizedBox(width: Espaco.md - 2),
-                        Expanded(flex: 5, child: semana),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: Espaco.md - 2),
-                  painel,
-                ],
-              );
-            }
-            if (largura >= 640) {
-              return Column(
-                children: [
-                  foco,
-                  const SizedBox(height: Espaco.md - 2),
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(child: seguir),
-                        const SizedBox(width: Espaco.md - 2),
-                        Expanded(child: numeros),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: Espaco.md - 2),
-                  dia,
-                  const SizedBox(height: Espaco.md - 2),
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(child: semana),
-                        const SizedBox(width: Espaco.md - 2),
-                        Expanded(child: painel),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            }
-            return Column(
-              children: [
-                foco,
-                const SizedBox(height: Espaco.sm + 4),
-                seguir,
-                const SizedBox(height: Espaco.sm + 4),
-                numeros,
-                const SizedBox(height: Espaco.sm + 4),
-                dia,
-                const SizedBox(height: Espaco.sm + 4),
-                semana,
-                const SizedBox(height: Espaco.sm + 4),
-                painel,
-              ],
-            );
-          },
+        _PainelRaioX(
+          resumo: resumo,
+          ir: ir,
+          irRotina: irRotina,
         ),
       ],
     );
   }
-
-  List<ItemFoco> _itensFoco(ResumoVisao r) {
-    final agora = agoraLocal();
-    return [
-      for (final o in r.compromissosHoje)
-        if (!o.terminou(agora))
-          ItemFoco(
-            o.compromisso.titulo,
-            o.emAndamento(agora)
-                ? 'Agora · Compromisso'
-                : (o.diaInteiro
-                      ? 'Hoje · Compromisso'
-                      : 'Hoje às ${hora(emLocal(o.inicio))} · Compromisso'),
-          ),
-      for (final h in r.habitos)
-        if (!h.feito) ItemFoco(h.habito.nome, 'Para hoje · Hábitos'),
-      for (final o in r.tarefasHoje)
-        ItemFoco(
-          o.tarefa.titulo,
-          o.momento != null && o.horario != null
-              ? 'Hoje às ${hora(emLocal(o.momento!))} · Tarefas'
-              : 'Para hoje · Tarefas',
-        ),
-    ];
-  }
 }
 
-/// Cabeçalho: data em caixa alta, saudação grande com o nome na cor da marca e,
-/// no computador, o campo de busca sempre à vista.
+/// Cabeçalho: data em caixa alta, saudação grande com o nome na cor da marca,
+/// botão de busca, assistente e botão "+ Novo" direto no cockpit.
 class _Cabecalho extends StatelessWidget {
   const _Cabecalho({
     required this.resumo,
@@ -319,15 +169,23 @@ class _Cabecalho extends StatelessWidget {
             ],
           ),
         ),
-        if (desktop && aoBuscar != null) ...[
-          const SizedBox(width: Espaco.md),
-          _CampoBusca(aoTocar: aoBuscar!),
+        if (desktop) ...[
+          if (aoBuscar != null) ...[
+            const SizedBox(width: Espaco.md),
+            _CampoBusca(aoTocar: aoBuscar!),
+          ],
           const SizedBox(width: Espaco.sm + 2),
           BotaoRedondo(
             icone: iconeIa,
             dica: 'Abrir a Aurora (assistente)',
             aoTocar: () => ir(Secao.assistente),
           ),
+          const SizedBox(width: Espaco.sm + 2),
+          BotaoNovoRotina(aoTocar: () => abrirFormRotina(context)),
+        ],
+        if (!desktop) ...[
+          const SizedBox(width: Espaco.sm),
+          BotaoNovoRotina(aoTocar: () => abrirFormRotina(context)),
         ],
       ],
     );
@@ -399,886 +257,795 @@ class _CampoBusca extends StatelessWidget {
 
 /// Cartão comum dos blocos da grade.
 class _Bloco extends StatelessWidget {
-  const _Bloco({required this.child, this.aoTocar});
+  const _Bloco({required this.child});
 
   final Widget child;
-  final VoidCallback? aoTocar;
 
   @override
   Widget build(BuildContext context) => Cartao(
     padding: const EdgeInsets.all(16),
-    aoTocar: aoTocar,
     raio: 22,
     child: child,
   );
 }
 
-/// Cartão do "em foco": fundo com lavagem de aurora e fio de luz no topo.
-class _CartaoDestaque extends StatelessWidget {
-  const _CartaoDestaque({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    final raio = BorderRadius.circular(24);
-    return Vidro(
-      raio: raio,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    stops: const [0, 0.55, 1],
-                    colors: [
-                      c.gradIni.withValues(alpha: 0.11),
-                      c.gradFim.withValues(alpha: 0.10),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 1.6,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    c.gradIni,
-                    c.teal,
-                    c.violeta,
-                    c.violeta.withValues(alpha: 0),
-                  ],
-                  stops: const [0, 0.32, 0.66, 1],
-                ),
-              ),
-            ),
-          ),
-          Padding(padding: const EdgeInsets.all(20), child: child),
-        ],
-      ),
-    );
-  }
-}
-
-/// "Em foco agora": um item por vez, fila do que vem depois e o anel do dia.
-class _CartaoFoco extends StatelessWidget {
-  const _CartaoFoco({
-    required this.itens,
-    required this.feitos,
-    required this.total,
-    required this.estreito,
+/// Painel do Raio-X Semanal: Score de Ritmo, Horas de Foco, Heatmap de Hábitos,
+/// Vitórias da Semana, Pontos de Atenção e Fechamento com IA.
+class _PainelRaioX extends StatelessWidget {
+  const _PainelRaioX({
+    required this.resumo,
+    required this.ir,
+    required this.irRotina,
   });
 
-  final List<ItemFoco> itens;
-  final int feitos;
-  final int total;
-
-  /// Tela estreita (celular): o anel sobe para a linha do rótulo.
-  final bool estreito;
+  final ResumoVisao resumo;
+  final ValueChanged<Secao> ir;
+  final ValueChanged<AbaRotina> irRotina;
 
   @override
   Widget build(BuildContext context) {
-    final c = context.cores;
-    return ListenableBuilder(
-      listenable: ControleFoco.instancia,
-      builder: (context, _) {
-        final foco = ControleFoco.instancia;
-        final n = itens.length;
-        final indice = n == 0 ? 0 : foco.indice % n;
-        final item = n == 0
-            ? const ItemFoco('Tudo em dia', 'Nada pendente para hoje.')
-            : itens[indice];
-        final depois = n > 1 ? itens[(indice + 1) % n] : null;
-        final ainda = n > 2 ? itens[(indice + 2) % n] : null;
-        // Sem LayoutBuilder aqui: o cartão vive dentro de um IntrinsicHeight
-        // (a grade) e ele não sabe medir tamanho intrínseco.
-        final anel = _Anel(
-          fracao: total == 0 ? 0 : feitos / total,
-          tamanho: estreito ? 62 : 76,
-          espessura: 6,
-          gradiente: true,
-          centro: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '$feitos/$total',
-                style: sora(estreito ? 13.5 : 16, espaco: -.3),
-              ),
-              Text(
-                'feitos',
-                style: manrope(
-                  8.5,
-                  peso: FontWeight.w800,
-                  cor: c.muted,
-                  espaco: 1,
-                ),
-              ),
-            ],
-          ),
-        );
-        final rotulo = _RotuloPonto('Em foco agora', cor: c.accent);
-        final corpo = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!estreito) ...[rotulo, const SizedBox(height: Espaco.sm + 2)],
-            Text(
-              item.titulo,
-              style: sora(estreito ? 23 : 26, altura: 1.15, espaco: -.5),
-            ),
-            const SizedBox(height: 6),
-            Text(item.detalhe, style: manrope(13.5, cor: c.muted)),
-            const SizedBox(height: Espaco.md + 2),
-            Wrap(
-              spacing: Espaco.sm + 2,
-              runSpacing: Espaco.sm + 2,
-              children: [
-                BotaoPilula(texto: foco.rotulo, aoTocar: foco.alternar),
-                if (n > 1)
-                  BotaoPilula(
-                    texto: 'Focar em outra',
-                    principal: false,
-                    aoTocar: foco.proximo,
-                  ),
-              ],
-            ),
-          ],
-        );
-        final rodape = Column(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final largura = constraints.maxWidth;
+        final telaLarga = largura >= 940;
+
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: Espaco.lg),
-            _BarraDegrade(fracao: n == 0 ? 1 : (indice + 1) / n),
-            const SizedBox(height: Espaco.sm),
-            Text(
-              '${n == 0 ? 0 : indice + 1} de $n do foco',
-              style: manrope(11.5, peso: FontWeight.w700, cor: c.muted),
-            ),
-            if (depois != null) ...[
-              const SizedBox(height: Espaco.md),
-              Divider(height: 1, color: c.line.withValues(alpha: 0.55)),
-              const SizedBox(height: Espaco.md - 2),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: _MiniFoco(rotulo: 'Depois do foco', item: depois),
-                  ),
-                  if (ainda != null) ...[
+            if (telaLarga)
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(flex: 5, child: _CardScoreRitmo(resumo: resumo)),
                     const SizedBox(width: Espaco.md),
-                    Expanded(
-                      child: _MiniFoco(rotulo: 'Ainda hoje', item: ainda),
-                    ),
+                    Expanded(flex: 7, child: _CardFocoSemanal(resumo: resumo)),
                   ],
-                ],
-              ),
+                ),
+              )
+            else ...[
+              _CardScoreRitmo(resumo: resumo),
+              const SizedBox(height: Espaco.md),
+              _CardFocoSemanal(resumo: resumo),
             ],
+            const SizedBox(height: Espaco.md),
+            _CardHeatmapHabitos(
+              resumo: resumo,
+              irRotina: irRotina,
+            ),
+            const SizedBox(height: Espaco.md),
+            _CartaoAreas(
+              resumo: resumo,
+              ir: ir,
+              irRotina: irRotina,
+              emLinha: telaLarga,
+            ),
+            const SizedBox(height: Espaco.md),
+            _GridVitoriasEAtencao(
+              resumo: resumo,
+              ir: ir,
+              telaLarga: telaLarga,
+            ),
+            const SizedBox(height: Espaco.md),
+            _CardBannerReflexaoIa(ir: ir),
           ],
         );
-        final Widget conteudo = estreito
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: rotulo,
-                        ),
-                      ),
-                      anel,
-                    ],
-                  ),
-                  const SizedBox(height: Espaco.sm + 4),
-                  corpo,
-                  rodape,
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: corpo),
-                      const SizedBox(width: Espaco.md),
-                      anel,
-                    ],
-                  ),
-                  rodape,
-                ],
-              );
-        return _CartaoDestaque(child: conteudo);
       },
     );
   }
 }
 
-class _MiniFoco extends StatelessWidget {
-  const _MiniFoco({required this.rotulo, required this.item});
-  final String rotulo;
-  final ItemFoco item;
+class _CardScoreRitmo extends StatelessWidget {
+  const _CardScoreRitmo({required this.resumo});
+  final ResumoVisao resumo;
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          rotulo.toUpperCase(),
-          style: manrope(9, peso: FontWeight.w800, cor: c.muted, espaco: 1.3),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          item.titulo,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: manrope(13, peso: FontWeight.w700),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          item.detalhe,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: manrope(11.5, cor: c.muted),
-        ),
-      ],
-    );
-  }
-}
+    final score = resumo.scoreRitmo;
+    final fracao = (score / 100).clamp(0.0, 1.0);
 
-/// "A seguir": o próximo item do dia com a hora grande.
-class _CartaoASeguir extends StatelessWidget {
-  const _CartaoASeguir({required this.item, required this.agora});
-  final ItemLinha? item;
-  final DateTime agora;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    final i = item;
-    if (i == null) {
-      return _Bloco(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _Rotulo('A seguir'),
-            const SizedBox(height: Espaco.md),
-            Text('Nada mais hoje', style: sora(22, espaco: -.4)),
-            const SizedBox(height: 4),
-            Text(
-              'O dia está livre daqui para frente.',
-              style: manrope(12.5, cor: c.muted),
-            ),
-          ],
-        ),
-      );
-    }
-    final (rotulo, cor) = _tipo(c, i.tipo);
-    final quando = _quando(i, agora);
-    return _Bloco(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _Rotulo('A seguir'),
-          const SizedBox(height: Espaco.sm),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                i.hora == null ? 'Hoje' : hora(emLocal(i.hora!)),
-                style: sora(i.hora == null ? 26 : 34, espaco: -1.4),
-              ),
-              const Spacer(),
-              if (quando != null) _EtiquetaTipo(quando, cor: c.teal),
-            ],
-          ),
-          const SizedBox(height: Espaco.sm + 2),
-          Text(
-            i.titulo,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: manrope(15, peso: FontWeight.w700),
-          ),
-          const SizedBox(height: Espaco.sm),
-          Row(
-            children: [
-              Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: cor),
-              ),
-              const SizedBox(width: 7),
-              Expanded(
-                child: Text(
-                  i.atrasado ? '$rotulo · atrasada' : rotulo,
-                  style: manrope(
-                    11.5,
-                    peso: FontWeight.w700,
-                    cor: i.atrasado ? c.bad : c.muted,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// "Hoje em números": anéis de tarefas, hábitos e objetivo (quando há).
-class _CartaoNumeros extends StatelessWidget {
-  const _CartaoNumeros({
-    required this.feitosTarefas,
-    required this.totalTarefas,
-    required this.feitosHabitos,
-    required this.totalHabitos,
-    required this.objetivo,
-    required this.aPagarCentavos,
-    required this.contasAPagar,
-    required this.ir,
-  });
-
-  final int feitosTarefas;
-  final int totalTarefas;
-  final int feitosHabitos;
-  final int totalHabitos;
-  final Objetivo? objetivo;
-  final int aPagarCentavos;
-  final int contasAPagar;
-  final ValueChanged<Secao> ir;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    final o = objetivo;
-    final fracaoObjetivo = o == null ? null : _fracaoObjetivo(o);
-    return _Bloco(
+    return Cartao(
+      padding: const EdgeInsets.all(20),
+      raio: 22,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _Rotulo('Hoje em números'),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: Espaco.sm),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _AnelNumero(
-                  rotulo: 'Tarefas',
-                  valor: '$feitosTarefas/$totalTarefas',
-                  fracao: totalTarefas == 0 ? 0 : feitosTarefas / totalTarefas,
-                  cor: c.corTarefa,
+          Row(
+            children: [
+              const _Rotulo('Score de ritmo'),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: c.accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: c.accent.withValues(alpha: 0.25)),
                 ),
-                _AnelNumero(
-                  rotulo: 'Hábitos',
-                  valor: '$feitosHabitos/$totalHabitos',
-                  fracao: totalHabitos == 0 ? 0 : feitosHabitos / totalHabitos,
-                  cor: c.corHabito,
-                ),
-                if (o != null && fracaoObjetivo != null)
-                  _AnelNumero(
-                    rotulo: 'Objetivo',
-                    valor: '${(fracaoObjetivo * 100).round()}%',
-                    fracao: fracaoObjetivo,
-                    cor: c.teal,
-                  ),
-              ],
-            ),
-          ),
-          if (aPagarCentavos > 0)
-            Material(
-              type: MaterialType.transparency,
-              child: InkWell(
-                onTap: () => ir(Secao.financas),
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 3),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.account_balance_wallet_outlined,
-                        size: 15,
-                        color: c.muted,
-                      ),
-                      const SizedBox(width: 7),
-                      Expanded(
-                        child: Text(
-                          '${reais(aPagarCentavos)} a pagar · $contasAPagar ${contasAPagar == 1 ? 'conta' : 'contas'}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: manrope(
-                            11.5,
-                            peso: FontWeight.w600,
-                            cor: c.muted,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                child: Text(
+                  'Semanal',
+                  style: manrope(10, peso: FontWeight.w700, cor: c.accent),
                 ),
               ),
-            ),
+            ],
+          ),
+          const SizedBox(height: Espaco.md),
+          Row(
+            children: [
+              _Anel(
+                fracao: fracao,
+                tamanho: 84,
+                espessura: 8,
+                cor: c.accent,
+                centro: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$score',
+                      style: sora(26, peso: FontWeight.w700, altura: 1),
+                    ),
+                    Text(
+                      '/100',
+                      style: manrope(10, peso: FontWeight.w700, cor: c.muted),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: Espaco.md + 2),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      resumo.rotuloRitmo,
+                      style: sora(16, peso: FontWeight.w700, espaco: -.3),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      resumo.subtituloRitmo,
+                      style: manrope(12, cor: c.muted, altura: 1.3),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Espaco.md + 4),
+          Row(
+            children: [
+              Expanded(
+                child: _MiniMetricaRitmo(
+                  titulo: 'Tarefas',
+                  valor: '${(resumo.taxaTarefas * 100).round()}%',
+                  subtitulo: 'concluídas',
+                  cor: c.corTarefa,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _MiniMetricaRitmo(
+                  titulo: 'Hábitos',
+                  valor: '${(resumo.taxaHabitos * 100).round()}%',
+                  subtitulo: 'consistência',
+                  cor: c.corHabito,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _MiniMetricaRitmo(
+                  titulo: 'Treinos',
+                  valor: '${resumo.treinosFeitosSemana}/${resumo.metaTreinosSemana > 0 ? resumo.metaTreinosSemana : '—'}',
+                  subtitulo: 'sessões',
+                  cor: c.violeta,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
-
-  /// Progresso do objetivo: 0 quando o alvo é o próprio início.
-  static double? _fracaoObjetivo(Objetivo o) {
-    final faixa = o.valorAlvo - o.valorInicial;
-    if (faixa == 0) return null;
-    return ((o.valorAtual - o.valorInicial) / faixa).clamp(0.0, 1.0);
-  }
 }
 
-class _AnelNumero extends StatelessWidget {
-  const _AnelNumero({
-    required this.rotulo,
+class _MiniMetricaRitmo extends StatelessWidget {
+  const _MiniMetricaRitmo({
+    required this.titulo,
     required this.valor,
-    required this.fracao,
+    required this.subtitulo,
     required this.cor,
   });
 
-  final String rotulo;
+  final String titulo;
   final String valor;
-  final double fracao;
+  final String subtitulo;
   final Color cor;
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _Anel(
-          fracao: fracao,
-          tamanho: 56,
-          espessura: 5,
-          cor: cor,
-          centro: Text(valor, style: sora(12.5, espaco: -.3)),
-        ),
-        const SizedBox(height: 7),
-        Text(
-          rotulo.toUpperCase(),
-          style: manrope(8.5, peso: FontWeight.w800, cor: c.muted, espaco: 1),
-        ),
-      ],
-    );
-  }
-}
-
-/// Linha do dia compacta: hora, ponto do tipo, título e o tipo à direita.
-class _CartaoLinhaDoDia extends StatelessWidget {
-  const _CartaoLinhaDoDia({
-    required this.itens,
-    required this.repo,
-    required this.irRotina,
-    required this.maximo,
-  });
-
-  final List<ItemLinha> itens;
-  final VisaoRepo repo;
-  final ValueChanged<AbaRotina> irRotina;
-  final int maximo;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    final agora = agoraLocal();
-    final visiveis = itens.take(maximo).toList();
-    final restantes = itens.length - visiveis.length;
-    // O item de agora: o primeiro pendente que já começou (ou o primeiro pendente).
-    ItemLinha? atual;
-    for (final i in itens) {
-      if (i.feito) continue;
-      if (i.hora != null && i.hora!.isAfter(agora)) continue;
-      atual = i;
-      break;
-    }
-
-    final lista = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (var i = 0; i < visiveis.length; i++) ...[
-          if (i > 0) Divider(height: 1, color: c.line.withValues(alpha: 0.45)),
-          _LinhaItem(
-            item: visiveis[i],
-            destaque: identical(visiveis[i], atual),
-            aoTocar: visiveis[i].habitoId == null
-                ? null
-                : () => repo.alternarHabito(
-                    visiveis[i].habitoId!,
-                    !visiveis[i].feito,
-                  ),
-          ),
-        ],
-      ],
-    );
-
-    final feitos = itens.where((i) => i.feito).length;
-
-    return _Bloco(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? c.surface.withValues(alpha: 0.5)
+            : c.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.line.withValues(alpha: 0.5)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('Linha do dia', style: sora(19, espaco: -.4)),
-                  ),
-                  _LinkAcao(
-                    texto: 'Ver calendário',
-                    aoTocar: () => irRotina(AbaRotina.calendario),
-                  ),
-                ],
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
               ),
-              const SizedBox(height: 2),
-              Text(
-                'Tudo o que é de hoje, na ordem do relógio.',
-                style: manrope(12, cor: c.muted),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  titulo,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: manrope(10, peso: FontWeight.w700, cor: c.muted),
+                ),
               ),
-              const SizedBox(height: Espaco.sm + 2),
-              if (itens.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: Espaco.md),
-                  child: Row(
-                    children: [
-                      Icon(Icons.wb_twilight_rounded, size: 18, color: c.muted),
-                      const SizedBox(width: Espaco.sm + 2),
-                      Expanded(
-                        child: Text(
-                          'Dia livre: nada marcado para hoje.',
-                          style: manrope(13, cor: c.muted),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                lista,
             ],
           ),
-          if (itens.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: Espaco.sm),
-              child: Row(
-                children: [
-                  Text(
-                    '$feitos de ${itens.length} feitos',
-                    style: manrope(11.5, peso: FontWeight.w700, cor: c.muted),
-                  ),
-                  if (restantes > 0) ...[
-                    const SizedBox(width: Espaco.sm),
-                    Expanded(
-                      child: Text(
-                        '· e mais $restantes ${restantes == 1 ? 'item' : 'itens'}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: manrope(
-                          11.5,
-                          peso: FontWeight.w600,
-                          cor: c.muted,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+          const SizedBox(height: 4),
+          Text(valor, style: sora(13.5, peso: FontWeight.w700)),
+          Text(
+            subtitulo,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: manrope(9.5, cor: c.muted),
+          ),
         ],
       ),
     );
   }
 }
 
-class _LinhaItem extends StatelessWidget {
-  const _LinhaItem({required this.item, required this.destaque, this.aoTocar});
-
-  final ItemLinha item;
-  final bool destaque;
-  final VoidCallback? aoTocar;
+class _CardFocoSemanal extends StatelessWidget {
+  const _CardFocoSemanal({required this.resumo});
+  final ResumoVisao resumo;
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    final (rotulo, cor) = _tipo(c, item.tipo);
-    final titulo = item.feito
-        ? manrope(13.5, peso: FontWeight.w500, cor: c.muted, altura: 1.2)
-        : manrope(
-            13.5,
-            peso: FontWeight.w600,
-            cor: item.atrasado ? c.bad : (destaque ? c.accent : c.text),
-            altura: 1.2,
-          );
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: aoTocar,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(8, 9, 4, 9),
-          decoration: destaque
-              ? BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      c.accent.withValues(alpha: 0.11),
-                      c.accent.withValues(alpha: 0),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                )
-              : null,
-          child: Stack(
-            children: [
-              // Marca do "agora": barra fina à esquerda, sem deslocar a linha.
-              if (destaque)
-                Positioned(
-                  left: 0,
-                  top: 2,
-                  bottom: 2,
-                  child: Container(
-                    width: 2.5,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(2),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [c.gradIni, c.gradFim],
-                      ),
-                    ),
-                  ),
-                ),
-              Row(
-                children: [
-                  SizedBox(
-                    width: 46,
-                    child: Text(
-                      item.hora == null ? 'Dia' : hora(emLocal(item.hora!)),
-                      style: manrope(
-                        11.5,
-                        peso: FontWeight.w700,
-                        cor: destaque ? c.accent : c.muted,
-                        espaco: 0.2,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: item.feito ? cor.withValues(alpha: 0.45) : cor,
-                      boxShadow: destaque
-                          ? [
-                              BoxShadow(
-                                color: cor.withValues(alpha: 0.55),
-                                blurRadius: 10,
-                              ),
-                            ]
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(width: Espaco.sm + 4),
-                  Expanded(
-                    child: Text(
-                      item.titulo,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: titulo.copyWith(
-                        decoration: item.feito
-                            ? TextDecoration.lineThrough
-                            : null,
-                        decorationColor: c.muted.withValues(alpha: 0.5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: Espaco.sm),
-                  Text(
-                    rotulo.toUpperCase(),
-                    style: manrope(
-                      8.5,
-                      peso: FontWeight.w800,
-                      cor: c.muted,
-                      espaco: 1.1,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+    final totalMinutos = resumo.totalMinutosFocoSemana;
+    final totalHoras = totalMinutos / 60.0;
+    const metaMinutos = 600; // 10 horas
+    const metaHoras = 10;
+    final fracaoMeta = (totalMinutos / metaMinutos).clamp(0.0, 1.0);
 
-/// Semana em barras, com o dia de hoje em degradê e um insight embaixo.
-class _CartaoSemana extends StatelessWidget {
-  const _CartaoSemana({
-    required this.dias,
-    required this.insight,
-    required this.irRotina,
-  });
+    final hoje = hojeLocal();
+    final inicioSemana = somarDias(hoje, -(hoje.weekday - 1));
+    final dias = [for (var i = 0; i < 7; i++) somarDias(inicioSemana, i)];
+    final nomesDias = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
-  final List<DiaSemana> dias;
-  final String? insight;
-  final ValueChanged<AbaRotina> irRotina;
+    var maiorMinuto = 60;
+    for (final d in dias) {
+      final m = resumo.focoMinutosPorDia[chaveData(d)] ?? 0;
+      if (m > maiorMinuto) maiorMinuto = m;
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    final maior = dias.fold<int>(0, (m, d) => d.total > m ? d.total : m);
-    final vazio = maior == 0;
-    final fim = dias.isEmpty ? null : dias.last.dia;
-    return _Bloco(
-      aoTocar: () => irRotina(AbaRotina.calendario),
+    return Cartao(
+      padding: const EdgeInsets.all(20),
+      raio: 22,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              Expanded(child: Text('Semana', style: sora(19, espaco: -.4))),
-              if (dias.isNotEmpty && fim != null)
-                Text(
-                  '${diaMesCurto(dias.first.dia)} – ${diaMesCurto(fim)}',
-                  style: manrope(11, peso: FontWeight.w700, cor: c.muted),
+              Icon(Icons.timelapse_rounded, size: 18, color: c.accent),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Tempo em Hiper-Foco',
+                  style: sora(16, peso: FontWeight.w700, espaco: -.3),
                 ),
+              ),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '${totalHoras.toStringAsFixed(1)}h',
+                      style: sora(15, peso: FontWeight.w700, cor: c.accent),
+                    ),
+                    TextSpan(
+                      text: ' / ${metaHoras}h meta',
+                      style: manrope(11.5, cor: c.muted),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-          if (vazio) ...[
-            // Semana sem compromissos, tarefas, lembretes nem contas: um gráfico
-            // de sete zeros pareceria quebrado.
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: Espaco.md),
-              child: Row(
-                children: [
-                  Icon(Icons.nights_stay_rounded, size: 17, color: c.muted),
-                  const SizedBox(width: Espaco.sm + 2),
+          const SizedBox(height: Espaco.sm + 2),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: fracaoMeta,
+              minHeight: 6,
+              color: c.accent,
+              backgroundColor: c.line.withValues(alpha: 0.5),
+            ),
+          ),
+          const SizedBox(height: Espaco.md),
+          SizedBox(
+            height: 98,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (var i = 0; i < 7; i++) ...[
+                  if (i > 0) const SizedBox(width: 6),
                   Expanded(
-                    child: Text(
-                      'Nada marcado nesta semana.',
-                      style: manrope(12.5, cor: c.muted),
+                    child: Builder(
+                      builder: (context) {
+                        final dia = dias[i];
+                        final chave = chaveData(dia);
+                        final min = resumo.focoMinutosPorDia[chave] ?? 0;
+                        final ehHoje = dia == hoje;
+                        final alturaBarra = (10 + (min / maiorMinuto) * 44).clamp(10.0, 54.0);
+
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              min > 0 ? '${min}m' : '—',
+                              style: manrope(
+                                9,
+                                peso: FontWeight.w700,
+                                cor: min > 0
+                                    ? (ehHoje ? c.accent : c.text)
+                                    : c.muted.withValues(alpha: 0.5),
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Container(
+                              height: alturaBarra,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(6),
+                                gradient: ehHoje && min > 0
+                                    ? LinearGradient(
+                                        begin: Alignment.bottomCenter,
+                                        end: Alignment.topCenter,
+                                        colors: [c.gradIni, c.gradFim],
+                                      )
+                                    : null,
+                                color: ehHoje && min > 0
+                                    ? null
+                                    : (min > 0
+                                        ? c.accent.withValues(alpha: 0.75)
+                                        : c.line.withValues(alpha: 0.6)),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              ehHoje ? 'Hoje' : nomesDias[i],
+                              style: manrope(
+                                9.5,
+                                peso: FontWeight.w800,
+                                cor: ehHoje ? c.accent : c.muted,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ],
-              ),
+              ],
             ),
-            if (insight != null) _LinhaInsight(texto: insight!),
-          ] else ...[
-            SizedBox(
-              height: 84,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  for (var i = 0; i < dias.length; i++)
-                    Expanded(
-                      child: Column(
-                        children: [
-                          // A barra fica no espaço que sobra do rótulo: com texto
-                          // grande ela encolhe em vez de estourar a coluna.
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Container(
-                                width: 14,
-                                height: 10 + 44 * dias[i].total / maior,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(5),
-                                  gradient: i == 0 && dias[i].total > 0
-                                      ? LinearGradient(
-                                          begin: Alignment.bottomCenter,
-                                          end: Alignment.topCenter,
-                                          colors: [c.gradIni, c.gradFim],
-                                        )
-                                      : null,
-                                  color: i == 0 && dias[i].total > 0
-                                      ? null
-                                      : c.line,
-                                ),
-                              ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CardHeatmapHabitos extends StatelessWidget {
+  const _CardHeatmapHabitos({
+    required this.resumo,
+    required this.irRotina,
+  });
+
+  final ResumoVisao resumo;
+  final ValueChanged<AbaRotina> irRotina;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    final quadro = resumo.quadroHabitos;
+    final habitos = quadro?.habitos ?? const [];
+    final hoje = hojeLocal();
+    final ultimos14Dias = [for (var i = 13; i >= 0; i--) somarDias(hoje, -i)];
+
+    return Cartao(
+      padding: const EdgeInsets.all(20),
+      raio: 22,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.calendar_view_week_rounded, size: 18, color: c.corHabito),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Heatmap de Hábitos · Últimos 14 dias',
+                  style: sora(16, peso: FontWeight.w700, espaco: -.3),
+                ),
+              ),
+              _LinkAcao(
+                texto: 'Ver hábitos',
+                aoTocar: () => irRotina(AbaRotina.habitos),
+              ),
+            ],
+          ),
+          const SizedBox(height: Espaco.md),
+          if (habitos.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: Espaco.md),
+              child: Center(
+                child: Text(
+                  'Nenhum hábito ativo configurado no momento.',
+                  style: manrope(13, cor: c.muted),
+                ),
+              ),
+            )
+          else ...[
+            for (var idx = 0; idx < habitos.length; idx++) ...[
+              if (idx > 0) const SizedBox(height: 12),
+              Builder(
+                builder: (context) {
+                  final h = habitos[idx];
+                  final seq = quadro?.sequencia(h, hoje) ?? 0;
+
+                  return Row(
+                    children: [
+                      SizedBox(
+                        width: 130,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              h.nome,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: manrope(12.5, peso: FontWeight.w700),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            i == 0
-                                ? 'Hoje'
-                                : _primeiraMaiuscula(
-                                    DateFormat(
-                                      'EEE',
-                                      'pt_BR',
-                                    ).format(dias[i].dia).replaceAll('.', ''),
-                                  ),
-                            maxLines: 1,
-                            style: manrope(
-                              9,
-                              peso: FontWeight.w800,
-                              cor: i == 0 ? c.accent : c.muted,
-                              espaco: 0.3,
+                            Text(
+                              seq >= 2 ? '🔥 $seq dias seguidos' : (seq == 1 ? '🔥 1 dia' : '—'),
+                              style: manrope(10, cor: seq >= 2 ? c.accent : c.muted),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                ],
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          reverse: true,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              for (final dia in ultimos14Dias)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 2.5),
+                                  child: Builder(
+                                    builder: (context) {
+                                      final feito = quadro?.feito(h.id, dia) ?? false;
+                                      final ehHoje = dia == hoje;
+
+                                      return Container(
+                                        width: 16,
+                                        height: 16,
+                                        decoration: BoxDecoration(
+                                          color: feito
+                                              ? c.corHabito
+                                              : c.line.withValues(alpha: 0.4),
+                                          borderRadius: BorderRadius.circular(4),
+                                          border: ehHoje
+                                              ? Border.all(color: c.accent, width: 1.5)
+                                              : null,
+                                        ),
+                                        child: feito
+                                            ? const Center(
+                                                child: Icon(
+                                                  Icons.check_rounded,
+                                                  size: 11,
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            : null,
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
-            ),
-            if (insight != null) _LinhaInsight(texto: insight!),
+            ],
           ],
         ],
       ),
     );
   }
-
-  static String _primeiraMaiuscula(String s) =>
-      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }
 
-/// Linha curta de insight (ponto turquesa + frase).
-class _LinhaInsight extends StatelessWidget {
-  const _LinhaInsight({required this.texto});
-  final String texto;
+class _GridVitoriasEAtencao extends StatelessWidget {
+  const _GridVitoriasEAtencao({
+    required this.resumo,
+    required this.ir,
+    required this.telaLarga,
+  });
+
+  final ResumoVisao resumo;
+  final ValueChanged<Secao> ir;
+  final bool telaLarga;
+
+  @override
+  Widget build(BuildContext context) {
+    final colunaVitorias = Cartao(
+      padding: const EdgeInsets.all(20),
+      raio: 22,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Text('🏆', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Text(
+                'Vitórias da Semana',
+                style: sora(16, peso: FontWeight.w700, espaco: -.3),
+              ),
+            ],
+          ),
+          const SizedBox(height: Espaco.md),
+          for (var i = 0; i < resumo.vitorias.length; i++) ...[
+            if (i > 0) const SizedBox(height: 10),
+            _ItemCardDestaque(
+              item: resumo.vitorias[i],
+              ehPositivo: true,
+            ),
+          ],
+        ],
+      ),
+    );
+
+    final colunaAtencao = Cartao(
+      padding: const EdgeInsets.all(20),
+      raio: 22,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Text('⚠️', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Text(
+                'Pontos de Atenção',
+                style: sora(16, peso: FontWeight.w700, espaco: -.3),
+              ),
+            ],
+          ),
+          const SizedBox(height: Espaco.md),
+          for (var i = 0; i < resumo.atencoes.length; i++) ...[
+            if (i > 0) const SizedBox(height: 10),
+            _ItemCardDestaque(
+              item: resumo.atencoes[i],
+              ehPositivo: false,
+            ),
+          ],
+        ],
+      ),
+    );
+
+    if (telaLarga) {
+      return IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(child: colunaVitorias),
+            const SizedBox(width: Espaco.md),
+            Expanded(child: colunaAtencao),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        colunaVitorias,
+        const SizedBox(height: Espaco.md),
+        colunaAtencao,
+      ],
+    );
+  }
+}
+
+class _ItemCardDestaque extends StatelessWidget {
+  const _ItemCardDestaque({
+    required this.item,
+    required this.ehPositivo,
+  });
+
+  final ItemDestaqueRaioX item;
+  final bool ehPositivo;
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    return Row(
-      children: [
-        Container(
-          width: 5,
-          height: 5,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: c.teal),
+    final bordaCor = ehPositivo
+        ? c.teal.withValues(alpha: 0.3)
+        : Colors.amber.withValues(alpha: 0.35);
+
+    final icone = switch (item.tipo) {
+      'treino' => Icons.fitness_center_rounded,
+      'habito' => Icons.local_fire_department_rounded,
+      'foco' => Icons.timelapse_rounded,
+      'tarefa' => Icons.check_circle_outline_rounded,
+      'financas' => Icons.account_balance_wallet_outlined,
+      _ => ehPositivo ? Icons.star_rounded : Icons.info_outline_rounded,
+    };
+
+    final iconeCor = ehPositivo ? c.teal : Colors.amber;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? c.surface.withValues(alpha: 0.5)
+            : c.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: bordaCor),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icone, size: 17, color: iconeCor),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.titulo,
+                  style: manrope(12.5, peso: FontWeight.w700),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item.detalhe,
+                  style: manrope(11.5, cor: c.muted, altura: 1.3),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CardBannerReflexaoIa extends StatelessWidget {
+  const _CardBannerReflexaoIa({required this.ir});
+  final ValueChanged<Secao> ir;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            c.gradIni.withValues(alpha: 0.18),
+            c.gradFim.withValues(alpha: 0.08),
+          ],
         ),
-        const SizedBox(width: 7),
-        Expanded(
-          child: Text(
-            texto,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: manrope(11.5, cor: c.muted, altura: 1.35),
+        border: Border.all(color: c.accent.withValues(alpha: 0.3)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compacto = constraints.maxWidth < 600;
+          final conteudo = Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: c.accent.withValues(alpha: 0.15),
+                ),
+                child: Icon(iconeIa, size: 24, color: c.accent),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Reflexão Semanal com a Aurora',
+                      style: sora(16, peso: FontWeight.w700, espaco: -.3),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Feche o ciclo com inteligência: analise gargalos, celebre vitórias e alinhe o plano estratégico para a próxima semana.',
+                      style: manrope(12, cor: c.muted, altura: 1.35),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+
+          if (compacto) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                conteudo,
+                const SizedBox(height: 14),
+                _BotaoRefletirIa(aoTocar: () => ir(Secao.assistente)),
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              Expanded(child: conteudo),
+              const SizedBox(width: 16),
+              _BotaoRefletirIa(aoTocar: () => ir(Secao.assistente)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _BotaoRefletirIa extends StatelessWidget {
+  const _BotaoRefletirIa({required this.aoTocar});
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.cores;
+    return Material(
+      color: c.accent,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: aoTocar,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Refletir agora',
+                style: manrope(13, peso: FontWeight.w700, cor: c.noAccent),
+              ),
+              const SizedBox(width: 7),
+              Icon(Icons.arrow_forward_rounded, size: 16, color: c.noAccent),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
@@ -1303,7 +1070,6 @@ class _CartaoAreas extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     final o = resumo.objetivo;
-    final agora = agoraLocal();
     final atrasadas = resumo.tarefasAtrasadas;
 
     final blocos = [
@@ -1312,22 +1078,29 @@ class _CartaoAreas extends StatelessWidget {
         valor: atrasadas > 0
             ? '$atrasadas ${atrasadas == 1 ? 'atrasada' : 'atrasadas'}'
             : 'em dia',
+        subtitulo: '${resumo.tarefasHoje.length} para hoje',
         cor: atrasadas > 0 ? c.bad : null,
         aoTocar: () => irRotina(AbaRotina.hoje),
       ),
       _MiniArea(
         rotulo: 'Hábitos',
         valor: '${resumo.habitosFeitos} de ${resumo.habitos.length}',
+        subtitulo: 'concluídos hoje',
         aoTocar: () => irRotina(AbaRotina.habitos),
       ),
       _MiniArea(
-        rotulo: nomeDoMes(agora),
-        valor: reais(resumo.aPagarCentavos),
+        rotulo: 'Finanças',
+        valor: reais(resumo.saldoCentavos),
+        subtitulo: resumo.contasAPagar > 0
+            ? '${reais(resumo.aPagarCentavos)} a pagar'
+            : 'contas em dia',
+        cor: resumo.saldoCentavos < 0 ? c.bad : null,
         aoTocar: () => ir(Secao.financas),
       ),
       _MiniArea(
         rotulo: 'Objetivo',
         valor: o == null ? '—' : valorMeta(o.valorAtual, o.unidade),
+        subtitulo: o == null ? 'nenhum ativo' : o.nome,
         aoTocar: () => ir(Secao.objetivos),
       ),
     ];
@@ -1385,11 +1158,13 @@ class _MiniArea extends StatelessWidget {
     required this.rotulo,
     required this.valor,
     required this.aoTocar,
+    this.subtitulo,
     this.cor,
   });
 
   final String rotulo;
   final String valor;
+  final String? subtitulo;
   final VoidCallback aoTocar;
   final Color? cor;
 
@@ -1431,42 +1206,19 @@ class _MiniArea extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: sora(16, cor: cor, espaco: -.3),
               ),
+              if (subtitulo != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  subtitulo!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: manrope(9.5, cor: c.muted),
+                ),
+              ],
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Rótulo pequeno em caixa alta com um ponto de cor (marca do "em foco").
-class _RotuloPonto extends StatelessWidget {
-  const _RotuloPonto(this.texto, {required this.cor});
-  final String texto;
-  final Color cor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: cor,
-            boxShadow: [
-              BoxShadow(color: cor.withValues(alpha: 0.5), blurRadius: 8),
-            ],
-          ),
-        ),
-        const SizedBox(width: Espaco.sm),
-        Text(
-          texto.toUpperCase(),
-          style: manrope(9, peso: FontWeight.w800, cor: cor, espaco: 1.4),
-        ),
-      ],
     );
   }
 }
@@ -1521,58 +1273,6 @@ class _LinkAcao extends StatelessWidget {
   }
 }
 
-/// Etiqueta pequena e arredondada ("em 4 h", "atrasada").
-class _EtiquetaTipo extends StatelessWidget {
-  const _EtiquetaTipo(this.texto, {required this.cor});
-  final String texto;
-  final Color cor;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(999),
-      color: cor.withValues(alpha: 0.12),
-      border: Border.all(color: cor.withValues(alpha: 0.32)),
-    ),
-    child: Text(
-      texto,
-      style: manrope(10.5, peso: FontWeight.w800, cor: cor),
-    ),
-  );
-}
-
-/// Barra fina com o degradê da marca.
-class _BarraDegrade extends StatelessWidget {
-  const _BarraDegrade({required this.fracao});
-  final double fracao;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.cores;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: SizedBox(
-        height: 5,
-        child: Stack(
-          children: [
-            Positioned.fill(child: ColoredBox(color: c.surface2)),
-            FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: fracao.clamp(0.0, 1.0),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [c.gradIni, c.gradFim]),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /// Anel de progresso desenhado à mão (arco com ponta arredondada).
 class _Anel extends StatelessWidget {
   const _Anel({
@@ -1580,7 +1280,6 @@ class _Anel extends StatelessWidget {
     required this.tamanho,
     required this.espessura,
     this.cor,
-    this.gradiente = false,
     this.centro,
   });
 
@@ -1588,7 +1287,6 @@ class _Anel extends StatelessWidget {
   final double tamanho;
   final double espessura;
   final Color? cor;
-  final bool gradiente;
   final Widget? centro;
 
   @override
@@ -1600,7 +1298,6 @@ class _Anel extends StatelessWidget {
           fracao: fracao,
           espessura: espessura,
           cor: cor,
-          gradiente: gradiente,
           cores: context.cores,
         ),
         child: centro == null ? null : Center(child: centro),
@@ -1615,14 +1312,12 @@ class _PintorAnel extends CustomPainter {
     required this.espessura,
     required this.cores,
     this.cor,
-    this.gradiente = false,
   });
 
   final double fracao;
   final double espessura;
   final AuroraCores cores;
   final Color? cor;
-  final bool gradiente;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1639,16 +1334,8 @@ class _PintorAnel extends CustomPainter {
     final arco = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = espessura
-      ..strokeCap = StrokeCap.round;
-    if (gradiente) {
-      arco.shader = SweepGradient(
-        colors: [cores.gradIni, cores.teal, cores.gradFim, cores.gradIni],
-        stops: const [0, 0.35, 0.62, 1],
-        transform: const GradientRotation(-math.pi / 2),
-      ).createShader(Rect.fromCircle(center: centro, radius: raio));
-    } else {
-      arco.color = cor ?? cores.accent;
-    }
+      ..strokeCap = StrokeCap.round
+      ..color = cor ?? cores.accent;
     canvas.drawArc(
       Rect.fromCircle(center: centro, radius: raio),
       -math.pi / 2,
@@ -1663,39 +1350,5 @@ class _PintorAnel extends CustomPainter {
       antigo.fracao != fracao ||
       antigo.espessura != espessura ||
       antigo.cor != cor ||
-      antigo.gradiente != gradiente ||
       antigo.cores != cores;
 }
-
-/// Próximo item pendente: o primeiro com hora ainda por vir; se não houver,
-/// o primeiro pendente do dia.
-ItemLinha? _proximo(List<ItemLinha> linha, DateTime agora) {
-  for (final i in linha) {
-    if (i.feito || i.hora == null) continue;
-    if (i.hora!.isAfter(agora)) return i;
-  }
-  for (final i in linha) {
-    if (!i.feito) return i;
-  }
-  return null;
-}
-
-/// "em 4 h", "em 20 min" ou nulo quando o horário já passou.
-String? _quando(ItemLinha item, DateTime agora) {
-  final h = item.hora;
-  if (h == null) return null;
-  final d = h.difference(agora);
-  if (d.isNegative) return null;
-  if (d.inMinutes < 60) return 'em ${math.max(1, d.inMinutes)} min';
-  if (d.inHours < 24) return 'em ${d.inHours} h';
-  return 'amanhã';
-}
-
-/// Rótulo e cor fixos de cada tipo da Rotina (magenta só para atrasado).
-(String, Color) _tipo(AuroraCores c, TipoItemLinha tipo) => switch (tipo) {
-  TipoItemLinha.compromisso => ('Compromisso', c.corCompromisso),
-  TipoItemLinha.tarefa => ('Tarefa', c.corTarefa),
-  TipoItemLinha.lembrete => ('Lembrete', c.corLembrete),
-  TipoItemLinha.conta => ('Conta', c.accentFill),
-  TipoItemLinha.habito => ('Hábito', c.corHabito),
-};
