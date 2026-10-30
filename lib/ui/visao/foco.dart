@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/relogio.dart';
+import '../../core/sons.dart';
 import '../../data/banco.dart';
 
 /// Os três modos do timer de foco imersivo, cada um com minutos personalizáveis.
@@ -342,6 +343,9 @@ class ControleFoco extends ChangeNotifier {
     if (focando) {
       _pararTimer();
     } else {
+      if (modo != ModoFoco.pausa) {
+        Sons.instancia.tocarIniciarFoco();
+      }
       if (restante <= Duration.zero) {
         restante = duracaoTotal;
       }
@@ -358,6 +362,7 @@ class ControleFoco extends ChangeNotifier {
           if (modo != ModoFoco.pausa) {
             _registrarSessaoConcluida();
           }
+          Sons.instancia.tocarFinalizarFoco();
           _pararTimer();
           restante = duracaoTotal;
         }

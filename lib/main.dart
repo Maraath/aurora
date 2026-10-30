@@ -12,6 +12,7 @@ import 'core/medir_quadros.dart';
 import 'core/notificacoes.dart';
 import 'core/nuvem.dart';
 import 'core/relogio.dart';
+import 'core/sons.dart';
 import 'data/alimentacao_repo.dart';
 import 'data/banco.dart';
 import 'data/conversao_tarefas.dart';
@@ -39,6 +40,7 @@ Future<void> main() async {
   final tema = await db.preferencia('tema');
   final primeiraVez = await ehPrimeiraVez(db);
   await Efeitos.iniciar(db);
+  await Sons.instancia.iniciar(db);
 
   runApp(AuroraApp(db: db, escuro: ValueNotifier(tema != 'claro'), primeiraVez: primeiraVez));
 

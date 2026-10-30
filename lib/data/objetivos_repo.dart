@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import '../core/formato.dart';
 import '../core/recorrencia.dart';
 import '../core/relogio.dart';
+import '../core/sons.dart';
 import 'banco.dart';
 import 'observar.dart';
 import 'tarefas_repo.dart';
@@ -374,22 +375,31 @@ class ObjetivosRepo {
   }
 
   /// Registra onde o objetivo está hoje (conta como atividade).
-  Future<void> atualizarValor(String id, double valorAtual) =>
-      (db.update(db.objetivos)..where((o) => o.id.equals(id))).write(
-        ObjetivosCompanion(
-          valorAtual: Value(valorAtual),
-          atualizadoEm: Value(DateTime.now()),
-        ),
-      );
+  Future<void> atualizarValor(String id, double valorAtual) async {
+    final obj = await (db.select(db.objetivos)..where((o) => o.id.equals(id))).getSingleOrNull();
+    if (obj != null && obj.valorAlvo > 0 && valorAtual >= obj.valorAlvo && obj.valorAtual < obj.valorAlvo) {
+      Sons.instancia.tocarConcluirObjetivo();
+    }
+    await (db.update(db.objetivos)..where((o) => o.id.equals(id))).write(
+      ObjetivosCompanion(
+        valorAtual: Value(valorAtual),
+        atualizadoEm: Value(DateTime.now()),
+      ),
+    );
+  }
 
   /// Muda o status (pausar, concluir, arquivar, reabrir…).
-  Future<void> mudarStatus(String id, String status) =>
-      (db.update(db.objetivos)..where((o) => o.id.equals(id))).write(
-        ObjetivosCompanion(
-          status: Value(status),
-          atualizadoEm: Value(DateTime.now()),
-        ),
-      );
+  Future<void> mudarStatus(String id, String status) async {
+    if (status == 'concluida') {
+      Sons.instancia.tocarConcluirObjetivo();
+    }
+    await (db.update(db.objetivos)..where((o) => o.id.equals(id))).write(
+      ObjetivosCompanion(
+        status: Value(status),
+        atualizadoEm: Value(DateTime.now()),
+      ),
+    );
+  }
 
   /// Nova etapa de projeto (marco interno do objetivo, não tarefa da rotina).
   Future<String> novaEtapa(String objetivoId, String titulo) async {
@@ -430,6 +440,17 @@ class ObjetivosRepo {
     await (db.update(db.objetivos)
           ..where((o) => o.id.equals(etapa.etapa.objetivoId)))
         .write(ObjetivosCompanion(atualizadoEm: Value(agora)));
+
+    if (feita) {
+      final restantes = await (db.select(db.etapas)..where(
+        (e) => e.objetivoId.equals(etapa.etapa.objetivoId) & e.apagadoEm.isNull() & e.concluida.equals(false),
+      )).get();
+      if (restantes.isEmpty) {
+        Sons.instancia.tocarConcluirObjetivo();
+      } else {
+        Sons.instancia.tocarConcluirEtapa();
+      }
+    }
   }
 
   /// Exclui uma etapa do projeto.

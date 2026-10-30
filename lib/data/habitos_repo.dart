@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../core/recorrencia.dart';
 import '../core/relogio.dart';
+import '../core/sons.dart';
 import 'banco.dart';
 import 'observar.dart';
 
@@ -89,6 +90,9 @@ class HabitosRepo {
 
   /// Marca ou desmarca o hábito no dia (um registro por hábito e dia).
   Future<void> alternar(String habitoId, DateTime dia, bool feito) {
+    if (feito) {
+      Sons.instancia.tocarConcluirItem();
+    }
     return db.into(db.registrosHabito).insert(
           RegistrosHabitoCompanion.insert(
               id: Value(idNatural('registro_habito', [habitoId, chaveData(dia)])),

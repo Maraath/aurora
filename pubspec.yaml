@@ -52,6 +52,8 @@ flutter:
     - assets/exercicios.json
     # Ícone do app (gerado por tool/icone/gerar.ps1 a partir de tool/icone/aurora.svg).
     - assets/icone/aurora.png
+    # Efeitos sonoros do app (feedback auditivo de conclusão e foco).
+    - assets/sons/
     # Licenças das fontes (SIL OFL), mostradas em Conta › Licenças.
     - assets/fonts/OFL-Sora.txt
     - assets/fonts/OFL-Manrope.txt

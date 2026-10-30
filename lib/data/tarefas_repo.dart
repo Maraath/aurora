@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../core/recorrencia.dart';
 import '../core/relogio.dart';
+import '../core/sons.dart';
 import 'banco.dart';
 import 'observar.dart';
 
@@ -202,6 +203,9 @@ class TarefasRepo {
 
   /// Conclui ou reabre uma ocorrência.
   Future<void> alternar(OcorrenciaTarefa o, bool feita) async {
+    if (feita) {
+      Sons.instancia.tocarConcluirItem();
+    }
     final agora = DateTime.now();
     if (!o.recorrente) {
       await (db.update(db.tarefas)..where((t) => t.id.equals(o.tarefa.id))).write(

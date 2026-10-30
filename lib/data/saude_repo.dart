@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../core/formato.dart';
 import '../core/relogio.dart';
+import '../core/sons.dart';
 import 'banco.dart';
 import 'observar.dart';
 
@@ -325,6 +326,7 @@ class SaudeRepo {
               cargaKg: s.cargaKg,
             ));
       }
+      Sons.instancia.tocarConcluirTreino();
       return sessao.id;
     });
   }

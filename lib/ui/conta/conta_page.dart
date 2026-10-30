@@ -22,6 +22,7 @@ import '../janela/moldura_janela.dart';
 import 'efeitos_config.dart';
 import 'fala_config.dart';
 import 'fotos_config.dart';
+import 'sons_config.dart';
 
 /// Conta na nuvem. Opcional: sem conta, o app funciona offline como sempre.
 class ContaPage extends StatefulWidget {
@@ -221,6 +222,8 @@ class _ContaPageState extends State<ContaPage> {
         SecaoRespostaFalada(db: AuroraEscopo.de(context).db),
         const SizedBox(height: 28),
         SecaoEfeitos(db: AuroraEscopo.de(context).db),
+        const SizedBox(height: 28),
+        SecaoSons(db: AuroraEscopo.de(context).db),
         if (molduraPropria) ...[
           const SizedBox(height: 28),
           SecaoBandejaWindows(db: AuroraEscopo.de(context).db),
