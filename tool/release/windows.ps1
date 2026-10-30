@@ -1,4 +1,4 @@
-﻿# Publica uma versão do Aurora para Windows.
+# Publica uma versão do Aurora para Windows.
 #
 #   1. Suba a versão no pubspec.yaml (ex.: version: 1.0.1+2). O número depois
 #      do "+" (build) é o que o app compara: tem de crescer a cada publicação.
@@ -28,6 +28,11 @@ $iscc = @(
   "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $iscc) { throw 'Inno Setup 6 não encontrado (winget install JRSoftware.InnoSetup).' }
+
+if (Test-Path 'C:\src\nuget') {
+  $env:PATH = "C:\src\nuget;$env:PATH"
+  $env:NUGET_EXE_PATH = 'C:\src\nuget\nuget.exe'
+}
 
 flutter build windows --release
 if ($LASTEXITCODE -ne 0) { throw 'flutter build falhou.' }
