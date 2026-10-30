@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/tema.dart';
+import '../../data/banco.dart';
+import '../componentes.dart';
 
 /// Moldura da janela no Windows: sem a barra de título do sistema, o céu vai
 /// até o topo, com um fio de aurora na borda de cima e botões próprios.
@@ -29,6 +31,8 @@ class JanelaWindows {
           maximizada.value = chamada.arguments as bool;
         case 'ativa':
           ativa.value = chamada.arguments as bool;
+        case 'restaurada':
+          ativa.value = true;
         case 'botaoMax':
           botaoMax.value = EstadoBotao.values[chamada.arguments as int];
       }
@@ -53,7 +57,33 @@ class JanelaWindows {
   Future<void> minimizar() => canal.invokeMethod('minimizar');
   Future<void> alternarMaximizar() => canal.invokeMethod('alternarMaximizar');
   Future<void> fechar() => canal.invokeMethod('fechar');
+  Future<void> sair() => canal.invokeMethod('sair');
+  Future<void> restaurar() => canal.invokeMethod('restaurar');
+  Future<void> ocultar() => canal.invokeMethod('ocultar');
   Future<void> tema({required bool escuro}) => canal.invokeMethod('tema', escuro);
+
+  /// Configura no runner se o app deve ir para a bandeja ao fechar a janela.
+  Future<bool> configurarFecharParaBandeja(bool ativo) async {
+    final res = await canal.invokeMethod<bool>('fecharParaBandeja', ativo);
+    return res ?? ativo;
+  }
+
+  /// Lê a preferência salva no banco e repassa para o runner Win32.
+  Future<void> sincronizarPreferencia(BancoAurora db) async {
+    if (!molduraPropria) return;
+    final pref = await db.preferencia('fechar_para_bandeja');
+    // Padrão: ligado (permanece na bandeja ao fechar)
+    final ativo = pref != 'nao';
+    await configurarFecharParaBandeja(ativo);
+  }
+
+  /// Grava a preferência no banco e atualiza o runner imediatamente.
+  Future<void> salvarFecharParaBandeja(BancoAurora db, bool ativo) async {
+    await db.salvarPreferencia('fechar_para_bandeja', ativo ? 'sim' : 'nao');
+    if (molduraPropria) {
+      await configurarFecharParaBandeja(ativo);
+    }
+  }
 }
 
 enum EstadoBotao { normal, emCima, apertado }
@@ -296,4 +326,78 @@ class _DesenhoBotao extends CustomPainter {
 
   @override
   bool shouldRepaint(_DesenhoBotao old) => old.tipo != tipo || old.cor != cor;
+}
+
+/// Conta › Execução no computador: preferência de fechar para a bandeja no Windows.
+class SecaoBandejaWindows extends StatefulWidget {
+  const SecaoBandejaWindows({super.key, required this.db});
+  final BancoAurora db;
+
+  @override
+  State<SecaoBandejaWindows> createState() => _SecaoBandejaWindowsState();
+}
+
+class _SecaoBandejaWindowsState extends State<SecaoBandejaWindows> {
+  bool _ativo = true;
+  bool _carregado = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    final pref = await widget.db.preferencia('fechar_para_bandeja');
+    if (!mounted) return;
+    setState(() {
+      _ativo = pref != 'nao';
+      _carregado = true;
+    });
+  }
+
+  Future<void> _alternar(bool valor) async {
+    setState(() => _ativo = valor);
+    await JanelaWindows.instancia.salvarFecharParaBandeja(widget.db, valor);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_carregado) return const SizedBox.shrink();
+    final c = context.cores;
+    return Cartao(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('EXECUÇÃO NO COMPUTADOR', style: rotulo(c.accent)),
+          const SizedBox(height: 6),
+          Text(
+            'Ao fechar a janela, o Aurora continua ativo na bandeja do sistema para '
+            'enviar todos os seus lembretes e alertas pontualmente.',
+            style: manrope(13, cor: c.muted, altura: 1.5),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Ficar na bandeja ao fechar',
+                  style: manrope(14, peso: FontWeight.w600, cor: c.texto),
+                ),
+              ),
+              Switch(
+                value: _ativo,
+                onChanged: _alternar,
+                activeThumbColor: Colors.white,
+                activeTrackColor: c.teal,
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: c.line,
+                trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }

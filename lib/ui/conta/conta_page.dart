@@ -18,6 +18,7 @@ import '../bloqueio_ui.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import '../formulario.dart';
+import '../janela/moldura_janela.dart';
 import 'efeitos_config.dart';
 import 'fala_config.dart';
 import 'fotos_config.dart';
@@ -220,6 +221,10 @@ class _ContaPageState extends State<ContaPage> {
         SecaoRespostaFalada(db: AuroraEscopo.de(context).db),
         const SizedBox(height: 28),
         SecaoEfeitos(db: AuroraEscopo.de(context).db),
+        if (molduraPropria) ...[
+          const SizedBox(height: 28),
+          SecaoBandejaWindows(db: AuroraEscopo.de(context).db),
+        ],
         const SizedBox(height: 28),
         _Versao(),
         const SizedBox(height: 6),

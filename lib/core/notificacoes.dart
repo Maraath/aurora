@@ -10,6 +10,7 @@ import '../data/automacoes_repo.dart';
 import '../data/banco.dart';
 import '../data/compromissos_repo.dart';
 import '../data/lembretes_repo.dart';
+import '../ui/janela/moldura_janela.dart';
 import 'avisos_push.dart';
 import 'despertador.dart';
 import 'nuvem.dart';
@@ -210,6 +211,9 @@ class Notificador {
 
   /// Toque no aviso, num botão dele ou abertura em tela cheia.
   void _aoResponder(NotificationResponse r) {
+    if (molduraPropria) {
+      unawaited(JanelaWindows.instancia.restaurar());
+    }
     final titulo = tituloDoDespertador(r.payload);
     if (titulo == null) return;
     final id = r.id;

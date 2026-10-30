@@ -19,6 +19,7 @@ import 'data/exemplo.dart';
 import 'data/servico_automacoes.dart';
 import 'data/servico_sync.dart';
 import 'data/shape_repo.dart';
+import 'ui/janela/moldura_janela.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +44,8 @@ Future<void> main() async {
 
   // Tarefas que repetem (de antes da Rotina) viram hábito ou lembrete.
   await converterTarefasRepetidas(db);
+  // Sincroniza preferência de ficar na bandeja ao fechar no Windows.
+  unawaited(JanelaWindows.instancia.sincronizarPreferencia(db));
   // Depois da primeira tela: pede permissão e agenda os avisos.
   unawaited(Notificador.instancia.iniciar(db));
   // Com conta conectada, sincroniza ao abrir e a cada mudança.

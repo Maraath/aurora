@@ -76,6 +76,9 @@ bool FlutterWindow::OnCreate() {
   ConfigurarCanal();
   fala_ = std::make_unique<Fala>(flutter_controller_->engine()->messenger(),
                                  GetHandle());
+  bandeja_ = std::make_unique<Bandeja>(
+      flutter_controller_->engine()->messenger(), GetHandle());
+  msg_taskbar_created_ = RegisterWindowMessageW(L"TaskbarCreated");
 
   HWND filho = flutter_controller_->view()->GetNativeWindow();
   SetChildContent(filho);
@@ -103,6 +106,7 @@ bool FlutterWindow::OnCreate() {
 
 void FlutterWindow::OnDestroy() {
   g_janela = nullptr;
+  bandeja_ = nullptr;
   fala_ = nullptr;
   canal_ = nullptr;
   if (flutter_controller_) {
@@ -125,6 +129,20 @@ void FlutterWindow::ConfigurarCanal() {
       ShowWindow(hwnd, IsZoomed(hwnd) ? SW_RESTORE : SW_MAXIMIZE);
     } else if (metodo == "fechar") {
       PostMessage(hwnd, WM_CLOSE, 0, 0);
+    } else if (metodo == "sair") {
+      sair_definitivo_ = true;
+      PostMessage(hwnd, WM_CLOSE, 0, 0);
+    } else if (metodo == "restaurar") {
+      if (bandeja_) bandeja_->RestaurarJanela();
+    } else if (metodo == "ocultar") {
+      if (bandeja_) bandeja_->OcultarJanela();
+    } else if (metodo == "fecharParaBandeja") {
+      if (const auto* ativo = std::get_if<bool>(chamada.arguments())) {
+        if (bandeja_) bandeja_->DefinirFecharParaBandeja(*ativo);
+      }
+      resultado->Success(
+          flutter::EncodableValue(bandeja_ && bandeja_->FecharParaBandeja()));
+      return;
     } else if (metodo == "tema") {
       if (const auto* escuro = std::get_if<bool>(chamada.arguments())) {
         tema_escuro_ = *escuro;
@@ -212,7 +230,34 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
     }
   }
 
+  if (message == msg_taskbar_created_ && msg_taskbar_created_ != 0) {
+    if (bandeja_) bandeja_->Criar();
+    return 0;
+  }
+
   switch (message) {
+    case Bandeja::kMensagemBandeja:
+      if (bandeja_) bandeja_->AoEvento(wparam, lparam);
+      return 0;
+
+    case WM_COMMAND:
+      if (LOWORD(wparam) == 1002 /* kCmdSair */) {
+        sair_definitivo_ = true;
+        PostMessage(hwnd, WM_CLOSE, 0, 0);
+        return 0;
+      }
+      break;
+
+    case WM_CLOSE:
+      if (sair_definitivo_) {
+        break;
+      }
+      if (bandeja_ && bandeja_->FecharParaBandeja()) {
+        bandeja_->OcultarJanela();
+        return 0;
+      }
+      break;
+
     case WM_FONTCHANGE:
       flutter_controller_->engine()->ReloadSystemFonts();
       break;

@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "bandeja.h"
 #include "fala.h"
 #include "win32_window.h"
 
@@ -46,6 +47,15 @@ class FlutterWindow : public Win32Window {
 
   // Resposta falada (canal "aurora/fala").
   std::unique_ptr<Fala> fala_;
+
+  // Ícone e comportamento da bandeja do sistema (canal "aurora/bandeja").
+  std::unique_ptr<Bandeja> bandeja_;
+
+  // Mensagem do Windows para quando a barra de tarefas é recriada.
+  UINT msg_taskbar_created_ = 0;
+
+  // Quando true, não intercepta WM_CLOSE para a bandeja e encerra o app.
+  bool sair_definitivo_ = false;
 
   // Botão maximizar (desenhado pelo Flutter, tratado aqui): 0 normal,
   // 1 mouse em cima, 2 apertado.

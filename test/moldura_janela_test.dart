@@ -64,4 +64,13 @@ void main() {
     ));
     expect(find.bySemanticsLabel('Fechar'), findsNothing);
   });
+
+  test('JanelaWindows suporta métodos de bandeja e encerramento', () async {
+    await JanelaWindows.instancia.sair();
+    await JanelaWindows.instancia.restaurar();
+    await JanelaWindows.instancia.ocultar();
+    await JanelaWindows.instancia.configurarFecharParaBandeja(true);
+
+    expect(chamadas.map((c) => c.method), containsAll(['sair', 'restaurar', 'ocultar', 'fecharParaBandeja']));
+  });
 }
