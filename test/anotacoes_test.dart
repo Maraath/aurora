@@ -393,5 +393,29 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     });
+
+    testWidgets('arrastar nota para pasta: segurar e soltar move para a pasta', (tester) async {
+      final pastaId = await repo.criarPasta('Projetos');
+      final notaId = await repo.criarNota(titulo: 'Ideia Incrível', texto: 'Detalhes');
+      await abrir(tester, const Size(1200, 800));
+
+      expect(find.text('Ideia Incrível'), findsOneWidget);
+      expect(find.text('Projetos'), findsOneWidget);
+
+      final notaFinder = find.text('Ideia Incrível');
+      final pastaFinder = find.text('Projetos');
+
+      final gesture = await tester.startGesture(tester.getCenter(notaFinder));
+      await tester.pump(const Duration(milliseconds: 350));
+      await gesture.moveTo(tester.getCenter(pastaFinder));
+      await tester.pump(const Duration(milliseconds: 100));
+      await gesture.up();
+      await assentar(tester);
+
+      final carregada = await repo.nota(notaId);
+      expect(carregada?.nota.pastaId, pastaId);
+      expect(find.textContaining('movida para “Projetos”'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    });
   });
 }

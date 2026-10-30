@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,14 +49,28 @@ String quandoNota(DateTime instante, DateTime hoje) {
   if (dias == 0) return hora(emLocal(instante));
   if (dias == 1) return 'ontem';
   if (dias > 1 && dias < 7) {
-    const nomes = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
+    const nomes = [
+      'segunda',
+      'terça',
+      'quarta',
+      'quinta',
+      'sexta',
+      'sábado',
+      'domingo',
+    ];
     return nomes[dia.weekday - 1];
   }
   return diaMesCurto(dia);
 }
 
 class AnotacoesPage extends StatefulWidget {
-  const AnotacoesPage({super.key, this.voltar, this.repo, this.gravador, this.escolherFoto});
+  const AnotacoesPage({
+    super.key,
+    this.voltar,
+    this.repo,
+    this.gravador,
+    this.escolherFoto,
+  });
   final VoidCallback? voltar;
 
   /// Nos testes: repositório, microfone e seletor de foto falsos.
@@ -160,16 +175,26 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
     }
     switch (tipo) {
       case TipoNota.texto:
-        await _abrir(await repo.criarNota(pastaId: _pastaDoFiltro), focar: true);
+        await _abrir(
+          await repo.criarNota(pastaId: _pastaDoFiltro),
+          focar: true,
+        );
       case TipoNota.lista:
         await _abrir(
-          await repo.criarNota(tipo: TipoNota.lista, pastaId: _pastaDoFiltro, itens: const [ItemLista('')]),
+          await repo.criarNota(
+            tipo: TipoNota.lista,
+            pastaId: _pastaDoFiltro,
+            itens: const [ItemLista('')],
+          ),
           focar: true,
         );
       case TipoNota.foto:
         final bytes = await (widget.escolherFoto ?? escolherImagem)(context);
         if (bytes == null || !mounted) return;
-        final id = await repo.criarNota(tipo: TipoNota.foto, pastaId: _pastaDoFiltro);
+        final id = await repo.criarNota(
+          tipo: TipoNota.foto,
+          pastaId: _pastaDoFiltro,
+        );
         try {
           await repo.adicionarFoto(id, bytes);
         } catch (_) {
@@ -187,7 +212,10 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
     final audio = await gravarAudio(context, gravador: widget.gravador);
     if (audio == null || !mounted) return;
     final repo = _repo!;
-    final id = await repo.criarNota(tipo: TipoNota.audio, pastaId: _pastaDoFiltro);
+    final id = await repo.criarNota(
+      tipo: TipoNota.audio,
+      pastaId: _pastaDoFiltro,
+    );
     final anexo = await repo.adicionarAudio(id, audio);
     unawaited(_abrir(id));
     final erro = await transcreverNoFundo(repo, anexo);
@@ -209,11 +237,17 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
                 child: Container(
                   width: 40,
                   height: 4,
-                  decoration: BoxDecoration(color: ctx.cores.line, borderRadius: BorderRadius.circular(2)),
+                  decoration: BoxDecoration(
+                    color: ctx.cores.line,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
-              GradeTiposNota(teclas: false, aoEscolher: (t) => Navigator.pop(ctx, t)),
+              GradeTiposNota(
+                teclas: false,
+                aoEscolher: (t) => Navigator.pop(ctx, t),
+              ),
             ],
           ),
         ),
@@ -245,7 +279,10 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
             ),
             ListTile(
               leading: Icon(Icons.delete_outline_rounded, color: ctx.cores.bad),
-              title: Text('Apagar a pasta', style: TextStyle(color: ctx.cores.bad)),
+              title: Text(
+                'Apagar a pasta',
+                style: TextStyle(color: ctx.cores.bad),
+              ),
               subtitle: const Text('As notas dela continuam, sem pasta.'),
               onTap: () => Navigator.pop(ctx, 'apagar'),
             ),
@@ -260,17 +297,35 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
       if (nome != null) await _repo!.renomearPasta(p.id, nome);
     } else {
       await _repo!.apagarPasta(p.id);
-      if (mounted && _filtro == NaPasta(p.id)) setState(() => _filtro = const TodasAsNotas());
+      if (mounted && _filtro == NaPasta(p.id))
+        setState(() => _filtro = const TodasAsNotas());
     }
   }
 
   Future<void> _alternarItem(NotaCompleta n, int i) => _repo!.salvarNota(
     n.id,
-    itens: [for (var k = 0; k < n.itens.length; k++) k == i ? n.itens[k].copiar(feito: !n.itens[k].feito) : n.itens[k]],
+    itens: [
+      for (var k = 0; k < n.itens.length; k++)
+        k == i ? n.itens[k].copiar(feito: !n.itens[k].feito) : n.itens[k],
+    ],
   );
 
-  void _avisar(String texto) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto), behavior: SnackBarBehavior.floating));
+  Future<void> _moverParaPasta(String notaId, String? pastaId) async {
+    final n = await _repo!.nota(notaId);
+    if (n == null || !mounted) return;
+    if (n.nota.pastaId == pastaId) return;
+    await _repo!.salvarNota(notaId, pastaId: Value(pastaId));
+    if (!mounted) return;
+    HapticFeedback.mediumImpact();
+    final q = await _repo!.carregar();
+    final nomePasta = pastaId != null ? q.pasta(pastaId)?.nome : null;
+    final destino = nomePasta != null ? '“$nomePasta”' : '“Sem pasta”';
+    _avisar('Nota “${n.tituloVisivel}” movida para $destino.');
+  }
+
+  void _avisar(String texto) => ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(texto), behavior: SnackBarBehavior.floating),
+  );
 
   // ---------------------------------------------------------------- tela
 
@@ -282,7 +337,10 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
         final q = snap.data;
         if (q == null) return const SizedBox.shrink();
         // Filtro numa pasta que sumiu (apagada em outro aparelho): volta para Todas.
-        final filtro = _filtro is NaPasta && q.pasta((_filtro as NaPasta).id) == null ? const TodasAsNotas() : _filtro;
+        final filtro =
+            _filtro is NaPasta && q.pasta((_filtro as NaPasta).id) == null
+            ? const TodasAsNotas()
+            : _filtro;
         final notas = filtrarNotas(q.notas, filtro, _busca.text);
         // Nota aberta que sumiu (apagada aqui ou em outro aparelho): fecha o
         // painel. Recém-criada ainda pode não ter chegado na lista: espera aparecer.
@@ -298,12 +356,18 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
         final larga = _larga;
         final corpo = _mural(q, filtro, notas);
         return CallbackShortcuts(
-          bindings: {const SingleActivator(LogicalKeyboardKey.keyN, control: true): () => _nova(TipoNota.texto)},
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.keyN, control: true): () =>
+                _nova(TipoNota.texto),
+          },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _cabecalho(larga),
-              if (!larga && _buscaAberta) ...[const SizedBox(height: 12), _campoBusca(autofoco: true)],
+              if (!larga && _buscaAberta) ...[
+                const SizedBox(height: 12),
+                _campoBusca(autofoco: true),
+              ],
               const SizedBox(height: 16),
               Expanded(
                 child: larga && _aberta != null
@@ -318,7 +382,10 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
                           ),
                           Align(
                             alignment: Alignment.centerRight,
-                            child: SizedBox(width: 540, child: _painel(_editorAberto(), folha: true)),
+                            child: SizedBox(
+                              width: 540,
+                              child: _painel(_editorAberto(), folha: true),
+                            ),
                           ),
                         ],
                       )
@@ -353,7 +420,11 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
             icon: Icon(Icons.chevron_left_rounded, size: 28, color: c.text),
           ),
         Flexible(
-          child: Text('Anotações', style: sora(26), overflow: TextOverflow.ellipsis),
+          child: Text(
+            'Anotações',
+            style: sora(26),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         const Spacer(),
         if (larga)
@@ -365,7 +436,10 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
               _buscaAberta = !_buscaAberta;
               if (!_buscaAberta) _busca.clear();
             }),
-            icon: Icon(_buscaAberta ? Icons.close_rounded : Icons.search_rounded, color: c.text),
+            icon: Icon(
+              _buscaAberta ? Icons.close_rounded : Icons.search_rounded,
+              color: c.text,
+            ),
           ),
         if (larga) ...[
           const SizedBox(width: 12),
@@ -395,8 +469,10 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
                 ),
               ),
             ],
-            builder: (context, ctl, _) =>
-                _BotaoNovaNota(aberto: ctl.isOpen, aoTocar: () => ctl.isOpen ? ctl.close() : ctl.open()),
+            builder: (context, ctl, _) => _BotaoNovaNota(
+              aberto: ctl.isOpen,
+              aoTocar: () => ctl.isOpen ? ctl.close() : ctl.open(),
+            ),
           ),
         ],
       ],
@@ -419,7 +495,10 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
         filled: true,
         fillColor: c.surface2.withValues(alpha: 0.7),
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(Raio.controle), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Raio.controle),
+          borderSide: BorderSide.none,
+        ),
       ),
     );
   }
@@ -428,7 +507,9 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
     children: [
       Expanded(child: _BotaoGravar(aoTocar: _gravarNova)),
       const SizedBox(width: 12),
-      Expanded(child: _BotaoNovaNota(aberto: false, aoTocar: _escolherTipoNoCelular)),
+      Expanded(
+        child: _BotaoNovaNota(aberto: false, aoTocar: _escolherTipoNoCelular),
+      ),
     ],
   );
 
@@ -437,7 +518,11 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
     final c = context.cores;
     final cantos = BorderRadius.circular(22);
     if (Theme.of(context).brightness == Brightness.dark) {
-      return Vidro(tipo: folha ? TipoVidro.folha : TipoVidro.cartao, raio: cantos, child: filho);
+      return Vidro(
+        tipo: folha ? TipoVidro.folha : TipoVidro.cartao,
+        raio: cantos,
+        child: filho,
+      );
     }
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -471,6 +556,8 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
           aoEscolher: (f) => setState(() => _filtro = f),
           aoNovaPasta: _novaPasta,
           aoMenu: _menuPasta,
+          aoSoltarNotaNaPasta: (notaId, pastaId) =>
+              _moverParaPasta(notaId, pastaId),
         ),
         const SizedBox(height: 14),
         Expanded(
@@ -484,12 +571,15 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
                       if (fixadas.isNotEmpty) ...[
                         _RotuloGrupo(texto: 'Fixadas', fixadas: true),
                         _Colunas(
-                          filhos: [for (final n in fixadas) _cartao(q, n, hoje)],
+                          filhos: [
+                            for (final n in fixadas) _cartao(q, n, hoje),
+                          ],
                           pesos: [for (final n in fixadas) _altura(n)],
                         ),
                       ],
                       if (outras.isNotEmpty) ...[
-                        if (fixadas.isNotEmpty) const _RotuloGrupo(texto: 'Outras'),
+                        if (fixadas.isNotEmpty)
+                          const _RotuloGrupo(texto: 'Outras'),
                         _Colunas(
                           filhos: [for (final n in outras) _cartao(q, n, hoje)],
                           pesos: [for (final n in outras) _altura(n)],
@@ -508,16 +598,20 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
       70 +
       (n.fotos.isEmpty ? 0 : 120) +
       (n.audios.isEmpty ? 0 : 50) +
-      (n.nota.texto.trim().isEmpty ? 0 : ((n.nota.texto.length / 38).ceil().clamp(1, 6) * 20)) +
+      (n.nota.texto.trim().isEmpty
+          ? 0
+          : ((n.nota.texto.length / 38).ceil().clamp(1, 6) * 20)) +
       (n.itens.length.clamp(0, 5) * 24);
 
   Widget _cartao(QuadroNotas q, NotaCompleta n, DateTime hoje) => _CartaoNota(
     repo: _repo!,
     nota: n,
+    quadro: q,
     pasta: q.pasta(n.nota.pastaId)?.nome,
     quando: quandoNota(n.nota.atualizadoEm, hoje),
     aoAbrir: () => _abrir(n.id),
     aoAlternarItem: (i) => _alternarItem(n, i),
+    aoMoverParaPasta: (pastaId) => _moverParaPasta(n.id, pastaId),
   );
 
   Widget _vazio(QuadroNotas q) {
@@ -543,8 +637,12 @@ class _BotaoGravar extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.cores;
     return Material(
-      color: c.surface.withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.55 : 1),
-      shape: StadiumBorder(side: BorderSide(color: c.violeta.withValues(alpha: 0.55))),
+      color: c.surface.withValues(
+        alpha: Theme.of(context).brightness == Brightness.dark ? 0.55 : 1,
+      ),
+      shape: StadiumBorder(
+        side: BorderSide(color: c.violeta.withValues(alpha: 0.55)),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: aoTocar,
@@ -608,7 +706,11 @@ class _BotaoNovaNota extends StatelessWidget {
                 AnimatedRotation(
                   turns: aberto ? 0.5 : 0,
                   duration: const Duration(milliseconds: 160),
-                  child: Icon(Icons.expand_more_rounded, size: 20, color: c.noAccent),
+                  child: Icon(
+                    Icons.expand_more_rounded,
+                    size: 20,
+                    color: c.noAccent,
+                  ),
                 ),
               ],
             ),
@@ -622,7 +724,11 @@ class _BotaoNovaNota extends StatelessWidget {
 /// "O que você quer criar?": Nota, Lista, Foto e Áudio em cartões 2 × 2, com
 /// as letras N, L, F e A no teclado.
 class GradeTiposNota extends StatelessWidget {
-  const GradeTiposNota({super.key, required this.aoEscolher, this.teclas = true});
+  const GradeTiposNota({
+    super.key,
+    required this.aoEscolher,
+    this.teclas = true,
+  });
   final ValueChanged<TipoNota> aoEscolher;
 
   /// Mostra a letra de cada tipo (computador; no celular não há teclado).
@@ -638,10 +744,14 @@ class GradeTiposNota extends StatelessWidget {
   Widget _cartaoTipo(AuroraCores c, (TipoNota, String, String, String) opcao) {
     final (tipo, nome, detalhe, tecla) = opcao;
     return _TipoNota(
-      icone: tipo == TipoNota.audio ? Icons.mic_none_rounded : iconeTipoNota(tipo),
+      icone: tipo == TipoNota.audio
+          ? Icons.mic_none_rounded
+          : iconeTipoNota(tipo),
       cor: corTipoNota(c, tipo),
       nome: nome,
-      detalhe: fotosDisponiveis || tipo != TipoNota.foto ? detalhe : 'Ainda não na versão web',
+      detalhe: fotosDisponiveis || tipo != TipoNota.foto
+          ? detalhe
+          : 'Ainda não na versão web',
       tecla: teclas ? tecla : null,
       aoTocar: () => aoEscolher(tipo),
     );
@@ -749,7 +859,10 @@ class _TipoNota extends StatelessWidget {
                     width: 22,
                     height: 22,
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(color: c.surface2, borderRadius: BorderRadius.circular(6)),
+                    decoration: BoxDecoration(
+                      color: c.surface2,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
                     child: Text(
                       tecla!,
                       style: manrope(11, peso: FontWeight.w700, cor: c.muted),
@@ -765,6 +878,7 @@ class _TipoNota extends StatelessWidget {
 }
 
 /// Chips das pastas (Mural e Lista no celular): Todas, cada pasta, Áudios e "+".
+/// Permite arrastar notas para cima de uma pasta para movê-las.
 /// Segurar (ou botão direito) numa pasta abre renomear/apagar.
 class _ChipsPastas extends StatelessWidget {
   const _ChipsPastas({
@@ -773,37 +887,89 @@ class _ChipsPastas extends StatelessWidget {
     required this.aoEscolher,
     required this.aoNovaPasta,
     required this.aoMenu,
+    this.aoSoltarNotaNaPasta,
   });
   final QuadroNotas quadro;
   final FiltroNotas filtro;
   final ValueChanged<FiltroNotas> aoEscolher;
   final VoidCallback aoNovaPasta;
   final ValueChanged<PastaNota> aoMenu;
+  final void Function(String notaId, String? pastaId)? aoSoltarNotaNaPasta;
 
   @override
   Widget build(BuildContext context) {
     final c = context.cores;
-    Widget chip(String rotulo, FiltroNotas f, {IconData? icone, Color? corIcone, PastaNota? pasta}) {
+    Widget chip(
+      String rotulo,
+      FiltroNotas f, {
+      IconData? icone,
+      Color? corIcone,
+      PastaNota? pasta,
+      bool aceitaArrasto = false,
+      String? pastaDestinoId,
+    }) {
       final sel = f == filtro;
-      return Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: GestureDetector(
-          onLongPress: pasta == null ? null : () => aoMenu(pasta),
-          onSecondaryTap: pasta == null ? null : () => aoMenu(pasta),
-          child: ChoiceChip(
-            selected: sel,
-            showCheckmark: false,
-            avatar: icone == null ? null : Icon(icone, size: 16, color: corIcone ?? c.muted),
-            label: Text(rotulo),
-            labelStyle: manrope(13, peso: FontWeight.w700, cor: sel ? c.text : c.muted),
-            backgroundColor: c.surface2.withValues(alpha: 0.6),
-            selectedColor: c.violeta.withValues(alpha: 0.18),
-            side: BorderSide(color: sel ? c.violeta.withValues(alpha: 0.55) : c.line),
-            shape: const StadiumBorder(),
-            onSelected: (_) => aoEscolher(f),
+
+      Widget corpo(bool sobrevoado) {
+        return ChoiceChip(
+          selected: sel || sobrevoado,
+          showCheckmark: false,
+          avatar: icone == null
+              ? null
+              : Icon(
+                  icone,
+                  size: 16,
+                  color: sobrevoado ? c.teal : (corIcone ?? c.muted),
+                ),
+          label: Text(rotulo),
+          labelStyle: manrope(
+            13,
+            peso: FontWeight.w700,
+            cor: (sel || sobrevoado) ? c.text : c.muted,
           ),
-        ),
+          backgroundColor: c.surface2.withValues(alpha: 0.6),
+          selectedColor: sobrevoado
+              ? c.teal.withValues(alpha: 0.22)
+              : c.violeta.withValues(alpha: 0.18),
+          side: BorderSide(
+            color: sobrevoado
+                ? c.teal
+                : (sel ? c.violeta.withValues(alpha: 0.55) : c.line),
+            width: sobrevoado ? 1.8 : 1.0,
+          ),
+          shape: const StadiumBorder(),
+          onSelected: (_) => aoEscolher(f),
+        );
+      }
+
+      Widget base = GestureDetector(
+        onLongPress: pasta == null ? null : () => aoMenu(pasta),
+        onSecondaryTap: pasta == null ? null : () => aoMenu(pasta),
+        child: corpo(false),
       );
+
+      if (aceitaArrasto && aoSoltarNotaNaPasta != null) {
+        base = DragTarget<String>(
+          onWillAcceptWithDetails: (detalhes) => detalhes.data.isNotEmpty,
+          onAcceptWithDetails: (detalhes) =>
+              aoSoltarNotaNaPasta!(detalhes.data, pastaDestinoId),
+          builder: (context, candidatos, _) {
+            final sobrevoado = candidatos.isNotEmpty;
+            return AnimatedScale(
+              scale: sobrevoado ? 1.1 : 1.0,
+              duration: const Duration(milliseconds: 140),
+              curve: Curves.easeOutCubic,
+              child: GestureDetector(
+                onLongPress: pasta == null ? null : () => aoMenu(pasta),
+                onSecondaryTap: pasta == null ? null : () => aoMenu(pasta),
+                child: corpo(sobrevoado),
+              ),
+            );
+          },
+        );
+      }
+
+      return Padding(padding: const EdgeInsets.only(right: 8), child: base);
     }
 
     final audios = quadro.notas.where((n) => n.audios.isNotEmpty).length;
@@ -811,14 +977,37 @@ class _ChipsPastas extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          chip('Todas · ${quadro.notas.length}', const TodasAsNotas()),
+          chip(
+            'Todas · ${quadro.notas.length}',
+            const TodasAsNotas(),
+            aceitaArrasto: true,
+            pastaDestinoId: null, // Soltar em Todas remove da pasta (Sem pasta)
+          ),
           for (final p in quadro.pastas)
-            chip(p.nome, NaPasta(p.id), icone: Icons.folder_outlined, corIcone: c.accent, pasta: p),
-          if (audios > 0) chip('Áudios · $audios', const SoAudios(), icone: Icons.graphic_eq_rounded, corIcone: c.bad),
+            chip(
+              p.nome,
+              NaPasta(p.id),
+              icone: Icons.folder_outlined,
+              corIcone: c.accent,
+              pasta: p,
+              aceitaArrasto: true,
+              pastaDestinoId: p.id,
+            ),
+          if (audios > 0)
+            chip(
+              'Áudios · $audios',
+              const SoAudios(),
+              icone: Icons.graphic_eq_rounded,
+              corIcone: c.bad,
+            ),
           IconButton(
             tooltip: 'Nova pasta',
             onPressed: aoNovaPasta,
-            icon: Icon(Icons.create_new_folder_outlined, color: c.muted, size: 22),
+            icon: Icon(
+              Icons.create_new_folder_outlined,
+              color: c.muted,
+              size: 22,
+            ),
           ),
         ],
       ),
@@ -838,7 +1027,10 @@ class _RotuloGrupo extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 6, 4, 10),
       child: Row(
         children: [
-          if (fixadas) ...[Icon(Icons.push_pin_rounded, size: 14, color: c.warn), const SizedBox(width: 6)],
+          if (fixadas) ...[
+            Icon(Icons.push_pin_rounded, size: 14, color: c.warn),
+            const SizedBox(width: 6),
+          ],
           Text(texto.toUpperCase(), style: rotulo(c.muted)),
         ],
       ),
@@ -864,7 +1056,9 @@ class _Colunas extends StatelessWidget {
         for (var k = 1; k < n; k++) {
           if (alturas[k] < alturas[menor] - 1) menor = k;
         }
-        colunas[menor].add(Padding(padding: const EdgeInsets.only(bottom: 12), child: filhos[i]));
+        colunas[menor].add(
+          Padding(padding: const EdgeInsets.only(bottom: 12), child: filhos[i]),
+        );
         alturas[menor] += pesos[i] + 12;
       }
       return Padding(
@@ -875,7 +1069,10 @@ class _Colunas extends StatelessWidget {
             for (var k = 0; k < n; k++) ...[
               if (k > 0) const SizedBox(width: 12),
               Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: colunas[k]),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: colunas[k],
+                ),
               ),
             ],
           ],
@@ -889,17 +1086,160 @@ class _CartaoNota extends StatelessWidget {
   const _CartaoNota({
     required this.repo,
     required this.nota,
+    this.quadro,
     required this.pasta,
     required this.quando,
     required this.aoAbrir,
     required this.aoAlternarItem,
+    this.aoMoverParaPasta,
   });
   final AnotacoesRepo repo;
   final NotaCompleta nota;
+  final QuadroNotas? quadro;
   final String? pasta;
   final String quando;
   final VoidCallback aoAbrir;
   final ValueChanged<int> aoAlternarItem;
+  final ValueChanged<String?>? aoMoverParaPasta;
+
+  Future<void> _menuOpcoes(BuildContext context, QuadroNotas? quadro) async {
+    final c = context.cores;
+    final n = nota;
+    final acao = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: c.surface,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            ListTile(
+              leading: Icon(
+                n.nota.fixada
+                    ? Icons.push_pin_outlined
+                    : Icons.push_pin_rounded,
+                color: c.warn,
+              ),
+              title: Text(n.nota.fixada ? 'Desafixar nota' : 'Fixar no topo'),
+              onTap: () => Navigator.pop(ctx, 'fixar'),
+            ),
+            ListTile(
+              leading: Icon(Icons.drive_file_move_outlined, color: c.accent),
+              title: const Text('Mover para pasta…'),
+              subtitle: Text(pasta ?? 'Sem pasta'),
+              onTap: () => Navigator.pop(ctx, 'mover'),
+            ),
+            ListTile(
+              leading: Icon(Icons.delete_outline_rounded, color: c.bad),
+              title: Text('Apagar nota', style: TextStyle(color: c.bad)),
+              onTap: () => Navigator.pop(ctx, 'apagar'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (!context.mounted || acao == null) return;
+    if (acao == 'fixar') {
+      await repo.salvarNota(n.id, fixada: !n.nota.fixada);
+    } else if (acao == 'mover') {
+      await _escolherPasta(context, quadro);
+    } else if (acao == 'apagar') {
+      await repo.apagarNota(n.id);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Nota apagada.'),
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'Desfazer',
+              onPressed: () => repo.desfazerApagar(n.id),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _escolherPasta(BuildContext context, QuadroNotas? quadro) async {
+    final pastas = quadro?.pastas ?? [];
+    final escolha = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: context.cores.surface,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.inbox_outlined),
+              title: const Text('Sem pasta'),
+              selected: nota.nota.pastaId == null,
+              onTap: () => Navigator.pop(ctx, ''),
+            ),
+            for (final p in pastas)
+              ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(p.nome),
+                selected: p.id == nota.nota.pastaId,
+                onTap: () => Navigator.pop(ctx, p.id),
+              ),
+            ListTile(
+              leading: const Icon(Icons.create_new_folder_outlined),
+              title: const Text('Nova pasta…'),
+              onTap: () => Navigator.pop(ctx, '+'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (escolha == null || !context.mounted) return;
+    var id = escolha;
+    if (escolha == '+') {
+      final nome = await pedirNomePasta(context);
+      if (nome == null) return;
+      id = await repo.criarPasta(nome);
+    }
+    if (aoMoverParaPasta != null) {
+      aoMoverParaPasta!(id.isEmpty ? null : id);
+    } else {
+      await repo.salvarNota(nota.id, pastaId: Value(id.isEmpty ? null : id));
+    }
+  }
+
+  Widget _miniaturaFeedback(BuildContext context) {
+    final c = context.cores;
+    final n = nota;
+    return Material(
+      elevation: 8,
+      borderRadius: BorderRadius.circular(16),
+      color: c.surface,
+      shadowColor: Colors.black54,
+      child: Container(
+        width: 220,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: c.accent, width: 1.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.description_outlined, size: 20, color: c.accent),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                n.tituloVisivel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: sora(13, peso: FontWeight.w600, cor: c.text),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -908,9 +1248,15 @@ class _CartaoNota extends StatelessWidget {
     final texto = n.nota.texto.trim();
     final previa = texto.isNotEmpty
         ? texto
-        : (n.itens.isEmpty ? [for (final a in n.audios) a.transcricao ?? ''].join(' ').trim() : '');
-    final itens = n.itens.where((i) => i.texto.trim().isNotEmpty).take(5).toList();
-    return Semantics(
+        : (n.itens.isEmpty
+              ? [for (final a in n.audios) a.transcricao ?? ''].join(' ').trim()
+              : '');
+    final itens = n.itens
+        .where((i) => i.texto.trim().isNotEmpty)
+        .take(5)
+        .toList();
+
+    final cartaoVisual = Semantics(
       button: true,
       label: 'Abrir a nota ${n.tituloVisivel}',
       child: Cartao(
@@ -937,11 +1283,34 @@ class _CartaoNota extends StatelessWidget {
                         const SizedBox(width: 6),
                       ],
                       Expanded(
-                        child: Text(n.tituloVisivel, maxLines: 2, overflow: TextOverflow.ellipsis, style: sora(15)),
+                        child: Text(
+                          n.tituloVisivel,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: sora(15),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Opções da nota',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 28,
+                          minHeight: 28,
+                        ),
+                        icon: Icon(
+                          Icons.more_vert_rounded,
+                          size: 18,
+                          color: c.muted,
+                        ),
+                        onPressed: () => _menuOpcoes(context, quadro),
                       ),
                     ],
                   ),
-                  for (final a in n.audios.take(1)) ...[const SizedBox(height: 10), PlayerAudio(repo: repo, anexo: a)],
+                  for (final a in n.audios.take(1)) ...[
+                    const SizedBox(height: 10),
+                    PlayerAudio(repo: repo, anexo: a),
+                  ],
                   if (previa.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text(
@@ -967,9 +1336,18 @@ class _CartaoNota extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: it.feito ? c.teal : Colors.transparent,
-                                  border: Border.all(color: it.feito ? c.teal : c.muted, width: 1.6),
+                                  border: Border.all(
+                                    color: it.feito ? c.teal : c.muted,
+                                    width: 1.6,
+                                  ),
                                 ),
-                                child: it.feito ? Icon(Icons.check_rounded, size: 11, color: c.noAccent) : null,
+                                child: it.feito
+                                    ? Icon(
+                                        Icons.check_rounded,
+                                        size: 11,
+                                        color: c.noAccent,
+                                      )
+                                    : null,
                               ),
                               const SizedBox(width: 8),
                               Expanded(
@@ -977,10 +1355,15 @@ class _CartaoNota extends StatelessWidget {
                                   it.texto,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: manrope(
-                                    13,
-                                    cor: it.feito ? c.muted : c.text,
-                                  ).copyWith(decoration: it.feito ? TextDecoration.lineThrough : null),
+                                  style:
+                                      manrope(
+                                        13,
+                                        cor: it.feito ? c.muted : c.text,
+                                      ).copyWith(
+                                        decoration: it.feito
+                                            ? TextDecoration.lineThrough
+                                            : null,
+                                      ),
                                 ),
                               ),
                             ],
@@ -990,7 +1373,10 @@ class _CartaoNota extends StatelessWidget {
                     if (n.itensComTexto > itens.length)
                       Padding(
                         padding: const EdgeInsets.only(top: 2, left: 24),
-                        child: Text('+ ${n.itensComTexto - itens.length} itens', style: manrope(12, cor: c.muted)),
+                        child: Text(
+                          '+ ${n.itensComTexto - itens.length} itens',
+                          style: manrope(12, cor: c.muted),
+                        ),
                       ),
                   ],
                   const SizedBox(height: 10),
@@ -1005,9 +1391,17 @@ class _CartaoNota extends StatelessWidget {
                           style: manrope(11, cor: c.muted),
                         ),
                       ),
-                      if (n.fotos.length > 1 || (n.fotos.isNotEmpty && n.audios.isNotEmpty)) ...[
-                        Icon(Icons.attach_file_rounded, size: 13, color: c.muted),
-                        Text('${n.anexos.length}', style: manrope(11, cor: c.muted)),
+                      if (n.fotos.length > 1 ||
+                          (n.fotos.isNotEmpty && n.audios.isNotEmpty)) ...[
+                        Icon(
+                          Icons.attach_file_rounded,
+                          size: 13,
+                          color: c.muted,
+                        ),
+                        Text(
+                          '${n.anexos.length}',
+                          style: manrope(11, cor: c.muted),
+                        ),
                         const SizedBox(width: 8),
                       ],
                       Text(quando, style: manrope(11, cor: c.muted)),
@@ -1019,6 +1413,15 @@ class _CartaoNota extends StatelessWidget {
           ],
         ),
       ),
+    );
+
+    return LongPressDraggable<String>(
+      data: n.id,
+      hapticFeedbackOnStart: true,
+      delay: const Duration(milliseconds: 320),
+      feedback: _miniaturaFeedback(context),
+      childWhenDragging: Opacity(opacity: 0.35, child: cartaoVisual),
+      child: cartaoVisual,
     );
   }
 }
