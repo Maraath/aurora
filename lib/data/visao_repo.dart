@@ -5,6 +5,7 @@ import '../ui/visao/foco.dart';
 import 'banco.dart';
 import 'compromissos_repo.dart';
 import 'financas_repo.dart';
+import 'gamificacao_repo.dart';
 import 'habitos_repo.dart';
 import 'lembretes_repo.dart';
 import 'observar.dart';
@@ -100,6 +101,7 @@ class ResumoVisao {
     this.vitorias = const [],
     this.atencoes = const [],
     this.totalMinutosFocoSemana = 0,
+    this.gamificacao,
   });
 
   final String nome;
@@ -140,6 +142,7 @@ class ResumoVisao {
   final List<ItemDestaqueRaioX> vitorias;
   final List<ItemDestaqueRaioX> atencoes;
   final int totalMinutosFocoSemana;
+  final QuadroGamificacao? gamificacao;
 
   int get habitosFeitos => habitos.where((h) => h.feito).length;
 }
@@ -181,6 +184,7 @@ class VisaoRepo {
     final pedidoTarefas = _tarefas.carregar();
     final pedidoFinancas = _financas.carregar();
     final pedidoSaude = SaudeRepo(db).carregar();
+    final pedidoGamificacao = GamificacaoRepo(db).carregar();
     final pedidoHistoricoFoco = ControleFoco.carregarHistoricoMinutos(db);
     final pedidoLembretes = (db.select(db.lembretes)
           ..where((l) => l.apagadoEm.isNull() & l.ativo.equals(true) & l.itemTipo.isNull()))
@@ -516,6 +520,7 @@ class VisaoRepo {
       vitorias: vitorias,
       atencoes: atencoes,
       totalMinutosFocoSemana: totalMinutosFocoSemana,
+      gamificacao: await pedidoGamificacao,
     );
   }
 

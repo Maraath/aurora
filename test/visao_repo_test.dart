@@ -44,6 +44,9 @@ void main() {
     expect(r.contasAPagar, 3);
     expect(r.saldoCentavos, 70318);
     expect(r.objetivo?.nome, 'Shape 80kg');
+    expect(r.gamificacao, isNotNull);
+    expect(r.gamificacao!.nivel, greaterThanOrEqualTo(1));
+    expect(r.gamificacao!.totalConquistas, 16);
   });
 
   test('linha do dia, semana e insights', () async {

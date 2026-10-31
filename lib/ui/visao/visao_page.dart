@@ -13,6 +13,7 @@ import '../icone_ia.dart';
 import '../rotina/form_rotina.dart';
 import '../rotina/hoje_rotina.dart' show BotaoNovoRotina;
 import '../shell.dart';
+import 'gamificacao_ui.dart';
 
 /// Visão principal do Aurora: Raio-X Estratégico & Momentum Semanal,
 /// integrando Score de Ritmo, Hiper-Foco, Heatmap de Hábitos, Áreas da Vida,
@@ -292,6 +293,10 @@ class _PainelRaioX extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (resumo.gamificacao != null) ...[
+              CardNivelMastery(gamificacao: resumo.gamificacao!),
+              const SizedBox(height: Espaco.md),
+            ],
             if (telaLarga)
               IntrinsicHeight(
                 child: Row(

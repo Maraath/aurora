@@ -143,9 +143,9 @@ void Bandeja::MostrarMenuContexto() {
   HMENU menu = CreatePopupMenu();
   if (!menu) return;
 
-  InsertMenuW(menu, -1, MF_BYPOSITION | MF_STRING, kCmdRestaurar, L"Abrir Aurora");
-  InsertMenuW(menu, -1, MF_BYPOSITION | MF_SEPARATOR, 0, nullptr);
-  InsertMenuW(menu, -1, MF_BYPOSITION | MF_STRING, kCmdSair, L"Sair do Aurora");
+  InsertMenuW(menu, static_cast<UINT>(-1), MF_BYPOSITION | MF_STRING, kCmdRestaurar, L"Abrir Aurora");
+  InsertMenuW(menu, static_cast<UINT>(-1), MF_BYPOSITION | MF_SEPARATOR, 0, nullptr);
+  InsertMenuW(menu, static_cast<UINT>(-1), MF_BYPOSITION | MF_STRING, kCmdSair, L"Sair do Aurora");
 
   SetMenuDefaultItem(menu, kCmdRestaurar, FALSE);
 

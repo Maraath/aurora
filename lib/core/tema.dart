@@ -59,6 +59,7 @@ class AuroraCores extends ThemeExtension<AuroraCores> {
   Color get corHabito => accent;
   Color get corLembrete => violeta;
   Color get corCompromisso => teal;
+  Color get texto => text;
 
   static const escuro = AuroraCores(
     bg: Color(0xFF080716),

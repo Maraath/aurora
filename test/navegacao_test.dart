@@ -126,16 +126,14 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('celular: Rotina › Hoje alterna entre Timeblocking e Sala de Foco Imersivo', (tester) async {
+  testWidgets('celular: Rotina › Hoje avisa que Foco Imersivo é exclusivo para PC', (tester) async {
     await abrirApp(tester, const Size(390, 844));
     await tocar(tester, find.bySemanticsLabel('Rotina'));
     await assentar(tester); // a Rotina lê quatro tabelas
     expect(find.text('CAPACIDADE DO SEU DIA'), findsOneWidget);
     expect(find.text('Linha do Tempo de Hoje'), findsOneWidget);
     await tocar(tester, find.text('Foco Imersivo'));
-    expect(find.text('Música e Ambiente de Foco'), findsOneWidget);
-    expect(find.text('Vincular Spotify'), findsOneWidget);
-    await tocar(tester, find.text('Timeblocking'));
+    expect(find.textContaining('O Foco Imersivo é exclusivo para PC'), findsOneWidget);
     await tocar(tester, find.text('Calendário'));
     expect(find.text('Compromisso neste dia'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
@@ -151,6 +149,13 @@ void main() {
     expect(find.text('Vitórias da Semana'), findsOneWidget);
     expect(find.text('Pontos de Atenção'), findsOneWidget);
     expect(find.text('Reflexão Semanal com a Aurora'), findsOneWidget);
+    expect(find.text('Galeria'), findsOneWidget);
+
+    await tocar(tester, find.text('Galeria'));
+    expect(find.text('Maestria & Conquistas'), findsOneWidget);
+    await tocar(tester, find.byIcon(Icons.close_rounded));
+    expect(find.text('Maestria & Conquistas'), findsNothing);
+
     await tester.pumpWidget(const SizedBox());
   });
 
