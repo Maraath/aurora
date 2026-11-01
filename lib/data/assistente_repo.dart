@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 
 import '../core/comandos.dart';
 import '../core/formato.dart';
-import '../core/nuvem.dart' show mensagemDeErro;
+import '../core/nuvem.dart' show mensagemDeErro, nuvem;
 import '../core/relogio.dart';
 import 'alimentacao_repo.dart';
 import 'banco.dart';
@@ -144,6 +144,35 @@ class AssistenteRepo {
 
   /// Verdadeiro enquanto a IA está respondendo (para a tela mostrar).
   static final pensando = ValueNotifier<bool>(false);
+
+  /// Quantos pedidos à IA foram feitos hoje e o limite diário da conta (padrão 60).
+  /// Atualizado ao abrir o assistente, ao responder mensagens e na tela de Conta.
+  static final usoHoje = ValueNotifier<({int usados, int limite})?>(null);
+
+  /// Atualiza [usoHoje] consultando a tabela `uso_ia` no Supabase se houver conta conectada.
+  static Future<({int usados, int limite})?> atualizarUsoHoje() async {
+    final cliente = nuvem;
+    final usuario = cliente?.auth.currentUser;
+    if (cliente == null || usuario == null) {
+      usoHoje.value = null;
+      return null;
+    }
+    try {
+      final hoje = DateTime.now().toIso8601String().substring(0, 10);
+      final r = await cliente
+          .from('uso_ia')
+          .select('pedidos')
+          .eq('user_id', usuario.id)
+          .eq('dia', hoje)
+          .maybeSingle();
+      final pedidos = (r?['pedidos'] as num?)?.toInt() ?? 0;
+      final info = (usados: pedidos, limite: 60);
+      usoHoje.value = info;
+      return info;
+    } catch (_) {
+      return usoHoje.value;
+    }
+  }
 
   Stream<List<MensagemAssistente>> observarConversa() =>
       observar(db, [db.mensagensAssistente], carregarConversa);
@@ -382,6 +411,7 @@ class AssistenteRepo {
         })
         ..add({'role': 'tool', 'content': resultados});
     }
+    unawaited(atualizarUsoHoje());
     return true;
   }
 

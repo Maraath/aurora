@@ -112,6 +112,7 @@ class AutomacoesRepo {
               modelo: m.name,
               diasSemana: Value(m.dias),
               horario: m.horario,
+              ativa: const Value(false),
               // Data antiga: qualquer edição real (em qualquer aparelho) vence.
               criadoEm: Value(DateTime.utc(2026)),
               atualizadoEm: Value(DateTime.utc(2026)),
@@ -119,6 +120,10 @@ class AutomacoesRepo {
             mode: InsertMode.insertOrIgnore,
           );
     }
+    // Desativa o briefing caso estivesse ativo de versões anteriores para poupar requisições
+    final briefingId = idNatural('automacao', [ModeloAutomacao.briefing.name]);
+    await (db.update(db.automacoes)..where((a) => a.id.equals(briefingId)))
+        .write(const AutomacoesCompanion(ativa: Value(false)));
   }
 
   /// Chave geral, por aparelho (padrão: ligada).

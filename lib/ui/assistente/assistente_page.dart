@@ -87,11 +87,13 @@ class _AssistentePageState extends State<AssistentePage> {
       });
       // Pedidos que esperavam na fila seguem para a IA ao abrir a tela e ao entrar na conta.
       _repo!.processarFila();
+      unawaited(AssistenteRepo.atualizarUsoHoje());
       _login?.cancel();
       _login = nuvem?.auth.onAuthStateChange.listen((_) {
         if (!mounted) return;
         setState(() {});
         _repo!.processarFila();
+        unawaited(AssistenteRepo.atualizarUsoHoje());
       });
     }
     AssistenteRepo.pensando.addListener(_irAoFim);
@@ -280,9 +282,16 @@ class _Cabecalho extends StatelessWidget {
           Row(children: [
             Container(width: 7, height: 7, decoration: BoxDecoration(color: cor, shape: BoxShape.circle)),
             const SizedBox(width: 6),
-            Text(
-              (conectada ? 'IA conectada' : 'Comandos rápidos, sem IA') + (fila == 0 ? '' : ' · $fila na fila'),
-              style: manrope(13, peso: FontWeight.w500, cor: c.muted),
+            ValueListenableBuilder<({int usados, int limite})?>(
+              valueListenable: AssistenteRepo.usoHoje,
+              builder: (_, uso, _) {
+                final txtUso = (conectada && uso != null) ? ' · ${uso.usados}/${uso.limite} hoje' : '';
+                return Text(
+                  (conectada ? 'IA conectada$txtUso' : 'Comandos rápidos, sem IA') +
+                      (fila == 0 ? '' : ' · $fila na fila'),
+                  style: manrope(13, peso: FontWeight.w500, cor: c.muted),
+                );
+              },
             ),
           ]),
         ]),
@@ -366,11 +375,18 @@ class _CabecalhoMini extends StatelessWidget {
       Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('Aurora', style: sora(15)),
-          Text(
-            (conectada ? 'IA conectada' : 'Comandos rápidos, sem IA') + (fila == 0 ? '' : ' · $fila na fila'),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: manrope(11, peso: FontWeight.w500, cor: conectada ? c.teal : c.warn),
+          ValueListenableBuilder<({int usados, int limite})?>(
+            valueListenable: AssistenteRepo.usoHoje,
+            builder: (_, uso, _) {
+              final txtUso = (conectada && uso != null) ? ' · ${uso.usados}/${uso.limite} hoje' : '';
+              return Text(
+                (conectada ? 'IA conectada$txtUso' : 'Comandos rápidos, sem IA') +
+                    (fila == 0 ? '' : ' · $fila na fila'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: manrope(11, peso: FontWeight.w500, cor: conectada ? c.teal : c.warn),
+              );
+            },
           ),
         ]),
       ),

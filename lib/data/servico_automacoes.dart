@@ -41,6 +41,12 @@ Future<int> executarPendentes(BancoAurora db, {required DateTime agora, Assisten
   for (final a in await repo.listar()) {
     final o = pendente(a, agora);
     if (o == null) continue;
+    // O briefing automático do dia fica desativado para poupar requisições e tokens.
+    // Pode ser consultado a qualquer momento sob demanda (comando "briefing").
+    if (ModeloAutomacao.de(a.modelo) == ModeloAutomacao.briefing) {
+      if (a.ativa) await repo.alternar(a, false);
+      continue;
+    }
     await executarAutomacao(db, a, agora: agora, dia: o.dia, assistente: assistente);
     n++;
   }

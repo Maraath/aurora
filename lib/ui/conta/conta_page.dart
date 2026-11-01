@@ -10,6 +10,7 @@ import '../../core/login_google.dart';
 import '../../core/nuvem.dart';
 import '../../core/relogio.dart';
 import '../../core/tema.dart';
+import '../../data/assistente_repo.dart';
 import '../../data/catalogo_taco.dart' show fonteTaco;
 import '../../data/servico_sync.dart';
 import '../../data/sincronizacao.dart';
@@ -49,6 +50,12 @@ class _ContaPageState extends State<ContaPage> {
 
   /// Senha digitada no cadastro, só na memória: o "Já confirmei" entra direto.
   String? _senhaPendente;
+
+  @override
+  void initState() {
+    super.initState();
+    AssistenteRepo.atualizarUsoHoje();
+  }
 
   @override
   void dispose() {
@@ -267,6 +274,8 @@ class _ContaPageState extends State<ContaPage> {
             ],
           ),
         ),
+        const SizedBox(height: 14),
+        _CartaoUsoIa(c: c),
         const SizedBox(height: 14),
         ValueListenableBuilder<EstadoSync>(
           valueListenable: ServicoSync.instancia.estado,
@@ -671,5 +680,61 @@ class _VersaoState extends State<_Versao> {
       else
         BotaoPilula(texto: 'Procurar atualização', principal: false, aoTocar: _procurar),
     ]);
+  }
+}
+
+class _CartaoUsoIa extends StatelessWidget {
+  const _CartaoUsoIa({required this.c});
+  final AuroraCores c;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<({int usados, int limite})?>(
+      valueListenable: AssistenteRepo.usoHoje,
+      builder: (context, uso, _) {
+        final usados = uso?.usados ?? 0;
+        final limite = uso?.limite ?? 60;
+        final fracao = (usados / limite).clamp(0.0, 1.0);
+        final corBarra = fracao >= 1.0
+            ? c.bad
+            : fracao >= 0.8
+                ? c.warn
+                : c.accent;
+
+        return Cartao(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('USO DA ASSISTENTE (IA)', style: rotulo(c.accent)),
+                  Text(
+                    '$usados de $limite hoje',
+                    style: manrope(13, peso: FontWeight.w700, cor: corBarra),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: fracao,
+                  minHeight: 6,
+                  backgroundColor: c.surface2,
+                  valueColor: AlwaysStoppedAnimation<Color>(corBarra),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Limite de $limite pedidos por dia para manter as cotas gratuitas. '
+                'Reinicia à meia-noite (horário de Brasília). Comandos rápidos locais e áudio não consomem limite.',
+                style: manrope(12, cor: c.muted, altura: 1.4),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

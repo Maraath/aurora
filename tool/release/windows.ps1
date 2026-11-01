@@ -52,13 +52,11 @@ Write-Host "Instalador: $arquivo ($([math]::Round((Get-Item $arquivo).Length / 1
 
 if ($SemEnviar) { return }
 
-# O instalador vai antes do versao.json, para nenhum app ver a versão nova
-# sem o arquivo no ar. Aurora-setup.exe é o link fixo para instalar pela 1ª vez.
+# Etapa 2: O instalador vai exclusivamente para o GitHub Releases (release da versão e link fixo 'baixar').
+# No balde do Supabase fica apenas o versao.json (~200 bytes), poupando espaço de Storage e banda.
 PublicarVersao $versao $Notas @($arquivo)
 TrocarNoGitHubBaixar $arquivo 'Aurora-setup.exe'
-Enviar $arquivo "windows/$nome"
-Substituir $arquivo 'baixar/Aurora-setup.exe'
 Substituir build\instalador\versao.json 'windows/versao.json'
-ApagarAntigos 'windows' @($nome)
+ApagarAntigos 'windows' @()
 Write-Host "Publicado: Aurora $versao"
 Write-Host "Link fixo para baixar: $(UrlNoGitHub 'baixar' 'Aurora-setup.exe')"

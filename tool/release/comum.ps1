@@ -7,9 +7,9 @@ $UrlBalde = 'https://fhmhmdzbujqhkdsfnbtx.supabase.co/storage/v1/object/public/a
 # versão é a release "v<versão>" (Windows e Android juntos, marcada "Latest") e
 # o "url" do versao.json aponta para ela. Até 28/10/2026 ficavam num repositório
 # só deles (Maraath/aurora-instaladores). Desde a 1.10.1 o app baixa pelo "url"
-# do versao.json; as versões antigas ainda baixam do balde, por isso o balde
-# segue recebendo os instaladores (etapa 1). Etapa 2, quando todos estiverem na
-# 1.10.1 ou depois: parar de mandar os instaladores ao balde.
+# do versao.json.
+# Etapa 2 (concluída): os instaladores pesados vão exclusivamente para o GitHub Releases;
+# no balde do Supabase ficam apenas os versao.json de cada plataforma.
 $Repo = 'Maraath/aurora'
 
 function UrlNoGitHub([string]$tag, [string]$nome) {
@@ -114,4 +114,17 @@ function ApagarAntigos([string]$pasta, [string[]]$manter) {
   Write-Host "Apagando versões antigas de ${pasta}/: $($antigos -join ', ')"
   npx --yes supabase --experimental storage rm ($antigos | ForEach-Object { "ss:///atualizacoes/$pasta/$_" }) --linked --yes
   if ($LASTEXITCODE -ne 0) { Write-Warning "Não apaguei as versões antigas de $pasta/ (a publicação valeu)." }
+}
+
+# Limpa instaladores antigos de todas as pastas do balde atualizacoes (Etapa 2),
+# deixando apenas os arquivos versao.json e páginas estáticas.
+function LimparInstaladoresDoBalde {
+  Write-Host "Limpando instaladores do balde atualizacoes..."
+  ApagarAntigos 'windows' @()
+  ApagarAntigos 'android' @()
+  $ErrorActionPreference = 'Continue'
+  npx --yes supabase --experimental storage rm "ss:///atualizacoes/baixar/Aurora-setup.exe" --linked --yes 2>&1 | Out-Null
+  npx --yes supabase --experimental storage rm "ss:///atualizacoes/baixar/Aurora.apk" --linked --yes 2>&1 | Out-Null
+  $ErrorActionPreference = 'Stop'
+  Write-Host "Limpeza de instaladores do balde concluída."
 }

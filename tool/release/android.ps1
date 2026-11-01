@@ -1,4 +1,4 @@
-﻿# Publica uma versão do Aurora para Android (APK assinado).
+# Publica uma versão do Aurora para Android (APK assinado).
 #
 #   1. Suba a versão no pubspec.yaml (ex.: version: 1.0.2+3). O número depois
 #      do "+" é o versionCode: tem de crescer a cada publicação.
@@ -57,13 +57,11 @@ $json = [ordered]@{ versao = $versao; build = $build; notas = $Notas; abis = $ab
 
 if ($SemEnviar) { return }
 
-# Os APKs vão antes do versao.json. Aurora.apk (arm64, o de quase todo
-# celular) é o link fixo para instalar pela 1ª vez.
+# Etapa 2: Os APKs vão exclusivamente para o GitHub Releases (release da versão e link fixo 'baixar').
+# No balde do Supabase fica apenas o versao.json (~200 bytes), poupando espaço de Storage e banda.
 PublicarVersao $versao $Notas @($abis.Values | ForEach-Object { "build\instalador\$($_.instalador)" })
 TrocarNoGitHubBaixar "build\instalador\$($abis['arm64-v8a'].instalador)" 'Aurora.apk'
-foreach ($a in $abis.Values) { Enviar "build\instalador\$($a.instalador)" "android/$($a.instalador)" }
-Substituir "build\instalador\$($abis['arm64-v8a'].instalador)" 'baixar/Aurora.apk'
 Substituir build\instalador\versao-android.json 'android/versao.json'
-ApagarAntigos 'android' @($abis.Values | ForEach-Object { $_.instalador })
+ApagarAntigos 'android' @()
 Write-Host "Publicado: Aurora $versao para Android"
 Write-Host "Link fixo para baixar: $(UrlNoGitHub 'baixar' 'Aurora.apk')"
