@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 
 import '../../app.dart';
@@ -264,7 +265,7 @@ class _FormCicloTreinoState extends State<_FormCicloTreino> {
           finalTreinoId = await widget.repo.salvarTreino(
             TreinosCompanion.insert(
               nome: nome,
-              foco: foco != null ? driftValue(foco) : const Value.absent(),
+              foco: foco != null ? Value(foco) : const Value.absent(),
               diasSemana: const Value(0), // Sem dia fixo na semana, pois é cíclico
             ),
             listaSalvar,
@@ -692,8 +693,6 @@ class _FormCicloTreinoState extends State<_FormCicloTreino> {
       ),
     );
   }
-
-  Value<String?> driftValue(String val) => Value(val);
 }
 
 extension on String {
