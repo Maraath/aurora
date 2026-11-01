@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import '../core/formato.dart';
@@ -81,6 +83,143 @@ class ResumoSessao {
   final double volumeKg;
 }
 
+/// Um dia dentro de um ciclo de treinos intercalados.
+/// Se [treinoId] for nulo, representa um dia de descanso.
+class PassoCiclo {
+  const PassoCiclo({
+    required this.dia,
+    this.treinoId,
+    this.nome,
+    this.foco,
+  });
+
+  /// Número do dia no ciclo (1, 2, 3, 4...).
+  final int dia;
+
+  /// ID do treino associado; se for nulo, é dia de descanso.
+  final String? treinoId;
+
+  /// Nome do dia (ex.: "Treino A" ou "Descanso").
+  final String? nome;
+
+  /// Foco muscular (ex.: "Peito, tríceps e ombro" ou "Recuperação").
+  final String? foco;
+
+  bool get isDescanso => treinoId == null;
+
+  String get rotulo => isDescanso ? (nome ?? 'Descanso') : (nome ?? 'Treino');
+  String get detalhe => isDescanso ? (foco ?? 'Recuperação muscular') : (foco ?? '');
+
+  Map<String, dynamic> toJson() => {
+        'dia': dia,
+        'treinoId': treinoId,
+        'nome': nome,
+        'foco': foco,
+      };
+
+  factory PassoCiclo.fromJson(Map<String, dynamic> json) => PassoCiclo(
+        dia: json['dia'] as int? ?? 1,
+        treinoId: json['treinoId'] as String?,
+        nome: json['nome'] as String?,
+        foco: json['foco'] as String?,
+      );
+
+  PassoCiclo copyWith({
+    int? dia,
+    String? treinoId,
+    String? nome,
+    String? foco,
+    bool nullTreinoId = false,
+  }) =>
+      PassoCiclo(
+        dia: dia ?? this.dia,
+        treinoId: nullTreinoId ? null : (treinoId ?? this.treinoId),
+        nome: nome ?? this.nome,
+        foco: foco ?? this.foco,
+      );
+}
+
+/// Configuração de treino intercalado rotativo.
+/// Exemplo:
+/// Dia 1: Peito, tríceps e ombro
+/// Dia 2: Costas, bíceps e ombro
+/// Dia 3: Perna e ombro
+/// Dia 4: Descanso
+/// Dia 5: Repete o Dia 1 sucessivamente.
+class CicloTreino {
+  const CicloTreino({
+    required this.ativo,
+    required this.dataInicio,
+    required this.passos,
+  });
+
+  final bool ativo;
+
+  /// Data de referência (quando o Dia 1 começou).
+  final DateTime dataInicio;
+
+  /// Passos do ciclo em ordem (Dia 1 até N).
+  final List<PassoCiclo> passos;
+
+  int get totalDias => passos.length;
+
+  /// Retorna o índice no ciclo (0 a passos.length - 1) para a [data].
+  int indiceNoDia(DateTime data) {
+    if (passos.isEmpty) return 0;
+    final inicio = DateTime(dataInicio.year, dataInicio.month, dataInicio.day);
+    final alvo = DateTime(data.year, data.month, data.day);
+    final diff = alvo.difference(inicio).inDays;
+    return ((diff % passos.length) + passos.length) % passos.length;
+  }
+
+  /// Retorna o passo do ciclo (1 a N) correspondente à [data].
+  PassoCiclo? passoNoDia(DateTime data) {
+    if (!ativo || passos.isEmpty) return null;
+    return passos[indiceNoDia(data)];
+  }
+
+  /// Retorna o número do dia (1 a N) em que a [data] cai.
+  int numeroDia(DateTime data) {
+    final p = passoNoDia(data);
+    return p?.dia ?? (indiceNoDia(data) + 1);
+  }
+
+  Map<String, dynamic> toJson() => {
+        'ativo': ativo,
+        'dataInicio': chaveData(dataInicio),
+        'passos': passos.map((p) => p.toJson()).toList(),
+      };
+
+  factory CicloTreino.fromJson(Map<String, dynamic> json) {
+    final passosRaw = json['passos'] as List<dynamic>?;
+    final passos = passosRaw != null
+        ? [for (final p in passosRaw) PassoCiclo.fromJson(p as Map<String, dynamic>)]
+        : <PassoCiclo>[];
+    DateTime inicio = hojeLocal();
+    final dataStr = json['dataInicio'] as String?;
+    if (dataStr != null) {
+      final p = DateTime.tryParse(dataStr);
+      if (p != null) inicio = p;
+    }
+    return CicloTreino(
+      ativo: json['ativo'] as bool? ?? false,
+      dataInicio: inicio,
+      passos: passos,
+    );
+  }
+
+  CicloTreino copyWith({
+    bool? ativo,
+    DateTime? dataInicio,
+    List<PassoCiclo>? passos,
+  }) =>
+      CicloTreino(
+        ativo: ativo ?? this.ativo,
+        dataInicio: dataInicio ?? this.dataInicio,
+        passos: passos ?? this.passos,
+      );
+}
+
 class QuadroSaude {
   const QuadroSaude({
     required this.treinos,
@@ -88,6 +227,7 @@ class QuadroSaude {
     required this.medidas,
     required this.exercicios,
     required this.diasComTreino,
+    this.ciclo,
   });
 
   final List<TreinoCompleto> treinos;
@@ -102,8 +242,24 @@ class QuadroSaude {
   /// Dias ("aaaa-mm-dd") em que houve treino.
   final Set<String> diasComTreino;
 
-  /// O treino marcado para o dia da semana de [hoje].
+  /// Ciclo de treinos intercalados, se configurado.
+  final CicloTreino? ciclo;
+
+  bool get temCicloAtivo => ciclo != null && ciclo!.ativo && ciclo!.passos.isNotEmpty;
+
+  /// Retorna o passo do ciclo para a data dada, se o ciclo estiver ativo.
+  PassoCiclo? passoDoCiclo(DateTime data) => temCicloAtivo ? ciclo!.passoNoDia(data) : null;
+
+  /// O treino marcado para o dia de [hoje]. Se estiver em ciclo intercalado,
+  /// usa o passo do ciclo (retorna null se for dia de descanso).
   TreinoCompleto? treinoDoDia(DateTime hoje) {
+    if (temCicloAtivo) {
+      final passo = ciclo!.passoNoDia(hoje);
+      if (passo == null || passo.isDescanso || passo.treinoId == null) {
+        return null;
+      }
+      return treinos.where((t) => t.treino.id == passo.treinoId).firstOrNull;
+    }
     final bit = 1 << (hoje.weekday - 1);
     for (final t in treinos) {
       if (t.treino.diasSemana & bit != 0) return t;
@@ -111,8 +267,19 @@ class QuadroSaude {
     return null;
   }
 
-  /// Próximo treino com dia fixo a partir de amanhã (para dias de descanso).
+  /// Próximo treino a partir de amanhã (para dias de descanso).
   ({TreinoCompleto treino, DateTime dia})? proximoTreino(DateTime hoje) {
+    if (temCicloAtivo) {
+      for (var i = 1; i <= 14; i++) {
+        final d = somarDias(hoje, i);
+        final passo = ciclo!.passoNoDia(d);
+        if (passo != null && !passo.isDescanso && passo.treinoId != null) {
+          final t = treinos.where((x) => x.treino.id == passo.treinoId).firstOrNull;
+          if (t != null) return (treino: t, dia: d);
+        }
+      }
+      return null;
+    }
     for (var i = 1; i <= 7; i++) {
       final d = somarDias(hoje, i);
       final t = treinoDoDia(d);
@@ -153,6 +320,7 @@ class SaudeRepo {
         db.sessoesTreino,
         db.seriesFeitas,
         db.medidas,
+        db.preferencias,
       ], carregar);
 
   Future<QuadroSaude> carregar() async {
@@ -221,6 +389,8 @@ class SaudeRepo {
       porTipo.putIfAbsent(m.tipo, () => []).add(m);
     }
 
+    final ciclo = await carregarCiclo();
+
     return QuadroSaude(
       treinos: completos,
       historico: [
@@ -236,6 +406,7 @@ class SaudeRepo {
       medidas: porTipo,
       exercicios: exercicios,
       diasComTreino: {for (final s in sessoes) s.dia},
+      ciclo: ciclo,
     );
   }
 
@@ -368,5 +539,62 @@ class SaudeRepo {
     final agora = DateTime.now();
     return (db.update(db.medidas)..where((m) => m.id.equals(id)))
         .write(MedidasCompanion(apagadoEm: Value(agora), atualizadoEm: Value(agora)));
+  }
+
+  /// Lê a configuração atual do treino intercalado / ciclo.
+  Future<CicloTreino?> carregarCiclo() async {
+    final raw = await db.preferencia('ciclo_treino');
+    if (raw == null || raw.trim().isEmpty) return null;
+    try {
+      final mapa = jsonDecode(raw) as Map<String, dynamic>;
+      return CicloTreino.fromJson(mapa);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Salva ou atualiza a configuração do ciclo intercalado.
+  Future<void> salvarCiclo(CicloTreino ciclo) async {
+    await db.salvarPreferencia('ciclo_treino', jsonEncode(ciclo.toJson()));
+  }
+
+  /// Desativa o treino intercalado, voltando aos dias da semana fixos.
+  Future<void> desativarCiclo() async {
+    final atual = await carregarCiclo();
+    if (atual != null) {
+      await salvarCiclo(atual.copyWith(ativo: false));
+    }
+  }
+
+  /// Define qual dia do ciclo (1 a N) corresponde ao dia de hoje.
+  Future<void> definirDiaAtualCiclo(int dia) async {
+    final atual = await carregarCiclo();
+    if (atual == null || atual.passos.isEmpty) return;
+    final hoje = hojeLocal();
+    final diaAjustado = dia.clamp(1, atual.passos.length);
+    // Para que hoje caia no diaAjustado (índice diaAjustado - 1):
+    final novaDataInicio = DateTime(hoje.year, hoje.month, hoje.day).subtract(Duration(days: diaAjustado - 1));
+    await salvarCiclo(atual.copyWith(dataInicio: novaDataInicio, ativo: true));
+  }
+
+  /// Associa ou atualiza um treino existente como passo [diaCiclo] do ciclo.
+  Future<void> associarTreinoAoCiclo(String treinoId, int diaCiclo, {String? nome, String? foco}) async {
+    final atual = await carregarCiclo();
+    final passos = List<PassoCiclo>.from(atual?.passos ?? const []);
+    while (passos.length < diaCiclo) {
+      passos.add(PassoCiclo(dia: passos.length + 1));
+    }
+    final idx = diaCiclo - 1;
+    passos[idx] = PassoCiclo(
+      dia: diaCiclo,
+      treinoId: treinoId,
+      nome: nome ?? passos[idx].nome,
+      foco: foco ?? passos[idx].foco,
+    );
+    final novoCiclo = (atual ?? CicloTreino(ativo: true, dataInicio: hojeLocal(), passos: passos)).copyWith(
+      passos: passos,
+      ativo: true,
+    );
+    await salvarCiclo(novoCiclo);
   }
 }

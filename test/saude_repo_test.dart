@@ -143,4 +143,90 @@ void main() {
     await semearExemplo(db);
     expect((await repo.carregar()).treinos, hasLength(2));
   });
+
+  group('treino intercalado (ciclo rotativo)', () {
+    test('ciclo rotativo de 4 dias alterna treinos e descanso e repete sucessivamente', () async {
+      final inicio = DateTime(2026, 11, 1); // Dia 1
+      final ciclo = CicloTreino(
+        ativo: true,
+        dataInicio: inicio,
+        passos: const [
+          PassoCiclo(dia: 1, treinoId: 'treino_a', nome: 'Treino A', foco: 'Peito, tríceps e ombro'),
+          PassoCiclo(dia: 2, treinoId: 'treino_b', nome: 'Treino B', foco: 'Costas, bíceps e ombro'),
+          PassoCiclo(dia: 3, treinoId: 'treino_c', nome: 'Treino C', foco: 'Perna e ombro'),
+          PassoCiclo(dia: 4, treinoId: null, nome: 'Descanso', foco: 'Recuperação muscular'),
+        ],
+      );
+
+      // Dia 1 (01/11): Treino A
+      expect(ciclo.passoNoDia(DateTime(2026, 11, 1))?.treinoId, 'treino_a');
+      expect(ciclo.passoNoDia(DateTime(2026, 11, 1))?.isDescanso, isFalse);
+
+      // Dia 2 (02/11): Treino B
+      expect(ciclo.passoNoDia(DateTime(2026, 11, 2))?.treinoId, 'treino_b');
+
+      // Dia 3 (03/11): Treino C
+      expect(ciclo.passoNoDia(DateTime(2026, 11, 3))?.treinoId, 'treino_c');
+
+      // Dia 4 (04/11): Descanso
+      expect(ciclo.passoNoDia(DateTime(2026, 11, 4))?.isDescanso, isTrue);
+      expect(ciclo.passoNoDia(DateTime(2026, 11, 4))?.treinoId, isNull);
+
+      // Dia 5 (05/11): Dia 1 repete! (Treino A)
+      expect(ciclo.passoNoDia(DateTime(2026, 11, 5))?.treinoId, 'treino_a');
+      expect(ciclo.passoNoDia(DateTime(2026, 11, 5))?.dia, 1);
+
+      // Dia 6 (06/11): Dia 2 repete! (Treino B)
+      expect(ciclo.passoNoDia(DateTime(2026, 11, 6))?.treinoId, 'treino_b');
+
+      // Dia 8 (08/11): Descanso repete!
+      expect(ciclo.passoNoDia(DateTime(2026, 11, 8))?.isDescanso, isTrue);
+    });
+
+    test('salvar e carregar ciclo no banco respeita treino do dia e descanso', () async {
+      final treinos = (await repo.carregar()).treinos;
+      final tA = treinos[0];
+      final tB = treinos[1];
+
+      final hoje = hojeLocal();
+      final ciclo = CicloTreino(
+        ativo: true,
+        dataInicio: hoje,
+        passos: [
+          PassoCiclo(dia: 1, treinoId: tA.treino.id, nome: 'Treino A', foco: 'Peito'),
+          PassoCiclo(dia: 2, treinoId: tB.treino.id, nome: 'Treino B', foco: 'Costas'),
+          const PassoCiclo(dia: 3, treinoId: null, nome: 'Descanso'),
+        ],
+      );
+
+      await repo.salvarCiclo(ciclo);
+      var q = await repo.carregar();
+      expect(q.temCicloAtivo, isTrue);
+      expect(q.ciclo?.totalDias, 3);
+
+      // Hoje é o dia 1: Treino A
+      expect(q.treinoDoDia(hoje)?.treino.id, tA.treino.id);
+
+      // Amanhã é o dia 2: Treino B
+      final amanha = somarDias(hoje, 1);
+      expect(q.treinoDoDia(amanha)?.treino.id, tB.treino.id);
+
+      // Depois de amanhã é o dia 3: Descanso (treinoDoDia == null)
+      final depoisAmanha = somarDias(hoje, 2);
+      expect(q.treinoDoDia(depoisAmanha), isNull);
+      // Próximo treino a partir do descanso é o Treino A de novo!
+      final prox = q.proximoTreino(depoisAmanha);
+      expect(prox?.treino.treino.id, tA.treino.id);
+
+      // Ajustar dia atual para o dia 2
+      await repo.definirDiaAtualCiclo(2);
+      q = await repo.carregar();
+      expect(q.treinoDoDia(hoje)?.treino.id, tB.treino.id);
+
+      // Desativar ciclo volta a usar dias da semana
+      await repo.desativarCiclo();
+      q = await repo.carregar();
+      expect(q.temCicloAtivo, isFalse);
+    });
+  });
 }

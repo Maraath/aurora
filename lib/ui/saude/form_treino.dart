@@ -8,6 +8,7 @@ import '../../data/banco.dart';
 import '../../data/saude_repo.dart';
 import '../formulario.dart';
 import 'biblioteca_ui.dart';
+import 'form_ciclo_treino.dart';
 
 Future<void> abrirFormTreino(BuildContext context, {TreinoCompleto? treino}) {
   final repo = SaudeRepo(AuroraEscopo.de(context).db);
@@ -55,6 +56,9 @@ class _FormTreinoState extends State<_FormTreino> {
   late int _dias;
   late final List<_Linha> _linhas;
   String? _erro;
+  bool _modoIntercalado = false;
+  int _diaCiclo = 1;
+  CicloTreino? _ciclo;
 
   @override
   void initState() {
@@ -77,6 +81,24 @@ class _FormTreinoState extends State<_FormTreino> {
                 ..grupo = e.exercicio.grupo
                 ..nomeDaBiblioteca = e.exercicio.nome,
           ];
+
+    widget.repo.carregarCiclo().then((c) {
+      if (!mounted) return;
+      setState(() {
+        _ciclo = c;
+        if (t != null && c != null) {
+          final p = c.passos.where((x) => x.treinoId == t.treino.id).firstOrNull;
+          if (p != null) {
+            _modoIntercalado = true;
+            _diaCiclo = p.dia;
+          }
+        } else if (c != null && c.ativo && (t == null || t.treino.diasSemana == 0)) {
+          // Se o ciclo já está ativo, sugere o modo intercalado no próximo dia vago
+          _modoIntercalado = true;
+          _diaCiclo = (c.passos.length + 1).clamp(1, 14);
+        }
+      });
+    });
   }
 
   @override
@@ -109,11 +131,11 @@ class _FormTreinoState extends State<_FormTreino> {
       setState(() => _erro = 'Adicione pelo menos um exercício.');
       return;
     }
-    await widget.repo.salvarTreino(
+    final treinoId = await widget.repo.salvarTreino(
       TreinosCompanion(
         nome: Value(nome),
         foco: Value(_foco.text.trim().isEmpty ? null : _foco.text.trim()),
-        diasSemana: Value(_dias),
+        diasSemana: Value(_modoIntercalado ? 0 : _dias),
       ),
       itens,
       id: widget.treino?.treino.id,
@@ -122,6 +144,14 @@ class _FormTreinoState extends State<_FormTreino> {
           if (l.midiaValida != null) l.nome.text.trim().toLowerCase(): (l.midiaValida!, l.grupo ?? ''),
       },
     );
+    if (_modoIntercalado) {
+      await widget.repo.associarTreinoAoCiclo(
+        treinoId,
+        _diaCiclo,
+        nome: nome,
+        foco: _foco.text.trim().isEmpty ? null : _foco.text.trim(),
+      );
+    }
     if (mounted) Navigator.pop(context);
   }
 
@@ -191,12 +221,96 @@ class _FormTreinoState extends State<_FormTreino> {
           ],
         ),
         Campo(
-          rotulo: 'Em quais dias',
-          acao: TextButton(
-            onPressed: () => setState(() => _dias = 0),
-            child: Text('Sem dia fixo', style: manrope(12, peso: FontWeight.w700, cor: c.accent)),
+          rotulo: 'Programação',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  ChoiceChip(
+                    selected: !_modoIntercalado,
+                    onSelected: (sel) {
+                      if (sel) setState(() => _modoIntercalado = false);
+                    },
+                    avatar: Icon(Icons.calendar_today_rounded, size: 14, color: !_modoIntercalado ? Colors.white : c.text),
+                    label: const Text('Dias da semana'),
+                    labelStyle: manrope(12, peso: !_modoIntercalado ? FontWeight.w700 : FontWeight.w500, cor: !_modoIntercalado ? Colors.white : c.text),
+                    selectedColor: c.accent,
+                    backgroundColor: c.bg,
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    selected: _modoIntercalado,
+                    onSelected: (sel) {
+                      if (sel) setState(() => _modoIntercalado = true);
+                    },
+                    avatar: Icon(Icons.autorenew_rounded, size: 14, color: _modoIntercalado ? Colors.white : c.text),
+                    label: const Text('Intercalado (ciclo)'),
+                    labelStyle: manrope(12, peso: _modoIntercalado ? FontWeight.w700 : FontWeight.w500, cor: _modoIntercalado ? Colors.white : c.text),
+                    selectedColor: c.teal,
+                    backgroundColor: c.bg,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (!_modoIntercalado) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Dias da semana', style: manrope(12, cor: c.muted)),
+                    TextButton(
+                      onPressed: () => setState(() => _dias = 0),
+                      child: Text('Sem dia fixo', style: manrope(12, peso: FontWeight.w700, cor: c.accent)),
+                    ),
+                  ],
+                ),
+                SeletorDias(dias: _dias, aoMudar: (d) => setState(() => _dias = d)),
+              ] else ...[
+                Text(
+                  'Este treino será o qual dia do ciclo rotativo?',
+                  style: manrope(12, cor: c.muted),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (var d = 1; d <= (_ciclo?.passos.length ?? 3).clamp(3, 10); d++)
+                      ChoiceChip(
+                        selected: _diaCiclo == d,
+                        onSelected: (sel) {
+                          if (sel) setState(() => _diaCiclo = d);
+                        },
+                        label: Text('Dia $d'),
+                        labelStyle: manrope(12, peso: _diaCiclo == d ? FontWeight.w700 : FontWeight.w500, cor: _diaCiclo == d ? Colors.white : c.text),
+                        selectedColor: c.teal,
+                        backgroundColor: c.bg,
+                      ),
+                    ActionChip(
+                      avatar: Icon(Icons.add_rounded, size: 14, color: c.teal),
+                      label: Text('Novo dia (${(_ciclo?.passos.length ?? 3) + 1})'),
+                      labelStyle: manrope(12, peso: FontWeight.w600, cor: c.teal),
+                      backgroundColor: c.bg,
+                      onPressed: () {
+                        setState(() {
+                          _diaCiclo = (_ciclo?.passos.length ?? 3) + 1;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => abrirFormCicloTreino(context),
+                    icon: Icon(Icons.tune_rounded, size: 14, color: c.teal),
+                    label: Text('Configurar ciclo completo (dias e descansos)', style: manrope(12, peso: FontWeight.w700, cor: c.teal)),
+                  ),
+                ),
+              ],
+            ],
           ),
-          child: SeletorDias(dias: _dias, aoMudar: (d) => setState(() => _dias = d)),
         ),
         Campo(
           rotulo: 'Exercícios',
