@@ -1,13 +1,7 @@
--- Limpeza do balde legado "shape" e rotina de expurgo de uso_ia antigo.
+-- Rotina de expurgo de uso_ia antigo.
 --
--- 1. O balde "shape" ficou sem uso desde a migração de fotos privadas
---    (20261019140000_fotos_privadas.sql), que passou tudo para o balde "fotos".
---    Exclui quaisquer objetos remanescentes e o próprio balde.
--- 2. A tabela uso_ia só precisa do dia atual para controlar o limite de 60 pedidos.
---    Registros com mais de 30 dias são descartados para economizar espaço no Postgres.
-
-delete from storage.objects where bucket_id = 'shape';
-delete from storage.buckets where id = 'shape';
+-- A tabela uso_ia só precisa do dia atual para controlar o limite de 60 pedidos.
+-- Registros com mais de 30 dias são descartados para economizar espaço no Postgres.
 
 -- Remove registros antigos de uso da IA (mais de 30 dias)
 delete from public.uso_ia
