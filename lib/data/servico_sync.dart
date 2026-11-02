@@ -34,11 +34,9 @@ class RemotoSupabase implements RemotoSync {
   @override
   Future<bool> temDados() async {
     for (final t in const ['tarefas', 'habitos', 'transacoes', 'lembretes', 'objetivos', 'treinos', 'medidas']) {
-      try {
-        if ((await cliente.from(t).select('id').limit(1)).isNotEmpty) return true;
-      } catch (e) {
-        debugPrint('RemotoSupabase.temDados: erro ao checar $t: $e');
-      }
+      // Sem try: erro aqui não pode virar "a nuvem está vazia", senão a primeira
+      // sincronização pula a escolha entre juntar e usar a nuvem.
+      if ((await cliente.from(t).select('id').limit(1)).isNotEmpty) return true;
     }
     return false;
   }
