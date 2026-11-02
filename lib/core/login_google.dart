@@ -19,6 +19,11 @@ const googleClienteAndroid = '595805157725-b52r4rtb7fta8iin1e2q3h3f6kj5mpia.apps
 /// Supabase como "http://localhost:47361/**".
 const portaLoginDesktop = 47361;
 
+/// Faz o Google perguntar qual conta usar. Sem isto ele entra direto com a conta
+/// já aberta no navegador: quem saiu ou excluiu a conta e queria entrar em outra
+/// volta na mesma, e, se ela foi excluída, nasce uma conta nova com o mesmo e-mail.
+const parametrosLoginGoogle = {'prompt': 'select_account'};
+
 class LoginCancelado implements Exception {
   const LoginCancelado();
 }
@@ -30,7 +35,11 @@ Future<void> entrarComGoogle() async {
   if (kIsWeb) {
     // Navegador (PWA): a página vai ao Google e volta para ela mesma; o supabase_flutter
     // lê o código na volta. A volta tem de estar nas Redirect URLs do Supabase.
-    await cliente.auth.signInWithOAuth(OAuthProvider.google, redirectTo: '${Uri.base.origin}${Uri.base.path}');
+    await cliente.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: '${Uri.base.origin}${Uri.base.path}',
+      queryParams: parametrosLoginGoogle,
+    );
   } else if (Platform.isAndroid || Platform.isIOS) {
     await _nativo(cliente);
   } else {
@@ -40,12 +49,17 @@ Future<void> entrarComGoogle() async {
 
 bool _iniciado = false;
 
-Future<void> _nativo(SupabaseClient cliente) async {
+Future<GoogleSignIn> _google() async {
   final google = GoogleSignIn.instance;
   if (!_iniciado) {
     await google.initialize(serverClientId: googleClienteWeb);
     _iniciado = true;
   }
+  return google;
+}
+
+Future<void> _nativo(SupabaseClient cliente) async {
+  final google = await _google();
   final GoogleSignInAccount conta;
   try {
     conta = await google.authenticate(scopeHint: const ['email', 'profile']);
@@ -67,6 +81,7 @@ Future<void> _peloNavegador(SupabaseClient cliente) async {
       OAuthProvider.google,
       redirectTo: 'http://localhost:$portaLoginDesktop/',
       authScreenLaunchMode: LaunchMode.externalApplication,
+      queryParams: parametrosLoginGoogle,
     );
     if (!abriu) throw const AuthException('Não consegui abrir o navegador.');
 
@@ -96,9 +111,13 @@ Future<void> _peloNavegador(SupabaseClient cliente) async {
 }
 
 /// Sair também da conta Google no aparelho (no Android, para poder trocar de conta).
+/// Inicia o plugin antes: depois de reabrir o app ele ainda não foi usado, e sem
+/// isso a conta do Google continuava lembrada.
 Future<void> sairDoGoogle() async {
-  if (kIsWeb || !(Platform.isAndroid || Platform.isIOS) || !_iniciado) return;
+  if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) return;
   try {
-    await GoogleSignIn.instance.signOut();
-  } catch (_) {}
+    await (await _google()).signOut();
+  } catch (e) {
+    debugPrint('Google: não saí da conta ($e)');
+  }
 }

@@ -428,17 +428,42 @@ class _ContaPageState extends State<ContaPage> {
   }
 
   Future<void> _excluirConta(User usuario) async {
+    final c = context.cores;
+    final db = AuroraEscopo.de(context).db;
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => const _ConfirmarExclusao(),
     );
     final cliente = nuvem;
     if (ok != true || cliente == null) return;
+    var excluiu = false;
     await _executar(() async {
       await excluirConta(cliente);
       await sairDoGoogle();
-      _aviso = 'Conta excluída. Os dados deste aparelho continuam aqui, só offline.';
+      excluiu = true;
+      _aviso = 'Conta excluída. Entrar de novo com o mesmo e-mail cria uma conta nova, vazia.';
     });
+    if (!excluiu || !mounted) return;
+    // Sem esta pergunta, os dados ficavam na tela e a conta parecia não ter sido excluída.
+    final apagar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.surface,
+        title: Text('Conta excluída', style: sora(18)),
+        content: Text(
+          'Ela saiu da nuvem. Os dados continuam neste aparelho, para usar sem conta. Quer apagar daqui também?',
+          style: manrope(14, cor: c.text, altura: 1.5),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Manter aqui')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Apagar deste aparelho', style: TextStyle(color: c.bad)),
+          ),
+        ],
+      ),
+    );
+    if (apagar == true) await limparEsteAparelho(db);
   }
 
   Future<void> _usarNuvem() async {
@@ -711,8 +736,8 @@ class _ConfirmarExclusaoState extends State<_ConfirmarExclusao> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Os dados deste aparelho continuam aqui e o app segue funcionando offline. Para '
-              'apagá-los também, desinstale o app.',
+              'Depois você escolhe se os dados deste aparelho ficam, para usar o app sem conta, ou '
+              'se saem daqui também.',
               style: manrope(13, cor: c.muted, altura: 1.5),
             ),
             const SizedBox(height: 14),

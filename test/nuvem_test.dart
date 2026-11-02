@@ -1,3 +1,4 @@
+import 'package:aurora/core/login_google.dart';
 import 'package:aurora/core/nuvem.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -11,6 +12,13 @@ void main() {
     expect(mensagemDeErro(const AuthException('For security purposes, you can only request this after 42 seconds.')),
         'Espere alguns segundos antes de pedir de novo.');
     expect(mensagemDeErro(const AuthException('Invalid login credentials')), 'E-mail ou senha incorretos.');
+  });
+
+  test('o Google sempre pergunta qual conta usar', () async {
+    final cliente = SupabaseClient('https://exemplo.supabase.co', 'chave',
+        authOptions: const AuthClientOptions(authFlowType: AuthFlowType.implicit));
+    final r = await cliente.auth.getOAuthSignInUrl(provider: OAuthProvider.google, queryParams: parametrosLoginGoogle);
+    expect(Uri.parse(r.url).queryParameters['prompt'], 'select_account');
   });
 
   test('limite de e-mails do projeto não parece culpa de quem tenta', () {
