@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import '../../core/tema.dart';
@@ -19,7 +20,35 @@ class AnimacaoExercicio extends StatefulWidget {
 }
 
 class _AnimacaoExercicioState extends State<AnimacaoExercicio> {
-  late Future<File?> _arquivo = animacaoExercicio(widget.arquivo);
+  Future<File?>? _baixando;
+  Future<File?> get _arquivo => _baixando ??= animacaoExercicio(widget.arquivo);
+
+  /// Na web não há pasta para guardar a cópia (quem guarda é o Service Worker) e
+  /// quem desenha é o navegador: pelo Flutter, os quadros saíam sobrepostos.
+  Widget _naWeb(AuroraCores c) => Image.network(
+        urlAnimacao(widget.arquivo),
+        key: ValueKey(_tentativa),
+        fit: BoxFit.contain,
+        semanticLabel: 'Animação do exercício',
+        webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+        errorBuilder: (context, erro, pilha) => _semConexao(c, () => setState(() => _tentativa++)),
+      );
+
+  var _tentativa = 0;
+
+  Widget _semConexao(AuroraCores c, VoidCallback tentar) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          const Icon(Icons.wifi_off_rounded, color: Colors.black45),
+          const SizedBox(height: 8),
+          Text('Sem conexão: a animação aparece quando a internet voltar.',
+              textAlign: TextAlign.center, style: manrope(12, cor: Colors.black54)),
+          TextButton(
+            onPressed: tentar,
+            child: Text('Tentar de novo', style: manrope(12, peso: FontWeight.w700, cor: c.accentFill)),
+          ),
+        ]),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -30,31 +59,19 @@ class _AnimacaoExercicioState extends State<AnimacaoExercicio> {
       clipBehavior: Clip.antiAlias,
       // As animações têm fundo branco: o quadro fica branco nos dois temas.
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-      child: FutureBuilder<File?>(
-        future: _arquivo,
-        builder: (context, snap) {
-          if (snap.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator(strokeWidth: 2.5));
-          }
-          final f = snap.data;
-          if (f == null) {
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                const Icon(Icons.wifi_off_rounded, color: Colors.black45),
-                const SizedBox(height: 8),
-                Text('Sem conexão: a animação aparece quando a internet voltar.',
-                    textAlign: TextAlign.center, style: manrope(12, cor: Colors.black54)),
-                TextButton(
-                  onPressed: () => setState(() => _arquivo = animacaoExercicio(widget.arquivo)),
-                  child: Text('Tentar de novo', style: manrope(12, peso: FontWeight.w700, cor: c.accentFill)),
-                ),
-              ]),
-            );
-          }
-          return Image.file(f, fit: BoxFit.contain, gaplessPlayback: true, semanticLabel: 'Animação do exercício');
-        },
-      ),
+      child: kIsWeb
+          ? _naWeb(c)
+          : FutureBuilder<File?>(
+              future: _arquivo,
+              builder: (context, snap) {
+                if (snap.connectionState != ConnectionState.done) {
+                  return const Center(child: CircularProgressIndicator(strokeWidth: 2.5));
+                }
+                final f = snap.data;
+                if (f == null) return _semConexao(c, () => setState(() => _baixando = null));
+                return Image.file(f, fit: BoxFit.contain, gaplessPlayback: true, semanticLabel: 'Animação do exercício');
+              },
+            ),
     );
   }
 }

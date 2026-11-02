@@ -6,7 +6,7 @@
 // - install: baixa e guarda todos os arquivos da versão (o app abre offline desde a 1ª vez).
 // - activate: apaga os caches de versões antigas e assume as abas abertas.
 // - fetch: página e arquivos do app vêm do cache desta versão (abre na hora, mesmo com internet ruim).
-//   Supabase e IA nunca passam por aqui (outra origem).
+//   Supabase e IA nunca passam por aqui (outra origem), menos as animações públicas dos exercícios.
 //   Fontes de reserva do Flutter (emoji etc., em gstatic) ficam guardadas depois da 1ª vez.
 
 const VERSAO = 'dev';
@@ -15,6 +15,8 @@ const ARQUIVOS = /*ARQUIVOS*/[]/*FIM*/;
 const CACHE_APP = `aurora-app-${VERSAO}`;
 const CACHE_EXTRA = 'aurora-extra';
 const ORIGENS_EXTRA = ['https://fonts.gstatic.com', 'https://www.gstatic.com'];
+// Balde público "exercicios": a animação vista uma vez abre sem internet.
+const ANIMACOES = /^\/storage\/v1\/object\/public\/exercicios\//;
 
 self.addEventListener('install', (evento) => {
   evento.waitUntil((async () => {
@@ -56,6 +58,8 @@ self.addEventListener('fetch', (evento) => {
     evento.respondWith(pedido.mode === 'navigate' ? pagina(pedido) : doApp(pedido));
   } else if (ORIGENS_EXTRA.includes(url.origin)) {
     evento.respondWith(guardarDepois(pedido, CACHE_EXTRA));
+  } else if (ANIMACOES.test(url.pathname)) {
+    evento.respondWith(animacao(url.href));
   }
 });
 
@@ -119,6 +123,17 @@ async function guardarDepois(pedido, nomeCache) {
   if (guardada) return guardada;
   const resposta = await fetch(pedido);
   if (resposta.ok || resposta.type === 'opaque') cache.put(pedido, resposta.clone());
+  return resposta;
+}
+
+// O <img> pede sem CORS, e uma resposta assim fica opaca e pesa bem mais na cota do cache.
+// Pedir de novo com CORS guarda só o tamanho real do arquivo.
+async function animacao(endereco) {
+  const cache = await caches.open(CACHE_EXTRA);
+  const guardada = await cache.match(endereco);
+  if (guardada) return guardada;
+  const resposta = await fetch(endereco, { mode: 'cors', credentials: 'omit' });
+  if (resposta.ok) cache.put(endereco, resposta.clone());
   return resposta;
 }
 
