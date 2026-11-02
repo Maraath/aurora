@@ -337,7 +337,7 @@ class _FormCicloTreinoState extends State<_FormCicloTreino> {
               ),
               Switch(
                 value: _ativo,
-                activeColor: c.teal,
+                activeThumbColor: c.teal,
                 onChanged: (v) => setState(() => _ativo = v),
               ),
             ],
@@ -547,7 +547,7 @@ class _FormCicloTreinoState extends State<_FormCicloTreino> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String?>(
-                      value: d.treinoId,
+                      initialValue: d.treinoId,
                       dropdownColor: c.surface,
                       decoration: InputDecoration(
                         labelText: 'Vincular a treino da ficha',

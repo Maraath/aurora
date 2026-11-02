@@ -176,6 +176,32 @@ void main() {
     expect(idsCel, idsPc);
   });
 
+  test('dados de outra conta não sobem sozinhos para uma conta vazia', () async {
+    await semearAntigo(pc);
+    await sync(pc).sincronizar();
+    expect(servidor.tabelas['tarefas'], isNotEmpty);
+    final antes = servidor.tabelas['tarefas']!.length;
+
+    servidor.usuario = 'u2';
+    await expectLater(Sincronizador(pc, servidor, usuarioId: 'u2').sincronizar(), throwsA(isA<PrecisaEscolher>()));
+    expect(servidor.tabelas['tarefas']!.length, antes);
+
+    await Sincronizador(pc, servidor, usuarioId: 'u2').escolher(EscolhaPrimeiraVez.usarNuvem);
+    expect(await pc.select(pc.tarefas).get(), isEmpty);
+    expect(servidor.tabelas['tarefas']!.values.where((l) => l['user_id'] == 'u2'), isEmpty);
+  });
+
+  test('tabela que falha não impede as outras e o envio é repetido', () async {
+    await semearAntigo(pc);
+    final comFalha = _RemotoComFalha(servidor, 'tarefas');
+    await expectLater(Sincronizador(pc, comFalha, usuarioId: 'u1').sincronizar(), throwsA(isA<StateError>()));
+    expect(servidor.tabelas['habitos'], isNotEmpty);
+    expect(servidor.tabelas['tarefas'], isNull);
+
+    await sync(pc).sincronizar();
+    expect(servidor.tabelas['tarefas'], isNotEmpty);
+  });
+
   test('sem mudanças, a segunda sincronização não reenvia nada', () async {
     await semearAntigo(pc);
     await sync(pc).sincronizar();
@@ -236,4 +262,21 @@ void main() {
       expect(servidor.tabelas['medidas']!.length, 2);
     });
   });
+}
+
+/// Servidor que recusa o envio de uma tabela (como a `metas` depois de apagada).
+class _RemotoComFalha implements RemotoSync {
+  _RemotoComFalha(this.base, this.tabela);
+  final RemotoSync base;
+  final String tabela;
+
+  @override
+  Future<void> enviar(String t, List<Map<String, dynamic>> linhas) =>
+      t == tabela ? throw StateError('tabela $t fora do ar') : base.enviar(t, linhas);
+
+  @override
+  Future<List<Map<String, dynamic>>> baixar(String t, Cursor? depois, int limite) => base.baixar(t, depois, limite);
+
+  @override
+  Future<bool> temDados() => base.temDados();
 }

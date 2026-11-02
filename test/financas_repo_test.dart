@@ -83,8 +83,9 @@ void main() {
     expect(mes.saiuCentavos, 1990);
     expect(mes.categorias.single.nome, 'Serviços');
     expect(mes.extrato.single.nome, 'iCloud');
-    // A conta paga continua na lista do mês, marcada como paga.
-    expect(mes.aPagar.firstWhere((o) => o.nome == 'iCloud').paga, isTrue);
+    // A conta paga continua na lista do mês dela, marcada como paga (nos primeiros
+    // dias do mês, a de exemplo venceu no mês anterior).
+    expect(q.mes(icloud.vencimento).aPagar.firstWhere((o) => o.nome == 'iCloud').paga, isTrue);
 
     await repo.pagar(icloud, false);
     expect((await repo.carregar()).saldoCentavos, 70318);

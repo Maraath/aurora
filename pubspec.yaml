@@ -1,7 +1,7 @@
 name: aurora
 description: "Aurora: tarefas, hábitos, treino, finanças e metas num app só."
 publish_to: 'none'
-version: 1.15.4+56
+version: 1.16.0+57
 
 environment:
   sdk: ^3.13.5
@@ -10,6 +10,7 @@ dependencies:
   audioplayers: ^6.8.1
   convert: ^3.1.2
   crypto: ^3.0.7
+  cryptography: ^2.9.0
   drift: ^2.35.2
   drift_flutter: ^0.3.1
   fl_chart: ^1.2.0

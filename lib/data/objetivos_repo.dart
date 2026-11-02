@@ -3,12 +3,10 @@ import 'dart:math' as math;
 import 'package:drift/drift.dart';
 
 import '../core/formato.dart';
-import '../core/recorrencia.dart';
 import '../core/relogio.dart';
 import '../core/sons.dart';
 import 'banco.dart';
 import 'observar.dart';
-import 'tarefas_repo.dart';
 
 /// Sem nenhum avanço nem tarefa ligada feita por esse tempo, o objetivo está parado.
 const diasParaParada = 14;
@@ -165,13 +163,16 @@ EstadoObjetivo estadoObjetivo(
   final contaveis = etapas.where((e) => !e.rotina).toList();
   final feitas = contaveis.where((e) => e.feita).length;
   if (o.unidade.isNotEmpty && progresso >= 1) return EstadoObjetivo.concluida;
-  if (contaveis.isNotEmpty && feitas == contaveis.length)
+  if (contaveis.isNotEmpty && feitas == contaveis.length) {
     return EstadoObjetivo.concluida;
-  if (diasEntre(dataLocal(ultimaAtividade), hoje) >= diasParaParada)
+  }
+  if (diasEntre(dataLocal(ultimaAtividade), hoje) >= diasParaParada) {
     return EstadoObjetivo.parada;
+  }
   if (etapas.any((e) => e.atrasada)) return EstadoObjetivo.emRisco;
-  if (o.dataAlvo != null && hoje.isAfter(dataLocal(o.dataAlvo!)))
+  if (o.dataAlvo != null && hoje.isAfter(dataLocal(o.dataAlvo!))) {
     return EstadoObjetivo.emRisco;
+  }
   if (tempo != null && o.unidade.isNotEmpty && progresso < tempo - 0.1) {
     return EstadoObjetivo.emRisco;
   }
@@ -227,8 +228,9 @@ class ObjetivosRepo {
     final atividade = {for (final o in objetivos) o.id: o.atualizadoEm};
     void marcar(String? objetivoId, DateTime quando) {
       if (objetivoId == null || !atividade.containsKey(objetivoId)) return;
-      if (quando.isAfter(atividade[objetivoId]!))
+      if (quando.isAfter(atividade[objetivoId]!)) {
         atividade[objetivoId] = quando;
+      }
     }
 
     for (final e in etapasTodas) {
@@ -366,8 +368,9 @@ class ObjetivosRepo {
   }
 
   Future<String> salvar(ObjetivosCompanion dados, {String? id}) async {
-    if (id == null)
+    if (id == null) {
       return (await db.into(db.objetivos).insertReturning(dados)).id;
+    }
     await (db.update(db.objetivos)..where((o) => o.id.equals(id))).write(
       dados.copyWith(atualizadoEm: Value(DateTime.now())),
     );

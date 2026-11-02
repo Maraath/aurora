@@ -12,10 +12,8 @@
 // Formato antigo ({ pedido, contexto, historico } → JSON): ver legado.ts.
 //
 // Modelo: Claude (ANTHROPIC_API_KEY) ou Gemini (GEMINI_API_KEY), ver agente.ts.
-// Limite diário por pessoa: LIMITE_DIARIO (padrão 60). Limite diário somando
-// todas as contas: LIMITE_GERAL_DIARIO (padrão 300); e-mails em
-// IA_SEM_LIMITE_GERAL ficam fora dele (o dono). Só conta pedido da pessoa: a
-// volta com resultados de ferramenta é parte da mesma resposta.
+// Limites diários: ver limites.ts. Pedido, volta de ferramenta e áudio contam
+// cada um no seu contador, antes de chamar qualquer modelo.
 
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -30,11 +28,9 @@ import {
 } from "./agente.ts";
 import { mensagemDeErro, responderComCadeia } from "./cadeia.ts";
 import { cors, ErroParaPessoa, json } from "./comum.ts";
-import { type MensagemLegada, responderLegado } from "./legado.ts";
+import { esquemaHistorico, type MensagemLegada, responderLegado } from "./legado.ts";
+import { consumirUso, MAX_CONVERSA, MAX_VOLTAS_FERRAMENTA, type Servico } from "./limites.ts";
 import { FORMATOS_AUDIO, FORMATOS_NOTA, MAX_AUDIO_BASE64, MAX_NOTA_BASE64, transcrever } from "./transcrever.ts";
-
-/// Voltas seguidas de ferramenta depois de uma mensagem da pessoa.
-const MAX_VOLTAS_FERRAMENTA = 6;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -65,9 +61,12 @@ Deno.serve(async (req) => {
     return json({ erro: "Pedido inválido." }, 400);
   }
 
-  // Comando por voz (app 1.9.7+): { audio: base64, formato } → { texto }. Não
-  // conta no limite do dia: o texto volta ao app e o pedido conta quando ele
-  // for enviado à conversa.
+  // A tabela de uso só é gravada com a chave de serviço.
+  const servico = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!) as unknown as Servico;
+
+  // Comando por voz (app 1.9.7+): { audio: base64, formato } → { texto }. Conta
+  // nos áudios do dia; o texto volta ao app e conta como pedido quando ele for
+  // enviado à conversa.
   // Nota de áudio das Anotações (app 1.11+): { audio, formato, uso: "nota" },
   // até 10 minutos, transcrita como ditado.
   if (corpo.audio !== undefined) {
@@ -79,6 +78,8 @@ Deno.serve(async (req) => {
     if (corpo.audio.length > (nota ? MAX_NOTA_BASE64 : MAX_AUDIO_BASE64)) {
       return json({ erro: nota ? "Áudio longo demais para transcrever (até 10 minutos)." : "Áudio longo demais: fale em até um minuto." }, 413);
     }
+    const recusaAudio = await consumirUso(servico, user, "audio");
+    if (recusaAudio) return recusaAudio;
     try {
       return json({ texto: await transcrever(corpo.audio, formato, req.signal, nota) });
     } catch (e) {
@@ -90,15 +91,20 @@ Deno.serve(async (req) => {
 
   // Conversa (formato novo) ou pedido (legado).
   let mensagens;
+  let historico: MensagemLegada[] = [];
   let daPessoa: boolean;
   if (legado) {
     if (!corpo.pedido!.trim()) return json({ erro: "Pedido vazio." }, 400);
+    const lido = esquemaHistorico.safeParse(corpo.historico ?? []);
+    if (!lido.success) return json({ erro: "Conversa inválida." }, 400);
+    historico = lido.data;
     daPessoa = true;
   } else {
     const lida = esquemaMensagens.safeParse(corpo.mensagens);
     if (!lida.success) return json({ erro: "Conversa inválida." }, 400);
     mensagens = janela(lida.data);
     if (mensagens.length === 0) return json({ erro: "Conversa vazia." }, 400);
+    if (JSON.stringify(mensagens).length > MAX_CONVERSA) return json({ erro: "Conversa grande demais." }, 413);
     const ultima = mensagens[mensagens.length - 1];
     daPessoa = ultima.role === "user";
     const voltas = mensagens.length - 1 - mensagens.findLastIndex((m) => m.role === "user");
@@ -107,36 +113,10 @@ Deno.serve(async (req) => {
     }
   }
 
-  // Limite diário por pessoa (a tabela só é gravada com a chave de serviço).
-  const servico = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-  const limite = Number(Deno.env.get("LIMITE_DIARIO") ?? "60");
-  const hoje = new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
-  const { data: uso } = await servico
-    .from("uso_ia").select("pedidos").eq("user_id", user.id).eq("dia", hoje).maybeSingle();
-  const usados = uso?.pedidos ?? 0;
-  if (daPessoa) {
-    if (usados >= limite) {
-      return json({ erro: `Você chegou ao limite de ${limite} pedidos à IA hoje. Amanhã libera de novo.` }, 429);
-    }
-    // Limite de todas as contas juntas: criar contas novas não esgota a cota da
-    // IA. Quem está em IA_SEM_LIMITE_GERAL (e-mails separados por vírgula) passa.
-    const limiteGeral = Number(Deno.env.get("LIMITE_GERAL_DIARIO") ?? "300");
-    const livres = (Deno.env.get("IA_SEM_LIMITE_GERAL") ?? "")
-      .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
-    if (!livres.includes((user.email ?? "").toLowerCase())) {
-      const { data: hojeTodos } = await servico.from("uso_ia").select("pedidos").eq("dia", hoje);
-      const total = (hojeTodos ?? []).reduce((s, l) => s + (l.pedidos ?? 0), 0);
-      if (total >= limiteGeral) {
-        return json({ erro: "A IA chegou ao limite do dia para todos. Amanhã libera de novo." }, 429);
-      }
-    }
-    await servico.from("uso_ia").upsert({ user_id: user.id, dia: hoje, pedidos: usados + 1 });
-  } else if (usados === 0) {
-    // Volta de ferramenta sem nenhum pedido hoje: não veio de uma conversa real.
-    return json({ erro: "Conversa inválida." }, 400);
-  }
+  const recusa = await consumirUso(servico, user, daPessoa ? "pedido" : "volta");
+  if (recusa) return recusa;
 
-  if (legado) return responderLegado(corpo.pedido!.trim().slice(0, 2000), contexto, corpo.historico ?? []);
+  if (legado) return responderLegado(corpo.pedido!.trim().slice(0, 2000), contexto, historico);
 
   let cadeia: Escolha[];
   try {

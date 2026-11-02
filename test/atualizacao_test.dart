@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:aurora/core/atualizacao.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -29,6 +32,8 @@ void main() {
     // Só https: qualquer outra coisa cai no balde.
     expect(novaVersao({...json, 'url': 'http://exemplo.test/a.exe'}, 1)!.url, isNull);
     expect(novaVersao({...json, 'url': 'arquivo.exe'}, 1)!.url, isNull);
+    // Só o GitHub: outro site, mesmo com https, também cai no balde.
+    expect(novaVersao({...json, 'url': 'https://exemplo.test/a.exe'}, 1)!.url, isNull);
     final android = {
       'versao': '1.0.2',
       'build': 3,
@@ -37,6 +42,22 @@ void main() {
       },
     };
     expect(novaVersao(android, 2, abis: ['arm64-v8a'])!.url, '$gh.apk');
+  });
+
+  test('nome do instalador com pasta é recusado', () {
+    expect(novaVersao({...json, 'instalador': r'..\Startup\a.exe'}, 1), isNull);
+    expect(novaVersao({...json, 'instalador': '../a.exe'}, 1), isNull);
+  });
+
+  test('só aceita versao.json assinado com a chave certa', () async {
+    final par = await Ed25519().newKeyPair();
+    final publica = base64Encode((await par.extractPublicKey()).bytes);
+    final conteudo = utf8.encode('{"versao":"1.0.1"}');
+    final assinatura = base64Encode((await Ed25519().sign(conteudo, keyPair: par)).bytes);
+    expect(await assinaturaValida(conteudo, assinatura, chave: publica), isTrue);
+    expect(await assinaturaValida(utf8.encode('{"versao":"9.9.9"}'), assinatura, chave: publica), isFalse);
+    expect(await assinaturaValida(conteudo, assinatura), isFalse); // outra chave
+    expect(await assinaturaValida(conteudo, 'lixo'), isFalse);
   });
 
   group('Android, um APK por arquitetura', () {

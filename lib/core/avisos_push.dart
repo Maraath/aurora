@@ -94,6 +94,17 @@ class AvisosPush {
     mudou.value++;
   }
 
+  /// Ao sair da conta: este aparelho para de receber e a agenda do servidor some.
+  static Future<void> aoSair() async {
+    if (!kIsWeb || !logado) return;
+    await desativar();
+    try {
+      await nuvem!.rpc('substituir_avisos', params: {'avisos': <Object>[]});
+    } catch (e) {
+      debugPrint('Avisos: falha ao limpar a agenda ($e)');
+    }
+  }
+
   /// Um aviso agora (chega em até 1 minuto, quando o servidor passa).
   static Future<void> testar() => nuvem!.rpc('aviso_de_teste');
 

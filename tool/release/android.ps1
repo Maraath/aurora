@@ -59,8 +59,10 @@ if ($SemEnviar) { return }
 
 # Etapa 2: Os APKs vão exclusivamente para o GitHub Releases (release da versão e link fixo 'baixar').
 # No balde do Supabase fica apenas o versao.json (~200 bytes), poupando espaço de Storage e banda.
+Assinar build\instalador\versao-android.json
 PublicarVersao $versao $Notas @($abis.Values | ForEach-Object { "build\instalador\$($_.instalador)" })
 TrocarNoGitHubBaixar "build\instalador\$($abis['arm64-v8a'].instalador)" 'Aurora.apk'
+Substituir build\instalador\versao-android.sig 'android/versao.sig'
 Substituir build\instalador\versao-android.json 'android/versao.json'
 ApagarAntigos 'android' @()
 Write-Host "Publicado: Aurora $versao para Android"

@@ -22,3 +22,10 @@ export class ErroParaPessoa extends Error {
     this.status = status;
   }
 }
+
+/// Registra uma falha sem o conteúdo: o erro do fornecedor de IA carrega o pedido
+/// inteiro (dados da pessoa e áudio), que não pode ir para os logs.
+export function registrarFalha(onde: string, e: unknown) {
+  const erro = e as { name?: string; statusCode?: number; lastError?: { statusCode?: number } } | undefined;
+  console.error(onde, erro?.name ?? "erro", erro?.statusCode ?? erro?.lastError?.statusCode ?? "");
+}

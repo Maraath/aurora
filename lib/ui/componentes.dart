@@ -44,8 +44,9 @@ class Cartao extends StatelessWidget {
     if (Theme.of(context).brightness == Brightness.dark) {
       // Cartão sobre o céu: vidro com desfoque. Cartão dentro de outro cartão
       // (sem sombra): só transparência, para não empilhar desfoques.
-      if (sombra)
+      if (sombra) {
         return Vidro(raio: cantos, cor: cor, borda: borda, child: toque);
+      }
       final base = cor ?? c.surface2;
       return DecoratedBox(
         decoration: BoxDecoration(

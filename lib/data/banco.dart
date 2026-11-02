@@ -556,15 +556,18 @@ class BancoAurora extends _$BancoAurora {
       if (de < 11) {
         // Também aguenta rodar de novo (ver acima): a tabela criada no
         // passo anterior já vem com as colunas.
-        if (!await _temColuna('fotos_shape', 'hash'))
+        if (!await _temColuna('fotos_shape', 'hash')) {
           await m.addColumn(fotosShape, fotosShape.hash);
-        if (!await _temColuna('fotos_shape', 'na_nuvem'))
+        }
+        if (!await _temColuna('fotos_shape', 'na_nuvem')) {
           await m.addColumn(fotosShape, fotosShape.naNuvem);
+        }
       }
       if (de < 12) {
         // Idempotente como o passo 11 (o app dev e o instalado dividem o banco).
-        if (!await _temColuna('lembretes', 'despertar'))
+        if (!await _temColuna('lembretes', 'despertar')) {
           await m.addColumn(lembretes, lembretes.despertar);
+        }
       }
       if (de < 13) {
         // CREATE TABLE IF NOT EXISTS: aguenta rodar de novo (ver o passo 10).
@@ -589,7 +592,7 @@ class BancoAurora extends _$BancoAurora {
         }
         if (await _temTabela('metas')) {
           await customStatement(
-            'INSERT INTO objetivos (id, nome, descricao, unidade, valor_inicial, valor_atual, valor_alvo, '
+            'INSERT OR IGNORE INTO objetivos (id, nome, descricao, unidade, valor_inicial, valor_atual, valor_alvo, '
             'data_alvo, inicio, status, cor, criado_em, atualizado_em, apagado_em) '
             'SELECT id, nome, NULL, unidade, valor_inicial, valor_atual, valor_alvo, '
             'data_alvo, NULL, status, NULL, criado_em, atualizado_em, apagado_em FROM metas',
@@ -597,7 +600,7 @@ class BancoAurora extends _$BancoAurora {
         }
         if (await _temTabela('projetos')) {
           await customStatement(
-            'INSERT INTO objetivos (id, nome, descricao, unidade, valor_inicial, valor_atual, valor_alvo, '
+            'INSERT OR IGNORE INTO objetivos (id, nome, descricao, unidade, valor_inicial, valor_atual, valor_alvo, '
             'data_alvo, inicio, status, cor, criado_em, atualizado_em, apagado_em) '
             "SELECT id, nome, NULL, '', 0, 0, 0, fim, inicio, "
             "CASE status WHEN 'arquivado' THEN 'arquivada' ELSE 'ativa' END, NULL, "
@@ -635,7 +638,7 @@ class BancoAurora extends _$BancoAurora {
         await m.createTable(etapas);
         if (await _temColuna('tarefas', 'objetivo_id')) {
           await customStatement(
-            'INSERT INTO etapas (id, objetivo_id, titulo, concluida, ordem, concluida_em, criado_em, atualizado_em, apagado_em) '
+            'INSERT OR IGNORE INTO etapas (id, objetivo_id, titulo, concluida, ordem, concluida_em, criado_em, atualizado_em, apagado_em) '
             'SELECT id, objetivo_id, titulo, CASE WHEN feita_em IS NOT NULL THEN 1 ELSE 0 END, 0, feita_em, criado_em, atualizado_em, apagado_em '
             'FROM tarefas WHERE objetivo_id IS NOT NULL AND regra_repeticao IS NULL',
           );

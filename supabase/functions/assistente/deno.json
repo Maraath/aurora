@@ -4,6 +4,6 @@
     "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@4.0.71",
     "@ai-sdk/google": "npm:@ai-sdk/google@4.0.87",
     "zod": "npm:zod@4.1.12",
-    "@supabase/supabase-js": "npm:@supabase/supabase-js@2"
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.118.0"
   }
 }

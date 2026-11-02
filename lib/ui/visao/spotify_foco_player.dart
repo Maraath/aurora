@@ -6,10 +6,12 @@ import '../../core/tema.dart';
 
 /// Converte uma URL comum do Spotify em uma URL de Embed do player oficial.
 String converterUrlParaEmbedSpotify(String url) {
+  const padrao = 'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ';
   var limpa = url.trim();
-  if (limpa.isEmpty) {
-    limpa = 'https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ';
-  }
+  // O player só abre o Spotify: outro endereço cai na playlist padrão.
+  final uri = Uri.tryParse(limpa);
+  final doSpotify = uri != null && uri.scheme == 'https' && uri.host == 'open.spotify.com';
+  if (!doSpotify && !RegExp(r'^spotify:[a-z]+:\w+$').hasMatch(limpa)) limpa = padrao;
 
   // Se for URI no formato spotify:playlist:id ou spotify:track:id
   if (limpa.startsWith('spotify:')) {

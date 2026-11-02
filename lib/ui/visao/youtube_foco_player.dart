@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
@@ -55,8 +56,12 @@ class ServidorYoutubeProxy {
 
     _server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     _server!.listen((HttpRequest request) {
-      final videoId = request.uri.queryParameters['v'] ?? 'WPni755-Krg';
-      final listId = request.uri.queryParameters['list'];
+      // Só o que pode ser um id: estes valores entram no HTML abaixo.
+      final idValido = RegExp(r'^[\w-]{1,64}$');
+      final v = request.uri.queryParameters['v'];
+      final list = request.uri.queryParameters['list'];
+      final videoId = v != null && idValido.hasMatch(v) ? v : 'WPni755-Krg';
+      final listId = list != null && idValido.hasMatch(list) ? list : null;
 
       final embedSrc = listId != null && listId.isNotEmpty
           ? 'https://www.youtube.com/embed/videoseries?list=$listId&autoplay=1&modestbranding=1&rel=0'
@@ -89,12 +94,18 @@ class ServidorYoutubeProxy {
 
       request.response.headers.contentType = ContentType.html;
       request.response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-      request.response.headers.set('Access-Control-Allow-Origin', '*');
       request.response.write(html);
       request.response.close();
     });
 
     return _server!.port;
+  }
+
+  /// Fecha a porta local quando o player sai da tela.
+  Future<void> parar() async {
+    final servidor = _server;
+    _server = null;
+    await servidor?.close(force: true);
   }
 }
 
@@ -194,6 +205,7 @@ class _PlayerYoutubeIntegradoState extends State<PlayerYoutubeIntegrado> {
   void dispose() {
     if (_podeUsarWebview) {
       _controller.dispose();
+      unawaited(ServidorYoutubeProxy.instancia.parar());
     }
     super.dispose();
   }

@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Despertador (Android): lembrete marcado com "Me despertar" toca como alarme.
@@ -66,6 +68,22 @@ final detalhesDespertador = NotificationDetails(
   ),
 );
 
+/// Avisa o Android (MainActivity): o app só fica por cima do bloqueio enquanto
+/// esta tela está aberta. Fora dela, celular travado não mostra nada do Aurora.
+const _canalBloqueio = MethodChannel('aurora/despertador');
+
+Future<void> _avisarSistema(String metodo) async {
+  if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+  try {
+    await _canalBloqueio.invokeMethod<void>(metodo);
+  } catch (e) {
+    debugPrint('Despertador: $metodo ($e)');
+  }
+}
+
+/// Telas abertas agora: dois alarmes podem se empilhar.
+var _telasAbertas = 0;
+
 /// Tela do despertador: hora grande, o lembrete e Parar / Adiar.
 class TelaDespertador extends StatefulWidget {
   const TelaDespertador({super.key, required this.titulo, required this.aoParar, required this.aoAdiar});
@@ -81,7 +99,15 @@ class _TelaDespertadorState extends State<TelaDespertador> with SingleTickerProv
   late final _pulso = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..repeat(reverse: true);
 
   @override
+  void initState() {
+    super.initState();
+    _telasAbertas++;
+    unawaited(_avisarSistema('aberta'));
+  }
+
+  @override
   void dispose() {
+    if (--_telasAbertas == 0) unawaited(_avisarSistema('fechada'));
     _pulso.dispose();
     super.dispose();
   }

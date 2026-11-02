@@ -45,7 +45,12 @@ Future<void> main() async {
   runApp(AuroraApp(db: db, escuro: ValueNotifier(tema != 'claro'), primeiraVez: primeiraVez));
 
   // Tarefas que repetem (de antes da Rotina) viram hábito ou lembrete.
-  await converterTarefasRepetidas(db);
+  try {
+    await converterTarefasRepetidas(db);
+  } catch (e) {
+    // Não pode impedir a sincronização e os avisos, logo abaixo.
+    debugPrint('Conversão de tarefas: $e');
+  }
   // Sincroniza preferência de ficar na bandeja ao fechar no Windows.
   unawaited(JanelaWindows.instancia.sincronizarPreferencia(db));
   // Depois da primeira tela: pede permissão e agenda os avisos.

@@ -67,8 +67,9 @@ class _FormObjetivoState extends State<_FormObjetivo> {
     _inicio = o?.inicio == null ? null : dataLocal(o!.inicio!);
     _data = o?.dataAlvo == null ? null : dataLocal(o!.dataAlvo!);
     _cor = o?.cor ?? coresObjetivo.first;
-    if (_novo)
+    if (_novo) {
       _etapas.addAll([TextEditingController(), TextEditingController()]);
+    }
   }
 
   @override

@@ -54,8 +54,10 @@ if ($SemEnviar) { return }
 
 # Etapa 2: O instalador vai exclusivamente para o GitHub Releases (release da versão e link fixo 'baixar').
 # No balde do Supabase fica apenas o versao.json (~200 bytes), poupando espaço de Storage e banda.
+Assinar build\instalador\versao.json
 PublicarVersao $versao $Notas @($arquivo)
 TrocarNoGitHubBaixar $arquivo 'Aurora-setup.exe'
+Substituir build\instalador\versao.sig 'windows/versao.sig'
 Substituir build\instalador\versao.json 'windows/versao.json'
 ApagarAntigos 'windows' @()
 Write-Host "Publicado: Aurora $versao"

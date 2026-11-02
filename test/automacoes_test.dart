@@ -85,9 +85,9 @@ void main() {
 
   group('execução', () {
     test('grava o texto na conversa e marca; chave geral desligada não roda', () async {
-      await ligar(ModeloAutomacao.briefing);
+      await ligar(ModeloAutomacao.atrasadas);
       final agora = agoraLocal();
-      final b = await modelo(ModeloAutomacao.briefing);
+      final b = await modelo(ModeloAutomacao.atrasadas);
       // Força a ocorrência de hoje para "agora".
       await repo.salvar(
           AutomacoesCompanion(horario: Value(horaDe(agora.hour, agora.minute)), diasSemana: const Value(127)),
@@ -102,8 +102,20 @@ void main() {
 
       final conversa = await AssistenteRepo(db).carregarConversa();
       expect(conversa.single.papel, PapelMensagem.aurora);
-      expect(conversa.single.texto, startsWith('Briefing do dia · '));
-      expect(conversa.single.texto, contains('Hábitos: Cardio e Estudo.'));
+      expect(conversa.single.texto, startsWith('Atrasadas de manhã'));
+    });
+
+    test('o briefing automático fica desligado: só roda quando pedem', () async {
+      await ligar(ModeloAutomacao.briefing);
+      final agora = agoraLocal();
+      final b = await modelo(ModeloAutomacao.briefing);
+      await repo.salvar(
+          AutomacoesCompanion(horario: Value(horaDe(agora.hour, agora.minute)), diasSemana: const Value(127)),
+          id: b.id);
+
+      expect(await executarPendentes(db, agora: agora), 0);
+      expect((await modelo(ModeloAutomacao.briefing)).ativa, isFalse);
+      expect(await AssistenteRepo(db).carregarConversa(), isEmpty);
     });
 
     test('personalizada vai para a IA', () async {

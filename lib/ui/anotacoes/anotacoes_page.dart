@@ -297,8 +297,9 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
       if (nome != null) await _repo!.renomearPasta(p.id, nome);
     } else {
       await _repo!.apagarPasta(p.id);
-      if (mounted && _filtro == NaPasta(p.id))
+      if (mounted && _filtro == NaPasta(p.id)) {
         setState(() => _filtro = const TodasAsNotas());
+      }
     }
   }
 

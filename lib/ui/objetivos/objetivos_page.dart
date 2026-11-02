@@ -8,7 +8,6 @@ import '../../data/objetivos_repo.dart';
 import '../componentes.dart';
 import '../em_breve.dart';
 import '../formulario.dart';
-import '../tarefas/form_tarefa.dart';
 import 'form_objetivo.dart';
 
 /// Meses mostrados na linha do tempo.
@@ -54,8 +53,9 @@ class _ObjetivosPageState extends State<ObjetivosPage> {
     return StreamBuilder<List<ProgressoObjetivo>>(
       stream: _objetivos,
       builder: (context, snap) {
-        if (snap.hasError)
+        if (snap.hasError) {
           return Text('Não consegui ler os objetivos: ${snap.error}');
+        }
         final lista = snap.data;
         if (lista == null) return const SizedBox(height: 200);
         final visiveis = _filtrados(lista);
@@ -218,8 +218,9 @@ class _ObjetivosPageState extends State<ObjetivosPage> {
         await _repo!.mudarStatus(o.id, 'ativa');
       case 'concluir':
         await _repo!.mudarStatus(o.id, 'concluida');
-        if (o.unidade.isNotEmpty)
+        if (o.unidade.isNotEmpty) {
           await _repo!.atualizarValor(o.id, o.valorAlvo);
+        }
       case 'arquivar':
         await _repo!.mudarStatus(o.id, 'arquivada');
       case 'excluir':

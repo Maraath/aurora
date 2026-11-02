@@ -122,8 +122,8 @@ class AutomacoesRepo {
     }
     // Desativa o briefing caso estivesse ativo de versões anteriores para poupar requisições
     final briefingId = idNatural('automacao', [ModeloAutomacao.briefing.name]);
-    await (db.update(db.automacoes)..where((a) => a.id.equals(briefingId)))
-        .write(const AutomacoesCompanion(ativa: Value(false)));
+    await (db.update(db.automacoes)..where((a) => a.id.equals(briefingId) & a.ativa.equals(true)))
+        .write(AutomacoesCompanion(ativa: const Value(false), atualizadoEm: Value(DateTime.now())));
   }
 
   /// Chave geral, por aparelho (padrão: ligada).

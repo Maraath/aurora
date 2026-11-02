@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/bloqueio.dart';
 import '../core/tema.dart';
 import '../data/banco.dart';
+import '../data/limpar_aparelho.dart';
 import 'ceu_estrelado.dart';
 import 'componentes.dart';
 
@@ -27,10 +29,30 @@ class _PortaoBloqueioState extends State<PortaoBloqueio> with WidgetsBindingObse
   bool _travado = false;
   DateTime? _saiuEm;
 
+  /// Computador: última vez que a pessoa mexeu no mouse ou no teclado.
+  DateTime _mexeuEm = DateTime.now();
+  Timer? _relogioParado;
+
+  static bool get _computador =>
+      kIsWeb || !(defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS);
+
+  void _mexeu() => _mexeuEm = DateTime.now();
+
+  bool _teclaApertada(KeyEvent _) {
+    _mexeu();
+    return false;
+  }
+
+  void _conferirParado() {
+    if (_modo == ModoBloqueio.nenhum || _travado || _ServicoPedido.ativo) return;
+    if (DateTime.now().difference(_mexeuEm) >= ServicoBloqueio.inatividade) setState(() => _travado = true);
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    HardwareKeyboard.instance.addHandler(_teclaApertada);
     ServicoBloqueio.mudou.addListener(_recarregar);
     _carregar(travar: true);
   }
@@ -38,7 +60,9 @@ class _PortaoBloqueioState extends State<PortaoBloqueio> with WidgetsBindingObse
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    HardwareKeyboard.instance.removeHandler(_teclaApertada);
     ServicoBloqueio.mudou.removeListener(_recarregar);
+    _relogioParado?.cancel();
     super.dispose();
   }
 
@@ -51,6 +75,13 @@ class _PortaoBloqueioState extends State<PortaoBloqueio> with WidgetsBindingObse
       if (travar) _travado = modo != ModoBloqueio.nenhum;
       if (modo == ModoBloqueio.nenhum) _travado = false;
     });
+    unawaited(protegerTela(modo != ModoBloqueio.nenhum));
+    _relogioParado?.cancel();
+    _relogioParado = null;
+    if (_computador && modo != ModoBloqueio.nenhum) {
+      _mexeu();
+      _relogioParado = Timer.periodic(const Duration(seconds: 30), (_) => _conferirParado());
+    }
   }
 
   // Mudou na tela de Conta: quem mudou acabou de se identificar, não trava.
@@ -74,15 +105,28 @@ class _PortaoBloqueioState extends State<PortaoBloqueio> with WidgetsBindingObse
   Widget build(BuildContext context) {
     // Até ler a preferência, não mostra os dados (evita um piscar do app aberto).
     if (!_carregado) return ColoredBox(color: context.cores.bg);
-    return Stack(children: [
-      Offstage(offstage: _travado, child: TickerMode(enabled: !_travado, child: widget.child)),
-      if (_travado)
-        TelaBloqueio(
-          servico: _servico,
-          modo: _modo,
-          aoDesbloquear: () => setState(() => _travado = false),
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (_) => _mexeu(),
+      onPointerHover: (_) => _mexeu(),
+      onPointerSignal: (_) => _mexeu(),
+      child: Stack(children: [
+        // ExcludeFocus: travado, o teclado não pode digitar num campo escondido.
+        Offstage(
+          offstage: _travado,
+          child: ExcludeFocus(excluding: _travado, child: TickerMode(enabled: !_travado, child: widget.child)),
         ),
-    ]);
+        if (_travado)
+          TelaBloqueio(
+            servico: _servico,
+            modo: _modo,
+            aoDesbloquear: () {
+              _mexeu();
+              setState(() => _travado = false);
+            },
+          ),
+      ]),
+    );
   }
 }
 
@@ -112,6 +156,20 @@ class TelaBloqueio extends StatefulWidget {
 }
 
 class _TelaBloqueioState extends State<TelaBloqueio> {
+  /// "Esqueci": mostra o aviso antes de apagar. Aqui ainda não há Navigator (o
+  /// bloqueio fica por cima dele), então não dá para abrir um diálogo.
+  bool _esqueci = false;
+  bool _apagando = false;
+
+  Future<void> _apagarTudo() async {
+    setState(() => _apagando = true);
+    try {
+      await sairDaConta(widget.servico.db, limpar: true);
+    } finally {
+      if (mounted) setState(() => _apagando = false);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -151,16 +209,46 @@ class _TelaBloqueioState extends State<TelaBloqueio> {
                     style: manrope(14, cor: c.muted),
                   ),
                   const SizedBox(height: 24),
-                  if (widget.modo == ModoBloqueio.pin)
-                    TecladoPin(
-                      aoConferir: (pin) async {
-                        final ok = await widget.servico.conferirPin(pin);
-                        if (ok) widget.aoDesbloquear();
-                        return ok ? null : 'PIN incorreto.';
-                      },
-                    )
-                  else
-                    BotaoPilula(texto: 'Desbloquear', aoTocar: _biometria),
+                  if (_esqueci) ...[
+                    Text(
+                      'Sem o bloqueio não há como abrir estes dados. A única saída é apagar tudo deste '
+                      'aparelho e sair da conta. O que já está na nuvem volta quando você entrar de novo; '
+                      'o que só existe aqui se perde.',
+                      textAlign: TextAlign.center,
+                      style: manrope(14, altura: 1.5),
+                    ),
+                    const SizedBox(height: 18),
+                    if (_apagando)
+                      const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5))
+                    else ...[
+                      BotaoPilula(texto: 'Apagar deste aparelho', aoTocar: _apagarTudo),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () => setState(() => _esqueci = false),
+                        child: Text('Voltar', style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
+                      ),
+                    ],
+                  ] else ...[
+                    if (widget.modo == ModoBloqueio.pin)
+                      TecladoPin(
+                        servico: widget.servico,
+                        aoConferir: (pin) async {
+                          final ok = await widget.servico.conferirPin(pin);
+                          if (ok) widget.aoDesbloquear();
+                          return ok ? null : 'PIN incorreto.';
+                        },
+                      )
+                    else
+                      BotaoPilula(texto: 'Desbloquear', aoTocar: _biometria),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => setState(() => _esqueci = true),
+                      child: Text(
+                        widget.modo == ModoBloqueio.pin ? 'Esqueci o PIN' : 'Não consigo desbloquear',
+                        style: manrope(13, peso: FontWeight.w600, cor: c.muted),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -173,11 +261,12 @@ class _TelaBloqueioState extends State<TelaBloqueio> {
 }
 
 /// Bolinhas do PIN e teclado numérico (clique, toque ou teclado do PC).
-/// [aoConferir] devolve nulo se deu certo, ou a mensagem de erro.
+/// [aoConferir] devolve nulo se deu certo, ou a mensagem de erro. Com [servico],
+/// conta as tentativas erradas e faz esperar (o contador fica no banco).
 class TecladoPin extends StatefulWidget {
-  const TecladoPin({super.key, required this.aoConferir, this.limitarTentativas = true});
+  const TecladoPin({super.key, required this.aoConferir, this.servico});
   final Future<String?> Function(String pin) aoConferir;
-  final bool limitarTentativas;
+  final ServicoBloqueio? servico;
 
   @override
   State<TecladoPin> createState() => _TecladoPinState();
@@ -186,10 +275,30 @@ class TecladoPin extends StatefulWidget {
 class _TecladoPinState extends State<TecladoPin> {
   String _pin = '';
   String? _erro;
-  int _erradas = 0;
   DateTime? _liberaEm;
   Timer? _relogio;
   final _foco = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_lerEspera());
+  }
+
+  /// Quem fechou e abriu o app continua esperando.
+  Future<void> _lerEspera() async {
+    final falta = await widget.servico?.esperaRestante() ?? Duration.zero;
+    if (mounted && falta > Duration.zero) setState(() => _esperar(falta));
+  }
+
+  void _esperar(Duration tempo) {
+    _liberaEm = DateTime.now().add(tempo);
+    _relogio?.cancel();
+    _relogio = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!_esperando) t.cancel();
+      if (mounted) setState(() {});
+    });
+  }
 
   @override
   void dispose() {
@@ -219,20 +328,18 @@ class _TecladoPinState extends State<TecladoPin> {
       setState(() => _erro = 'O PIN tem de 4 a 6 números.');
       return;
     }
+    final servico = widget.servico;
     final erro = await widget.aoConferir(_pin);
-    if (!mounted || erro == null) return;
+    if (erro == null) {
+      await servico?.zerarErros();
+      return;
+    }
+    final espera = await servico?.registrarErro() ?? Duration.zero;
+    if (!mounted) return;
     setState(() {
       _pin = '';
       _erro = erro;
-      if (widget.limitarTentativas && ++_erradas >= ServicoBloqueio.tentativas) {
-        _erradas = 0;
-        _liberaEm = DateTime.now().add(ServicoBloqueio.espera);
-        _relogio?.cancel();
-        _relogio = Timer.periodic(const Duration(seconds: 1), (t) {
-          if (!_esperando) t.cancel();
-          if (mounted) setState(() {});
-        });
-      }
+      if (espera > Duration.zero) _esperar(espera);
     });
   }
 
@@ -270,6 +377,7 @@ class _TecladoPinState extends State<TecladoPin> {
   Widget build(BuildContext context) {
     final c = context.cores;
     final faltam = _esperando ? _liberaEm!.difference(DateTime.now()).inSeconds + 1 : 0;
+    final textoEspera = faltam > 60 ? '${(faltam / 60).ceil()} min' : '$faltam s';
     Widget tecla(String rotulo, VoidCallback? aoTocar, {IconData? icone}) => Padding(
           padding: const EdgeInsets.all(6),
           child: Material(
@@ -318,7 +426,7 @@ class _TecladoPinState extends State<TecladoPin> {
             height: 34,
             child: Center(
               child: Text(
-                _esperando ? 'Muitas tentativas. Espere $faltam s.' : (_erro ?? ''),
+                _esperando ? 'Muitas tentativas. Espere $textoEspera.' : (_erro ?? ''),
                 style: manrope(13, peso: FontWeight.w600, cor: c.bad),
               ),
             ),
@@ -373,6 +481,7 @@ class _SecaoBloqueioState extends State<SecaoBloqueio> {
       ModoBloqueio.pin => await _dialogoPin(
             titulo: 'Digite o PIN atual',
             aoConferir: (pin) async => await _servico.conferirPin(pin) ? null : 'PIN incorreto.',
+            limitar: true,
           ) !=
           null,
       ModoBloqueio.biometria => await _pedirBiometria(_servico),
@@ -414,20 +523,18 @@ class _SecaoBloqueioState extends State<SecaoBloqueio> {
     final primeiro = await _dialogoPin(
       titulo: 'Crie um PIN de 4 a 6 números',
       aoConferir: (pin) async => null,
-      limitar: false,
     );
     if (primeiro == null || !mounted) return null;
     return _dialogoPin(
       titulo: 'Digite o PIN de novo',
       aoConferir: (pin) async => pin == primeiro ? null : 'Os PINs não são iguais.',
-      limitar: false,
     );
   }
 
   Future<String?> _dialogoPin({
     required String titulo,
     required Future<String?> Function(String) aoConferir,
-    bool limitar = true,
+    bool limitar = false,
   }) {
     final c = context.cores;
     return showDialog<String>(
@@ -436,7 +543,7 @@ class _SecaoBloqueioState extends State<SecaoBloqueio> {
         backgroundColor: c.surface,
         title: Text(titulo, style: sora(18), textAlign: TextAlign.center),
         content: TecladoPin(
-          limitarTentativas: limitar,
+          servico: limitar ? _servico : null,
           aoConferir: (pin) async {
             final erro = await aoConferir(pin);
             if (erro == null && ctx.mounted) Navigator.pop(ctx, pin);
@@ -460,8 +567,8 @@ class _SecaoBloqueioState extends State<SecaoBloqueio> {
           Text('BLOQUEIO DO APP', style: rotulo(c.accent)),
           const SizedBox(height: 6),
           Text(
-            'Pede o PIN ou a biometria ao abrir o Aurora e ao voltar depois de 1 minuto fora. '
-            'Vale só para este aparelho.',
+            'Pede o PIN ou a biometria ao abrir o Aurora e ao voltar depois de 1 minuto fora; no '
+            'computador, também depois de 10 minutos parado. Vale só para este aparelho.',
             style: manrope(13, cor: c.muted, altura: 1.5),
           ),
           const SizedBox(height: 14),

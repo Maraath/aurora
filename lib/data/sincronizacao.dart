@@ -88,6 +88,14 @@ abstract class RemotoSync {
 
 enum EscolhaPrimeiraVez { juntar, usarNuvem }
 
+/// Apaga do aparelho as linhas de todas as tabelas sincronizadas.
+Future<void> apagarDadosSincronizados(BancoAurora db) => db.transaction(() async {
+      for (final t in tabelasSincronizadas(db).reversed) {
+        await db.customStatement('DELETE FROM ${t.actualTableName}');
+      }
+      db.notifyUpdates({for (final t in tabelasSincronizadas(db)) TableUpdate.onTable(t)});
+    });
+
 class PrecisaEscolher implements Exception {
   const PrecisaEscolher();
 }
@@ -108,15 +116,21 @@ class Sincronizador {
 
   /// Sincroniza. Na primeira vez desta conta neste aparelho, se houver dados
   /// dos dois lados, lança [PrecisaEscolher] (a pessoa decide com [escolher]).
+  /// O mesmo vale se os dados do aparelho são de OUTRA conta: mesmo com a nuvem
+  /// vazia, eles nunca sobem sem perguntar.
+  /// Uma tabela que não consegue enviar não impede as outras nem o recebimento;
+  /// o erro aparece no fim e o envio é repetido na próxima vez.
   Future<ResultadoSync> sincronizar() async {
-    if (await db.preferencia('sync_usuario') != usuarioId) {
+    final anterior = await db.preferencia('sync_usuario');
+    if (anterior != usuarioId) {
       final local = await _temDadosLocais();
       final nuvem = await remoto.temDados();
-      if (local && nuvem) throw const PrecisaEscolher();
+      if (local && (nuvem || anterior != null)) throw const PrecisaEscolher();
       await _comecarDoZero();
     }
-    final enviadas = await _enviar();
+    final (enviadas, falha) = await _enviar();
     final recebidas = await _baixar();
+    if (falha != null) Error.throwWithStackTrace(falha.$1, falha.$2);
     await db.salvarPreferencia('sync_ultima', DateTime.now().toIso8601String());
     return ResultadoSync(enviadas: enviadas, recebidas: recebidas);
   }
@@ -124,7 +138,7 @@ class Sincronizador {
   /// Primeira vez com dados dos dois lados: juntar tudo, ou trocar os dados
   /// deste aparelho pelos da nuvem.
   Future<ResultadoSync> escolher(EscolhaPrimeiraVez escolha) async {
-    if (escolha == EscolhaPrimeiraVez.usarNuvem) await _apagarLocais();
+    if (escolha == EscolhaPrimeiraVez.usarNuvem) await apagarDadosSincronizados(db);
     await _comecarDoZero();
     return sincronizar();
   }
@@ -143,34 +157,33 @@ class Sincronizador {
     return false;
   }
 
-  Future<void> _apagarLocais() => db.transaction(() async {
-        for (final t in tabelasSincronizadas(db).reversed) {
-          await db.customStatement('DELETE FROM ${t.actualTableName}');
-        }
-        db.notifyUpdates({for (final t in tabelasSincronizadas(db)) TableUpdate.onTable(t)});
-      });
-
   // ------------------------------------------------------------------ envio
 
-  Future<int> _enviar() async {
+  /// Quantas linhas foram e a primeira falha (o marco só anda se todas foram).
+  Future<(int, (Object, StackTrace)?)> _enviar() async {
     final desde = int.tryParse(await db.preferencia('sync_enviado') ?? '') ?? 0;
     // Começo DESTE envio, um segundo antes: o que mudar durante o envio vai na próxima.
     final marco = DateTime.now().millisecondsSinceEpoch ~/ 1000 - 1;
     var total = 0;
+    (Object, StackTrace)? falha;
     for (final t in tabelasSincronizadas(db)) {
-      final linhas = await db
-          .customSelect('SELECT * FROM ${t.actualTableName} WHERE atualizado_em > ?',
-              variables: [Variable<int>(desde)])
-          .get();
-      final convertidas = [for (final l in linhas) paraServidor(t, l.data)];
-      for (var i = 0; i < convertidas.length; i += _lote) {
-        await remoto.enviar(t.actualTableName,
-            convertidas.sublist(i, i + _lote > convertidas.length ? convertidas.length : i + _lote));
+      try {
+        final linhas = await db
+            .customSelect('SELECT * FROM ${t.actualTableName} WHERE atualizado_em > ?',
+                variables: [Variable<int>(desde)])
+            .get();
+        final convertidas = [for (final l in linhas) paraServidor(t, l.data)];
+        for (var i = 0; i < convertidas.length; i += _lote) {
+          await remoto.enviar(t.actualTableName,
+              convertidas.sublist(i, i + _lote > convertidas.length ? convertidas.length : i + _lote));
+        }
+        total += convertidas.length;
+      } catch (e, pilha) {
+        falha ??= (e, pilha);
       }
-      total += convertidas.length;
     }
-    await db.salvarPreferencia('sync_enviado', '$marco');
-    return total;
+    if (falha == null) await db.salvarPreferencia('sync_enviado', '$marco');
+    return (total, falha);
   }
 
   // ---------------------------------------------------------------- recebimento

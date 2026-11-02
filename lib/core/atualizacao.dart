@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:convert/convert.dart';
-import 'package:crypto/crypto.dart';
+import 'package:crypto/crypto.dart' as hash show sha256;
+import 'package:crypto/crypto.dart' show Digest;
+import 'package:cryptography/cryptography.dart' as cripto;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +18,27 @@ import 'nuvem.dart';
 /// tool/release/windows.ps1).
 const baldeAtualizacoes = 'atualizacoes';
 const _urlBalde = '$supabaseUrl/storage/v1/object/public/$baldeAtualizacoes';
+
+/// Parte pública da chave que assina cada versao.json (Ed25519). A privada fica
+/// só no PC do dono (tool/release/gerar_chave_atualizacao.mjs): quem invadir o
+/// balde troca o arquivo, mas não consegue assinar um instalador falso.
+const chavePublicaAtualizacao = '1ixmnb/YHxr28Fv5ZU4c8+ycT3yNhjx2cN6hQqGm9Ec=';
+
+/// A assinatura (base64) é a do conteúdo exato do versao.json?
+Future<bool> assinaturaValida(List<int> conteudo, String assinatura, {String chave = chavePublicaAtualizacao}) async {
+  try {
+    return await cripto.Ed25519().verify(
+      conteudo,
+      signature: cripto.Signature(
+        base64Decode(assinatura.trim()),
+        publicKey: cripto.SimplePublicKey(base64Decode(chave), type: cripto.KeyPairType.ed25519),
+      ),
+    );
+  } catch (e) {
+    debugPrint('Atualização: assinatura ilegível ($e)');
+    return false;
+  }
+}
 
 class Atualizacao {
   const Atualizacao({
@@ -49,19 +72,23 @@ class Atualizacao {
       if (abi == null) return null;
       arquivo = porAbi[abi] as Map<String, dynamic>;
     }
+    final instalador = arquivo['instalador'] as String;
+    // O nome vira caminho no disco: nada de pastas.
+    if (!RegExp(r'^\w[\w.-]*$').hasMatch(instalador)) return null;
     return Atualizacao(
       versao: j['versao'] as String,
       build: (j['build'] as num).toInt(),
       notas: (j['notas'] as String?) ?? '',
-      instalador: arquivo['instalador'] as String,
+      instalador: instalador,
       sha256: (arquivo['sha256'] as String).toLowerCase(),
-      url: _soHttps(arquivo['url']),
+      url: _doGitHub(arquivo['url']),
     );
   }
 
-  static String? _soHttps(Object? url) {
+  /// Só o GitHub, por https; qualquer outro endereço cai no balde.
+  static String? _doGitHub(Object? url) {
     final uri = url is String ? Uri.tryParse(url) : null;
-    return uri != null && uri.scheme == 'https' && uri.host.isNotEmpty ? url as String : null;
+    return uri != null && uri.scheme == 'https' && uri.host == 'github.com' ? url as String : null;
   }
 }
 
@@ -108,10 +135,14 @@ class Atualizador {
     try {
       final info = await PackageInfo.fromPlatform();
       versaoAtual = info.version;
-      final r = await http
-          .get(Uri.parse('$_urlBalde/$_pasta/versao.json?t=${DateTime.now().millisecondsSinceEpoch}'))
-          .timeout(const Duration(seconds: 15));
-      if (r.statusCode != 200) return null;
+      final agora = DateTime.now().millisecondsSinceEpoch;
+      final r = await http.get(Uri.parse('$_urlBalde/$_pasta/versao.json?t=$agora')).timeout(const Duration(seconds: 15));
+      final s = await http.get(Uri.parse('$_urlBalde/$_pasta/versao.sig?t=$agora')).timeout(const Duration(seconds: 15));
+      if (r.statusCode != 200 || s.statusCode != 200) return null;
+      if (!await assinaturaValida(r.bodyBytes, s.body)) {
+        debugPrint('Atualização: versao.json sem assinatura válida; ignorado');
+        return null;
+      }
       final json = jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
       final abis = Platform.isAndroid ? (await _canal.invokeListMethod<String>('abis')) ?? const <String>[] : null;
       final nova = novaVersao(json, int.tryParse(info.buildNumber) ?? 0, abis: abis);
@@ -153,25 +184,32 @@ class Atualizador {
     final arquivo = File('${pasta.path}${Platform.pathSeparator}${a.instalador}');
     // O GitHub responde com redirecionamento para o arquivo; o http segue sozinho.
     final endereco = a.url ?? '$_urlBalde/$_pasta/${a.instalador}';
-    final resposta = await http.Client().send(http.Request('GET', Uri.parse(endereco)));
-    if (resposta.statusCode != 200) throw HttpException('download respondeu ${resposta.statusCode}');
-    final total = resposta.contentLength ?? 0;
-    var recebido = 0;
-    final saida = arquivo.openWrite();
-    final resumo = AccumulatorSink<Digest>();
-    final hash = sha256.startChunkedConversion(resumo);
-    await for (final pedaco in resposta.stream) {
-      saida.add(pedaco);
-      hash.add(pedaco);
-      recebido += pedaco.length;
-      if (total > 0) progresso.value = recebido / total;
+    final cliente = http.Client();
+    try {
+      final resposta =
+          await cliente.send(http.Request('GET', Uri.parse(endereco))).timeout(const Duration(seconds: 30));
+      if (resposta.statusCode != 200) throw HttpException('download respondeu ${resposta.statusCode}');
+      final total = resposta.contentLength ?? 0;
+      var recebido = 0;
+      final saida = arquivo.openWrite();
+      final resumo = AccumulatorSink<Digest>();
+      final conferencia = hash.sha256.startChunkedConversion(resumo);
+      // Sem nada chegando por 60 s, desiste (a conexão caiu no meio).
+      await for (final pedaco in resposta.stream.timeout(const Duration(seconds: 60))) {
+        saida.add(pedaco);
+        conferencia.add(pedaco);
+        recebido += pedaco.length;
+        if (total > 0) progresso.value = recebido / total;
+      }
+      await saida.close();
+      conferencia.close();
+      if (resumo.events.single.toString() != a.sha256) {
+        await arquivo.delete();
+        throw const FileSystemException('o arquivo baixado não confere (SHA-256)');
+      }
+      return arquivo;
+    } finally {
+      cliente.close();
     }
-    await saida.close();
-    hash.close();
-    if (resumo.events.single.toString() != a.sha256) {
-      await arquivo.delete();
-      throw const FileSystemException('o arquivo baixado não confere (SHA-256)');
-    }
-    return arquivo;
   }
 }

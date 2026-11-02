@@ -4,9 +4,13 @@
 // dos comandos rápidos do app, que ele executa com o interpretador offline.
 // Fica aqui até todos os aparelhos usarem o formato novo (ver index.ts).
 
-import { ErroParaPessoa, json } from "./comum.ts";
+import { z } from "zod";
+import { ErroParaPessoa, json, registrarFalha } from "./comum.ts";
 
-export type MensagemLegada = { papel: "eu" | "aurora"; texto: string };
+export type MensagemLegada = { papel: string; texto: string };
+
+/// O que o app antigo manda em "historico" (o papel "sistema" é ignorado adiante).
+export const esquemaHistorico = z.array(z.object({ papel: z.string().max(20), texto: z.string().max(20000) })).max(100);
 
 const INSTRUCOES = `Você é a Aurora, assistente pessoal dentro de um app de rotina
 (tarefas, hábitos, treino, finanças, metas e lembretes). Fale português do Brasil,
@@ -98,7 +102,7 @@ export async function responderLegado(
     if (!r.resposta && r.comandos.length === 0) throw new Error("Resposta vazia da IA");
     return json(r);
   } catch (e) {
-    console.error(e);
+    registrarFalha("IA legada", e);
     if (e instanceof ErroParaPessoa) return json({ erro: e.message }, e.status);
     return json({ erro: "A IA não respondeu agora. Tente de novo daqui a pouco." }, 502);
   }

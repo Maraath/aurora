@@ -9,7 +9,7 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { statusDoErro } from "./cadeia.ts";
-import { ErroParaPessoa } from "./comum.ts";
+import { ErroParaPessoa, registrarFalha } from "./comum.ts";
 
 /// Trocável sem publicar versão: segredo GEMINI_MODELOS_VOZ ("a,b,c").
 export const MODELOS_TRANSCRICAO = [
@@ -89,6 +89,6 @@ export async function transcrever(audio: string, formato: string, sinal: AbortSi
       }
     }
   }
-  console.error(ultimo);
+  registrarFalha("Voz", ultimo);
   throw new ErroParaPessoa("Não deu para entender o áudio agora. Tente de novo daqui a pouco ou digite.", 502);
 }

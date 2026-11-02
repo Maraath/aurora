@@ -10,7 +10,7 @@
 // A chave pública também vai no app (lib/core/avisos_push.dart).
 
 import webpush from "npm:web-push@3.6.7";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.118.0";
 
 function json(corpo: unknown, status = 200) {
   return new Response(JSON.stringify(corpo), { status, headers: { "Content-Type": "application/json" } });
@@ -33,7 +33,7 @@ Deno.serve(async () => {
   const { data: avisos, error } = await servico.rpc("pegar_avisos_vencidos");
   if (error) {
     console.error("avisos-push: pegar_avisos_vencidos", error.message);
-    return json({ erro: error.message }, 500);
+    return json({ erro: "Falha ao ler os avisos." }, 500);
   }
   const lista = (avisos ?? []) as Aviso[];
   if (lista.length === 0) return json({ enviados: 0 });
@@ -45,11 +45,13 @@ Deno.serve(async () => {
     .in("user_id", contas);
   if (erroInscricoes) {
     console.error("avisos-push: push_inscricoes", erroInscricoes.message);
-    return json({ erro: erroInscricoes.message }, 500);
+    return json({ erro: "Falha ao ler as inscrições." }, 500);
   }
 
   let enviados = 0;
   const vencidas = new Set<string>();
+  const entregues = new Set<number>();
+  const falharam = new Set<number>();
   await Promise.all(
     lista.flatMap((aviso) =>
       ((inscricoes ?? []) as Inscricao[])
@@ -63,17 +65,27 @@ Deno.serve(async () => {
               { TTL: 3600, urgency: "high" },
             );
             enviados++;
+            entregues.add(aviso.id);
           } catch (e) {
             const status = (e as { statusCode?: number }).statusCode;
             // 404/410: o aparelho cancelou a inscrição (desinstalou, tirou a permissão).
             if (status === 404 || status === 410) vencidas.add(i.endpoint);
-            else console.error("avisos-push: envio", status, String(e));
+            else {
+              falharam.add(aviso.id);
+              console.error("avisos-push: envio", status, String(e));
+            }
           }
         })
     ),
   );
   if (vencidas.size > 0) {
     await servico.from("push_inscricoes").delete().in("endpoint", [...vencidas]);
+  }
+  // Falha passageira sem nenhum aparelho alcançado: volta para a fila (depois de
+  // 30 min vencido, pegar_avisos_vencidos descarta).
+  const deNovo = [...falharam].filter((id) => !entregues.has(id));
+  if (deNovo.length > 0) {
+    await servico.from("avisos_push").update({ enviado_em: null }).in("id", deNovo);
   }
   return json({ avisos: lista.length, enviados, removidas: vencidas.size });
 });

@@ -50,7 +50,6 @@ class Sons {
   final volume = ValueNotifier<double>(volumePadrao);
 
   BancoAurora? _db;
-  bool _iniciado = false;
 
   /// Inicia o serviço lendo as preferências do usuário no banco.
   Future<void> iniciar(BancoAurora db) async {
@@ -68,7 +67,6 @@ class Sons {
     } catch (e) {
       debugPrint('Sons.iniciar: erro ao ler preferências ($e)');
     } finally {
-      _iniciado = true;
     }
   }
 

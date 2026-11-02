@@ -331,7 +331,8 @@ class ControleFoco extends ChangeNotifier {
   /// Abre uma URL externa (YouTube ou Spotify) no navegador ou app.
   Future<bool> abrirLinkExterno(String endereco) async {
     final uri = Uri.tryParse(endereco.trim());
-    if (uri == null) return false;
+    // Só páginas e o app do Spotify: nada de abrir arquivos ou outros programas.
+    if (uri == null || !const {'https', 'http', 'spotify'}.contains(uri.scheme)) return false;
     try {
       return await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (_) {

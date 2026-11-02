@@ -318,8 +318,9 @@ class _HojeRotinaState extends State<HojeRotina> {
     return StreamBuilder<QuadroRotina>(
       stream: _quadro,
       builder: (context, snap) {
-        if (snap.hasError)
+        if (snap.hasError) {
           return Text('Não consegui ler a rotina: ${snap.error}');
+        }
         final q = snap.data;
         if (q == null) return const SizedBox(height: 200);
         return _conteudo(context, q);

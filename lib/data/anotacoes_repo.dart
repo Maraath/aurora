@@ -300,7 +300,7 @@ class AnotacoesRepo {
           ordem: Value(await _proximaOrdem(notaId)),
         ));
     final hash = await cofreAudios.guardar(linha.id, audio.formato, audio.bytes);
-    await (db.update(db.anexosNota)..where((a) => a.id.equals(linha.id))).write(AnexosNotaCompanion(hash: Value(hash)));
+    await (db.update(db.anexosNota)..where((a) => a.id.equals(linha.id))).write(AnexosNotaCompanion(hash: Value(hash), atualizadoEm: Value(DateTime.now())));
     if (await cofreFotos.modo() == ModoFotos.nuvem) await cofreAudios.marcarParaEnviar(linha.id);
     await _tocarNota(notaId);
     return linha.copyWith(hash: Value(hash));

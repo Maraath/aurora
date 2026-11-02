@@ -12,6 +12,7 @@ import '../../core/relogio.dart';
 import '../../core/tema.dart';
 import '../../data/assistente_repo.dart';
 import '../../data/catalogo_taco.dart' show fonteTaco;
+import '../../data/limpar_aparelho.dart';
 import '../../data/servico_sync.dart';
 import '../../data/sincronizacao.dart';
 import '../atualizacao_ui.dart';
@@ -50,6 +51,9 @@ class _ContaPageState extends State<ContaPage> {
 
   /// Senha digitada no cadastro, só na memória: o "Já confirmei" entra direto.
   String? _senhaPendente;
+
+  /// E-mail recuperando a senha (nulo = formulário normal).
+  String? _recuperando;
 
   @override
   void initState() {
@@ -192,10 +196,76 @@ class _ContaPageState extends State<ContaPage> {
     }
   }
 
+  /// Manda o código de recuperação para o e-mail digitado.
+  Future<void> _esqueciSenha() async {
+    final cliente = nuvem;
+    final email = _email.text.trim();
+    if (cliente == null) return;
+    if (email.isEmpty) {
+      setState(() => _erro = 'Digite o seu e-mail primeiro.');
+      return;
+    }
+    await _executar(() async {
+      await cliente.auth.resetPasswordForEmail(email);
+      _recuperando = email;
+      _senha.clear();
+      _codigo.clear();
+      _aviso = 'Se existir uma conta com $email, mandamos um código para esse e-mail.';
+    });
+  }
+
+  /// Código do e-mail + senha nova: entra e troca a senha.
+  Future<void> _trocarSenha() async {
+    final cliente = nuvem, email = _recuperando;
+    if (cliente == null || email == null || _ocupado) return;
+    final codigo = _codigo.text.replaceAll(RegExp(r'\D'), '');
+    final senha = _senha.text;
+    if (codigo.length < 6) {
+      setState(() => _erro = 'Digite os números do código que chegou no seu e-mail.');
+      return;
+    }
+    if (senha.length < 6) {
+      setState(() => _erro = 'A senha precisa ter pelo menos 6 caracteres.');
+      return;
+    }
+    await _executar(() async {
+      await cliente.auth.verifyOTP(type: OtpType.recovery, email: email, token: codigo);
+      await cliente.auth.updateUser(UserAttributes(password: senha));
+      _recuperando = null;
+      _senha.clear();
+      _codigo.clear();
+    });
+  }
+
+  /// Pergunta o que fazer com os dados: num aparelho compartilhado, eles não
+  /// podem ficar para a próxima pessoa.
   Future<void> _sair() async {
+    final c = context.cores;
+    final db = AuroraEscopo.de(context).db;
+    final escolha = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.surface,
+        title: Text('Sair da conta?', style: sora(18)),
+        content: Text(
+          'Seus dados podem continuar neste aparelho ou ser apagados daqui. Se este aparelho é de '
+          'outra pessoa, apague. O que já foi para a nuvem volta quando você entrar de novo; o que '
+          'só existe aqui, como fotos não enviadas, se perde.',
+          style: manrope(14, cor: c.text, altura: 1.5),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Sair e manter')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Sair e apagar', style: TextStyle(color: c.bad)),
+          ),
+        ],
+      ),
+    );
+    if (escolha == null) return;
     try {
-      await sairDoGoogle();
-      await nuvem?.auth.signOut();
+      await sairDaConta(db, limpar: escolha);
     } catch (e) {
       if (mounted) setState(() => _erro = mensagemDeErro(e));
     }
@@ -218,6 +288,7 @@ class _ContaPageState extends State<ContaPage> {
             builder: (context, _) {
               final usuario = cliente.auth.currentUser;
               if (usuario != null) return _logado(c, usuario);
+              if (_recuperando != null) return _formularioRecuperar(c);
               return _verificando == null ? _formulario(c) : _formularioCodigo(c);
             },
           ),
@@ -316,8 +387,8 @@ class _ContaPageState extends State<ContaPage> {
             Text('PRIMEIRA SINCRONIZAÇÃO', style: rotulo(c.warn)),
             const SizedBox(height: 8),
             Text(
-              'Esta conta já tem dados na nuvem e este aparelho também tem os seus. '
-              'Se este aparelho só tem os dados de exemplo, use os da nuvem.',
+              'Este aparelho já tem dados guardados, que podem ser de outra conta. Se não forem seus, '
+              'use os da nuvem: eles saem daqui. Juntar manda tudo para esta conta.',
               style: manrope(14, altura: 1.5),
             ),
             const SizedBox(height: 14),
@@ -395,6 +466,58 @@ class _ContaPageState extends State<ContaPage> {
   }
 
   /// Depois do cadastro: confirmar pelo link do e-mail (ou por um código).
+  Widget _formularioRecuperar(AuroraCores c) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Criar uma senha nova', style: sora(18)),
+        const SizedBox(height: 8),
+        Text('Digite o código que chegou em $_recuperando e a senha nova.',
+            style: manrope(14, cor: c.text, altura: 1.5)),
+        const SizedBox(height: 14),
+        Campo(
+          rotulo: 'Código do e-mail',
+          child: CampoTexto(
+            controle: _codigo,
+            dica: '123456',
+            numerico: true,
+            aoMudar: (_) => setState(() => _erro = null),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Campo(
+          rotulo: 'Senha nova (pelo menos 6 caracteres)',
+          child: CampoTexto(
+            controle: _senha,
+            dica: '••••••',
+            senha: true,
+            aoMudar: (_) => setState(() => _erro = null),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(spacing: 10, runSpacing: 10, crossAxisAlignment: WrapCrossAlignment.center, children: [
+          BotaoPilula(texto: 'Trocar a senha', aoTocar: _trocarSenha),
+          TextButton(
+            onPressed: () => setState(() {
+              _recuperando = null;
+              _erro = null;
+              _aviso = null;
+            }),
+            child: Text('Voltar', style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
+          ),
+        ]),
+        if (_aviso != null) ...[
+          const SizedBox(height: 12),
+          Text(_aviso!, style: manrope(13, peso: FontWeight.w600, cor: c.teal, altura: 1.4)),
+        ],
+        if (_erro != null) ...[
+          const SizedBox(height: 12),
+          Text(_erro!, style: manrope(13, peso: FontWeight.w600, cor: c.bad, altura: 1.4)),
+        ],
+      ],
+    );
+  }
+
   Widget _formularioCodigo(AuroraCores c) {
     final carregando = const Padding(
       padding: EdgeInsets.all(10),
@@ -529,6 +652,14 @@ class _ContaPageState extends State<ContaPage> {
                 )
               : BotaoPilula(texto: _modo == _Modo.entrar ? 'Entrar' : 'Criar conta', aoTocar: _confirmar),
         ),
+        if (_modo == _Modo.entrar && !_ocupado)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: _esqueciSenha,
+              child: Text('Esqueci minha senha', style: manrope(13, peso: FontWeight.w600, cor: c.muted)),
+            ),
+          ),
         if (_aviso != null) ...[
           const SizedBox(height: 12),
           Text(_aviso!, style: manrope(13, peso: FontWeight.w600, cor: c.teal, altura: 1.4)),

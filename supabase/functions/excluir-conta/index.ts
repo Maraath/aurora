@@ -6,7 +6,7 @@
 // user_id referencia auth.users com "on delete cascade". O app só chama esta
 // função depois de a pessoa confirmar; nada aqui pode ser desfeito.
 
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.118.0";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",

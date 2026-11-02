@@ -79,8 +79,16 @@ function TipoDe([string]$remoto) {
     '.apk'  { return 'application/vnd.android.package-archive' }
     '.exe'  { return 'application/vnd.microsoft.portable-executable' }
     '.json' { return 'application/json' }
+    '.sig'  { return 'text/plain' }
     default { return 'auto-detect' }
   }
+}
+
+# Assina o versao.json com a chave que fica só neste PC (gera o .sig ao lado). Sem
+# assinatura válida, o app ignora a versão publicada.
+function Assinar([string]$arquivo) {
+  node tool\release\assinar.mjs $arquivo
+  if ($LASTEXITCODE -ne 0) { throw "Não assinei $arquivo (a chave está em C:\src\chaves?)." }
 }
 
 # Arquivo novo, com nome da versão (nunca muda depois de publicado).
@@ -106,9 +114,10 @@ function Substituir([string]$local, [string]$remoto) {
 function ApagarAntigos([string]$pasta, [string[]]$manter) {
   $lista = npx --yes supabase --experimental storage ls "ss:///atualizacoes/$pasta/" --linked | Out-String
   if ($LASTEXITCODE -ne 0) { Write-Warning "Não listei $pasta/; nada foi apagado."; return }
-  # O CLI imprime um nome por linha, sem aspas ("Aurora-1.2.3-setup.exe").
-  $nomes = ($lista -split "`r?`n") | ForEach-Object { $_.Trim() } |
-    Where-Object { $_ -match '^Aurora-.+\.(apk|exe)$' }
+  # Fora de um terminal o CLI responde em JSON: {"paths":["Aurora-1.2.3-setup.exe", ...]}.
+  $linha = ($lista -split "`r?`n") | Where-Object { $_ -match '^\s*\{' } | Select-Object -First 1
+  if (-not $linha) { Write-Warning "Resposta inesperada ao listar $pasta/; nada foi apagado."; return }
+  $nomes = @((ConvertFrom-Json $linha).paths) | Where-Object { $_ -match '^Aurora-.+\.(apk|exe)$' }
   $antigos = @($nomes | Where-Object { $manter -notcontains $_ })
   if (-not $antigos) { return }
   Write-Host "Apagando versões antigas de ${pasta}/: $($antigos -join ', ')"

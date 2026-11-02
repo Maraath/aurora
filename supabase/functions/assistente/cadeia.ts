@@ -11,7 +11,7 @@ import {
   type UIMessageChunk,
 } from "ai";
 import { type Escolha, ferramentas } from "./agente.ts";
-import { cors } from "./comum.ts";
+import { cors, registrarFalha } from "./comum.ts";
 
 /// O conjunto de ferramentas oferecido (o app da Rotina recebe mais).
 type Ferramentas = ToolSet;
@@ -31,7 +31,7 @@ export function vaiProProximo(e: unknown): boolean {
 
 /// Mensagem para a pessoa a partir de um erro do fornecedor.
 export function mensagemDeErro(e: unknown): string {
-  console.error(e);
+  registrarFalha("IA", e);
   const status = statusDoErro(e);
   if (status === 429) return "A IA chegou ao limite de pedidos por minuto. Tente de novo em instantes.";
   if (status === 529 || status === 503) return "A IA está sobrecarregada agora. Tente de novo daqui a pouco.";

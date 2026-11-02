@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 import '../core/comandos.dart';
 import '../core/formato.dart';
@@ -158,7 +159,8 @@ class AssistenteRepo {
       return null;
     }
     try {
-      final hoje = DateTime.now().toIso8601String().substring(0, 10);
+      // O dia do contador é o de São Paulo (limites.ts), não o do aparelho.
+      final hoje = tz.TZDateTime.now(tz.getLocation(fusoPadrao)).toIso8601String().substring(0, 10);
       final r = await cliente
           .from('uso_ia')
           .select('pedidos')
@@ -247,6 +249,7 @@ class AssistenteRepo {
       _processando = false;
       pensando.value = false;
       etapa.value = null;
+      unawaited(atualizarUsoHoje());
     }
   }
 
@@ -411,7 +414,6 @@ class AssistenteRepo {
         })
         ..add({'role': 'tool', 'content': resultados});
     }
-    unawaited(atualizarUsoHoje());
     return true;
   }
 
