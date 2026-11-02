@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' show MaterialPageRoute;
+import 'package:flutter/material.dart' show PageRouteBuilder;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -236,9 +236,12 @@ class Notificador {
       }
       return;
     }
-    navegador.push(MaterialPageRoute<void>(
+    // Sem animação: com o bloqueio ligado, nem por um instante o app aparece atrás.
+    navegador.push(PageRouteBuilder<void>(
       fullscreenDialog: true,
-      builder: (_) => TelaDespertador(
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+      pageBuilder: (_, _, _) => TelaDespertador(
         titulo: titulo,
         aoParar: () {
           if (id != null) _plugin.cancel(id: id);

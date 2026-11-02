@@ -188,33 +188,53 @@ class Sincronizador {
 
   // ---------------------------------------------------------------- recebimento
 
+  /// Outro aparelho pode gravar pai e filho enquanto esta rodada baixa: a tabela do
+  /// pai já passou e o filho chega sem ele. A chave estrangeira recusa o lote (nada
+  /// muda aqui) e uma segunda volta traz o pai. Só falha se o pai continuar faltando.
   Future<int> _baixar() async {
     var total = 0;
-    for (final t in tabelasSincronizadas(db)) {
-      final chave = 'sync_baixado_${t.actualTableName}';
-      final salvo = Cursor.ler(await db.preferencia(chave));
-      // Recomeça 30 s antes do último visto: pega linhas gravadas "atrasadas"
-      // no servidor. Reaplicar é inofensivo.
-      var cursor = salvo == null
-          ? null
-          : Cursor(
-              DateTime.parse(salvo.servidorEm).subtract(const Duration(seconds: 30)).toUtc().toIso8601String(),
-              '');
-      Cursor? maisNovo = salvo;
-      while (true) {
-        final lote = await remoto.baixar(t.actualTableName, cursor, _lote);
-        if (lote.isEmpty) break;
-        total += await _aplicar(t, lote);
-        final ultima = lote.last;
-        cursor = Cursor(ultima['servidor_em'] as String, ultima['id'] as String);
-        if (maisNovo == null ||
-            DateTime.parse(cursor.servidorEm).isAfter(DateTime.parse(maisNovo.servidorEm))) {
-          maisNovo = cursor;
+    for (var volta = 1;; volta++) {
+      Object? faltouPai;
+      StackTrace? pilha;
+      for (final t in tabelasSincronizadas(db)) {
+        try {
+          total += await _baixarTabela(t);
+        } catch (e, s) {
+          if (!'$e'.contains('FOREIGN KEY')) rethrow;
+          faltouPai ??= e;
+          pilha ??= s;
         }
-        if (lote.length < _lote) break;
       }
-      if (maisNovo != null) await db.salvarPreferencia(chave, '$maisNovo');
+      if (faltouPai == null) return total;
+      if (volta == 2) Error.throwWithStackTrace(faltouPai, pilha!);
     }
+  }
+
+  Future<int> _baixarTabela(TableInfo<Table, dynamic> t) async {
+    var total = 0;
+    final chave = 'sync_baixado_${t.actualTableName}';
+    final salvo = Cursor.ler(await db.preferencia(chave));
+    // Recomeça 30 s antes do último visto: pega linhas gravadas "atrasadas"
+    // no servidor. Reaplicar é inofensivo.
+    var cursor = salvo == null
+        ? null
+        : Cursor(
+            DateTime.parse(salvo.servidorEm).subtract(const Duration(seconds: 30)).toUtc().toIso8601String(),
+            '');
+    Cursor? maisNovo = salvo;
+    while (true) {
+      final lote = await remoto.baixar(t.actualTableName, cursor, _lote);
+      if (lote.isEmpty) break;
+      total += await _aplicar(t, lote);
+      final ultima = lote.last;
+      cursor = Cursor(ultima['servidor_em'] as String, ultima['id'] as String);
+      if (maisNovo == null ||
+          DateTime.parse(cursor.servidorEm).isAfter(DateTime.parse(maisNovo.servidorEm))) {
+        maisNovo = cursor;
+      }
+      if (lote.length < _lote) break;
+    }
+    if (maisNovo != null) await db.salvarPreferencia(chave, '$maisNovo');
     return total;
   }
 

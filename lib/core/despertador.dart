@@ -84,6 +84,10 @@ Future<void> _avisarSistema(String metodo) async {
 /// Telas abertas agora: dois alarmes podem se empilhar.
 var _telasAbertas = 0;
 
+/// Há alarme na tela: o bloqueio do app (PIN) sai da frente até ele fechar, senão
+/// ninguém veria os botões. A tela é opaca e sem voltar: o resto do app não aparece.
+final alarmeNaTela = ValueNotifier<bool>(false);
+
 /// Tela do despertador: hora grande, o lembrete e Parar / Adiar.
 class TelaDespertador extends StatefulWidget {
   const TelaDespertador({super.key, required this.titulo, required this.aoParar, required this.aoAdiar});
@@ -98,21 +102,39 @@ class TelaDespertador extends StatefulWidget {
 class _TelaDespertadorState extends State<TelaDespertador> with SingleTickerProviderStateMixin {
   late final _pulso = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..repeat(reverse: true);
 
+  var _fechada = false;
+
   @override
   void initState() {
     super.initState();
     _telasAbertas++;
     unawaited(_avisarSistema('aberta'));
+    // Depois do quadro: o aviso reconstrói o bloqueio, acima desta tela.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_fechada) alarmeNaTela.value = true;
+    });
+  }
+
+  /// Fecha uma vez só: ao tocar num botão (antes de sair da tela, para o bloqueio
+  /// voltar no mesmo quadro) ou se a tela sumir de outro jeito.
+  void _fechar() {
+    if (_fechada) return;
+    _fechada = true;
+    if (--_telasAbertas == 0) {
+      unawaited(_avisarSistema('fechada'));
+      scheduleMicrotask(() => alarmeNaTela.value = false);
+    }
   }
 
   @override
   void dispose() {
-    if (--_telasAbertas == 0) unawaited(_avisarSistema('fechada'));
+    _fechar();
     _pulso.dispose();
     super.dispose();
   }
 
   void _sair(VoidCallback acao) {
+    _fechar();
     acao();
     Navigator.of(context).pop();
   }

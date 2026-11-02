@@ -202,6 +202,34 @@ void main() {
     expect(servidor.tabelas['tarefas'], isNotEmpty);
   });
 
+  test('filho que chega antes do pai: a segunda volta traz o pai, sem erro', () async {
+    await semearAntigo(pc);
+    await sync(pc).sincronizar();
+    await sync(celular).sincronizar();
+
+    // No meio da rodada do celular, o PC grava um hábito novo e uma marcação dele.
+    final habitos = HabitosRepo(pc);
+    final id = await habitos.salvar(HabitosCompanion.insert(nome: 'Ler'), avisar: false);
+    await habitos.alternar(id, hojeLocal(), true);
+    final atrasado = _RemotoComAtraso(servidor, 'registros_habito', () => sync(pc).sincronizar());
+
+    await Sincronizador(celular, atrasado, usuarioId: 'u1').sincronizar();
+    expect(atrasado.disparou, isTrue);
+    expect((await HabitosRepo(celular).carregar()).feito(id, hojeLocal()), isTrue);
+  });
+
+  test('pai que nunca chega continua sendo erro', () async {
+    await semearAntigo(pc);
+    await sync(pc).sincronizar();
+    await sync(celular).sincronizar();
+    final agora = DateTime.utc(2030).toIso8601String();
+    await servidor.enviar('registros_habito', [
+      {'id': 'orfao', 'habito_id': 'nao-existe', 'dia': '2030-01-01', 'feito': true, 'valor': null,
+       'criado_em': agora, 'atualizado_em': agora, 'apagado_em': null},
+    ]);
+    await expectLater(sync(celular).sincronizar(), throwsA(anything));
+  });
+
   test('sem mudanças, a segunda sincronização não reenvia nada', () async {
     await semearAntigo(pc);
     await sync(pc).sincronizar();
@@ -276,6 +304,30 @@ class _RemotoComFalha implements RemotoSync {
 
   @override
   Future<List<Map<String, dynamic>>> baixar(String t, Cursor? depois, int limite) => base.baixar(t, depois, limite);
+
+  @override
+  Future<bool> temDados() => base.temDados();
+}
+
+/// Simula outro aparelho gravando bem antes de [tabela] ser baixada pela 1ª vez.
+class _RemotoComAtraso implements RemotoSync {
+  _RemotoComAtraso(this.base, this.tabela, this.antes);
+  final RemotoSync base;
+  final String tabela;
+  final Future<void> Function() antes;
+  var disparou = false;
+
+  @override
+  Future<void> enviar(String t, List<Map<String, dynamic>> linhas) => base.enviar(t, linhas);
+
+  @override
+  Future<List<Map<String, dynamic>>> baixar(String t, Cursor? depois, int limite) async {
+    if (t == tabela && !disparou) {
+      disparou = true;
+      await antes();
+    }
+    return base.baixar(t, depois, limite);
+  }
 
   @override
   Future<bool> temDados() => base.temDados();

@@ -4,8 +4,25 @@
     {
       "name": "aurora-web",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "http-server@14.1.1", "build/web", "-p", "8765", "-c-1", "--silent"],
+      "runtimeArgs": [
+        "--yes",
+        "http-server@14.1.1",
+        "build/web",
+        "-p",
+        "8765",
+        "-c-1",
+        "--silent"
+      ],
       "port": 8765
+    },
+    {
+      "name": "aurora-web-cabecalhos",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "tool/release/servir_web.mjs",
+        "8766"
+      ],
+      "port": 8766
     }
   ]
 }

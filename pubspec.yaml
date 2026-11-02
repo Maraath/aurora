@@ -19,6 +19,7 @@ dependencies:
   flutter_local_notifications: ^22.3.2
   flutter_localizations:
     sdk: flutter
+  flutter_secure_storage: ^11.2.0
   flutter_timezone: ^5.1.1
   flutter_tts: ^4.2.5
   google_sign_in: ^7.2.0
@@ -28,8 +29,10 @@ dependencies:
   intl: ^0.20.3
   local_auth: ^3.0.2
   package_info_plus: ^10.2.2
+  path: ^1.9.1
   path_provider: ^2.1.6
   record: ^7.1.2
+  sqlite3: ^3.8.0
   supabase_flutter: ^2.18.3
   timezone: ^0.11.2
   url_launcher: ^6.3.3
@@ -43,6 +46,7 @@ dev_dependencies:
   drift_dev: ^2.35.1
   build_runner: ^2.16.2
   xml: ^6.5.0
+  shared_preferences: ^2.5.6
 
 flutter:
   uses-material-design: true
@@ -65,3 +69,9 @@ flutter:
     - family: Manrope
       fonts:
         - asset: assets/fonts/Manrope.ttf
+
+# Banco cifrado nos apps instalados (lib/data/abertura_banco.dart). Na web, o web/sqlite3.wasm segue igual.
+hooks:
+  user_defines:
+    sqlite3:
+      source: sqlite3mc

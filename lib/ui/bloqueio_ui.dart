@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/bloqueio.dart';
+import '../core/despertador.dart';
 import '../core/tema.dart';
 import '../data/banco.dart';
 import '../data/limpar_aparelho.dart';
@@ -105,27 +106,37 @@ class _PortaoBloqueioState extends State<PortaoBloqueio> with WidgetsBindingObse
   Widget build(BuildContext context) {
     // Até ler a preferência, não mostra os dados (evita um piscar do app aberto).
     if (!_carregado) return ColoredBox(color: context.cores.bg);
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: (_) => _mexeu(),
-      onPointerHover: (_) => _mexeu(),
-      onPointerSignal: (_) => _mexeu(),
-      child: Stack(children: [
-        // ExcludeFocus: travado, o teclado não pode digitar num campo escondido.
-        Offstage(
-          offstage: _travado,
-          child: ExcludeFocus(excluding: _travado, child: TickerMode(enabled: !_travado, child: widget.child)),
-        ),
-        if (_travado)
-          TelaBloqueio(
-            servico: _servico,
-            modo: _modo,
-            aoDesbloquear: () {
-              _mexeu();
-              setState(() => _travado = false);
-            },
-          ),
-      ]),
+    return ValueListenableBuilder<bool>(
+      valueListenable: alarmeNaTela,
+      builder: (context, alarme, _) {
+        // Alarme na tela: ele cobre tudo, e o bloqueio volta quando ele fechar.
+        final escondido = _travado && !alarme;
+        return Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (_) => _mexeu(),
+          onPointerHover: (_) => _mexeu(),
+          onPointerSignal: (_) => _mexeu(),
+          child: Stack(children: [
+            // ExcludeFocus: travado, o teclado não pode digitar num campo escondido.
+            Offstage(
+              offstage: escondido,
+              child: ExcludeFocus(
+                excluding: escondido,
+                child: TickerMode(enabled: !escondido, child: widget.child),
+              ),
+            ),
+            if (escondido)
+              TelaBloqueio(
+                servico: _servico,
+                modo: _modo,
+                aoDesbloquear: () {
+                  _mexeu();
+                  setState(() => _travado = false);
+                },
+              ),
+          ]),
+        );
+      },
     );
   }
 }

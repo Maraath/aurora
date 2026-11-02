@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'cofre_seguro.dart';
+
 /// Projeto do Supabase. A chave `anon` foi feita para ficar no app: o que
 /// protege os dados são as regras de RLS no banco. A chave de serviço e a da
 /// IA NUNCA ficam aqui; elas vivem só nos segredos da Edge Function.
@@ -23,7 +25,19 @@ const urlConfirmado = '$supabaseUrl/storage/v1/object/public/atualizacoes/pagina
 /// se algo der errado, o app segue offline.
 Future<bool> iniciarNuvem() async {
   try {
-    await Supabase.initialize(url: supabaseUrl, publishableKey: supabaseAnonKey);
+    await Supabase.initialize(
+      url: supabaseUrl,
+      publishableKey: supabaseAnonKey,
+      authOptions: FlutterAuthClientOptions(
+        // Na web não há cofre do sistema: fica no armazenamento do navegador.
+        localStorage: kIsWeb
+            ? null
+            : SessaoSegura(
+                CofreSistema(),
+                SharedPreferencesLocalStorage(persistSessionKey: chaveSessaoAntiga(supabaseUrl)),
+              ),
+      ),
+    );
     final auth = Supabase.instance.client.auth;
     debugPrint('Nuvem: sessão ao abrir = ${auth.currentSession != null}');
     auth.onAuthStateChange.listen(

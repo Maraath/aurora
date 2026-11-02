@@ -2,11 +2,14 @@ import 'package:aurora/app.dart';
 import 'dart:convert';
 
 import 'package:aurora/core/bloqueio.dart';
+import 'package:aurora/core/despertador.dart';
+import 'package:aurora/core/tema.dart';
 import 'package:aurora/core/relogio.dart';
 import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:aurora/ui/bloqueio_ui.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -122,5 +125,42 @@ void main() {
     expect(find.text('Aurora bloqueado'), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('alarme aparece por cima do PIN e o bloqueio volta ao fechar', (tester) async {
+    final chave = GlobalKey<NavigatorState>();
+    await tester.runAsync(() => ServicoBloqueio(db).ativarPin('2468'));
+    await tester.pumpWidget(MaterialApp(
+      navigatorKey: chave,
+      theme: temaAurora(Brightness.dark),
+      home: const Text('dados da pessoa'),
+      builder: (context, filho) => PortaoBloqueio(db: db, child: filho!),
+    ));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.pump();
+    expect(find.text('Aurora bloqueado'), findsOneWidget);
+    expect(find.text('dados da pessoa'), findsNothing);
+
+    var parou = false;
+    chave.currentState!.push(PageRouteBuilder<void>(
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+      pageBuilder: (_, _, _) =>
+          TelaDespertador(titulo: 'Acordar', aoParar: () => parou = true, aoAdiar: () {}),
+    ));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 20));
+    expect(find.text('Parar'), findsOneWidget);
+    expect(find.text('Aurora bloqueado'), findsNothing);
+    expect(find.text('dados da pessoa'), findsNothing); // o alarme cobre o app
+
+    await tester.tap(find.text('Parar'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 20));
+    expect(parou, isTrue);
+    expect(find.text('Parar'), findsNothing);
+    expect(find.text('Aurora bloqueado'), findsOneWidget);
+    expect(find.text('dados da pessoa'), findsNothing);
   });
 }

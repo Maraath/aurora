@@ -2,6 +2,10 @@
 
 Conferido em 18/10/2026 e revisto em 28/10/2026, antes de abrir o código ao público.
 
+## SQLite3 Multiple Ciphers
+
+Cifra do banco local nos apps instalados. Licença MIT (https://github.com/utelle/SQLite3MultipleCiphers).
+
 ## TACO (catálogo de alimentos)
 
 - Fonte: Tabela Brasileira de Composição de Alimentos (TACO), 4ª edição revisada e ampliada, NEPA/Unicamp, 2011.

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
 import 'package:uuid/uuid.dart';
+
+import 'abertura_banco_web.dart' if (dart.library.io) 'abertura_banco.dart';
 
 part 'banco.g.dart';
 
@@ -482,15 +483,10 @@ class BancoAurora extends _$BancoAurora {
   BancoAurora([QueryExecutor? executor])
     : super(
         executor ??
-            driftDatabase(
-              name: const String.fromEnvironment(
+            abrirBancoDoApp(
+              const String.fromEnvironment(
                 'AURORA_BANCO',
                 defaultValue: 'aurora',
-              ),
-              // Na web (PWA): SQLite em Wasm, guardado no OPFS/IndexedDB do navegador (web/sqlite3.wasm).
-              web: DriftWebOptions(
-                sqlite3Wasm: Uri.parse('sqlite3.wasm'),
-                driftWorker: Uri.parse('drift_worker.js'),
               ),
             ),
       );
