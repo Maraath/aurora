@@ -93,7 +93,7 @@ function Assinar([string]$arquivo) {
 
 # Arquivo novo, com nome da versão (nunca muda depois de publicado).
 function Enviar([string]$local, [string]$remoto) {
-  npx --yes supabase --experimental storage cp $local "ss:///atualizacoes/$remoto" --linked --content-type (TipoDe $remoto)
+  npx --yes supabase --experimental storage cp $local "ss:///atualizacoes/$remoto" --linked --yes --content-type (TipoDe $remoto)
   if ($LASTEXITCODE -ne 0) { throw "Envio de $remoto falhou." }
 }
 
@@ -103,7 +103,7 @@ function Substituir([string]$local, [string]$remoto) {
   $ErrorActionPreference = 'Continue'  # na primeira publicação ainda não existe
   npx --yes supabase --experimental storage rm "ss:///atualizacoes/$remoto" --linked --yes 2>&1 | Out-Null
   $ErrorActionPreference = 'Stop'
-  npx --yes supabase --experimental storage cp $local "ss:///atualizacoes/$remoto" --linked --cache-control 'max-age=60' --content-type (TipoDe $remoto)
+  npx --yes supabase --experimental storage cp $local "ss:///atualizacoes/$remoto" --linked --yes --cache-control 'max-age=60' --content-type (TipoDe $remoto)
   if ($LASTEXITCODE -ne 0) { throw "Envio de $remoto falhou." }
 }
 
