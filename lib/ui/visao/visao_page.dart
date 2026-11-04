@@ -14,6 +14,7 @@ import '../rotina/form_rotina.dart';
 import '../rotina/hoje_rotina.dart' show BotaoNovoRotina;
 import '../shell.dart';
 import 'gamificacao_ui.dart';
+import 'horizonte.dart';
 
 /// Visão principal do Aurora: Raio-X Estratégico & Momentum Semanal,
 /// integrando Score de Ritmo, Hiper-Foco, Heatmap de Hábitos, Áreas da Vida,
@@ -100,7 +101,9 @@ class _Conteudo extends StatelessWidget {
           aoBuscar: aoBuscar,
           ir: ir,
         ),
-        const SizedBox(height: Espaco.md),
+        const SizedBox(height: Espaco.lg),
+        HorizonteDoDia(resumo: resumo, irRotina: irRotina),
+        const SizedBox(height: Espaco.lg),
         _PainelRaioX(
           resumo: resumo,
           ir: ir,

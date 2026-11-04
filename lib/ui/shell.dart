@@ -28,7 +28,7 @@ import 'assistente/assistente_page.dart';
 import 'automacoes/automacoes_page.dart';
 import 'conta/conta_page.dart';
 import 'financas/financas_page.dart';
-import 'menu_dock.dart';
+import 'menu_aurora.dart';
 import 'objetivos/objetivos_page.dart';
 import 'saude/treino_page.dart';
 import 'vidro.dart';
@@ -377,37 +377,34 @@ class _ShellState extends State<Shell> {
       return BackdropGroup(
         child: Scaffold(
           body: CeuEstrelado(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _BarraLateral(atual: _secao, ir: _ir),
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, box) => Stack(
-                      children: [
-                        // Janela estreita: o conteúdo abre espaço à direita para
-                        // não ficar por baixo dos atalhos.
-                        Padding(
-                          padding: EdgeInsets.only(right: box.maxWidth < 1000 ? 76 : 0),
-                          child: Builder(builder: conteudo),
-                        ),
-                        Positioned.fill(
-                          child: AtalhosFlutuantes(
-                            controle: _atalhos,
-                            aoBuscar: _buscar,
-                            aoAbrirAssistente: () => _ir(Secao.assistente),
-                            assistenteNaTela: () => _secao == Secao.assistente,
-                            aoNovaNota: (tipo) {
-                              _ir(Secao.anotacoes);
-                              pedidoNovaNota.value = tipo;
-                            },
-                          ),
-                        ),
-                      ],
+            // Menu em pilares de aurora (ver PilaresAurora): a área aberta fica
+            // no meio dos pilares, num painel de vidro.
+            child: PilaresAurora(
+              itens: _itensDoMenu(context, _secao, _ir),
+              child: LayoutBuilder(
+                builder: (context, box) => Stack(
+                  children: [
+                    // Janela estreita: o conteúdo abre espaço à direita para
+                    // não ficar por baixo dos atalhos.
+                    Padding(
+                      padding: EdgeInsets.only(right: box.maxWidth < 900 ? 76 : 0),
+                      child: Builder(builder: conteudo),
                     ),
-                  ),
+                    Positioned.fill(
+                      child: AtalhosFlutuantes(
+                        controle: _atalhos,
+                        aoBuscar: _buscar,
+                        aoAbrirAssistente: () => _ir(Secao.assistente),
+                        assistenteNaTela: () => _secao == Secao.assistente,
+                        aoNovaNota: (tipo) {
+                          _ir(Secao.anotacoes);
+                          pedidoNovaNota.value = tipo;
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -816,51 +813,36 @@ class _FaiscasOrbe extends CustomPainter {
   bool shouldRepaint(_FaiscasOrbe old) => old.cores != cores;
 }
 
-/// Menu lateral (computador): dock só de ícones flutuando. Os ícones
-/// crescem com mola perto do mouse e o nome aparece ao lado (ver MenuDock).
-class _BarraLateral extends StatelessWidget {
-  const _BarraLateral({required this.atual, required this.ir});
-  final Secao atual;
-  final ValueChanged<Secao> ir;
-
-  @override
-  Widget build(BuildContext context) {
-    final itens = <ItemDock>[];
-    for (var g = 0; g < _gruposLateral.length; g++) {
-      for (var i = 0; i < _gruposLateral[g].length; i++) {
-        final item = _gruposLateral[g][i];
-        itens.add(
-          ItemDock(
-            icone: item.icone,
-            rotulo: item.rotulo,
-            ativo: atual == item.secao,
-            aoTocar: () => ir(item.secao),
-            espacoAntes: g > 0 && i == 0 ? 16 : 0,
-          ),
-        );
-      }
-    }
-    itens.add(
-      ItemDock(
-        icone: _itemConta.icone,
-        rotulo: _itemConta.rotulo,
-        ativo: atual == _itemConta.secao,
-        aoTocar: () => ir(_itemConta.secao),
-        espacoAntes: 16,
-      ),
-    );
-    // Sem painel, fundo nem borda. Os ícones flutuam sobre o
-    // céu, numa coluna de 72 px centralizada na vertical (sem o logo: o primeiro
-    // item já é o da Aurora, o assistente). A faixa fica reservada para o
-    // conteúdo não passar por baixo dos ícones em janelas estreitas.
-    return SizedBox(
-      width: 72,
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          child: MenuDock(itens: itens),
-        ),
-      ),
-    );
-  }
+/// Cor de cada área: um toque dela na aurora do pilar e no brilho da área aberta.
+Color corDaArea(BuildContext context, Secao s) {
+  final c = context.cores;
+  final escuro = Theme.of(context).brightness == Brightness.dark;
+  return switch (s) {
+    Secao.assistente => c.bad,
+    Secao.visao => c.accent,
+    Secao.rotina => c.teal,
+    Secao.saude => c.warn,
+    Secao.objetivos => c.violeta,
+    Secao.anotacoes => escuro ? const Color(0xFF8FD3FF) : const Color(0xFF2B6FA8),
+    Secao.financas => c.gradFim,
+    Secao.conta => c.muted,
+  };
 }
+
+/// Nome curto no pilar (o rótulo inteiro fica para o leitor de tela).
+String _nomeNoMenu(_ItemNav i) => i.secao == Secao.conta ? 'Conta' : i.rotulo;
+
+/// Áreas do menu do computador (pilares de aurora), nos mesmos grupos e ordem
+/// de antes: Assistente, Visão | Rotina, Saúde | Objetivos, Anotações, Finanças | Conta.
+List<ItemMenu> _itensDoMenu(BuildContext context, Secao atual, ValueChanged<Secao> ir) => [
+  for (final g in [..._gruposLateral, const [_itemConta]])
+    for (final i in g)
+      ItemMenu(
+        nome: _nomeNoMenu(i),
+        rotulo: i.rotulo,
+        icone: i.icone,
+        cor: corDaArea(context, i.secao),
+        ativo: atual == i.secao,
+        aoTocar: () => ir(i.secao),
+      ),
+];

@@ -1,0 +1,1238 @@
+<title>Novos Rumos da Aurora</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=Manrope:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: página longa de estudo, uma seção por rumo; cada rumo = maquete de computador (escalada)
+   em cima, celular + notas embaixo. Visual único e escuro por escolha: é o céu noturno do app. */
+:root{
+  --ceu:#080716; --sup:#0F0E26; --sup2:#18173A; --linha:#232250;
+  --txt:#EEF0FB; --mudo:#A3A6C8; --verde:#5CF0B0; --ini:#3EDB9A; --fim:#7E7BFF;
+  --violeta:#9D8CFF; --teal:#42E3C8; --ambar:#F5C35B; --magenta:#E77BFF; --azul:#8FD3FF; --noacc:#06061A;
+  --f-tit:'Sora', ui-sans-serif, system-ui, sans-serif;
+  --f-txt:'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --f-carta:'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  color-scheme:dark;
+}
+html{scroll-behavior:smooth;background:var(--ceu)}
+body{background:var(--ceu);color:var(--txt);font-family:var(--f-txt);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--ceu)}
+#estrelas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.brilho{position:fixed;inset:0 0 auto;height:520px;z-index:0;pointer-events:none;
+  background:radial-gradient(60% 70% at 18% -10%,rgba(62,219,154,.13),transparent 70%),
+             radial-gradient(50% 60% at 78% -20%,rgba(126,123,255,.16),transparent 70%),
+             radial-gradient(30% 40% at 55% -10%,rgba(231,123,255,.07),transparent 70%)}
+.pagina{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding-block:64px 120px}
+a{color:var(--verde)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:6px}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.olho{font:600 11.5px/1.2 var(--f-txt);letter-spacing:.16em;text-transform:uppercase;color:var(--mudo);margin:0}
+h1,h2,h3,h4{font-family:var(--f-tit);text-wrap:balance;margin:0}
+p{margin:0}
+
+/* ---------- abertura */
+.abre{display:grid;gap:28px;max-width:900px}
+.abre h1{font-size:clamp(44px,7vw,88px);line-height:.98;letter-spacing:-.035em;font-weight:600}
+.abre h1 span{background:linear-gradient(100deg,var(--ini),var(--teal) 40%,var(--fim) 80%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.abre .lead{font-size:clamp(17px,2vw,20px);color:var(--mudo);max-width:62ch}
+.abre .lead b{color:var(--txt);font-weight:600}
+.legenda{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--mudo)}
+.legenda span{display:inline-flex;align-items:center;gap:7px}
+.legenda i{width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
+.legenda .novo{font:600 10px var(--f-txt);letter-spacing:.1em;text-transform:uppercase;color:var(--azul);border:1px solid rgba(143,211,255,.35);border-radius:99px;padding:1px 6px}
+
+/* ---------- navegação da página (fita líquida) */
+.nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:30;margin-top:48px;display:flex;justify-content:center}
+.trilho{position:relative;display:flex;gap:2px;padding:6px;max-width:100%;overflow-x:auto;scrollbar-width:none;
+  border-radius:999px;background:rgba(15,14,38,.72);border:1px solid var(--linha);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%);
+  box-shadow:0 18px 50px -20px rgba(0,0,0,.8)}
+.trilho::-webkit-scrollbar{display:none}
+.trilho a{position:relative;z-index:1;padding:9px 15px 11px;border-radius:999px;color:var(--mudo);font:600 13.5px var(--f-tit);
+  white-space:nowrap;text-decoration:none;transition:color .2s}
+.trilho a:hover{color:var(--teal)}
+.trilho a.on{color:var(--txt)}
+.fita{position:absolute;bottom:5px;left:0;width:0;height:3px;border-radius:3px;pointer-events:none;
+  background:linear-gradient(90deg,var(--ini),var(--teal),var(--fim));
+  box-shadow:0 0 10px 1px rgba(126,123,255,.6),0 0 22px 2px rgba(62,219,154,.28);
+  transition:left .34s cubic-bezier(.3,.8,.2,1),width .34s cubic-bezier(.3,.8,.2,1)}
+.fita::before{content:"";position:absolute;left:-10px;right:-10px;bottom:0;height:34px;border-radius:50%;
+  background:radial-gradient(60% 100% at 50% 100%,rgba(126,123,255,.30),transparent 75%)}
+
+/* ---------- diagnóstico */
+.secao{scroll-margin-top:96px;margin-top:120px}
+.secao>header{display:grid;gap:12px;max-width:820px;margin-bottom:36px}
+.secao h2{font-size:clamp(32px,4.4vw,52px);line-height:1.04;letter-spacing:-.03em;font-weight:600}
+.secao h2 em{font-style:normal;color:var(--mudo);font-weight:300}
+.secao header p{color:var(--mudo);font-size:18px;max-width:64ch}
+.diag{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
+.diag div{display:grid;gap:10px;align-content:start;padding-top:18px;border-top:1px solid var(--linha)}
+.diag strong{font:600 46px/1 var(--f-tit);letter-spacing:-.03em}
+.diag strong small{font-size:18px;color:var(--mudo);font-weight:400;letter-spacing:0;margin-left:6px}
+.diag p{color:var(--mudo)}
+.tese{margin-top:48px;font:300 clamp(22px,2.6vw,30px)/1.35 var(--f-tit);letter-spacing:-.01em;max-width:30ch}
+.tese b{font-weight:600;color:var(--verde)}
+
+/* ---------- moldura de cada rumo */
+.rumo-cab{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 32px;margin-bottom:28px}
+.rumo-cab>div{display:grid;gap:10px;max-width:760px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:600 11.5px/1 var(--f-txt);letter-spacing:.06em;padding:7px 11px;border-radius:99px;border:1px solid var(--linha);color:var(--mudo);white-space:nowrap}
+.esf{--c:var(--verde);color:var(--c);border-color:color-mix(in srgb,var(--c) 40%,transparent);background:color-mix(in srgb,var(--c) 8%,transparent)}
+.esf.m{--c:var(--ambar)} .esf.g{--c:var(--violeta)}
+.escala{position:relative;width:100%;overflow:hidden}
+.escala>*{position:absolute;top:0;left:0;transform-origin:0 0}
+.par{display:grid;grid-template-columns:380px minmax(0,1fr);gap:48px;margin-top:40px;align-items:start}
+.notas{display:grid;gap:26px;padding-top:8px}
+.notas h4{font:600 12px var(--f-txt);letter-spacing:.14em;text-transform:uppercase;color:var(--mudo);margin-bottom:10px}
+.notas ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.notas li{position:relative;padding-left:20px;color:#d7d9ef;max-width:62ch}
+.notas li::before{content:"";position:absolute;left:2px;top:.62em;width:7px;height:7px;border-radius:50%;background:var(--c,var(--verde));box-shadow:0 0 8px var(--c,var(--verde))}
+.notas .linha2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.notas .linha2 p{color:#d7d9ef}
+
+/* ---------- maquete: janela do computador */
+.mk{position:relative;width:1180px;height:720px;border-radius:16px;overflow:hidden;font-family:var(--f-txt);font-size:14px;line-height:1.45;color:var(--txt);
+  background:radial-gradient(900px 300px at 40% -120px,rgba(62,219,154,.10),transparent 70%),
+             radial-gradient(700px 280px at 90% -80px,rgba(126,123,255,.13),transparent 70%),var(--ceu);
+  border:1px solid #1d1c45;box-shadow:0 50px 120px -40px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.02)}
+.mk::before,.cel::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.6;
+  background-image:radial-gradient(1px 1px at 23px 41px,rgba(255,255,255,.75),transparent 60%),
+    radial-gradient(1px 1px at 137px 89px,rgba(255,255,255,.5),transparent 60%),
+    radial-gradient(1.5px 1.5px at 71px 166px,rgba(220,225,255,.6),transparent 60%),
+    radial-gradient(1px 1px at 186px 18px,rgba(255,255,255,.45),transparent 60%),
+    radial-gradient(1px 1px at 214px 131px,rgba(200,210,255,.5),transparent 60%),
+    radial-gradient(1px 1px at 98px 112px,rgba(255,255,255,.3),transparent 60%);
+  background-size:240px 200px}
+.mk .fio{position:absolute;inset:0 0 auto;height:2px;z-index:5;background:linear-gradient(90deg,var(--ini),var(--teal),var(--violeta),var(--magenta))}
+.mk .janela{position:absolute;top:2px;right:0;z-index:5;display:flex;color:var(--mudo)}
+.mk .janela span{width:46px;height:30px;display:grid;place-items:center;font-size:12px;opacity:.75}
+.dock{position:absolute;left:0;top:32px;bottom:0;width:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:2}
+.dock span{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;color:var(--mudo);position:relative}
+.dock span.on{color:var(--verde);background:rgba(92,240,176,.12)}
+.dock span.on::after{content:"";position:absolute;left:-17px;width:3px;height:20px;border-radius:3px;background:var(--verde);box-shadow:0 0 10px var(--verde)}
+.dock .vao{height:22px}
+.mk .conteudo{position:absolute;left:100px;right:44px;top:48px;bottom:26px;z-index:1}
+.mk-legenda{display:flex;justify-content:space-between;gap:12px;margin-top:12px;color:var(--mudo);font-size:13px}
+
+/* ---------- maquete: celular */
+.cel{position:relative;width:380px;height:800px;border-radius:46px;overflow:hidden;color:var(--txt);font-family:var(--f-txt);font-size:14px;line-height:1.45;
+  background:radial-gradient(420px 220px at 30% -60px,rgba(62,219,154,.12),transparent 70%),radial-gradient(360px 220px at 100% -40px,rgba(126,123,255,.14),transparent 70%),var(--ceu);
+  border:1px solid #2a2960;box-shadow:0 40px 100px -30px rgba(0,0,0,.9),inset 0 0 0 6px #0b0a1d}
+.cel .status{position:relative;z-index:3;height:46px;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0;font:600 14px var(--f-tit)}
+.cel .status::after{content:"";position:absolute;left:50%;top:12px;width:104px;height:28px;margin-left:-52px;border-radius:20px;background:#000}
+.cel .status i{display:flex;gap:4px;align-items:flex-end}
+.cel .status i b{width:3px;border-radius:2px;background:var(--txt)}
+.cel .tela{position:absolute;inset:46px 0 0;padding:6px 18px 0;z-index:1;overflow:hidden}
+.cel-cab{display:flex;align-items:center;justify-content:space-between;height:44px}
+.marca{display:flex;align-items:center;gap:9px;font:600 17px var(--f-tit)}
+.marca i{width:22px;height:18px;border-radius:4px 4px 2px 2px;background:linear-gradient(90deg,var(--ini) 0 30%,transparent 30% 40%,var(--teal) 40% 62%,transparent 62% 72%,var(--violeta) 72%);
+  -webkit-mask:linear-gradient(#000,rgba(0,0,0,.35));mask:linear-gradient(#000,rgba(0,0,0,.35))}
+.redondo{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(24,23,58,.7);border:1px solid var(--linha);color:var(--txt)}
+.orbe{width:58px;height:58px;border-radius:50%;flex:none;position:relative;
+  background:radial-gradient(circle at 50% 42%,rgba(92,240,176,.42),rgba(66,227,200,.16) 42%,#15133c 74%);
+  border:1px solid rgba(92,240,176,.35);box-shadow:0 0 26px rgba(92,240,176,.30),inset 0 0 14px rgba(126,123,255,.35)}
+.orbe::after{content:"";position:absolute;inset:0;border-radius:50%;
+  background-image:radial-gradient(1.2px 1.2px at 30% 40%,#fff,transparent),radial-gradient(1px 1px at 62% 30%,#fff,transparent),radial-gradient(1.4px 1.4px at 55% 62%,#dff,transparent),radial-gradient(1px 1px at 38% 70%,#fff,transparent),radial-gradient(1px 1px at 72% 55%,#fff,transparent)}
+.cel-barra{position:absolute;left:14px;right:14px;bottom:20px;z-index:4;display:flex;align-items:center;gap:10px}
+.pilula{flex:1;height:60px;border-radius:30px;display:flex;align-items:center;justify-content:space-around;position:relative;
+  background:rgba(24,23,58,.78);border:1px solid var(--linha);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.pilula span{color:var(--mudo);position:relative;display:grid;place-items:center;width:40px;height:40px}
+.pilula span.on{color:var(--txt)}
+.pilula span.on::after{content:"";position:absolute;bottom:-3px;width:22px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--ini),var(--fim));box-shadow:0 0 10px rgba(126,123,255,.8)}
+
+/* ---------- abas com fita (dentro das maquetes) */
+.abas-fita{position:relative;display:inline-flex;gap:2px;padding:4px;border-radius:999px;background:rgba(15,14,38,.65);border:1px solid var(--linha)}
+.abas-fita button{position:relative;z-index:1;padding:8px 16px 10px;border-radius:999px;color:var(--mudo);font:600 13px var(--f-tit);white-space:nowrap;transition:color .2s}
+.abas-fita button:hover{color:var(--teal)}
+.abas-fita button.on{color:var(--txt)}
+.abas-fita .fita{bottom:4px;height:2.5px}
+
+/* ================= RUMO A · HORIZONTE ================= */
+.a-topo{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.oi{font:600 34px/1.1 var(--f-tit);letter-spacing:-.02em;margin-top:8px}
+.oi em{font-style:normal;color:var(--verde)}
+.a-ceu svg{display:block;width:100%;height:auto;overflow:visible}
+.a-ceu{margin-top:6px}
+.arco g.v{transition:opacity .45s ease}
+.arco[data-v="dia"] .g-semana,.arco[data-v="dia"] .g-mes,
+.arco[data-v="semana"] .g-dia,.arco[data-v="semana"] .g-mes,
+.arco[data-v="mes"] .g-dia,.arco[data-v="mes"] .g-semana{opacity:0;pointer-events:none}
+.a-chao{display:grid;grid-template-columns:1.15fr 1.25fr 1fr 1fr 1fr;margin-top:6px;border-top:1px solid rgba(157,140,255,.18)}
+.a-chao>div{padding:20px 22px 0;display:grid;gap:6px;align-content:start;border-left:1px solid rgba(35,34,80,.8)}
+.a-chao>div:first-child{border-left:0;padding-left:0}
+.a-chao .grande{font:600 30px/1.05 var(--f-tit);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.a-chao .grande small{font-size:15px;color:var(--mudo);font-weight:400;letter-spacing:0}
+.a-chao .tit{font-weight:600;font-size:15px}
+.a-chao .sub{color:var(--mudo);font-size:13px}
+.pill{display:inline-flex;align-items:center;gap:6px;justify-self:start;font:600 12px var(--f-txt);padding:5px 10px;border-radius:99px;color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
+.botoes{display:flex;gap:8px;margin-top:4px}
+.bt{font:600 12.5px var(--f-tit);padding:8px 13px;border-radius:99px;border:1px solid var(--linha);color:var(--txt);background:rgba(24,23,58,.6)}
+.bt.pri{background:linear-gradient(90deg,var(--ini),var(--fim));color:var(--noacc);border:0}
+.segs{display:flex;gap:3px;margin-top:6px}
+.segs i{flex:1;height:8px;border-radius:3px;background:var(--linha)}
+.barra{height:8px;border-radius:8px;background:var(--linha);overflow:hidden;margin-top:6px}
+.barra i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--ini),var(--fim))}
+.a-cel-lista{display:grid;gap:10px;margin-top:8px}
+.a-cel-lista .bloco{padding:14px 16px;border-radius:18px;background:rgba(15,14,38,.75);border:1px solid var(--linha);display:grid;gap:4px}
+.a-cel-lista .bloco.atr{border-color:rgba(231,123,255,.35)}
+.linha-it{display:grid;grid-template-columns:46px 10px 1fr;align-items:center;gap:10px;padding:8px 2px;border-top:1px solid rgba(35,34,80,.7);font-size:13.5px}
+.linha-it:first-child{border-top:0}
+.linha-it time{color:var(--mudo);font-variant-numeric:tabular-nums;font-size:12.5px}
+.ponto{width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.ponto.oco{background:transparent;border:1.6px solid var(--c);box-shadow:none}
+
+/* ================= RUMO B · CORTINAS ================= */
+.b-faixas{position:absolute;inset:0;display:flex}
+.cortina{position:relative;width:48px;flex:none;height:100%;display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:44px;
+  border-right:1px solid rgba(35,34,80,.55);color:var(--c);transition:width .35s cubic-bezier(.3,.8,.2,1),filter .3s;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 7px),
+    linear-gradient(180deg,color-mix(in srgb,var(--c) 34%,transparent) 0%,color-mix(in srgb,var(--c) 9%,transparent) 48%,transparent 82%)}
+.cortina:hover{width:60px;filter:brightness(1.25)}
+.cortina .nome{writing-mode:vertical-rl;transform:rotate(180deg);font:600 12.5px var(--f-tit);letter-spacing:.16em;text-transform:uppercase;white-space:nowrap}
+.cortina .num{position:absolute;bottom:22px;font:600 11px var(--f-txt);color:var(--noacc);background:var(--c);border-radius:99px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 5px}
+.b-painel{position:relative;flex:1;min-width:0;padding:44px 44px 0;display:flex;flex-direction:column;
+  background:radial-gradient(760px 280px at 18% -80px,color-mix(in srgb,var(--c) 22%,transparent),transparent 72%)}
+.b-painel::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--c),transparent 70%)}
+.b-subs{display:flex;flex-wrap:wrap;gap:4px 26px;margin-top:12px}
+.b-subs button{font:600 30px/1.2 var(--f-tit);letter-spacing:-.025em;color:rgba(238,240,251,.24);transition:color .2s;white-space:nowrap}
+.b-subs button:hover{color:rgba(238,240,251,.55)}
+.b-subs button.on{color:var(--txt)}
+.b-subs sup{font:600 12px var(--f-txt);letter-spacing:0;color:var(--c);margin-left:5px;vertical-align:18px}
+.b-corpo{flex:1;min-height:0;overflow:auto;margin-top:22px;padding-bottom:30px;scrollbar-width:thin}
+.espinha{display:grid;gap:22px}
+.espinha section{display:grid;gap:2px}
+.espinha h5{font:600 11px var(--f-txt);letter-spacing:.16em;text-transform:uppercase;color:var(--mudo);margin:0 0 6px}
+.esp-it{display:grid;grid-template-columns:58px 14px minmax(0,1fr) auto;align-items:center;gap:14px;padding:11px 0;border-top:1px solid rgba(35,34,80,.6)}
+.esp-it:first-of-type{border-top:0}
+.esp-it time{font:500 14px var(--f-txt);color:var(--mudo);font-variant-numeric:tabular-nums}
+.esp-it .t{font-weight:600;font-size:15px;min-width:0}
+.esp-it .t small{display:block;font-weight:400;color:var(--mudo);font-size:12.5px}
+.esp-it.ok .t{color:var(--mudo)}
+.esp-it .tipo{font:600 10.5px var(--f-txt);letter-spacing:.14em;text-transform:uppercase;color:var(--mudo)}
+.agora-linha{display:flex;align-items:center;gap:10px;font:600 12px var(--f-txt);color:var(--verde);padding:6px 0}
+.agora-linha::after{content:"";flex:1;height:1.5px;background:linear-gradient(90deg,var(--verde),var(--fim) 60%,transparent);box-shadow:0 0 8px rgba(92,240,176,.6)}
+.hab{display:grid;grid-template-columns:minmax(0,180px) 1fr auto;align-items:center;gap:18px;padding:14px 0;border-top:1px solid rgba(35,34,80,.6)}
+.hab .dias{display:flex;gap:6px}
+.hab .dias i{width:16px;height:16px;border-radius:50%;background:var(--linha)}
+.hab .dias i.s{background:var(--verde);box-shadow:0 0 8px rgba(92,240,176,.5)}
+.hab .dias i.h{outline:1.5px solid var(--verde);outline-offset:2px}
+.mes{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:560px}
+.mes b{font:600 11px var(--f-txt);color:var(--mudo);text-align:center;padding-bottom:4px}
+.mes span{aspect-ratio:1.25;border-radius:12px;background:rgba(15,14,38,.7);border:1px solid rgba(35,34,80,.7);padding:6px 8px;font-size:12.5px;display:flex;flex-direction:column;justify-content:space-between}
+.mes span.hj{border-color:var(--verde);box-shadow:0 0 0 1px var(--verde),0 0 18px rgba(92,240,176,.25)}
+.mes span.vz{background:none;border:0}
+.mes span em{display:flex;gap:3px}
+.mes span em i{width:5px;height:5px;border-radius:50%;background:var(--c)}
+.gen{display:grid}
+.gen .frase{font:300 24px/1.3 var(--f-tit);letter-spacing:-.01em;max-width:34ch;margin-bottom:18px}
+.gen-it{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:14px;align-items:center;padding:13px 0;border-top:1px solid rgba(35,34,80,.6)}
+.gen-it .t{font-weight:600}
+.gen-it .t small{display:block;font-weight:400;color:var(--mudo);font-size:12.5px}
+.gen-it .v{font-variant-numeric:tabular-nums;color:var(--mudo);font-weight:600}
+.fin-num{font:600 46px/1 var(--f-tit);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.fin-bar{display:grid;grid-template-columns:150px 1fr 110px;gap:14px;align-items:center;padding:8px 0;font-size:13.5px}
+.fin-bar i{display:block;height:10px;border-radius:10px;background:linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 40%,transparent))}
+.fin-bar span:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--mudo)}
+/* celular das cortinas */
+.capsulas{display:flex;gap:5px;margin-top:6px}
+.capsula{height:66px;width:36px;border-radius:18px;flex:none;position:relative;overflow:hidden;color:var(--c);display:flex;align-items:flex-end;justify-content:center;padding-bottom:9px;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 6px),linear-gradient(180deg,color-mix(in srgb,var(--c) 55%,transparent),color-mix(in srgb,var(--c) 6%,transparent));
+  border:1px solid color-mix(in srgb,var(--c) 30%,transparent);transition:width .35s cubic-bezier(.3,.8,.2,1)}
+.capsula.on{width:104px;color:var(--txt)}
+.capsula .nm{font:600 12px var(--f-tit);opacity:0;transition:opacity .2s;white-space:nowrap}
+.capsula.on .nm{opacity:1}
+.capsula .ic{position:absolute;top:10px;left:50%;margin-left:-9px;width:18px;height:18px}
+.capsula.on .ic{color:var(--c)}
+.b-cel-subs{display:flex;gap:18px;overflow-x:auto;scrollbar-width:none;margin-top:16px;white-space:nowrap}
+.b-cel-subs::-webkit-scrollbar{display:none}
+.b-cel-subs button{font:600 23px var(--f-tit);letter-spacing:-.02em;color:rgba(238,240,251,.24)}
+.b-cel-subs button.on{color:var(--txt)}
+.b-cel-subs sup{font:600 11px var(--f-txt);color:var(--c);margin-left:3px;vertical-align:12px}
+.b-cel-corpo .esp-it{grid-template-columns:44px 12px minmax(0,1fr);gap:10px;padding:9px 0}
+.b-cel-corpo .esp-it .tipo{display:none}
+.b-cel-corpo .esp-it .t{font-size:14px}
+.b-cel-corpo .espinha{gap:14px}
+.b-cel-orbe{position:absolute;left:0;right:0;bottom:22px;z-index:4;display:flex;justify-content:center;align-items:center;gap:14px}
+
+/* ================= RUMO C · CARTA ================= */
+.c-grade{position:absolute;inset:0;display:grid;grid-template-columns:150px minmax(0,1fr) 250px;gap:40px}
+.c-caps{display:grid;align-content:start;gap:4px;padding-top:150px;position:relative}
+.c-caps::before{content:"";position:absolute;left:8px;top:160px;bottom:calc(100% - 340px);width:1px;background:linear-gradient(var(--linha),transparent)}
+.c-caps button{display:flex;align-items:center;gap:12px;padding:8px 0;color:var(--mudo);font:600 13.5px var(--f-tit);text-align:left;transition:color .2s}
+.c-caps button i{width:17px;height:17px;display:grid;place-items:center;flex:none;position:relative;z-index:1}
+.c-caps button i::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--mudo);transition:all .3s}
+.c-caps button.on{color:var(--txt)}
+.c-caps button.on i::before{width:9px;height:9px;background:#fff;box-shadow:0 0 0 3px rgba(92,240,176,.25),0 0 14px 3px rgba(92,240,176,.7)}
+.c-col{position:relative;min-height:0;display:flex;flex-direction:column}
+.c-carta{flex:1;overflow:auto;padding:14px 10px 130px 0;scrollbar-width:none;scroll-behavior:smooth}
+.c-carta::-webkit-scrollbar{display:none}
+.c-ola{font:italic 400 64px/1 var(--f-carta);letter-spacing:-.01em;margin:14px 0 28px}
+.c-ola span{background:linear-gradient(100deg,var(--ini),var(--teal) 45%,var(--violeta));-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:6px}
+.c-carta p{font-size:20px;line-height:1.72;color:#dfe1f4;margin:0 0 22px;opacity:.42;transition:opacity .45s}
+.c-carta p.foco{opacity:1}
+.c-assina{font:italic 400 26px var(--f-carta);color:var(--mudo)}
+.tk{--c:var(--verde);font:inherit;font-weight:600;color:var(--txt);padding:0 3px;margin:0 -1px;border-radius:4px;
+  background:linear-gradient(transparent 58%,color-mix(in srgb,var(--c) 30%,transparent) 58%);transition:background .25s,box-shadow .25s}
+.tk:hover,.tk[aria-pressed="true"]{background:color-mix(in srgb,var(--c) 22%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 55%,transparent),0 0 18px color-mix(in srgb,var(--c) 25%,transparent)}
+.c-compor{position:absolute;left:0;right:0;bottom:0;padding-top:40px;background:linear-gradient(transparent,var(--ceu) 40%)}
+.c-sug{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.c-sug span{font-size:12.5px;padding:6px 11px;border-radius:99px;border:1px solid var(--linha);color:var(--mudo);background:rgba(15,14,38,.7)}
+.campo{display:flex;align-items:center;gap:10px;height:52px;padding:0 8px 0 18px;border-radius:26px;background:rgba(24,23,58,.8);border:1px solid var(--linha);color:var(--mudo)}
+.campo span{flex:1}
+.campo i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--txt);background:rgba(35,34,80,.8)}
+.c-margem{padding-top:150px;display:grid;align-content:start;gap:22px}
+.nota-m{padding:18px;border-radius:18px;background:rgba(15,14,38,.75);border:1px solid color-mix(in srgb,var(--c) 40%,transparent);display:grid;gap:8px;
+  box-shadow:0 0 40px -14px color-mix(in srgb,var(--c) 45%,transparent);transition:border-color .3s,box-shadow .3s}
+.nota-m h5{font:600 18px var(--f-tit);margin:0}
+.nota-m .tp{font:600 10.5px var(--f-txt);letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
+.nota-m p{color:var(--mudo);font-size:13.5px}
+.nota-m .botoes{flex-wrap:wrap}
+.como{font-size:12.5px;color:var(--mudo);line-height:1.55;border-top:1px solid var(--linha);padding-top:14px}
+.como b{color:var(--txt);font-weight:600}
+/* celular da carta */
+.c-cel-caps{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:10px 0 4px}
+.c-cel-caps::-webkit-scrollbar{display:none}
+.c-cel-caps button{font:600 12.5px var(--f-tit);padding:7px 12px;border-radius:99px;border:1px solid var(--linha);color:var(--mudo);white-space:nowrap}
+.c-cel-caps button.on{color:var(--txt);border-color:rgba(92,240,176,.5);background:rgba(92,240,176,.08)}
+.c-cel-carta{height:556px;overflow:auto;scrollbar-width:none;padding-bottom:120px;scroll-behavior:smooth}
+.c-cel-carta::-webkit-scrollbar{display:none}
+.c-cel-carta .c-ola{font-size:44px;margin:10px 0 16px}
+.c-cel-carta p{font-size:16.5px;line-height:1.65;margin:0 0 16px;color:#dfe1f4}
+.folha{position:absolute;left:12px;right:12px;bottom:100px;z-index:5;transform:translateY(140%);transition:transform .35s cubic-bezier(.3,.8,.2,1)}
+.folha.aberta{transform:none}
+.folha .nota-m{background:rgba(18,17,48,.97)}
+.folha .fechar{position:absolute;right:12px;top:12px;color:var(--mudo);font-size:13px}
+
+/* ================= RUMO D · LENTES ================= */
+.d-topo{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.d-topo h3{font:600 34px/1 var(--f-tit);letter-spacing:-.02em}
+.d-topo p{color:var(--mudo);margin-top:6px}
+.lentes{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.lente{--c:var(--verde);display:inline-flex;align-items:center;gap:8px;padding:7px 13px 7px 11px;border-radius:99px;border:1px solid var(--linha);color:var(--mudo);font:600 12.5px var(--f-tit);transition:all .2s}
+.lente i{width:8px;height:8px;border-radius:50%;background:var(--c);opacity:.45}
+.lente small{font:600 11px var(--f-txt);color:var(--mudo)}
+.lente.on{color:var(--txt);border-color:color-mix(in srgb,var(--c) 55%,transparent);background:color-mix(in srgb,var(--c) 11%,transparent)}
+.lente.on i{opacity:1;box-shadow:0 0 8px var(--c)}
+.bandeja{display:flex;align-items:center;gap:10px;margin-top:16px;padding:10px 12px;border-radius:14px;border:1px dashed rgba(163,166,200,.25)}
+.bandeja .olho{margin-right:6px}
+.ficha{--c:var(--ambar);display:inline-flex;align-items:center;gap:8px;padding:6px 11px;border-radius:10px;font-size:12.5px;font-weight:600;
+  background:color-mix(in srgb,var(--c) 12%,#0F0E26);border:1px solid color-mix(in srgb,var(--c) 38%,transparent);white-space:nowrap}
+.ficha small{color:var(--mudo);font-weight:500}
+.d-grade{position:relative;margin-top:16px}
+.d-horas,.d-raia{display:grid;grid-template-columns:150px minmax(0,1fr)}
+.d-horas{height:28px}
+.d-horas>div{position:relative}
+.d-horas span{position:absolute;transform:translateX(-50%);font-size:11.5px;color:var(--mudo);font-variant-numeric:tabular-nums}
+.d-horas .cols,.d-raia .cols{display:grid;height:100%}
+.d-horas .cols span{position:static;transform:none;text-align:center}
+.d-horas .cols span.hj{color:var(--verde);font-weight:700}
+.d-raia{height:70px;border-top:1px solid rgba(35,34,80,.6);transition:height .35s cubic-bezier(.3,.8,.2,1),opacity .3s}
+.d-raia.fechada{height:0;opacity:0;overflow:hidden;border-top-color:transparent}
+.d-raia .rot{display:flex;align-items:center;gap:10px;color:var(--c);font:600 13px var(--f-tit)}
+.d-raia .rot small{color:var(--mudo);font:500 12px var(--f-txt)}
+.d-raia .pista{position:relative;background:repeating-linear-gradient(90deg,rgba(35,34,80,.55) 0 1px,transparent 1px calc(100% / 9))}
+.ev{--c:var(--teal);position:absolute;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:7px;height:36px;padding:0 11px;border-radius:11px;
+  background:color-mix(in srgb,var(--c) 14%,#0F0E26);border:1px solid color-mix(in srgb,var(--c) 42%,transparent);font-size:12.5px;font-weight:600;white-space:nowrap;max-width:170px;overflow:hidden}
+.ev time{color:var(--mudo);font-weight:500;font-variant-numeric:tabular-nums}
+.ev.ok{opacity:.5}
+.ev.ok::before{content:"✓";color:var(--c);font-weight:700}
+.ev.redondo-ev{border-radius:99px}
+.d-sobre{position:absolute;top:0;bottom:0;left:150px;right:0;pointer-events:none}
+.d-sobre .passado{position:absolute;left:0;top:28px;bottom:0;background:linear-gradient(90deg,rgba(8,7,22,.0),rgba(8,7,22,.35));border-right:0}
+.d-sobre .agora{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:linear-gradient(var(--verde),var(--fim));box-shadow:0 0 12px rgba(92,240,176,.8)}
+.d-sobre .agora b{position:absolute;top:2px;left:8px;font:700 11px var(--f-txt);color:var(--verde);white-space:nowrap}
+.cel-sem{display:grid;place-items:center}
+.cel-sem i{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;max-width:44px}
+.cel-sem i b{width:7px;height:7px;border-radius:50%;background:var(--c)}
+.cols .hj{background:rgba(92,240,176,.06)}
+/* celular das lentes */
+.d-cel-lentes{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:10px;padding-bottom:2px}
+.d-cel-lentes::-webkit-scrollbar{display:none}
+.d-cel-lentes .lente{padding:6px 11px 6px 9px;font-size:12px}
+.d-cel-lista{position:relative;margin-top:14px;height:540px;overflow:auto;scrollbar-width:none;padding-bottom:100px}
+.d-cel-lista::-webkit-scrollbar{display:none}
+.d-cel-lista::before{content:"";position:absolute;left:61px;top:6px;bottom:0;width:1px;background:linear-gradient(var(--linha),transparent)}
+.vrow{display:grid;grid-template-columns:46px 12px minmax(0,1fr);gap:10px;align-items:start;padding:9px 0;position:relative}
+.vrow time{color:var(--mudo);font-variant-numeric:tabular-nums;font-size:12.5px;padding-top:2px;text-align:right}
+.vrow .ponto{margin-top:5px;position:relative;z-index:1}
+.vrow .t{font-weight:600;font-size:14px}
+.vrow .t small{display:block;font-weight:400;color:var(--mudo);font-size:12px}
+.vrow.ok .t{color:var(--mudo)}
+.vrow.compromisso .t{padding:8px 10px;margin-top:-6px;border-radius:12px;background:color-mix(in srgb,var(--teal) 12%,#0F0E26);border:1px solid rgba(66,227,200,.35)}
+.vagora{display:grid;grid-template-columns:46px 12px 1fr;gap:10px;align-items:center;padding:4px 0}
+.vagora b{font:700 11.5px var(--f-txt);color:var(--verde);text-align:right}
+.vagora i{width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(92,240,176,.3),0 0 14px rgba(92,240,176,.9);position:relative;z-index:1}
+.vagora span{height:1.5px;background:linear-gradient(90deg,var(--verde),transparent)}
+
+/* ================= LABORATÓRIO DE ABAS ================= */
+.lab-grade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.lab{display:grid;grid-template-rows:auto 1fr auto;gap:16px;padding:22px;border-radius:22px;background:rgba(15,14,38,.6);border:1px solid var(--linha);min-width:0}
+.lab h4{font-size:19px;letter-spacing:-.01em}
+.lab header p{color:var(--mudo);font-size:14px;margin-top:6px}
+.lab-demo{position:relative;min-height:176px;border-radius:16px;display:grid;place-items:center;padding:18px 10px;overflow:hidden;
+  background:radial-gradient(120% 80% at 50% 0%,rgba(126,123,255,.10),transparent 70%),var(--ceu);border:1px solid rgba(35,34,80,.7)}
+.lab-uso{font-size:13px;color:var(--mudo)}
+.lab-uso b{color:var(--txt);font-weight:600}
+.lab .abas-fita{max-width:100%;overflow-x:auto;scrollbar-width:none}
+.lab .abas-fita button{padding:8px 11px 10px;font-size:12.5px}
+.palavras{display:flex;flex-wrap:wrap;gap:2px 16px;justify-content:center}
+.palavras button{font:600 22px var(--f-tit);letter-spacing:-.02em;color:rgba(238,240,251,.22);transition:color .2s}
+.palavras button.on{color:var(--txt)}
+.palavras sup{font:600 10.5px var(--f-txt);color:var(--verde);margin-left:2px;vertical-align:12px}
+.contadores{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.contadores button{display:flex;align-items:center;gap:9px;padding:7px 12px 7px 8px;border-radius:14px;border:1px solid var(--linha);color:var(--mudo);font:600 12.5px var(--f-tit);text-align:left;transition:all .2s}
+.contadores button small{display:block;font:600 11px var(--f-txt);color:var(--mudo)}
+.contadores button.on{color:var(--txt);border-color:rgba(92,240,176,.45);background:rgba(92,240,176,.07)}
+.anel{width:28px;height:28px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--c,var(--verde)) var(--p),var(--linha) 0)}
+.anel::after{content:"";width:20px;height:20px;border-radius:50%;background:var(--ceu)}
+.anel.ic-anel{background:rgba(35,34,80,.8)}
+.anel.ic-anel::after{display:none}
+.anel .ic{width:15px;height:15px}
+.vertical{position:relative;display:grid;gap:2px;justify-self:start;padding-left:22px}
+.vertical button{display:flex;align-items:center;gap:12px;padding:6px 12px 6px 0;color:var(--mudo);font:600 13.5px var(--f-tit);transition:color .2s}
+.vertical button.on{color:var(--txt)}
+.vertical button .ic{width:17px;height:17px}
+.vertical .astro{position:absolute;left:4px;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(126,123,255,.3),0 0 14px 3px rgba(92,240,176,.7);transition:top .35s cubic-bezier(.3,.8,.2,1)}
+.roda{position:relative;width:290px;height:160px;overflow:hidden}
+.roda-disco{position:absolute;left:15px;top:34px;width:260px;height:260px;border-radius:50%;border:1px dashed rgba(157,140,255,.35);
+  transform:rotate(var(--r,0deg));transition:transform .55s cubic-bezier(.3,.8,.2,1)}
+.roda-disco::before{content:"";position:absolute;inset:34px;border-radius:50%;background:radial-gradient(circle,rgba(126,123,255,.12),transparent 70%)}
+.roda-disco button{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(var(--a)) translateY(-108px);font:600 13px var(--f-tit);color:var(--mudo);white-space:nowrap;padding:4px 8px;transition:color .3s}
+.roda-disco button.on{color:var(--txt);text-shadow:0 0 14px rgba(92,240,176,.8)}
+.roda::after{content:"";position:absolute;left:50%;top:16px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--verde);box-shadow:0 0 12px var(--verde)}
+.const svg{width:100%;max-width:330px;height:auto;display:block;overflow:visible}
+.const text{font:600 12px var(--f-tit);fill:var(--mudo);cursor:pointer;transition:fill .2s}
+.const text.on{fill:var(--txt)}
+.const circle.alvo{cursor:pointer}
+.const .tr-on{stroke-dasharray:var(--l);stroke-dashoffset:var(--l);transition:stroke-dashoffset .5s ease}
+.const .tr-on.v{stroke-dashoffset:0}
+
+/* ================= APOSTA ================= */
+.aposta{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:56px}
+.passos{margin:0;padding:0;list-style:none;display:grid;gap:0;counter-reset:p}
+.passos li{counter-increment:p;display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;padding:22px 0;border-top:1px solid var(--linha)}
+.passos li::before{content:counter(p);font:600 28px/1 var(--f-tit);color:transparent;-webkit-text-stroke:1px var(--violeta)}
+.passos h4{font-size:19px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.passos p{color:var(--mudo);margin-top:6px;max-width:58ch}
+.fica{display:grid;gap:18px;align-content:start}
+.fica>div{padding:20px;border-radius:18px;border:1px solid var(--linha);background:rgba(15,14,38,.55)}
+.fica h4{font-size:15px;margin-bottom:8px}
+.fica p{color:var(--mudo);font-size:14.5px}
+.rodape{margin-top:100px;padding-top:24px;border-top:1px solid var(--linha);color:var(--mudo);font-size:13px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
+
+@media (max-width:980px){
+  .lab-grade{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .aposta{grid-template-columns:1fr}
+}
+@media (max-width:900px){
+  .par{grid-template-columns:1fr}
+  .notas .linha2{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .diag{grid-template-columns:1fr;gap:28px}
+  .lab-grade{grid-template-columns:1fr}
+  .secao{margin-top:88px}
+  .mk-legenda{flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none!important;animation:none!important}
+  .c-carta,.c-cel-carta{scroll-behavior:auto}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5z"/><path d="M9 12h6M9 16h6"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M16 15h2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 12a8 8 0 0 1-14 5.3L4 15"/><path d="M20 4v5h-5M4 20v-5h5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+</svg>
+
+<canvas id="estrelas" aria-hidden="true"></canvas>
+<div class="brilho" aria-hidden="true"></div>
+
+<main class="pagina">
+
+  <header class="abre">
+    <p class="olho">Aurora · estudo de design · 3 de novembro de 2026</p>
+    <h1>Quatro <span>céus</span> para a Aurora</h1>
+    <p class="lead">Olhei a Visão, a Rotina, Finanças e o celular como estão hoje. O app já tem uma assinatura forte, o céu noturno com as cores de uma aurora de verdade. O que proponho é <b>fazer esse céu trabalhar</b>: virar relógio, régua, carta e menu. Abaixo, quatro rumos com protótipos clicáveis e um laboratório só de abas.</p>
+    <div class="legenda" aria-label="Cores por tipo usadas nas maquetes">
+      <span style="--c:#42E3C8"><i></i>Compromisso</span>
+      <span style="--c:#F5C35B"><i></i>Tarefa</span>
+      <span style="--c:#5CF0B0"><i></i>Hábito</span>
+      <span style="--c:#9D8CFF"><i></i>Lembrete</span>
+      <span style="--c:#8FD3FF"><i></i>Dinheiro <em class="novo">cor nova</em></span>
+      <span style="--c:#E77BFF"><i></i>Atrasado</span>
+    </div>
+  </header>
+
+  <nav class="nav" aria-label="Seções">
+    <div class="trilho" id="navTrilho">
+      <a href="#diagnostico" data-t class="on">O que vi</a>
+      <a href="#horizonte" data-t>Horizonte</a>
+      <a href="#cortinas" data-t>Cortinas</a>
+      <a href="#carta" data-t>Carta</a>
+      <a href="#lentes" data-t>Lentes</a>
+      <a href="#abas" data-t>Laboratório de abas</a>
+      <a href="#aposta" data-t>Minha aposta</a>
+      <i class="fita" aria-hidden="true"></i>
+    </div>
+  </nav>
+
+  <!-- ============ DIAGNÓSTICO ============ -->
+  <section class="secao" id="diagnostico">
+    <header>
+      <p class="olho">O que vi no app de hoje</p>
+      <h2>Bonito, organizado, e tudo com o mesmo peso</h2>
+    </header>
+    <div class="diag">
+      <div><strong>11<small>caixas</small></strong><p>A Visão tem onze cartões, alguns dentro de outros. Como todos têm a mesma borda e o mesmo fundo, o olho não sabe por onde começar.</p></div>
+      <div><strong>5<small>abas iguais</small></strong><p>Rotina, Finanças e Saúde usam a mesma barra larga de pílulas. No celular ela corta no meio da palavra: “Ar…”, “Conta:”.</p></div>
+      <div><strong>0<small>dados no céu</small></strong><p>O céu estrelado é a cara do app, mas só fica de fundo. Nenhuma informação mora nele, e é o maior espaço da tela.</p></div>
+    </div>
+    <p class="tese">Os quatro rumos mantêm a paleta, a Sora, a Manrope e a orbe. Muda <b>como você lê o dia</b>.</p>
+  </section>
+
+  <!-- ============ RUMO A · HORIZONTE ============ -->
+  <section class="secao" id="horizonte">
+    <div class="rumo-cab">
+      <div>
+        <p class="olho">Rumo A · para a Visão</p>
+        <h2>Horizonte <em>· o dia vira um arco no céu</em></h2>
+      </div>
+      <div class="chips"><span class="chip esf m">Esforço médio</span><span class="chip">Abas: fita líquida</span></div>
+    </div>
+
+    <div class="escala" data-w="1180" data-h="720">
+      <div class="mk" id="mkA">
+        <i class="fio"></i><div class="janela"><span>─</span><span>▢</span><span>✕</span></div>
+        <nav class="dock" data-dock="home"></nav>
+        <div class="conteudo">
+          <header class="a-topo">
+            <div><p class="olho">Terça-feira · 3 de novembro · 14:20</p><h3 class="oi">Boa tarde, <em>Maraath</em></h3></div>
+            <div class="abas-fita" role="tablist" aria-label="Período do céu" data-arco="arcoA">
+              <button data-t data-v="dia" class="on" role="tab">Dia</button><button data-t data-v="semana" role="tab">Semana</button><button data-t data-v="mes" role="tab">30 dias</button><i class="fita"></i>
+            </div>
+          </header>
+          <div class="a-ceu"><svg class="arco" id="arcoA" data-v="dia" viewBox="0 0 1040 300" role="img" aria-label="Arco do dia de 6 h a 24 h com os itens de hoje"></svg></div>
+          <div class="a-chao" id="chaoA"></div>
+        </div>
+      </div>
+    </div>
+    <div class="mk-legenda"><span>Troque Dia, Semana e 30 dias: o céu muda de desenho. Passe o mouse nas estrelas.</span><span>Computador · 1180 × 720</span></div>
+
+    <div class="par">
+      <div class="escala" data-w="380" data-h="800">
+        <div class="cel" id="celA">
+          <div class="status"><span>14:20</span><i><b style="height:5px"></b><b style="height:8px"></b><b style="height:11px"></b></i></div>
+          <div class="tela">
+            <div class="cel-cab"><span class="marca"><i></i>Aurora</span><span class="redondo"><svg class="ic"><use href="#i-search"/></svg></span></div>
+            <p class="olho" style="margin-top:10px">Terça · 3 de novembro</p>
+            <h3 class="oi" style="font-size:28px;margin-top:4px">Boa tarde, <em>Maraath</em></h3>
+            <div class="abas-fita" style="margin-top:14px" role="tablist" aria-label="Período do céu" data-arco="arcoCelA">
+              <button data-t data-v="dia" class="on">Dia</button><button data-t data-v="semana">Semana</button><button data-t data-v="mes">30 dias</button><i class="fita"></i>
+            </div>
+            <svg class="arco" id="arcoCelA" data-v="dia" viewBox="0 0 344 170" style="width:100%;height:auto;margin-top:6px;overflow:visible" role="img" aria-label="Arco do dia"></svg>
+            <div class="a-cel-lista" id="listaCelA"></div>
+          </div>
+          <div class="cel-barra">
+            <div class="pilula"><span class="on"><svg class="ic"><use href="#i-home"/></svg></span><span><svg class="ic"><use href="#i-cal"/></svg></span><span><svg class="ic"><use href="#i-wallet"/></svg></span><span><svg class="ic"><use href="#i-pulse"/></svg></span><span><svg class="ic"><use href="#i-flag"/></svg></span></div>
+            <span class="orbe" aria-label="Abrir a Aurora"></span>
+          </div>
+        </div>
+      </div>
+      <div class="notas">
+        <div>
+          <h4>O que muda</h4>
+          <ul>
+            <li style="--c:var(--verde)">A Visão abre com um arco de 06h a 24h. O que já passou fica aceso, o que falta fica tracejado, e o ponto brilhante marca agora.</li>
+            <li style="--c:var(--teal)">As abas trocam o desenho do céu: estrelas do dia, cortinas da semana (a altura é quanto foi feito) e uma constelação dos últimos 30 dias, com os dias bons ligados por linhas.</li>
+            <li style="--c:var(--violeta)">Abaixo do horizonte, uma faixa só, sem cartões: a seguir, o que ficou para trás, o dia em números, a sobra do mês e o objetivo.</li>
+            <li style="--c:var(--ambar)">O pico do ícone aparece no horizonte. É o único enfeite, e ele já é da marca.</li>
+          </ul>
+        </div>
+        <div class="linha2">
+          <div><h4>No Flutter</h4><p>Um <code>CustomPainter</code> para o arco, parecido com o do anel e do céu que já existem. A faixa de baixo é uma <code>Row</code> com divisórias.</p></div>
+          <div><h4>Cuidado</h4><p>Com 20 itens no dia os nomes se encostam. Regra: nome só nos próximos 5; o resto vira estrela sem rótulo.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RUMO B · CORTINAS ============ -->
+  <section class="secao" id="cortinas">
+    <div class="rumo-cab">
+      <div>
+        <p class="olho">Rumo B · para a navegação inteira</p>
+        <h2>Cortinas <em>· cada área é uma faixa de luz</em></h2>
+      </div>
+      <div class="chips"><span class="chip esf g">Esforço grande</span><span class="chip">Abas: palavras grandes</span></div>
+    </div>
+
+    <div class="escala" data-w="1180" data-h="720">
+      <div class="mk" id="mkB">
+        <i class="fio"></i><div class="janela"><span>─</span><span>▢</span><span>✕</span></div>
+        <div class="b-faixas" id="faixasB"></div>
+      </div>
+    </div>
+    <div class="mk-legenda"><span>Clique numa faixa para abrir a área, e nas palavras para trocar de aba.</span><span>Computador · 1180 × 720</span></div>
+
+    <div class="par">
+      <div class="escala" data-w="380" data-h="800">
+        <div class="cel" id="celB">
+          <div class="status"><span>14:20</span><i><b style="height:5px"></b><b style="height:8px"></b><b style="height:11px"></b></i></div>
+          <div class="tela">
+            <div class="capsulas" id="capsB"></div>
+            <div class="b-cel-subs" id="subsCelB"></div>
+            <div class="b-cel-corpo" id="corpoCelB" style="margin-top:14px;height:520px;overflow:hidden"></div>
+          </div>
+          <div class="b-cel-orbe"><span class="redondo"><svg class="ic"><use href="#i-plus"/></svg></span><span class="orbe"></span><span class="redondo"><svg class="ic"><use href="#i-search"/></svg></span></div>
+        </div>
+      </div>
+      <div class="notas">
+        <div>
+          <h4>O que muda</h4>
+          <ul>
+            <li style="--c:var(--teal)">O menu de ícones vira sete faixas verticais, cada uma com a cor da sua área. A área aberta ocupa a tela e tinge o topo com a própria cor.</li>
+            <li style="--c:var(--verde)">A barra de pílulas some. As abas viram palavras grandes: a ativa acesa, as outras apagadas, com o número ao lado (4/12, 1/4).</li>
+            <li style="--c:var(--violeta)">No celular as faixas sobem para o topo como cápsulas e a barra de baixo desaparece. Embaixo fica só a orbe, entre o + e a busca.</li>
+          </ul>
+        </div>
+        <div class="linha2">
+          <div><h4>No Flutter</h4><p>Mexe na Shell, no <code>MenuDock</code> e na <code>_BarraFlutuante</code>. É o rumo que mais muda o app.</p></div>
+          <div><h4>Cuidado</h4><p>Sete cores de área disputam com as cores por tipo. A cor da área fica só na faixa, no brilho do topo e nos números; os itens seguem com a cor do tipo.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RUMO C · CARTA ============ -->
+  <section class="secao" id="carta">
+    <div class="rumo-cab">
+      <div>
+        <p class="olho">Rumo C · para a Visão e o assistente</p>
+        <h2>Carta <em>· a Visão escrita pela Aurora</em></h2>
+      </div>
+      <div class="chips"><span class="chip esf m">Esforço médio</span><span class="chip">Abas: capítulos na margem</span></div>
+    </div>
+
+    <div class="escala" data-w="1180" data-h="720">
+      <div class="mk" id="mkC">
+        <i class="fio"></i><div class="janela"><span>─</span><span>▢</span><span>✕</span></div>
+        <nav class="dock" data-dock="home"></nav>
+        <div class="conteudo">
+          <div class="c-grade">
+            <nav class="c-caps" id="capsC" aria-label="Capítulos da carta"></nav>
+            <div class="c-col">
+              <article class="c-carta" id="cartaC"></article>
+              <div class="c-compor">
+                <div class="c-sug"><span>Marcar a fatura como paga</span><span>Como foi minha semana?</span><span>Remarcar o estudo para amanhã</span></div>
+                <div class="campo"><span>Responda ou peça algo à Aurora…</span><i><svg class="ic" style="width:17px;height:17px"><use href="#i-mic"/></svg></i><i style="background:linear-gradient(135deg,var(--ini),var(--fim));color:var(--noacc)"><svg class="ic" style="width:17px;height:17px"><use href="#i-arrow"/></svg></i></div>
+              </div>
+            </div>
+            <aside class="c-margem">
+              <p class="olho">À margem</p>
+              <div id="margemC"></div>
+              <p class="como"><b>Como a carta é feita.</b> Sai no aparelho, por regras, sempre que algo muda, como os comandos rápidos, então funciona sem internet. Com internet, a IA pode reescrever no seu tom.</p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mk-legenda"><span>Clique nas palavras marcadas: os detalhes e as ações aparecem na margem. Os capítulos acompanham a rolagem.</span><span>Computador · 1180 × 720</span></div>
+
+    <div class="par">
+      <div class="escala" data-w="380" data-h="800">
+        <div class="cel" id="celC">
+          <div class="status"><span>14:20</span><i><b style="height:5px"></b><b style="height:8px"></b><b style="height:11px"></b></i></div>
+          <div class="tela">
+            <div class="cel-cab"><span class="marca"><i></i>Aurora</span><span class="redondo"><svg class="ic"><use href="#i-search"/></svg></span></div>
+            <div class="c-cel-caps" id="capsCelC"></div>
+            <article class="c-cel-carta" id="cartaCelC"></article>
+          </div>
+          <div class="folha" id="folhaC"><button class="fechar" id="fecharFolhaC">Fechar</button><div id="folhaCorpoC"></div></div>
+          <div class="cel-barra">
+            <div class="campo" style="flex:1;height:58px;border-radius:29px"><span>Responder à Aurora…</span><i><svg class="ic" style="width:17px;height:17px"><use href="#i-mic"/></svg></i></div>
+            <span class="orbe"></span>
+          </div>
+        </div>
+      </div>
+      <div class="notas">
+        <div>
+          <h4>O que muda</h4>
+          <ul>
+            <li style="--c:var(--violeta)">A Visão vira um texto curto que se atualiza. Cada coisa citada é um destaque que se toca e abre os detalhes, com as ações certas: Paguei, Remarcar, Ver o fluxo.</li>
+            <li style="--c:var(--verde)">Os capítulos (Agora, Pendências, Dinheiro, Corpo, Objetivos) fazem o papel das abas. Ficam na margem e acendem conforme você lê.</li>
+            <li style="--c:var(--teal)">Responder à carta é falar com a assistente. A conversa e a Visão passam a ser o mesmo lugar.</li>
+          </ul>
+        </div>
+        <div class="linha2">
+          <div><h4>No Flutter</h4><p>Gerador de frases por regras (o mesmo jeito dos comandos rápidos) e <code>Text.rich</code> com <code>WidgetSpan</code> nos destaques. A IA é opcional.</p></div>
+          <div><h4>Cuidado</h4><p>Texto cansa se crescer. No máximo cinco parágrafos, e um botão “Ver em blocos” para quem prefere números.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RUMO D · LENTES ============ -->
+  <section class="secao" id="lentes">
+    <div class="rumo-cab">
+      <div>
+        <p class="olho">Rumo D · para a Rotina</p>
+        <h2>Lentes <em>· a Rotina numa régua só</em></h2>
+      </div>
+      <div class="chips"><span class="chip esf g">Esforço grande</span><span class="chip">Abas: lentes e zoom</span></div>
+    </div>
+
+    <div class="escala" data-w="1180" data-h="720">
+      <div class="mk" id="mkD">
+        <i class="fio"></i><div class="janela"><span>─</span><span>▢</span><span>✕</span></div>
+        <nav class="dock" data-dock="cal"></nav>
+        <div class="conteudo">
+          <header class="d-topo">
+            <div><h3>Rotina</h3><p>Terça, 3 de novembro · 4 de 12 feitos</p></div>
+            <div class="abas-fita" role="tablist" aria-label="Zoom" id="zoomD">
+              <button data-t data-z="dia" class="on">Dia</button><button data-t data-z="semana">Semana</button><button data-t data-z="mes">30 dias</button><i class="fita"></i>
+            </div>
+          </header>
+          <div class="lentes" id="lentesD"></div>
+          <div class="bandeja" id="bandejaD"></div>
+          <div class="d-grade" id="gradeD"></div>
+        </div>
+      </div>
+    </div>
+    <div class="mk-legenda"><span>Clique numa lente para focar num tipo (clique de novo para somar outros). O zoom troca Dia, Semana e 30 dias.</span><span>Computador · 1180 × 720</span></div>
+
+    <div class="par">
+      <div class="escala" data-w="380" data-h="800">
+        <div class="cel" id="celD">
+          <div class="status"><span>14:20</span><i><b style="height:5px"></b><b style="height:8px"></b><b style="height:11px"></b></i></div>
+          <div class="tela">
+            <div class="cel-cab"><span class="marca" style="font-size:22px">Rotina</span><span class="redondo"><svg class="ic"><use href="#i-plus"/></svg></span></div>
+            <div class="d-cel-lentes" id="lentesCelD"></div>
+            <div class="d-cel-lista" id="listaCelD"></div>
+          </div>
+          <div class="cel-barra">
+            <div class="pilula"><span><svg class="ic"><use href="#i-home"/></svg></span><span class="on"><svg class="ic"><use href="#i-cal"/></svg></span><span><svg class="ic"><use href="#i-wallet"/></svg></span><span><svg class="ic"><use href="#i-pulse"/></svg></span><span><svg class="ic"><use href="#i-flag"/></svg></span></div>
+            <span class="orbe"></span>
+          </div>
+        </div>
+      </div>
+      <div class="notas">
+        <div>
+          <h4>O que muda</h4>
+          <ul>
+            <li style="--c:var(--teal)">Hoje e Calendário viram uma tela só: uma régua das 06h às 24h com uma raia por tipo. A linha de agora corta tudo e o que já passou escurece.</li>
+            <li style="--c:var(--verde)">As lentes ligam e desligam raias. É a mesma tela vista como “só compromissos” ou “só dinheiro”, sem trocar de aba.</li>
+            <li style="--c:var(--azul)">Dinheiro entra na Rotina: a conta que vence e o gasto do dia aparecem na régua, com cor própria.</li>
+            <li style="--c:var(--ambar)">O que não tem hora fica na bandeja de cima. No celular a régua fica em pé.</li>
+          </ul>
+        </div>
+        <div class="linha2">
+          <div><h4>No Flutter</h4><p>Tela nova, mas lê tudo do <code>RotinaRepo</code>/<code>QuadroRotina</code> que já junta os quatro tipos. Hábitos, Automações e Análise seguem como estão.</p></div>
+          <div><h4>Cuidado</h4><p>Duas coisas no mesmo horário na mesma raia: a segunda desce meia altura. Acima de três, vira “+2”.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LABORATÓRIO DE ABAS ============ -->
+  <section class="secao" id="abas">
+    <header>
+      <p class="olho">Laboratório de abas</p>
+      <h2>Seis jeitos de trocar de aba, todos funcionando</h2>
+      <p>Mesmas cinco abas da Rotina em cada um. Clique para sentir o movimento.</p>
+    </header>
+    <div class="lab-grade">
+      <article class="lab">
+        <header><h4>Fita líquida</h4><p>Um fio de aurora estica até a aba nova e depois encolhe. Leve e fácil de reconhecer.</p></header>
+        <div class="lab-demo"><div class="abas-fita" id="labFita"><button data-t class="on">Hoje</button><button data-t>Calendário</button><button data-t>Hábitos</button><button data-t>Automações</button><button data-t>Análise</button><i class="fita"></i></div></div>
+        <p class="lab-uso"><b>Bom para:</b> trocar o <code>Segmentos</code> do app inteiro. Rola de lado no celular sem cortar palavra.</p>
+      </article>
+      <article class="lab">
+        <header><h4>Palavras grandes</h4><p>A aba é o próprio título da tela. A ativa acende, as outras ficam como sombra.</p></header>
+        <div class="lab-demo"><div class="palavras" id="labPalavras"><button class="on">Hoje<sup>4/12</sup></button><button>Calendário</button><button>Hábitos<sup>1/4</sup></button><button>Automações</button><button>Análise</button></div></div>
+        <p class="lab-uso"><b>Bom para:</b> telas com poucas abas e muito respiro. Some com a linha de título + barra.</p>
+      </article>
+      <article class="lab">
+        <header><h4>Abas que contam</h4><p>Cada aba já mostra o seu número. Você sabe onde ir antes de tocar.</p></header>
+        <div class="lab-demo"><div class="contadores" id="labCont"></div></div>
+        <p class="lab-uso"><b>Bom para:</b> Rotina e Finanças no celular, onde cada toque custa.</p>
+      </article>
+      <article class="lab">
+        <header><h4>Astro no trilho</h4><p>Lista em pé, com uma estrela que desliza até a escolhida.</p></header>
+        <div class="lab-demo"><div class="vertical" id="labVert"></div></div>
+        <p class="lab-uso"><b>Bom para:</b> sub-abas do Treino (Ficha, Medidas, Exercícios, Shape) no computador.</p>
+      </article>
+      <article class="lab">
+        <header><h4>Roda</h4><p>Um disco gira e traz a aba para o topo. Feito para o polegar.</p></header>
+        <div class="lab-demo"><div class="roda" id="labRoda"><div class="roda-disco"></div></div></div>
+        <p class="lab-uso"><b>Bom para:</b> segurar a orbe no celular e girar até a área. Atalho escondido, não o menu principal.</p>
+      </article>
+      <article class="lab const">
+        <header><h4>Constelação</h4><p>As abas são estrelas ligadas por uma linha que se acende até a escolhida.</p></header>
+        <div class="lab-demo"><svg id="labConst" viewBox="0 0 330 130" role="tablist" aria-label="Abas em constelação"></svg></div>
+        <p class="lab-uso"><b>Bom para:</b> etapas em ordem, como as etapas de um objetivo ou o primeiro uso do app.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ APOSTA ============ -->
+  <section class="secao" id="aposta">
+    <header>
+      <p class="olho">Minha aposta</p>
+      <h2>Misturar três rumos, em quatro passos</h2>
+      <p>Na ordem em que eu faria, do que muda mais com menos código ao que dá mais trabalho.</p>
+    </header>
+    <div class="aposta">
+      <ol class="passos">
+        <li><div><h4>Fita líquida em todas as abas <span class="chip esf">Esforço pequeno</span></h4><p>Troca o <code>Segmentos</code> pela fita. O app inteiro ganha cara nova de uma vez, e as abas cortadas do celular somem porque a fita rola junto.</p></div></li>
+        <li><div><h4>Horizonte no topo da Visão <span class="chip esf m">Esforço médio</span></h4><p>Entra no lugar de “Em foco” e “Hoje em números”. A Visão cai de onze caixas para um céu e uma faixa.</p></div></li>
+        <li><div><h4>Lentes na Rotina <span class="chip esf g">Esforço grande</span></h4><p>Junta Hoje e Calendário numa régua. As abas da Rotina caem de cinco para três: Dia, Hábitos e Automações, com a Análise dentro do zoom de 30 dias.</p></div></li>
+        <li><div><h4>Carta como segundo modo da Visão <span class="chip esf m">Esforço médio</span></h4><p>Um botão “Ler o dia” abre a carta. Ela já nasce ligada ao assistente e funciona sem internet.</p></div></li>
+      </ol>
+      <div class="fica">
+        <div><h4>Guardar para depois</h4><p><b style="color:var(--txt)">Cortinas</b> é o rumo mais ousado, mas troca a navegação que acabou de mudar (a barra flutuante do celular, de 25/10). Vale para uma 2.0.</p></div>
+        <div><h4>Fica como está</h4><p>Paleta Aurora completa, Sora e Manrope, céu estrelado, orbe, vidro nas folhas, cores por tipo e o menu de ícones no computador.</p></div>
+        <div><h4>Uma cor nova</h4><p>Dinheiro ganha o azul-céu <code>#8FD3FF</code>. Hoje ele não tem cor própria quando aparece fora de Finanças.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="rodape"><span>Protótipo de estudo para a Aurora. Todos os dados são de demonstração.</span><span>Arquivo: docs/prototipo/novos-rumos.html</span></footer>
+</main>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const ic=(n,st='')=>`<svg class="ic" aria-hidden="true"${st?` style="${st}"`:''}><use href="#i-${n}"/></svg>`;
+const hora=h=>{const H=Math.floor(h),M=Math.round((h-H)*60);return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0')};
+const durTxt=m=>m>=60?`${Math.floor(m/60)} h${m%60?` ${m%60} min`:''}`:`${m} min`;
+const rnd=s=>{const x=Math.sin(s*9301+49297)*233280;return x-Math.floor(x)};
+
+/* ---------------- dados de demonstração ---------------- */
+const AGORA=14+20/60;
+const COR={compromisso:'#42E3C8',tarefa:'#F5C35B',habito:'#5CF0B0',lembrete:'#9D8CFF',dinheiro:'#8FD3FF',atrasado:'#E77BFF'};
+const NOME={compromisso:'Compromisso',tarefa:'Tarefa',habito:'Hábito',lembrete:'Lembrete',dinheiro:'Dinheiro'};
+const IT=[
+  {h:7,t:'Meditar',c:'Meditar',tipo:'habito',ok:true,m:'14 dias seguidos'},
+  {h:8,t:'Tomar vitamina D',c:'Vitamina D',tipo:'lembrete',ok:true,m:'todo dia'},
+  {h:10,f:11,t:'Reunião de planejamento',c:'Reunião',tipo:'compromisso',ok:true,m:'Sala 3'},
+  {h:12.5,t:'Mercado',c:'Mercado',tipo:'dinheiro',ok:true,m:'R$ 212,40 · lançado'},
+  {h:14,t:'Revisar o README',c:'README',tipo:'tarefa',ok:true,m:'Lançar o portfólio'},
+  {h:16.5,f:17.25,t:'Dentista',c:'Dentista',tipo:'compromisso',m:'Clínica Sorriso · aviso 1 h antes'},
+  {h:18.5,t:'Buscar a encomenda na portaria',c:'Encomenda',tipo:'lembrete',m:'aviso na hora'},
+  {h:19,t:'Cardio',c:'Cardio',tipo:'habito',m:'30 min · 3 seguidos'},
+  {h:20,t:'Estudar Flutter: animações',c:'Flutter',tipo:'tarefa',m:'hoje'},
+  {h:21.5,t:'Leitura',c:'Leitura',tipo:'habito',m:'30 min · 3 seguidos'},
+  {h:22,t:'Conta de luz vence amanhã',c:'Conta de luz',tipo:'dinheiro',m:'R$ 186,30'}
+];
+const SEMHORA=[
+  {t:'Pagar a fatura do cartão',tipo:'tarefa',atrasada:true,m:'venceu ontem · R$ 1.240,00'},
+  {t:'Enviar o relatório do mês',tipo:'tarefa',m:'hoje'},
+  {t:'Beber água',tipo:'habito',m:'3 de 8 copos'}
+];
+const CONTA=[...IT.filter(i=>i.tipo!=='dinheiro'),...SEMHORA];
+const FEITOS=CONTA.filter(i=>i.ok).length, TOTAL=CONTA.length;
+const HAB=CONTA.filter(i=>i.tipo==='habito'), HAB_OK=HAB.filter(i=>i.ok).length;
+const PROX=IT.find(i=>!i.ok&&i.h>AGORA&&i.tipo!=='dinheiro');
+const FALTA=durTxt(Math.round((PROX.h-AGORA)*60));
+const SEMANA=[['Qua',.62],['Qui',.8],['Sex',.45],['Sáb',.3],['Dom',.55],['Seg',.9],['Ter',FEITOS/TOTAL]];
+
+/* ---------------- dock das maquetes ---------------- */
+$$('[data-dock]').forEach(d=>{
+  const at=d.dataset.dock;
+  d.innerHTML=['spark','home','cal','pulse','flag','note','wallet'].map(n=>`<span class="${n===at?'on':''}">${ic(n)}</span>`).join('')+'<span class="vao"></span>'+`<span>${ic('user')}</span>`;
+});
+
+/* ---------------- fita líquida (genérica) ---------------- */
+const FITAS=[];
+function fita(cont,aoTrocar){
+  const bar=$('.fita',cont), bts=$$('[data-t]',cont);
+  let at=Math.max(0,bts.findIndex(b=>b.classList.contains('on')));
+  const pos=b=>({l:b.offsetLeft+12,w:Math.max(12,b.offsetWidth-24)});
+  const pôr=p=>{bar.style.left=p.l+'px';bar.style.width=p.w+'px'};
+  function ir(i,anim){
+    const novo=pos(bts[i]);
+    if(anim&&i!==at){
+      const velho=pos(bts[at]);const l=Math.min(novo.l,velho.l),r=Math.max(novo.l+novo.w,velho.l+velho.w);
+      pôr({l,w:r-l});setTimeout(()=>pôr(novo),170);
+    }else{bar.style.transition='none';pôr(novo);void bar.offsetWidth;bar.style.transition='';}
+    bts.forEach((b,j)=>{b.classList.toggle('on',j===i);b.setAttribute('aria-selected',j===i)});
+    at=i;
+  }
+  bts.forEach((b,i)=>b.addEventListener('click',()=>{if(i===at)return;ir(i,true);aoTrocar&&aoTrocar(i,b)}));
+  ir(at,false);
+  const api={ir,refazer:()=>ir(at,false),get atual(){return at}};
+  FITAS.push(api);return api;
+}
+
+/* ================= RUMO A · HORIZONTE ================= */
+function arco(svg,rot){
+  const vb=svg.viewBox.baseVal, w=vb.width, h=vb.height, id=svg.id;
+  const cy=h-(rot?40:30), cx=w/2, R=w/2-(rot?110:24), r=cy-(rot?36:34);
+  const pt=hh=>{const t=(hh-6)/18,a=Math.PI*(1-t);return [cx+R*Math.cos(a),cy-r*Math.sin(a),a]};
+  const cam=(de,ate)=>{let d='';for(let x=de;x<ate;x+=.1){const[p,q]=pt(x);d+=(d?'L':'M')+p.toFixed(1)+' '+q.toFixed(1)}const[p,q]=pt(ate);return d+'L'+p.toFixed(1)+' '+q.toFixed(1)};
+  let s=`<defs>
+    <linearGradient id="${id}g" x1="0" x2="1"><stop offset="0" stop-color="#3EDB9A"/><stop offset="1" stop-color="#7E7BFF"/></linearGradient>
+    <radialGradient id="${id}s"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".3" stop-color="#5CF0B0" stop-opacity=".6"/><stop offset="1" stop-color="#5CF0B0" stop-opacity="0"/></radialGradient>
+    <filter id="${id}f" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <linearGradient id="${id}h" x1="0" x2="1"><stop offset="0" stop-color="#9D8CFF" stop-opacity="0"/><stop offset=".5" stop-color="#9D8CFF" stop-opacity=".6"/><stop offset="1" stop-color="#9D8CFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${id}c" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#3EDB9A" stop-opacity=".95"/><stop offset=".55" stop-color="#42E3C8" stop-opacity=".45"/><stop offset="1" stop-color="#7E7BFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${id}t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#100f2a"/><stop offset="1" stop-color="#080716" stop-opacity="0"/></linearGradient>
+  </defs>`;
+  // chão, montanha do ícone e horizonte
+  s+=`<rect x="0" y="${cy}" width="${w}" height="${h-cy}" fill="url(#${id}t)"/>`;
+  s+=`<path d="M${w*.05} ${cy} Q${w*.14} ${cy-h*.07} ${w*.25} ${cy}Z" fill="#0c0b22" stroke="rgba(157,140,255,.18)"/>`;
+  s+=`<path d="M${w*.54} ${cy} L${w*.6} ${cy-h*.12} Q${w*.625} ${cy-h*.2} ${w*.648} ${cy-h*.185} L${w*.69} ${cy-h*.07} L${w*.73} ${cy}Z" fill="#0c0b22" stroke="rgba(157,140,255,.28)"/>`;
+  s+=`<line x1="0" y1="${cy}" x2="${w}" y2="${cy}" stroke="url(#${id}h)" stroke-width="1.3"/>`;
+  // ---- dia
+  s+=`<g class="v g-dia">`;
+  s+=`<path d="${cam(6,24)}" fill="none" stroke="rgba(163,166,200,.32)" stroke-width="1.4" stroke-dasharray="2 7" stroke-linecap="round"/>`;
+  s+=`<path d="${cam(6,AGORA)}" fill="none" stroke="url(#${id}g)" stroke-width="${rot?3:2.5}" stroke-linecap="round" filter="url(#${id}f)"/>`;
+  (rot?[6,9,12,15,18,21,24]:[6,12,18,24]).forEach(hh=>{const[x]=pt(hh);s+=`<text x="${x.toFixed(1)}" y="${cy+19}" text-anchor="middle" font-size="${rot?11:10}" fill="#A3A6C8" font-family="Manrope">${String(hh%24===0&&hh===24?24:hh).padStart(2,'0')}h</text>`});
+  IT.forEach((it,i)=>{
+    const[x,y,a]=pt(it.h), c=COR[it.tipo];
+    s+=`<g><title>${hora(it.h)} · ${it.t} (${NOME[it.tipo]})</title>`;
+    s+=it.ok?`<circle cx="${x}" cy="${y}" r="${rot?5:4}" fill="${c}" filter="url(#${id}f)"/>`:`<circle cx="${x}" cy="${y}" r="${rot?5:4}" fill="#080716" stroke="${c}" stroke-width="1.8"/>`;
+    s+=`<circle cx="${x}" cy="${y}" r="14" fill="transparent"/></g>`;
+    if(!rot)return;
+    const fora=i%2===1, d=fora?17:-17, co=Math.cos(a);
+    let lx=x+co*d*1.15, ly=y-Math.sin(a)*d+4;
+    let anc=co>.3?'start':co<-.3?'end':'middle';
+    if(!fora&&anc!=='middle')anc=anc==='start'?'end':'start';
+    if(anc==='middle')ly+=fora?-6:10;
+    s+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anc}" font-size="12.5" font-family="Manrope" font-weight="600" fill="${it.ok?'#A3A6C8':'#EEF0FB'}"><tspan fill="#A3A6C8" font-weight="500" font-size="11">${hora(it.h)} </tspan>${it.c}</text>`;
+  });
+  const[sx,sy]=pt(AGORA);
+  s+=`<line x1="${sx}" y1="${sy+10}" x2="${sx}" y2="${cy}" stroke="rgba(92,240,176,.35)" stroke-dasharray="2 4"/>`;
+  s+=`<circle cx="${sx}" cy="${sy}" r="${rot?20:15}" fill="url(#${id}s)"/><circle cx="${sx}" cy="${sy}" r="${rot?4.5:3.5}" fill="#fff"/>`;
+  s+=`<text x="${sx}" y="${sy-(rot?26:20)}" text-anchor="middle" font-size="${rot?12:11}" font-weight="700" font-family="Manrope" fill="#5CF0B0">agora · ${hora(AGORA)}</text>`;
+  s+=`</g>`;
+  // ---- semana: cortinas
+  s+=`<g class="v g-semana">`;
+  const slot=2*R/7, bw=slot*.42;
+  SEMANA.forEach(([dn,v],i)=>{
+    const x=cx-R+slot*(i+.5), hg=Math.max(6,v*(r*.92)), hoje=i===6;
+    s+=`<rect x="${(x-bw/2).toFixed(1)}" y="${(cy-hg).toFixed(1)}" width="${bw.toFixed(1)}" height="${hg.toFixed(1)}" rx="${(bw/2).toFixed(1)}" fill="url(#${id}c)" opacity="${hoje?1:.75}" ${hoje?`filter="url(#${id}f)"`:''}><title>${dn}: ${Math.round(v*100)}% feito</title></rect>`;
+    for(let k=1;k<4;k++)s+=`<line x1="${(x-bw/2+bw*k/4).toFixed(1)}" y1="${(cy-hg+6).toFixed(1)}" x2="${(x-bw/2+bw*k/4).toFixed(1)}" y2="${cy}" stroke="rgba(255,255,255,.08)"/>`;
+    s+=`<text x="${x.toFixed(1)}" y="${cy+19}" text-anchor="middle" font-size="${rot?11.5:10}" font-family="Manrope" font-weight="${hoje?700:500}" fill="${hoje?'#5CF0B0':'#A3A6C8'}">${hoje?'Hoje':dn}</text>`;
+    if(rot)s+=`<text x="${x.toFixed(1)}" y="${(cy-hg-9).toFixed(1)}" text-anchor="middle" font-size="11.5" font-family="Manrope" font-weight="600" fill="#EEF0FB">${Math.round(v*100)}%</text>`;
+  });
+  s+=`</g>`;
+  // ---- 30 dias: constelação
+  s+=`<g class="v g-mes">`;
+  const pts=[];
+  for(let d=0;d<30;d++){
+    const col=d%7,lin=Math.floor(d/7);
+    const x=cx-R*.82+(R*1.64)*(col/6)+(rnd(d+3)-.5)*(rot?18:7);
+    const y=(cy-r*.88)+((r*.88-(rot?34:22))*(lin/4))+(rnd(d+11)-.5)*(rot?14:6);
+    const v=d===29?FEITOS/TOTAL:.25+rnd(d+40)*.75;
+    pts.push([x,y,v]);
+  }
+  for(let d=1;d<30;d++){const[a1,b1,v1]=pts[d-1],[a2,b2,v2]=pts[d];if(v1>.62&&v2>.62)s+=`<line x1="${a1.toFixed(1)}" y1="${b1.toFixed(1)}" x2="${a2.toFixed(1)}" y2="${b2.toFixed(1)}" stroke="rgba(92,240,176,.35)" stroke-width="1"/>`}
+  pts.forEach(([x,y,v],d)=>{
+    const hoje=d===29, rr=(rot?1.6:1)+v*(rot?4.2:2.4);
+    s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(1)}" fill="${v>.62?'#5CF0B0':'#EEF0FB'}" opacity="${(.3+v*.7).toFixed(2)}" ${v>.8?`filter="url(#${id}f)"`:''}><title>${d===29?'Hoje':`Há ${29-d} dias`}: ${Math.round(v*100)}% feito</title></circle>`;
+    if(hoje)s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rot?11:8}" fill="none" stroke="#5CF0B0" stroke-width="1.2"/>`;
+  });
+  s+=`<text x="${cx}" y="${cy+19}" text-anchor="middle" font-size="${rot?11.5:10}" font-family="Manrope" fill="#A3A6C8">Dias com 60% ou mais ficam ligados</text>`;
+  s+=`</g>`;
+  svg.innerHTML=s;
+}
+arco($('#arcoA'),true);
+arco($('#arcoCelA'),false);
+$$('[data-arco]').forEach(cont=>{const alvo=$('#'+cont.dataset.arco);fita(cont,(i,b)=>{alvo.dataset.v=b.dataset.v})});
+
+const segs=CONTA.map(i=>i.ok?`<i style="background:${COR[i.tipo]};box-shadow:0 0 8px ${COR[i.tipo]}"></i>`:'<i></i>').join('');
+$('#chaoA').innerHTML=`
+  <div><p class="olho">A seguir</p><p class="grande">${hora(PROX.h)} <small>em ${FALTA}</small></p><p class="tit">${PROX.t}</p><span class="pill" style="--c:${COR.compromisso}">${ic('arrow','width:14px;height:14px')}Saia às 16:05</span></div>
+  <div><p class="olho" style="color:var(--magenta)">Ficou para trás</p><p class="tit">${SEMHORA[0].t}</p><p class="sub">${SEMHORA[0].m}</p><div class="botoes"><button class="bt pri">Paguei</button><button class="bt">Remarcar</button></div></div>
+  <div><p class="olho">Hoje</p><p class="grande">${FEITOS} <small>de ${TOTAL}</small></p><div class="segs">${segs}</div><p class="sub">Hábitos ${HAB_OK} de ${HAB.length}</p></div>
+  <div><p class="olho">Outubro</p><p class="grande">R$ 2.714<small>,02</small></p><p class="sub">de sobra · entrou R$ 8.300,00</p></div>
+  <div><p class="olho">Objetivo</p><p class="grande">7 <small>de 10 km</small></p><div class="barra"><i style="width:70%"></i></div><p class="sub">Correr 10 km · em dia</p></div>`;
+
+const ainda=IT.filter(i=>!i.ok&&i.h>PROX.h&&i.tipo!=='dinheiro').slice(0,4);
+$('#listaCelA').innerHTML=`
+  <div class="bloco"><p class="olho">A seguir · em ${FALTA}</p><p style="font:600 22px var(--f-tit)">${hora(PROX.h)} ${PROX.t}</p><p class="sub" style="color:var(--mudo);font-size:13px">${PROX.m}</p></div>
+  <div class="bloco atr"><p class="olho" style="color:var(--magenta)">Ficou para trás</p><p style="font-weight:600">${SEMHORA[0].t}</p><div class="botoes"><button class="bt pri">Paguei</button><button class="bt">Remarcar</button></div></div>
+  <div style="padding:2px 4px">${ainda.map(i=>`<div class="linha-it"><time>${hora(i.h)}</time><span class="ponto oco" style="--c:${COR[i.tipo]}"></span><span>${i.t}</span></div>`).join('')}</div>`;
+
+/* ================= RUMO B · CORTINAS ================= */
+const AREAS=[
+  {k:'visao',n:'Visão',i:'home',c:'#5CF0B0',subs:['Hoje','Semana']},
+  {k:'rotina',n:'Rotina',i:'cal',c:'#42E3C8',num:TOTAL-FEITOS,subs:[['Hoje',`${FEITOS}/${TOTAL}`],'Calendário',['Hábitos',`${HAB_OK}/${HAB.length}`],'Automações','Análise']},
+  {k:'saude',n:'Saúde',i:'pulse',c:'#F5C35B',subs:['Treino','Alimentação']},
+  {k:'objetivos',n:'Objetivos',i:'flag',c:'#9D8CFF',subs:[['Lista','3'],'Linha do tempo']},
+  {k:'anotacoes',n:'Anotações',i:'note',c:'#8FD3FF',subs:['Mural',['Pastas','4']]},
+  {k:'financas',n:'Finanças',i:'wallet',c:'#7E7BFF',num:1,subs:['Resumo','Extrato','Fixas',['Parceladas','3'],'Contas','Análise']},
+  {k:'conta',n:'Conta',i:'user',c:'#A3A6C8',subs:['Perfil','Este aparelho','Fotos']}
+];
+const GEN={
+  visao:{frase:`${FEITOS} de ${TOTAL} feitos. Próximo: ${PROX.t} às ${hora(PROX.h)}.`,_:[['Dentista','16:30 · compromisso',`em ${FALTA}`,COR.compromisso],['Pagar a fatura do cartão','atrasada 1 dia','R$ 1.240,00',COR.atrasado],['Correr 10 km','objetivo · em dia','7 km','#9D8CFF']]},
+  rotina:{frase:'Regras que trabalham sozinhas e o que os números dizem.',
+    'Automações':[['Toda segunda, 07:00','Criar a tarefa “Planejar a semana”','ligada'],['Gasto lançado em Mercado','Somar no limite semanal','ligada'],['Dia 5 de cada mês','Lembrar do aluguel','ligada']],
+    'Análise':[['Melhor dia','Segunda · 90% feito',''],['Hábito mais firme','Meditar · 14 dias seguidos',''],['Atrasadas','1 nesta semana','']]},
+  saude:{frase:'Ficha A hoje. Faltam 54 g de proteína.',
+    'Treino':[['Ficha A · Peito e tríceps','6 exercícios · 50 min','hoje'],['Ficha B · Costas e bíceps','6 exercícios','qui'],['Peso','78,4 kg · −0,6 no mês','']],
+    'Alimentação':[['Proteína','96 de 150 g','64%'],['Calorias','1.420 de 2.300 kcal','62%'],['Água','3 de 8 copos','38%']]},
+  objetivos:{frase:'Três objetivos ativos, um em risco.',_:[['Correr 10 km','7 de 10 km · em dia','70%'],['Reserva de emergência','R$ 6.200 de R$ 15.000','41%'],['Ler 12 livros','8 de 12 · em risco','67%']]},
+  anotacoes:{frase:'Quatro pastas, uma ideia gravada ontem.',_:[['Ideias para o portfólio','lista · 5 itens','ontem'],['Pão de fermentação natural','nota · com foto','sáb'],['Reunião de terça','áudio · 4 min · transcrito','ter'],['Livros para 2027','lista · 9 itens','out']]},
+  financas:{frase:'Outubro fechou no azul.',
+    'Extrato':[['Mercado','hoje · Alimentação','−R$ 212,40'],['Freela','seg · Entrada','+R$ 1.500,00'],['Gasolina','dom · Carro','−R$ 180,00'],['Barbearia','sáb · Cuidados pessoais','−R$ 45,00']],
+    'Fixas':[['Aluguel','todo dia 5','R$ 2.270,00'],['Internet','todo dia 10','R$ 119,90'],['Academia','todo dia 15','R$ 99,90']],
+    'Parceladas':[['Notebook','7 de 12','R$ 412,50'],['Geladeira','3 de 10','R$ 289,90'],['Curso de inglês','5 de 6','R$ 180,00']],
+    'Contas':[['Conta corrente','Banco','R$ 4.118,20'],['Cartão','fatura aberta','−R$ 1.240,00'],['Reserva','Tesouro Selic','R$ 6.200,00']],
+    'Análise':[['Maior gasto variável','Mercado · 24%',''],['Gasto por dia','R$ 186 em média',''],['Projeção de novembro','sobra de R$ 2.300','']]},
+  conta:{frase:'Tudo sincronizado.',_:[['Maraath','conta conectada · sincronizado agora',''],['Bloqueio','PIN e Windows Hello','ligado'],['Onde guardar minhas fotos','Só neste aparelho','']]}
+};
+const subNome=s=>Array.isArray(s)?s[0]:s;
+function espinha(){
+  const g=[['Sem hora',SEMHORA.map(x=>({...x,h:null}))],['Manhã',IT.filter(i=>i.h<12)],['Tarde',IT.filter(i=>i.h>=12&&i.h<18)],['Noite',IT.filter(i=>i.h>=18)]];
+  return `<div class="espinha">${g.map(([nm,lst])=>`<section><h5>${nm}</h5>${lst.map((i,k)=>{
+    const c=i.atrasada?COR.atrasado:COR[i.tipo];
+    const agora=(nm==='Tarde'&&i.h>AGORA&&(k===0||lst[k-1].h<AGORA))?`<div class="agora-linha">agora · ${hora(AGORA)}</div>`:'';
+    return agora+`<div class="esp-it ${i.ok?'ok':''}"><time>${i.h==null?'—':hora(i.h)}</time><span class="ponto ${i.ok?'':'oco'}" style="--c:${c}"></span><span class="t">${i.ok?'✓ ':''}${i.t}<small>${i.m||''}</small></span><span class="tipo">${i.atrasada?'<span style="color:var(--magenta)">atrasada</span>':NOME[i.tipo]}</span></div>`}).join('')}</section>`).join('')}</div>`;
+}
+function habitos(){
+  const pad=['11111111111111','10110111010110','01101101101100','11011101111010'];
+  const hs=[['Meditar','14 seguidos'],['Cardio','3 seguidos'],['Leitura','3 seguidos'],['Beber água','3 de 8 hoje']];
+  return hs.map(([n,s],k)=>`<div class="hab"><span style="font-weight:600;font-size:15px">${n}</span><span class="dias">${[...pad[k]].map((x,j)=>`<i class="${x==='1'?'s':''} ${j===13?'h':''}"></i>`).join('')}</span><span style="color:var(--mudo);font-size:13px">${s}</span></div>`).join('');
+}
+function calendario(){
+  let s='<div class="mes">'+['D','S','T','Q','Q','S','S'].map(d=>`<b>${d}</b>`).join('');
+  const tipos=['compromisso','tarefa','habito','lembrete','dinheiro'];
+  for(let d=1;d<=30;d++){
+    const n=Math.floor(rnd(d*7)*4), dots=Array.from({length:n},(_,j)=>`<i style="--c:${COR[tipos[(d+j)%5]]}"></i>`).join('');
+    s+=`<span class="${d===3?'hj':''}"><span style="all:unset;font-weight:${d===3?700:500};color:${d===3?'var(--verde)':'inherit'}">${d}</span><em>${dots}</em></span>`;
+  }
+  return s+'</div>';
+}
+function financas(){
+  const cats=[['Moradia',2270,'#F5C35B'],['Mercado',1336.57,'#5CF0B0'],['Outras',695.40,'#A3A6C8'],['Carro',594.42,'#8FD3FF'],['Alimentação fora',351.97,'#E77BFF'],['Estudos',337.62,'#9D8CFF']];
+  const mx=2270, br=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return `<p class="olho">Sobra de outubro</p><p class="fin-num" style="margin:8px 0 22px">R$ 2.714<span style="color:var(--mudo);font-size:26px">,02</span></p>${cats.map(([n,v,c])=>`<div class="fin-bar" style="--c:${c}"><span>${n}</span><span><i style="width:${(v/mx*100).toFixed(1)}%"></i></span><span>${br(v)}</span></div>`).join('')}`;
+}
+function generico(a,sub,cor){
+  const g=GEN[a.k], rows=g[sub]||g._||[];
+  return `<div class="gen"><p class="frase">${g.frase}</p>${rows.map(([t,m,v,c])=>`<div class="gen-it"><span class="ponto" style="--c:${c||cor}"></span><span class="t">${t}<small>${m}</small></span><span class="v">${v}</span></div>`).join('')}</div>`;
+}
+function conteudoB(a,sub){
+  if(a.k==='rotina'&&sub==='Hoje')return espinha();
+  if(a.k==='rotina'&&sub==='Hábitos')return habitos();
+  if(a.k==='rotina'&&sub==='Calendário')return calendario();
+  if(a.k==='financas'&&sub==='Resumo')return financas();
+  return generico(a,sub,a.c);
+}
+const estB={area:'rotina',sub:{}};
+function subsHtml(a,cls){const at=estB.sub[a.k]||subNome(a.subs[0]);return a.subs.map(s=>{const n=subNome(s),c=Array.isArray(s)?s[1]:'';return `<button class="${n===at?'on':''}" data-sub="${n}">${n}${c?`<sup>${c}</sup>`:''}</button>`}).join('')}
+function renderB(){
+  const a=AREAS.find(x=>x.k===estB.area), sub=estB.sub[a.k]||subNome(a.subs[0]);
+  $('#faixasB').innerHTML=AREAS.map(x=>x.k===a.k
+    ?`<section class="b-painel" style="--c:${x.c}"><p class="olho" style="color:${x.c}">${x.n} · terça, 3 de novembro</p><div class="b-subs" role="tablist">${subsHtml(x)}</div><div class="b-corpo">${conteudoB(x,sub)}</div></section>`
+    :`<button class="cortina" style="--c:${x.c}" data-area="${x.k}" aria-label="Abrir ${x.n}">${ic(x.i)}<span class="nome">${x.n}</span>${x.num?`<span class="num">${x.num}</span>`:''}</button>`).join('');
+  $('#capsB').innerHTML=AREAS.map(x=>`<button class="capsula ${x.k===a.k?'on':''}" style="--c:${x.c}" data-area="${x.k}" aria-label="${x.n}">${ic(x.i)}<span class="nm">${x.n}</span></button>`).join('');
+  const sc=$('#subsCelB');sc.innerHTML=subsHtml(a);sc.style.setProperty('--c',a.c);
+  $('#corpoCelB').innerHTML=conteudoB(a,sub);
+}
+$('#mkB').addEventListener('click',e=>{
+  const c=e.target.closest('[data-area]');if(c){estB.area=c.dataset.area;renderB();return}
+  const s=e.target.closest('[data-sub]');if(s){estB.sub[estB.area]=s.dataset.sub;renderB()}
+});
+$('#celB').addEventListener('click',e=>{
+  const c=e.target.closest('[data-area]');if(c){estB.area=c.dataset.area;renderB();return}
+  const s=e.target.closest('[data-sub]');if(s){estB.sub[estB.area]=s.dataset.sub;renderB()}
+});
+renderB();
+
+/* ================= RUMO C · CARTA ================= */
+const TK={
+  feitos:{c:COR.habito,tp:'Hoje',tit:`${FEITOS} de ${TOTAL} feitos`,txt:CONTA.filter(i=>i.ok).map(i=>i.t).join(', ')+'.',ac:['Ver a Rotina']},
+  dentista:{c:COR.compromisso,tp:'Compromisso',tit:'Dentista',txt:'Hoje, 16:30 às 17:15 · Clínica Sorriso. Aviso 1 h antes.',ac:['Abrir no mapa','Adiar']},
+  fatura:{c:COR.atrasado,tp:'Tarefa atrasada',tit:'Pagar a fatura do cartão',txt:'Venceu ontem. R$ 1.240,00 no cartão.',ac:['Paguei','Remarcar']},
+  encomenda:{c:COR.lembrete,tp:'Lembrete',tit:'Buscar a encomenda',txt:'Hoje às 18:30, na portaria.',ac:['Adiar 1 h']},
+  sobra:{c:COR.dinheiro,tp:'Dinheiro',tit:'R$ 2.714,02 de sobra',txt:'Entrou R$ 8.300,00 e saiu R$ 5.585,98 em outubro.',ac:['Ver o fluxo']},
+  mercado:{c:COR.dinheiro,tp:'Categoria',tit:'Mercado',txt:'R$ 1.336,57 em outubro, 24% dos gastos.',ac:['Criar limite semanal']},
+  meditar:{c:COR.habito,tp:'Hábito',tit:'Meditar',txt:'14 dias seguidos. O melhor até agora.',ac:['Ver histórico']},
+  cardio:{c:COR.habito,tp:'Hábito',tit:'Cardio',txt:'Hoje às 19:00, 30 min.',ac:['Marcar feito']},
+  leitura:{c:COR.habito,tp:'Hábito',tit:'Leitura',txt:'Hoje às 21:30, 30 min.',ac:['Marcar feito']},
+  km:{c:'#9D8CFF',tp:'Objetivo',tit:'Correr 10 km',txt:'7 de 10 km. Ritmo de 1,2 km por semana: chega lá perto de 21 de novembro.',ac:['Anotar o valor de hoje']}
+};
+const t=(k,txt)=>`<button class="tk" style="--c:${TK[k].c}" data-tk="${k}" aria-pressed="false">${txt}</button>`;
+const CAPS=[
+  ['agora','Agora',`Até agora você fez ${t('feitos',`${FEITOS} das ${TOTAL} coisas`)} de hoje. A próxima é o ${t('dentista','Dentista')} às ${hora(PROX.h)}, daqui a ${FALTA}. Saindo às 16:05 você chega com folga.`],
+  ['pend','Pendências',`Uma coisa ficou para trás: ${t('fatura','pagar a fatura do cartão')}, que venceu ontem. À noite ainda tem ${t('encomenda','a encomenda na portaria')} às 18:30 e o estudo de Flutter às 20:00.`],
+  ['din','Dinheiro',`Outubro fechou com ${t('sobra','R$ 2.714,02 de sobra')}. O ${t('mercado','mercado')} foi o maior gasto que muda de mês para mês. A conta de luz vence amanhã.`],
+  ['corpo','Corpo',`${t('meditar','Meditar')} chegou a 14 dias seguidos. ${t('cardio','Cardio')} e ${t('leitura','leitura')} ainda cabem na noite.`],
+  ['obj','Objetivos',`Faltam ${t('km','3 km')} para o objetivo de correr 10 km. No ritmo das últimas semanas, você chega lá perto de 21 de novembro.`]
+];
+function cartaHtml(){return `<p class="olho">Terça, 3 de novembro · escrita às ${hora(AGORA)}</p><h3 class="c-ola"><span>Boa tarde,</span> Maraath.</h3>`+CAPS.map(([k,,p],i)=>`<p data-cap="${k}" class="${i===0?'foco':''}">${p}</p>`).join('')+`<p class="c-assina foco">Aurora</p>`}
+$('#cartaC').innerHTML=cartaHtml();
+$('#cartaCelC').innerHTML=cartaHtml().replace(/class="foco"/g,'');
+$('#capsC').innerHTML=CAPS.map(([k,n],i)=>`<button data-ir="${k}" class="${i===0?'on':''}"><i></i>${n}</button>`).join('');
+$('#capsCelC').innerHTML=CAPS.map(([k,n],i)=>`<button data-ir="${k}" class="${i===0?'on':''}">${n}</button>`).join('');
+const notaHtml=k=>{const n=TK[k];return `<div class="nota-m" style="--c:${n.c}"><span class="tp">${n.tp}</span><h5>${n.tit}</h5><p>${n.txt}</p><div class="botoes">${n.ac.map((a,i)=>`<button class="bt ${i===0?'pri':''}">${a}</button>`).join('')}</div></div>`};
+function marcar(raiz,k){$$('.tk',raiz).forEach(b=>b.setAttribute('aria-pressed',b.dataset.tk===k))}
+$('#margemC').innerHTML=notaHtml('dentista');marcar($('#cartaC'),'dentista');
+$('#cartaC').addEventListener('click',e=>{const b=e.target.closest('[data-tk]');if(!b)return;$('#margemC').innerHTML=notaHtml(b.dataset.tk);marcar($('#cartaC'),b.dataset.tk)});
+$('#cartaCelC').addEventListener('click',e=>{const b=e.target.closest('[data-tk]');if(!b)return;$('#folhaCorpoC').innerHTML=notaHtml(b.dataset.tk);marcar($('#cartaCelC'),b.dataset.tk);$('#folhaC').classList.add('aberta')});
+$('#fecharFolhaC').addEventListener('click',()=>{$('#folhaC').classList.remove('aberta');marcar($('#cartaCelC'),'')});
+function ligarCaps(capsEl,cartaEl,foco){
+  const ir=k=>{const p=$(`[data-cap="${k}"]`,cartaEl);cartaEl.scrollTop=p.offsetTop-cartaEl.offsetTop-(foco?150:20)};
+  capsEl.addEventListener('click',e=>{const b=e.target.closest('[data-ir]');if(b)ir(b.dataset.ir)});
+  cartaEl.addEventListener('scroll',()=>{
+    const ps=$$('[data-cap]',cartaEl);let at=ps[0];
+    const fim=cartaEl.scrollTop+cartaEl.clientHeight>=cartaEl.scrollHeight-4;
+    ps.forEach(p=>{if(p.offsetTop-cartaEl.offsetTop-cartaEl.scrollTop<(foco?240:140))at=p});
+    if(fim)at=ps[ps.length-1];
+    $$('[data-ir]',capsEl).forEach(b=>b.classList.toggle('on',b.dataset.ir===at.dataset.cap));
+    if(foco)ps.forEach(p=>p.classList.toggle('foco',p===at));
+  },{passive:true});
+}
+ligarCaps($('#capsC'),$('#cartaC'),true);
+ligarCaps($('#capsCelC'),$('#cartaCelC'),false);
+
+/* ================= RUMO D · LENTES ================= */
+const RAIAS=[['compromisso','Compromissos','cal'],['tarefa','Fazer','check'],['habito','Hábitos','repeat'],['lembrete','Lembretes','bell'],['dinheiro','Dinheiro','wallet']];
+const TODOS=[...IT,...SEMHORA];
+const estD={on:new Set(RAIAS.map(r=>r[0])),zoom:'dia'};
+const qtd=k=>TODOS.filter(i=>i.tipo===k).length;
+function lentesHtml(){
+  const tudo=estD.on.size===RAIAS.length;
+  return `<button class="lente ${tudo?'on':''}" data-lente="*" style="--c:#EEF0FB"><i></i>Tudo<small>${TODOS.length}</small></button>`+
+    RAIAS.map(([k,n])=>`<button class="lente ${!tudo&&estD.on.has(k)?'on':''}" data-lente="${k}" style="--c:${COR[k]}"><i></i>${n}<small>${qtd(k)}</small></button>`).join('');
+}
+function trocarLente(k){
+  const tudo=estD.on.size===RAIAS.length;
+  if(k==='*'){RAIAS.forEach(r=>estD.on.add(r[0]))}
+  else if(tudo){estD.on.clear();estD.on.add(k)}
+  else{estD.on.has(k)?estD.on.delete(k):estD.on.add(k);if(!estD.on.size)RAIAS.forEach(r=>estD.on.add(r[0]))}
+  renderD();
+}
+const pct=h=>((h-6)/18*100).toFixed(2)+'%';
+function renderD(){
+  $('#lentesD').innerHTML=lentesHtml();$('#lentesCelD').innerHTML=lentesHtml();
+  $('#bandejaD').innerHTML=`<span class="olho">Sem hora</span>`+SEMHORA.filter(i=>estD.on.has(i.tipo)).map(i=>`<span class="ficha" style="--c:${i.atrasada?COR.atrasado:COR[i.tipo]}">${i.t}<small>${i.atrasada?'atrasada':i.m}</small></span>`).join('');
+  let s='';
+  if(estD.zoom==='dia'){
+    s+=`<div class="d-horas"><div></div><div>${[6,8,10,12,14,16,18,20,22,24].map(h=>`<span style="left:${pct(h)}">${String(h).padStart(2,'0')}h</span>`).join('')}</div></div>`;
+    s+=RAIAS.map(([k,n,i])=>`<div class="d-raia ${estD.on.has(k)?'':'fechada'}" style="--c:${COR[k]}"><div class="rot">${ic(i,'width:18px;height:18px')}${n}<small>${qtd(k)}</small></div><div class="pista">${
+      IT.filter(x=>x.tipo===k).map(x=>{
+        const larg=x.f?`width:calc(${((x.f-x.h)/18*100).toFixed(2)}%);min-width:132px;`:'';
+        const pre=k==='dinheiro'?'R$ ':'';
+        return `<div class="ev ${x.ok?'ok':''} ${k==='habito'||k==='lembrete'?'redondo-ev':''}" style="--c:${COR[k]};left:${pct(x.h)};${larg}" title="${hora(x.h)} · ${x.t}"><time>${hora(x.h)}</time>${x.c}${pre&&x.m.includes('R$')?`<small style="color:var(--mudo);font-weight:500">${x.m.split(' · ')[0]}</small>`:''}</div>`}).join('')
+    }</div></div>`).join('');
+    s+=`<div class="d-sobre"><div class="passado" style="width:${pct(AGORA)}"></div><div class="agora" style="left:${pct(AGORA)}"><b>agora · ${hora(AGORA)}</b></div></div>`;
+  }else{
+    const n=estD.zoom==='semana'?7:30;
+    const rot=estD.zoom==='semana'?SEMANA.map(([d],i)=>i===6?'Hoje':d):Array.from({length:30},(_,i)=>i===29?'•':(i%5===0?String(i+5>31?i-26:i+5):''));
+    const cols=`grid-template-columns:repeat(${n},1fr)`;
+    s+=`<div class="d-horas"><div></div><div class="cols" style="${cols}">${rot.map((r,i)=>`<span class="${i===n-1?'hj':''}">${r}</span>`).join('')}</div></div>`;
+    s+=RAIAS.map(([k,nm,i],ri)=>`<div class="d-raia ${estD.on.has(k)?'':'fechada'}" style="--c:${COR[k]}"><div class="rot">${ic(i,'width:18px;height:18px')}${nm}</div><div class="pista cols" style="${cols};background:none">${
+      Array.from({length:n},(_,d)=>{const q=d===n-1?TODOS.filter(x=>x.tipo===k).length:Math.floor(rnd(d*13+ri*7)*(n===7?5:3));
+        return `<div class="cel-sem ${d===n-1?'hj':''}"><i>${Array.from({length:q},()=>`<b style="--c:${COR[k]};${n===30?'width:5px;height:5px':''}"></b>`).join('')}</i></div>`}).join('')
+    }</div></div>`).join('');
+  }
+  $('#gradeD').innerHTML=s;
+  // celular: régua em pé
+  const lista=[...SEMHORA.filter(i=>estD.on.has(i.tipo)).map(i=>({...i,h:null})),...IT.filter(i=>estD.on.has(i.tipo))];
+  let v='',pôsAgora=false;
+  lista.forEach(i=>{
+    if(i.h!=null&&!pôsAgora&&i.h>AGORA){v+=`<div class="vagora"><b>${hora(AGORA)}</b><i></i><span></span></div>`;pôsAgora=true}
+    const c=i.atrasada?COR.atrasado:COR[i.tipo];
+    v+=`<div class="vrow ${i.ok?'ok':''} ${i.tipo}"><time>${i.h==null?'—':hora(i.h)}</time><span class="ponto ${i.ok?'':'oco'}" style="--c:${c}"></span><span class="t">${i.ok?'✓ ':''}${i.t}<small>${i.atrasada?'<span style="color:var(--magenta)">atrasada</span> · ':''}${i.m||''}${i.f?` · até ${hora(i.f)}`:''}</small></span></div>`;
+  });
+  if(!pôsAgora)v+=`<div class="vagora"><b>${hora(AGORA)}</b><i></i><span></span></div>`;
+  $('#listaCelD').innerHTML=v;
+}
+$('#mkD').addEventListener('click',e=>{const b=e.target.closest('[data-lente]');if(b)trocarLente(b.dataset.lente)});
+$('#celD').addEventListener('click',e=>{const b=e.target.closest('[data-lente]');if(b)trocarLente(b.dataset.lente)});
+fita($('#zoomD'),(i,b)=>{estD.zoom=b.dataset.z;renderD()});
+renderD();
+
+/* ================= LABORATÓRIO ================= */
+fita($('#labFita'));
+$('#labPalavras').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$$('#labPalavras button').forEach(x=>x.classList.toggle('on',x===b))});
+const CONT=[['Hoje',`${FEITOS} de ${TOTAL}`,FEITOS/TOTAL,null],['Calendário','3 nov',null,'cal'],['Hábitos',`${HAB_OK} de ${HAB.length}`,HAB_OK/HAB.length,null],['Automações','3 ligadas',null,'bolt'],['Análise','↑ 12% na semana',null,'chart']];
+$('#labCont').innerHTML=CONT.map(([n,s,p,i],k)=>`<button class="${k===0?'on':''}">${p!=null?`<span class="anel" style="--p:${(p*100).toFixed(0)}%"></span>`:`<span class="anel ic-anel">${ic(i)}</span>`}<span>${n}<small>${s}</small></span></button>`).join('');
+$('#labCont').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$$('#labCont button').forEach(x=>x.classList.toggle('on',x===b))});
+const VERT=[['Ficha','check'],['Medidas','chart'],['Exercícios','pulse'],['Shape','user']];
+$('#labVert').innerHTML=VERT.map(([n,i],k)=>`<button class="${k===0?'on':''}">${ic(i)}${n}</button>`).join('')+'<i class="astro"></i>';
+function astro(b){const a=$('#labVert .astro');a.style.top=(b.offsetTop+b.offsetHeight/2)+'px'}
+$('#labVert').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$$('#labVert button').forEach(x=>x.classList.toggle('on',x===b));astro(b)});
+const RODA=['Hoje','Calendário','Hábitos','Automações','Análise'];
+const disco=$('#labRoda .roda-disco');let rodaAng=0,rodaAt=0;
+disco.insertAdjacentHTML('beforeend',RODA.map((n,i)=>`<button data-i="${i}" class="${i===0?'on':''}" style="--a:${i*72}deg">${n}</button>`).join(''));
+disco.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i;let d=(i-rodaAt)*72;if(d>180)d-=360;if(d<-180)d+=360;rodaAng-=d;rodaAt=i;disco.style.setProperty('--r',rodaAng+'deg');$$('button',disco).forEach(x=>x.classList.toggle('on',x===b))});
+const CP=[[28,84,'Hoje'],[96,42,'Calendário'],[165,74,'Hábitos'],[234,30,'Automações'],[302,66,'Análise']];
+function constelar(at){
+  let s='<defs><filter id="cgl" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  for(let i=1;i<CP.length;i++){const[a,b]=CP[i-1],[c,d]=CP[i],l=Math.hypot(c-a,d-b).toFixed(1);
+    s+=`<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="rgba(163,166,200,.22)" stroke-dasharray="2 5"/>`;
+    s+=`<line class="tr-on ${i<=at?'v':''}" style="--l:${l}" x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="#5CF0B0" stroke-width="1.6" stroke-linecap="round" filter="url(#cgl)"/>`}
+  CP.forEach(([x,y,n],i)=>{
+    s+=`<circle cx="${x}" cy="${y}" r="${i===at?6:i<at?3.6:3}" fill="${i<=at?'#fff':'#A3A6C8'}" ${i===at?'filter="url(#cgl)"':''}/>`;
+    if(i===at)s+=`<circle cx="${x}" cy="${y}" r="11" fill="none" stroke="rgba(92,240,176,.5)"/>`;
+    s+=`<circle class="alvo" data-i="${i}" cx="${x}" cy="${y}" r="16" fill="transparent"/>`;
+    s+=`<text class="${i===at?'on':''}" data-i="${i}" x="${x}" y="${y+(y<60?-16:26)}" text-anchor="middle">${n}</text>`;
+  });
+  $('#labConst').innerHTML=s;
+}
+let constAt=0;constelar(0);
+$('#labConst').addEventListener('click',e=>{const el=e.target.closest('[data-i]');if(!el)return;const novo=+el.dataset.i;
+  constelar(constAt);requestAnimationFrame(()=>{constAt=novo;constelar(novo);
+    const linhas=$$('#labConst .tr-on');linhas.forEach((l,j)=>{l.classList.toggle('v',j<novo)})})});
+
+/* ================= escala das maquetes ================= */
+function ajustar(el){
+  const w=+el.dataset.w,h=+el.dataset.h,s=Math.min(1,el.clientWidth/w),filho=el.firstElementChild;
+  filho.style.transform=`scale(${s})`;filho.style.left=Math.max(0,(el.clientWidth-w*s)/2)+'px';el.style.height=(h*s)+'px';
+}
+const ro=new ResizeObserver(ents=>ents.forEach(e=>ajustar(e.target)));
+$$('.escala').forEach(el=>{ajustar(el);ro.observe(el)});
+
+/* ================= navegação da página ================= */
+const nav=fita($('#navTrilho'));
+const secoes=$$('.secao');
+const io=new IntersectionObserver(ents=>{ents.forEach(e=>{if(e.isIntersecting){const i=secoes.indexOf(e.target);if(i>=0&&i!==nav.atual){nav.ir(i,true);const a=$$('#navTrilho a')[i];a.scrollIntoView({block:'nearest',inline:'nearest'})}}})},{rootMargin:'-35% 0px -60% 0px'});
+secoes.forEach(s=>io.observe(s));
+
+const refazer=()=>{FITAS.forEach(f=>f.refazer());const b=$('#labVert button.on');if(b)astro(b)};
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(refazer);
+window.addEventListener('resize',refazer);
+refazer();
+
+/* ================= céu da página ================= */
+const cv=$('#estrelas'),cx=cv.getContext('2d');
+function ceu(){
+  const d=Math.min(2,window.devicePixelRatio||1),W=innerWidth,H=innerHeight;
+  cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0);cx.clearRect(0,0,W,H);
+  const n=Math.round(W*H/7000);
+  for(let i=0;i<n;i++){const x=rnd(i*3.1)*W,y=rnd(i*7.7)*H,r=rnd(i*1.3)<.92?.6+rnd(i*5)*.6:1.3+rnd(i)*.6;
+    cx.globalAlpha=.25+rnd(i*9.9)*.6;cx.fillStyle=rnd(i*2.2)>.85?'#cfd4ff':'#ffffff';cx.beginPath();cx.arc(x,y,r,0,7);cx.fill()}
+  cx.globalAlpha=1;
+}
+ceu();window.addEventListener('resize',ceu);
+})();
+</script>

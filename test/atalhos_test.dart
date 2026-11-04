@@ -6,6 +6,7 @@ import 'package:aurora/data/banco.dart';
 import 'package:aurora/data/busca.dart';
 import 'package:aurora/data/exemplo.dart';
 import 'package:aurora/ui/atalhos/captura.dart';
+import 'package:aurora/ui/menu_aurora.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -142,7 +143,12 @@ void main() {
       expect(find.text('IR PARA'), findsOneWidget);
       await t.enterText(find.byType(TextField).last, 'formula');
       await assentar(t);
-      expect(find.text('ROTINA'), findsOneWidget);
+      // O grupo da busca (o pilar da Rotina, no menu, também escreve ROTINA em pé).
+      expect(
+        find.text('ROTINA').evaluate().length -
+            find.descendant(of: find.byType(PilaresAurora), matching: find.text('ROTINA')).evaluate().length,
+        1,
+      );
       await t.sendKeyEvent(LogicalKeyboardKey.enter);
       await assentar(t);
       // Abre a tarefa para editar, já na área Tarefas.

@@ -427,10 +427,20 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        const Spacer(),
+        // Busca de até 260 px, que encolhe quando a tela aberta é estreita
+        // (entre os pilares do menu sobra menos largura).
         if (larga)
-          SizedBox(width: 260, child: _campoBusca())
-        else
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 260), child: _campoBusca()),
+              ),
+            ),
+          )
+        else ...[
+          const Spacer(),
           IconButton(
             tooltip: 'Buscar nas notas',
             onPressed: () => setState(() {
@@ -442,6 +452,7 @@ class _AnotacoesPageState extends State<AnotacoesPage> {
               color: c.text,
             ),
           ),
+        ],
         if (larga) ...[
           const SizedBox(width: 12),
           _BotaoGravar(aoTocar: _gravarNova),

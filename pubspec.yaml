@@ -50,6 +50,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Aurora dos pilares do menu do computador (lib/ui/menu_aurora.dart).
+  shaders:
+    - shaders/aurora_menu.frag
   assets:
     # Catálogo de alimentos: TACO 4ª ed., NEPA/Unicamp (gerado por tool/taco/converter.dart).
     - assets/taco.json

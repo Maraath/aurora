@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'icone_ia.dart';
@@ -181,9 +183,12 @@ class BotaoRedondo extends StatelessWidget {
   }
 }
 
-/// Controle segmentado (Próximos | Recorrentes), como no protótipo. Quando os
-/// rótulos não cabem na largura (muitas abas no celular), rola de lado.
-class Segmentos<T> extends StatelessWidget {
+/// Controle segmentado (abas das áreas) com a "fita líquida" (03/11/2026): um fio
+/// de aurora embaixo da aba escolhida que, ao trocar, estica até a nova (a ponta
+/// da frente vai primeiro, a de trás alcança depois) e encolhe nela. Quando os
+/// rótulos não cabem na largura (muitas abas no celular), rola de lado e a fita
+/// rola junto. Sem animação com "reduzir movimento".
+class Segmentos<T> extends StatefulWidget {
   const Segmentos({
     super.key,
     required this.opcoes,
@@ -198,30 +203,115 @@ class Segmentos<T> extends StatelessWidget {
   final ValueChanged<T> aoEscolher;
 
   @override
+  State<Segmentos<T>> createState() => _SegmentosState<T>();
+}
+
+class _SegmentosState<T> extends State<Segmentos<T>>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _fita = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+    value: 1,
+  );
+
+  /// Aba de onde a fita saiu na troca em andamento (-1 = nenhuma).
+  int _de = -1;
+
+  @override
+  void didUpdateWidget(Segmentos<T> antigo) {
+    super.didUpdateWidget(antigo);
+    if (antigo.selecionado == widget.selecionado) return;
+    _de = widget.opcoes.indexOf(antigo.selecionado);
+    final semMovimento = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (semMovimento || _de < 0) {
+      _fita.value = 1;
+    } else {
+      _fita.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _fita.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final c = context.cores;
+    final opcoes = widget.opcoes;
     final trilho = Padding(
       padding: const EdgeInsets.all(4),
       child: LayoutBuilder(
         builder: (context, box) {
-          final larguras = [
-            for (final o in opcoes) _largura(context, rotulo(o)) + 28,
+          final textos = [
+            for (final o in opcoes) _largura(context, widget.rotulo(o)),
           ];
+          final larguras = [for (final t in textos) t + 28];
           final cabe =
               larguras.fold<double>(0, (s, l) => s + l) <= box.maxWidth;
-          if (cabe) {
-            return Row(
-              children: [for (final o in opcoes) Expanded(child: _opcao(c, o))],
-            );
+          // Posição de cada aba: iguais quando cabem, do tamanho do texto
+          // quando rolam.
+          final ws = cabe
+              ? List.filled(opcoes.length, box.maxWidth / opcoes.length)
+              : larguras;
+          final xs = <double>[];
+          var x = 0.0;
+          for (final w in ws) {
+            xs.add(x);
+            x += w;
           }
+          // A fita cobre o texto da aba, com folga de 6 px de cada lado.
+          (double, double) faixa(int i) {
+            final meio = xs[i] + ws[i] / 2;
+            final metade = math.min(textos[i] / 2 + 6, ws[i] / 2 - 8);
+            return (meio - metade, meio + metade);
+          }
+
+          final linha = Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Row(
+                children: [
+                  for (var i = 0; i < opcoes.length; i++)
+                    SizedBox(width: ws[i], child: _opcao(c, opcoes[i])),
+                ],
+              ),
+              AnimatedBuilder(
+                animation: _fita,
+                builder: (context, _) {
+                  final alvo = opcoes.indexOf(widget.selecionado);
+                  if (alvo < 0) return const SizedBox.shrink();
+                  final (l1, r1) = faixa(alvo);
+                  var (l, r) = (l1, r1);
+                  final t = _fita.value;
+                  if (_de >= 0 && _de < opcoes.length && t < 1) {
+                    final (l0, r0) = faixa(_de);
+                    final frente = Curves.easeOutCubic.transform(t);
+                    final atras = const Interval(
+                      .28,
+                      1,
+                      curve: Curves.easeInOutCubic,
+                    ).transform(t);
+                    final paraDireita = l1 > l0;
+                    l = _lerp(l0, l1, paraDireita ? atras : frente);
+                    r = _lerp(r0, r1, paraDireita ? frente : atras);
+                  }
+                  return Positioned(
+                    left: l,
+                    width: math.max(8, r - l),
+                    bottom: 4,
+                    height: 3,
+                    child: IgnorePointer(child: _FitaAurora(cores: c)),
+                  );
+                },
+              ),
+            ],
+          );
+          if (cabe) return linha;
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (var i = 0; i < opcoes.length; i++)
-                  SizedBox(width: larguras[i], child: _opcao(c, opcoes[i])),
-              ],
-            ),
+            child: SizedBox(width: x, child: linha),
           );
         },
       ),
@@ -249,11 +339,10 @@ class Segmentos<T> extends StatelessWidget {
     return p.width;
   }
 
-  /// Selecionada: degradê da marca bem leve, contorno violeta e um traço com o
-  /// degradê embaixo. Mouse em cima: turquesa, para não se confundir com a
-  /// seleção.
+  /// A aba escolhida só acende o texto: quem marca a seleção é a fita. Mouse em
+  /// cima: turquesa, para não se confundir com a seleção.
   Widget _opcao(AuroraCores c, T o) {
-    final ativo = o == selecionado;
+    final ativo = o == widget.selecionado;
     final cantos = BorderRadius.circular(10);
     return Semantics(
       selected: ativo,
@@ -262,69 +351,90 @@ class Segmentos<T> extends StatelessWidget {
         type: MaterialType.transparency,
         borderRadius: cantos,
         clipBehavior: Clip.antiAlias,
-        child: Ink(
-          decoration: ativo
-              ? BoxDecoration(
-                  borderRadius: cantos,
-                  gradient: LinearGradient(
-                    colors: [
-                      c.gradIni.withValues(alpha: 0.20),
-                      c.gradFim.withValues(alpha: 0.22),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: c.violeta.withValues(alpha: 0.45),
-                    width: 0.6,
-                  ),
-                )
-              : null,
-          child: InkWell(
-            onTap: () => aoEscolher(o),
-            hoverColor: c.teal.withValues(alpha: 0.10),
-            highlightColor: c.teal.withValues(alpha: 0.06),
-            splashColor: c.violeta.withValues(alpha: 0.14),
-            child: SizedBox(
-              height: 40,
-              child: Stack(
-                children: [
-                  Center(
-                    child: Text(
-                      rotulo(o),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: manrope(
-                        13,
-                        peso: FontWeight.w700,
-                        cor: ativo ? c.text : c.muted,
-                      ),
-                    ),
-                  ),
-                  if (ativo)
-                    Positioned(
-                      bottom: 4,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: FractionallySizedBox(
-                          widthFactor: 0.42,
-                          child: Container(
-                            height: 2,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(2),
-                              gradient: LinearGradient(
-                                colors: [c.gradIni, c.gradFim],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+        child: InkWell(
+          onTap: () => widget.aoEscolher(o),
+          hoverColor: c.teal.withValues(alpha: 0.10),
+          highlightColor: c.teal.withValues(alpha: 0.06),
+          splashColor: c.violeta.withValues(alpha: 0.14),
+          child: SizedBox(
+            height: 40,
+            child: Center(
+              child: AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: manrope(
+                  13,
+                  peso: FontWeight.w700,
+                  cor: ativo ? c.text : c.muted,
+                ),
+                child: Text(
+                  widget.rotulo(o),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+double _lerp(double a, double b, double t) => a + (b - a) * t;
+
+/// O fio da fita líquida: degradê da aurora com brilho em volta e um halo
+/// violeta suave subindo por trás do texto.
+class _FitaAurora extends StatelessWidget {
+  const _FitaAurora({required this.cores});
+  final AuroraCores cores;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = cores;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Halo: sobe 26 px atrás do texto e some para cima.
+        Positioned(
+          left: -10,
+          right: -10,
+          bottom: 0,
+          height: 30,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  c.violeta.withValues(alpha: escuro ? .20 : .12),
+                  c.violeta.withValues(alpha: 0),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(3),
+              gradient: LinearGradient(colors: [c.gradIni, c.teal, c.gradFim]),
+              boxShadow: [
+                BoxShadow(
+                  color: c.gradFim.withValues(alpha: escuro ? .6 : .35),
+                  blurRadius: 10,
+                ),
+                BoxShadow(
+                  color: c.gradIni.withValues(alpha: escuro ? .3 : .15),
+                  blurRadius: 20,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

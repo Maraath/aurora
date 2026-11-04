@@ -1,0 +1,391 @@
+<title>Cortinas da Aurora</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: uma janela do app (1180 × 720, escalada para caber) com os pilares de aurora,
+   e embaixo as notas do conceito. Visual único e escuro por escolha: é o céu do app. */
+:root{
+  --ceu:#080716; --sup:#0F0E26; --sup2:#18173A; --linha:#232250;
+  --txt:#EEF0FB; --mudo:#A3A6C8; --verde:#5CF0B0; --ini:#3EDB9A; --fim:#7E7BFF;
+  --violeta:#9D8CFF; --teal:#42E3C8; --ambar:#F5C35B; --magenta:#E77BFF; --azul:#8FD3FF; --noacc:#06061A;
+  --f-tit:'Sora', ui-sans-serif, system-ui, sans-serif;
+  --f-txt:'Manrope', ui-sans-serif, system-ui, sans-serif;
+  color-scheme:dark;
+}
+html{background:var(--ceu)}
+body{background:var(--ceu);color:var(--txt);font-family:var(--f-txt);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.pagina{max-width:1240px;margin:0 auto;padding-block:48px 96px;display:grid;gap:28px}
+.olho{font:600 11.5px/1.2 var(--f-txt);letter-spacing:.16em;text-transform:uppercase;color:var(--mudo);margin:0}
+h1{font:600 clamp(34px,5vw,58px)/1.02 var(--f-tit);letter-spacing:-.03em;margin:8px 0 0;text-wrap:balance}
+h1 span{background:linear-gradient(100deg,var(--ini),var(--teal) 45%,var(--fim));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mudo);font-size:18px;max-width:66ch;margin:0}
+.lead b{color:var(--txt);font-weight:600}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+.escala{position:relative;width:100%;overflow:hidden}
+.escala>.mk{position:absolute;top:0;left:0;transform-origin:0 0}
+.legenda{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;color:var(--mudo);font-size:13.5px;margin-top:-14px}
+
+/* ---------- janela */
+.mk{width:1180px;height:720px;border-radius:16px;overflow:hidden;position:relative;
+  background:radial-gradient(900px 300px at 50% -140px,rgba(62,219,154,.07),transparent 70%),var(--ceu);
+  border:1px solid #1d1c45;box-shadow:0 50px 120px -40px rgba(0,0,0,.9)}
+.mk::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.6;
+  background-image:radial-gradient(1px 1px at 23px 41px,rgba(255,255,255,.75),transparent 60%),radial-gradient(1px 1px at 137px 89px,rgba(255,255,255,.5),transparent 60%),
+    radial-gradient(1.5px 1.5px at 71px 166px,rgba(220,225,255,.6),transparent 60%),radial-gradient(1px 1px at 186px 18px,rgba(255,255,255,.45),transparent 60%),
+    radial-gradient(1px 1px at 214px 131px,rgba(200,210,255,.5),transparent 60%);background-size:240px 200px}
+.fio{position:absolute;inset:0 0 auto;height:2px;z-index:9;background:linear-gradient(90deg,var(--ini),var(--teal),var(--violeta),var(--magenta))}
+.janela{position:absolute;top:2px;right:6px;z-index:9;display:flex;color:var(--mudo)}
+.janela span{width:40px;height:30px;display:grid;place-items:center;font-size:12px;opacity:.75}
+
+/* camadas: painel (1) < aurora (2) < pilares (3) < nome (4) */
+#aurora{position:absolute;inset:0;width:1180px;height:720px;z-index:2;pointer-events:none}
+.painel{position:absolute;z-index:1;border-radius:26px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(24,23,58,.42),rgba(15,14,38,.30));border:1px solid rgba(255,255,255,.07);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.painel::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(70% 45% at 30% -10%,color-mix(in srgb,var(--c) 26%,transparent),transparent 70%)}
+.painel .corpo{position:absolute;inset:0;padding:30px 34px;transition:opacity .25s ease}
+.painel .corpo.saindo{opacity:0}
+
+.pilar{position:absolute;z-index:3;border-radius:24px;display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:20px;
+  /* vidro quase invisível: a luz da aurora é que desenha o pilar */
+  border:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 18%,transparent 85%,rgba(255,255,255,.025));
+  color:var(--c);transition:border-color .3s,box-shadow .3s,opacity .2s}
+.pilar:hover{border-color:color-mix(in srgb,var(--c) 40%,rgba(255,255,255,.08));box-shadow:0 0 34px -10px color-mix(in srgb,var(--c) 60%,transparent)}
+.pilar .nome{writing-mode:vertical-rl;transform:rotate(180deg);font:600 12px var(--f-tit);letter-spacing:.2em;text-transform:uppercase;white-space:nowrap;
+  color:color-mix(in srgb,var(--c) 70%,#fff);text-shadow:0 0 12px rgba(8,7,22,.9)}
+.pilar .ic{filter:drop-shadow(0 0 6px rgba(8,7,22,.9))}
+.pilar.ativo{opacity:0;pointer-events:none}
+.splash{position:absolute;z-index:4;display:grid;place-items:center;pointer-events:none;opacity:0;
+  font:700 64px var(--f-tit);letter-spacing:.06em;color:#fff;text-shadow:0 0 40px rgba(92,240,176,.55),0 0 2px rgba(255,255,255,.6)}
+
+/* ---------- conteúdo dentro do painel (simplificado) */
+.c-olho{font:600 11px var(--f-txt);letter-spacing:.16em;text-transform:uppercase;color:var(--mudo)}
+.c-tit{font:600 32px/1.1 var(--f-tit);letter-spacing:-.02em;margin:8px 0 0}
+.c-tit em{font-style:normal;color:var(--c)}
+.abas{position:relative;display:inline-flex;gap:2px;padding:4px;border-radius:999px;background:rgba(15,14,38,.6);border:1px solid var(--linha);margin-top:18px}
+.abas span{padding:8px 15px 10px;font:600 13px var(--f-tit);color:var(--mudo)}
+.abas span.on{color:var(--txt);position:relative}
+.abas span.on::after{content:"";position:absolute;left:14px;right:14px;bottom:4px;height:2.5px;border-radius:3px;background:linear-gradient(90deg,var(--ini),var(--teal),var(--fim));box-shadow:0 0 10px rgba(126,123,255,.7)}
+.linhas{margin-top:22px;display:grid}
+.lin{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:14px;align-items:center;padding:13px 2px;border-top:1px solid rgba(35,34,80,.7)}
+.lin:first-child{border-top:0}
+.lin i{width:9px;height:9px;border-radius:50%;background:var(--d);box-shadow:0 0 8px var(--d)}
+.lin b{font-weight:600}
+.lin small{display:block;color:var(--mudo);font-size:12.5px}
+.lin span{color:var(--mudo);font-weight:600;font-variant-numeric:tabular-nums}
+.grade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:20px}
+.bloco{padding:16px;border-radius:18px;background:rgba(15,14,38,.55);border:1px solid rgba(35,34,80,.8);display:grid;gap:4px}
+.bloco strong{font:600 26px var(--f-tit);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.bloco p{margin:0;color:var(--mudo);font-size:13px}
+.arco{width:100%;height:auto;display:block;margin-top:14px}
+
+/* ---------- notas */
+.notas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px;margin-top:12px}
+.notas div{padding-top:16px;border-top:1px solid var(--linha);display:grid;gap:8px;align-content:start}
+.notas h3{font:600 17px var(--f-tit);margin:0}
+.notas p{margin:0;color:var(--mudo);font-size:15px}
+.controles{display:flex;flex-wrap:wrap;gap:8px}
+.controles button{font:600 13px var(--f-tit);padding:8px 14px;border-radius:99px;border:1px solid var(--linha);color:var(--mudo);background:rgba(15,14,38,.6)}
+.controles button:hover{color:var(--teal);border-color:rgba(66,227,200,.4)}
+@media (max-width:820px){.notas{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5z"/><path d="M9 12h6M9 16h6"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M16 15h2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/></symbol>
+</svg>
+
+<main class="pagina">
+  <header>
+    <p class="olho">Aurora · menu do computador · 3 de novembro de 2026</p>
+    <h1>Cortinas em <span>pilares de luz</span></h1>
+  </header>
+  <p class="lead">Uma aurora só atravessa a janela inteira, com fitas que serpenteiam, raios pendurados, verde embaixo e rosa e violeta no alto. Cada área é um pilar <b>da altura inteira da janela</b> onde essa aurora aparece com força; nos vãos ela continua, mais fraca. Clique num pilar: ele se abre como uma cortina grande com o nome da área e então mostra a tela. Passe o mouse para a aurora ondular.</p>
+
+  <div class="escala" data-w="1180" data-h="720">
+    <div class="mk" id="mk">
+      <i class="fio"></i><div class="janela"><span>─</span><span>▢</span><span>✕</span></div>
+      <section class="painel" id="painel"><div class="corpo" id="corpo"></div></section>
+      <canvas id="aurora" aria-hidden="true"></canvas>
+      <nav id="pilares" aria-label="Áreas"></nav>
+      <div class="splash" id="splash" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="legenda"><span>Janela de 1180 × 720. Em telas maiores o painel do meio cresce; os pilares ficam do mesmo tamanho.</span>
+    <span class="controles"><button id="btnPassear">Passear pelas áreas</button></span></div>
+
+  <section class="notas">
+    <div><h3>Uma aurora só</h3><p>Os pilares vão do alto ao pé da janela e não têm aurora própria: são janelas para a mesma aurora, que passa por todos e continua nos vãos. Cada pilar ganha só um toque da cor da sua área.</p></div>
+    <div><h3>Abrir é o momento</h3><p>Trocar de área é a animação: o pilar cresce até ocupar o meio, a aurora sobe com o nome grande e se recolhe, deixando a tela. Leva menos de um segundo.</p></div>
+    <div><h3>Equilíbrio</h3><p>Os pilares se dividem dos dois lados da área aberta, então a tela nunca fica com um bloco pesado só à esquerda.</p></div>
+  </section>
+</main>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const ic=n=>`<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const AREAS=[
+  {k:'assistente',n:'Assistente',i:'spark',c:'#E77BFF'},
+  {k:'visao',n:'Visão',i:'home',c:'#5CF0B0'},
+  {k:'rotina',n:'Rotina',i:'cal',c:'#42E3C8'},
+  {k:'saude',n:'Saúde',i:'pulse',c:'#F5C35B'},
+  {k:'objetivos',n:'Objetivos',i:'flag',c:'#9D8CFF'},
+  {k:'anotacoes',n:'Anotações',i:'note',c:'#8FD3FF'},
+  {k:'financas',n:'Finanças',i:'wallet',c:'#7E7BFF'},
+  {k:'conta',n:'Conta',i:'user',c:'#A3A6C8'}
+];
+const N=AREAS.length, W=1180, H=720;
+const M={l:14,r:14,t:40,b:14}, PW=48, GAP=9;
+const semMov=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hex=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)/255);
+// Base da aurora: a cor da área puxada um pouco para o verde do oxigênio, para seguir parecendo aurora.
+const base=h=>{const c=hex(h),g=[.36,.94,.69];return c.map((v,i)=>v*.68+g[i]*.32)};
+
+/* ---------- layout */
+function layout(ativo){
+  const pw=W-M.l-M.r-(N-1)*PW-(N-1)*GAP;
+  let x=M.l;const r=[];
+  for(let i=0;i<N;i++){const w=i===ativo?pw:PW;r.push([x,M.t,w,H-M.t-M.b]);x+=w+GAP}
+  return r;
+}
+let ativo=1;
+let rects=layout(ativo).map(r=>r.slice());
+let de=null,para=null,t0=0,dur=semMov?1:900,deAtivo=ativo;
+const forca=new Array(N).fill(0), alvoForca=new Array(N).fill(0);
+let splashInt=0;
+
+/* ---------- conteúdo (simplificado) */
+const COR={compromisso:'#42E3C8',tarefa:'#F5C35B',habito:'#5CF0B0',lembrete:'#9D8CFF',dinheiro:'#8FD3FF',atraso:'#E77BFF'};
+const lin=(d,t,m,v)=>`<div class="lin" style="--d:${d}"><i></i><span style="color:inherit"><b>${t}</b><small>${m}</small></span><span>${v}</span></div>`;
+const abas=(xs,on=0)=>`<div class="abas">${xs.map((x,i)=>`<span class="${i===on?'on':''}">${x}</span>`).join('')}</div>`;
+function arco(){
+  let pts='';for(let h=6;h<=18.3;h+=.25){const t=(h-6)/18,a=Math.PI*(1-t);pts+=`${(350+300*Math.cos(a)).toFixed(1)},${(170-130*Math.sin(a)).toFixed(1)} `}
+  let fut='';for(let h=18.3;h<=24;h+=.25){const t=(h-6)/18,a=Math.PI*(1-t);fut+=`${(350+300*Math.cos(a)).toFixed(1)},${(170-130*Math.sin(a)).toFixed(1)} `}
+  const p=h=>{const t=(h-6)/18,a=Math.PI*(1-t);return[350+300*Math.cos(a),170-130*Math.sin(a)]};
+  const dots=[[7,'#5CF0B0',1],[8,'#9D8CFF',1],[10,'#42E3C8',1],[16.5,'#42E3C8',1],[18.5,'#9D8CFF',0],[20,'#F5C35B',0],[21.5,'#5CF0B0',0]].map(([h,c,ok])=>{const[x,y]=p(h);return ok?`<circle cx="${x}" cy="${y}" r="4.5" fill="${c}"/>`:`<circle cx="${x}" cy="${y}" r="4.5" fill="#080716" stroke="${c}" stroke-width="1.8"/>`}).join('');
+  const [sx,sy]=p(18.3);
+  return `<svg class="arco" viewBox="0 0 700 196"><defs><linearGradient id="ga" x1="0" x2="1"><stop offset="0" stop-color="#3EDB9A"/><stop offset="1" stop-color="#7E7BFF"/></linearGradient></defs>
+    <line x1="0" y1="170" x2="700" y2="170" stroke="rgba(157,140,255,.4)"/>
+    <polyline points="${fut}" fill="none" stroke="rgba(163,166,200,.35)" stroke-dasharray="2 7"/>
+    <polyline points="${pts}" fill="none" stroke="url(#ga)" stroke-width="3" stroke-linecap="round"/>${dots}
+    <circle cx="${sx}" cy="${sy}" r="14" fill="rgba(92,240,176,.25)"/><circle cx="${sx}" cy="${sy}" r="4" fill="#fff"/>
+    <text x="${sx}" y="${sy-20}" text-anchor="middle" fill="#5CF0B0" font-size="12" font-weight="700" font-family="Manrope">agora · 18:20</text></svg>`;
+}
+const TELAS={
+  assistente:()=>`<p class="c-olho">Assistente</p><h2 class="c-tit">Oi, <em>Maraath</em>. Em que posso ajudar?</h2>
+    <div class="linhas">${lin(COR.habito,'Você','gastei 35 no mercado','')}${lin('#E77BFF','Aurora','Anotei R$ 35,00 em Mercado. Desfazer?','')}${lin(COR.habito,'Você','como está minha semana?','')}${lin('#E77BFF','Aurora','4 de 10 feitos hoje. Falta o Dentista e o estudo de Flutter.','')}</div>`,
+  visao:()=>`<p class="c-olho">Terça-feira · 3 de novembro · 18:20</p><h2 class="c-tit">Boa noite, <em>Maraath</em></h2>${arco()}
+    <div class="grade"><div class="bloco"><p>A seguir</p><strong>18:30</strong><p>Buscar a encomenda</p></div><div class="bloco"><p>Hoje</p><strong>4 de 10</strong><p>Hábitos 1 de 3</p></div><div class="bloco"><p>A pagar</p><strong>R$ 2.863,80</strong><p>6 contas</p></div></div>`,
+  rotina:()=>`<p class="c-olho">Rotina</p><h2 class="c-tit">Hoje</h2>${abas(['Hoje','Calendário','Hábitos','Automações','Análise'])}
+    <div class="linhas">${lin(COR.habito,'Meditar','07:00 · 14 dias seguidos','feito')}${lin(COR.compromisso,'Reunião de planejamento','10:00 · Sala 3','feito')}${lin(COR.atraso,'Pagar a fatura do cartão','atrasada 1 dia','R$ 1.240,00')}${lin(COR.lembrete,'Buscar a encomenda na portaria','18:30','em 10 min')}${lin(COR.tarefa,'Estudar Flutter: animações','20:00','')}</div>`,
+  saude:()=>`<p class="c-olho">Saúde</p><h2 class="c-tit">Treino de hoje</h2>${abas(['Treino','Alimentação'])}
+    <div class="grade"><div class="bloco"><p>Ficha A</p><strong>6</strong><p>exercícios · 50 min</p></div><div class="bloco"><p>Proteína</p><strong>96 g</strong><p>de 150 g</p></div><div class="bloco"><p>Peso</p><strong>78,4 kg</strong><p>−0,6 no mês</p></div></div>
+    <div class="linhas">${lin('#F5C35B','Supino reto','4 × 10 · 60 kg','')}${lin('#F5C35B','Crucifixo','3 × 12 · 14 kg','')}${lin('#F5C35B','Tríceps na polia','3 × 12 · 25 kg','')}</div>`,
+  objetivos:()=>`<p class="c-olho">Objetivos</p><h2 class="c-tit">3 ativos, 1 em risco</h2>${abas(['Lista','Linha do tempo'])}
+    <div class="linhas">${lin('#9D8CFF','Correr 10 km','7 de 10 km · em dia','70%')}${lin('#9D8CFF','Reserva de emergência','R$ 6.200 de R$ 15.000','41%')}${lin(COR.atraso,'Lançar o portfólio','em risco · 0 de 4 etapas','0%')}</div>`,
+  anotacoes:()=>`<p class="c-olho">Anotações</p><h2 class="c-tit">Mural</h2>
+    <div class="grade"><div class="bloco"><p>Lista</p><strong style="font-size:17px">Ideias para o portfólio</strong><p>5 itens</p></div><div class="bloco"><p>Nota com foto</p><strong style="font-size:17px">Pão de fermentação</strong><p>sábado</p></div><div class="bloco"><p>Áudio · 4 min</p><strong style="font-size:17px">Reunião de terça</strong><p>transcrito</p></div></div>`,
+  financas:()=>`<p class="c-olho">Finanças · outubro de 2026</p><h2 class="c-tit">R$ 2.714,02 <em>de sobra</em></h2>${abas(['Resumo','Extrato','Fixas','Parceladas','Contas','Análise'])}
+    <div class="linhas">${lin('#F5C35B','Moradia','aluguel e condomínio','R$ 2.270,00')}${lin('#5CF0B0','Mercado','24% do mês','R$ 1.336,57')}${lin('#8FD3FF','Carro','gasolina e estacionamento','R$ 594,42')}</div>`,
+  conta:()=>`<p class="c-olho">Conta e sincronização</p><h2 class="c-tit">Tudo sincronizado</h2>
+    <div class="linhas">${lin('#A3A6C8','Maraath','conta conectada · agora','')}${lin('#A3A6C8','Bloqueio','PIN e Windows Hello','ligado')}${lin('#A3A6C8','Efeitos visuais','Automático','')}</div>`
+};
+
+/* ---------- DOM */
+const nav=$('#pilares'), painel=$('#painel'), corpo=$('#corpo'), splash=$('#splash');
+nav.innerHTML=AREAS.map((a,i)=>`<button class="pilar" style="--c:${a.c}" data-i="${i}" aria-label="${a.n}">${ic(a.i)}<span class="nome">${a.n}</span></button>`).join('');
+const pilares=[...nav.children];
+function mostrarConteudo(i){painel.style.setProperty('--c',AREAS[i].c);corpo.innerHTML=TELAS[AREAS[i].k]();}
+mostrarConteudo(ativo);
+
+function posicionar(){
+  pilares.forEach((b,i)=>{const[x,y,w,h]=rects[i];b.style.left=x+'px';b.style.top=y+'px';b.style.width=w+'px';b.style.height=h+'px';b.classList.toggle('ativo',i===ativo);b.setAttribute('aria-current',i===ativo?'page':'false')});
+  const[x,y,w,h]=rects[ativo];
+  Object.assign(painel.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
+}
+
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+function abrir(i){
+  if(i===ativo||de)return;
+  de=rects.map(r=>r.slice());para=layout(i);deAtivo=ativo;ativo=i;t0=performance.now();
+  corpo.classList.add('saindo');
+  splash.textContent=AREAS[i].n.toUpperCase();
+  splash.style.textShadow=`0 0 44px ${AREAS[i].c}, 0 0 2px rgba(255,255,255,.7)`;
+  setTimeout(()=>{mostrarConteudo(i)},semMov?0:520);
+  setTimeout(()=>{corpo.classList.remove('saindo')},semMov?0:720);
+}
+nav.addEventListener('click',e=>{const b=e.target.closest('.pilar');if(b)abrir(+b.dataset.i)});
+
+/* ---------- mouse */
+const mk=$('#mk');let mx=-999,my=-999,escala=1;
+mk.addEventListener('pointermove',e=>{const r=mk.getBoundingClientRect();mx=(e.clientX-r.left)/escala;my=(e.clientY-r.top)/escala;
+  pilares.forEach((b,i)=>{const[x,y,w,h]=rects[i];alvoForca[i]=(i!==ativo&&mx>=x-20&&mx<=x+w+20&&my>=y&&my<=y+h)?1:0})});
+mk.addEventListener('pointerleave',()=>{alvoForca.fill(0)});
+
+/* ---------- WebGL: uma tela só, a aurora desenhada dentro de cada pilar (cantos redondos) */
+const cv=$('#aurora');
+const gl=cv.getContext('webgl',{premultipliedAlpha:true,alpha:true,antialias:false});
+const DPR=Math.min(2,window.devicePixelRatio||1);
+cv.width=W*DPR;cv.height=H*DPR;
+const VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+const FS=`precision highp float;
+uniform vec2 uRes;uniform float uT,uDpr,uAtivo,uFundo;uniform vec3 uM;
+uniform vec4 uR[8];uniform vec3 uC[8];uniform float uK[8];
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float ruido(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.-2.*f);
+  return mix(mix(hash(i),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int k=0;k<5;k++){v+=a*ruido(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}
+float caixa(vec2 p,vec2 b,float r){vec2 q=abs(p)-b+r;return length(max(q,0.))+min(max(q.x,q.y),0.)-r;}
+
+// UMA aurora para a janela toda: duas fitas que serpenteiam, com raios verticais
+// pendurados, borda de baixo verde e forte, alto subindo para rosa e violeta e um
+// brilho difuso em volta (como nas fotos de referência).
+vec4 aurora(vec2 p){
+  float H=uRes.y/uDpr;
+  vec2 q=p/H;
+  float t=uT;
+  vec2 dm=p-uM.xy;float perto=exp(-dot(dm,dm)/(2.*120.*120.))*uM.z;
+  // a fita se curva: deformação lenta do espaço, mais forte perto do mouse
+  float wx=q.x+.10*(fbm(vec2(q.x*1.2+t*.025,q.y*1.4-t*.02))-.5)
+          +perto*.025*sin(q.y*26.-t*3.5+fbm(vec2(q.x*4.,t*.4))*3.);
+  vec3 luz=vec3(0.);float alfa=0.;
+  for(int b=0;b<2;b++){
+    float fb=float(b);
+    float base=(b==0?.70:.47)
+      +.11*sin(wx*2.1+t*.055+fb*2.3)
+      +.06*sin(wx*5.3-t*.08+fb*1.1)
+      +.06*(fbm(vec2(wx*1.8,t*.04+fb*7.))-.5);
+    float h=base-q.y; // altura acima da borda de baixo da fita
+    // raios: estrias finas verticais que andam devagar de lado
+    float r1=fbm(vec2(wx*42.+fb*13.-t*.35,q.y*1.2-t*.18));
+    float r2=fbm(vec2(wx*90.+fb*5.+t*.2,q.y*.6));
+    float raios=.45+2.6*pow(r1,2.)+.4*r2;
+    // dobras da cortina e onde ela está mais acesa
+    float dobras=.55+.45*sin(wx*16.+fbm(vec2(wx*3.,t*.08))*7.+t*.15);
+    float acesa=(b==0?1.:.75)*(.38+.62*smoothstep(.2,.7,fbm(vec2(wx*1.4-t*.035,fb*3.+t*.01))));
+    float sobe=.19+.08*fb+.06*fbm(vec2(wx*6.,t*.1));
+    float corpo=h>0.?exp(-h/sobe):exp(h/.016);
+    float I=corpo*raios*dobras*acesa*(1.+perto*.9)*1.35;
+    float alto=h>0.?smoothstep(.04,.30,h):0.;
+    vec3 verde=vec3(.20,1.,.52),teal=vec3(.16,.88,.78),rosa=vec3(.98,.30,.70),violeta=vec3(.52,.40,1.);
+    vec3 c=mix(verde,teal,clamp(h*6.,0.,1.)*.35);
+    c=mix(c,mix(violeta,rosa,.5+.5*sin(wx*2.6+t*.04+fb)),alto);
+    c+=vec3(.55,1.,.75)*exp(-abs(h)/.010)*.45*raios; // fio claro na borda
+    luz+=c*I;alfa+=I*.85;
+  }
+  float halo=exp(-pow((q.y-.55)/.30,2.))*.16*(.5+.5*fbm(vec2(wx*1.3,t*.04)));
+  luz+=vec3(.16,.62,.55)*halo;alfa+=halo;
+  return vec4(luz,alfa);
+}
+void main(){
+  vec2 p=vec2(gl_FragCoord.x,uRes.y-gl_FragCoord.y)/uDpr;
+  // onde a aurora aparece: forte nos pilares (bordas suaves), fraca nos vãos,
+  // quase nada sobre a área aberta (menos na hora de abrir)
+  float m=uFundo;float noPainel=0.;float kPainel=0.;vec3 tinta=vec3(0.);float pesoTinta=0.;
+  for(int i=0;i<8;i++){
+    vec4 R=uR[i];
+    float d=caixa(p-(R.xy+R.zw*.5),R.zw*.5,min(24.,R.z*.5));
+    float dentro=1.-smoothstep(-10.,8.,d);
+    if(abs(float(i)-uAtivo)<.5){noPainel=dentro;kPainel=uK[i];}
+    else{m=max(m,dentro*uK[i]);}
+    tinta+=uC[i]*dentro;pesoTinta+=dentro;
+  }
+  m=mix(m,kPainel,noPainel);
+  vec4 a=aurora(p);
+  // dentro de cada pilar, um toque da cor da área
+  if(pesoTinta>.01){vec3 tc=tinta/pesoTinta;a.rgb=mix(a.rgb,a.rgb*(.55+tc*.9),.35*min(pesoTinta,1.));}
+  a*=m;
+  gl_FragColor=vec4(min(a.rgb,vec3(1.)),clamp(a.a,0.,1.));
+}`;
+let prog=null,loc={};
+if(gl){
+  const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(o);return o};
+  try{
+    prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(prog);gl.useProgram(prog);
+    const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+    const a=gl.getAttribLocation(prog,'p');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
+    ['uRes','uT','uDpr','uM','uR','uC','uK','uAtivo','uFundo'].forEach(n=>loc[n]=gl.getUniformLocation(prog,n));
+    gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+  }catch(err){prog=null;console.warn('Sem WebGL para a aurora:',err)}
+}
+if(!prog){ // sem WebGL: degradê parado dentro dos pilares
+  pilares.forEach((b,i)=>{b.style.background=`linear-gradient(180deg,${AREAS[i].c}33,${AREAS[i].c}66 60%,transparent 85%)`});
+}
+
+/* ---------- quadro */
+const COL=AREAS.map(a=>hex(a.c));
+const relogio0=performance.now();
+function quadro(agora){
+  let k=1;
+  if(de){
+    k=Math.min(1,(agora-t0)/dur);const e=ease(k);
+    rects=de.map((r,i)=>r.map((v,j)=>v+(para[i][j]-v)*e));
+    if(k>=1){rects=para;de=null}
+  }
+  // A cortina grande: sobe com o nome e se recolhe deixando a tela.
+  const tt=de?k:1;
+  splashInt=de?(tt<.45?tt/.45*1.6:1.6*(1-(tt-.45)/.55)):0;
+  const nomeOp=de?(tt<.25?0:tt<.5?(tt-.25)/.25:tt<.8?1:1-(tt-.8)/.2):0;
+  splash.style.opacity=nomeOp.toFixed(3);
+  const[ax,ay,aw,ah]=rects[ativo];
+  Object.assign(splash.style,{left:ax+'px',top:ay+'px',width:aw+'px',height:ah+'px'});
+  splash.style.letterSpacing=(.04+.08*nomeOp)+'em';
+  posicionar();
+
+  for(let i=0;i<N;i++){forca[i]+=(alvoForca[i]-forca[i])*(semMov?1:.08)}
+  if(prog){
+    const t=semMov?40:40+(agora-relogio0)/1000;
+    gl.viewport(0,0,cv.width,cv.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+    const R=[],C=[],K=[];
+    const FUNDO_PAINEL=.06;
+    for(let i=0;i<N;i++){
+      R.push(...rects[i]);C.push(...COL[i]);
+      // pilar = 1 (mais com o mouse); a área aberta quase apaga, salvo na hora de
+      // abrir; a que deixa de ser aberta acende enquanto encolhe
+      let k1=1+.45*forca[i];
+      if(i===ativo)k1=FUNDO_PAINEL+splashInt;
+      else if(de&&i===deAtivo)k1=FUNDO_PAINEL+(1-FUNDO_PAINEL)*ease(k);
+      K.push(k1);
+    }
+    gl.uniform2f(loc.uRes,cv.width,cv.height);gl.uniform1f(loc.uT,t);gl.uniform1f(loc.uDpr,DPR);
+    gl.uniform1f(loc.uAtivo,ativo);gl.uniform1f(loc.uFundo,.26);
+    gl.uniform3f(loc.uM,mx,my,Math.max(...forca));
+    gl.uniform4fv(loc.uR,R);gl.uniform3fv(loc.uC,C);gl.uniform1fv(loc.uK,K);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  }
+  requestAnimationFrame(quadro);
+}
+requestAnimationFrame(quadro);
+
+/* ---------- passeio automático */
+let passeio=null;
+$('#btnPassear').addEventListener('click',e=>{
+  if(passeio){clearInterval(passeio);passeio=null;e.target.textContent='Passear pelas áreas';return}
+  e.target.textContent='Parar o passeio';
+  passeio=setInterval(()=>abrir((ativo+1)%N),2200);
+});
+
+/* ---------- escala da janela */
+function ajustar(el){const w=+el.dataset.w,h=+el.dataset.h;escala=Math.min(1,el.clientWidth/w);const f=el.firstElementChild;
+  f.style.transform=`scale(${escala})`;f.style.left=Math.max(0,(el.clientWidth-w*escala)/2)+'px';el.style.height=(h*escala)+'px';
+  if(escala<1)escala=escala; }
+const esc=$('.escala');ajustar(esc);new ResizeObserver(()=>ajustar(esc)).observe(esc);
+})();
+</script>
